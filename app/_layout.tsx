@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -27,14 +27,32 @@ export default function RootLayout() {
     return null;
   }
 
+  const user = false; // Replace with actual auth logic.
+  
+  const AuthenticatedStack = () => (
+    <Stack screenOptions={{ headerShown: false }}>
+
+    </Stack>
+  );
+
+  const UnAuthenticatedStack = () => (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="unauthenticatedStack" />
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  )
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(authenticated)/(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(unauthenticated)/sign-in" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
+        {/* <Slot /> */}
+        {/* {user ? <AuthenticatedStack /> : <UnAuthenticatedStack />} */}
+        <StatusBar style="auto" />
       </Stack>
-      <StatusBar style="auto" />
+
     </ThemeProvider>
   );
 }
+

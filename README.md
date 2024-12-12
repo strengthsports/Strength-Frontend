@@ -13,39 +13,38 @@ Frontend
 │   │   ├── (tabs)           # Bottom Tab Navigation
 │   │   │   ├── _layout.tsx  # Tab navigator layout
 │   │   │   ├── home.tsx     # Home screen under tabs
-│   │   │   ├── explore.tsx  # explore screen under tabs
-│   │   │   ├── events.tsx   # explore screen under tabs
-│   │   │   ├── notification.tsx  # explore screen under tabs
-│   │   │   ├── profile.tsx  # Settings screen under tabs (example)
-│   │   ├── other-screens  # Any additional screen folder
+│   │   │   ├── profile.tsx  # Profile screen under tabs
+│   │   │   ├── settings.tsx # Settings screen under tabs (example)
+│   │   ├── other-screen.tsx # Any additional screen outside tabs (optional)
+│   │   ├── dashboard.tsx    # Example non-tabbed screen
 │   │
 │   ├── (unauthenticated)    # Unauthenticated stack
 │   │   ├── _layout.tsx      # Main layout for unauthenticated users
-│   │   ├── sign-in           # Sign-in screen
-│   │   ├── register          # Registration screen (optional)
+│   │   ├── sign-in.tsx      # Sign-in screen
+│   │   ├── register.tsx     # Registration screen (optional)
 │   │
 │   ├── _layout.tsx          # Global layout to decide stack based on auth state
 │   ├── +not-found.tsx       # Custom 404 page for unmatched routes
 │
 ├── assets                   # Assets folder for images, fonts, etc.
 ├── components               # Reusable UI components
-# │   ├── Button.tsx           # Example button component
-# │   ├── Header.tsx           # Example header component
+│   ├── Button.tsx           # Example button component
+│   ├── Header.tsx           # Example header component
 │
 ├── constants                # Constants and configuration files
 │   ├── colors.ts            # Color palette
-# │   ├── endpoints.ts         # API endpoints
+│   ├── endpoints.ts         # API endpoints
 │
 ├── hooks                    # Custom hooks
-# │   ├── useAuth.ts           # Hook for authentication state
-# │   ├── useFetch.ts          # Hook for fetching data
+│   ├── useAuth.ts           # Hook for authentication state
+│   ├── useFetch.ts          # Hook for fetching data
 │
 ├── redux                    # Redux for state management
-# │   ├── authSlice.ts         # Authentication slice
-# │   ├── store.ts             # Redux store setup
+│   ├── authSlice.ts         # Authentication slice
+│   ├── store.ts             # Redux store setup
 │
 ├── scripts                  # Utility scripts
-# │   ├── clean-cache.sh       # Example script for cleaning cache
+│   ├── clean-cache.sh       # Example script for cleaning cache
 │
 ├── .expo                    # Expo-specific metadata (auto-generated)
 ├── .idea                    # IDE-specific metadata
@@ -56,6 +55,7 @@ Frontend
 ├── package.json             # Dependency management
 ├── README.md                # Project documentation
 ├── tsconfig.json            # TypeScript configuration
+
 ```
 
 ## Get started

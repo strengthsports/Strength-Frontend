@@ -15,7 +15,7 @@ export default function LoginScreen() {
     // Implement actual login logic
     // For now, just navigate to home
     setIsLoggedIn(true);
-    router.replace("/(tabs)");
+    router.replace("/(app)/(tabs)");
   };
 
   return (

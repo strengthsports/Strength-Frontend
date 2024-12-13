@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Index() {
   const router = useRouter();
 
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
@@ -20,18 +20,19 @@ export default function Index() {
     // in the headless Node process that the pages are rendered in.
     return <Redirect href="/(app)/(tabs)" />;
   }
-
+  const handleLogin = () => {
+    // const { setIsLoggedIn } = useAuth();
+    setIsLoggedIn(true);
+    router.push("/(app)/(tabs)")
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>
-        <TouchableOpacity onPress={() => router.push("/(app)/(tabs)")}>
-          <Text style={styles.linkText}>Home</Text>
-        </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
           <Text style={styles.linkText}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/(app)/(tabs)/explore")}>
-          <Text style={styles.linkText}>Explore</Text>
+        <TouchableOpacity onPress={handleLogin}>
+          <Text style={styles.linkText}>Loggedin Screen</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

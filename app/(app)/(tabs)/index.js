@@ -23,6 +23,9 @@ export default function Index() {
         <TouchableOpacity onPress={handleLogout}>
           <Text style={styles.linkText}>Logout</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={()=> router.push('../(main)/home')}>
+          <Text style={styles.linkText}>Chats</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

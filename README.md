@@ -7,25 +7,22 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 ```shell
 .
 Frontend
-├── app
-│   ├── (authenticated)      # Authenticated stack
-│   │   ├── _layout.tsx      # Main layout for authenticated users
-│   │   ├── (tabs)           # Bottom Tab Navigation
-│   │   │   ├── _layout.tsx  # Tab navigator layout
-│   │   │   ├── home.tsx     # Home screen under tabs
-│   │   │   ├── profile.tsx  # Profile screen under tabs
-│   │   │   ├── settings.tsx # Settings screen under tabs (example)
-│   │   ├── other-screen.tsx # Any additional screen outside tabs (optional)
-│   │   ├── dashboard.tsx    # Example non-tabbed screen
-│   │
-│   ├── (unauthenticated)    # Unauthenticated stack
-│   │   ├── _layout.tsx      # Main layout for unauthenticated users
-│   │   ├── sign-in.tsx      # Sign-in screen
-│   │   ├── register.tsx     # Registration screen (optional)
-│   │
-│   ├── _layout.tsx          # Global layout to decide stack based on auth state
-│   ├── +not-found.tsx       # Custom 404 page for unmatched routes
-│
+├── .idea/
+├── app/
+│   ├── (app)/
+│   │   ├── (main)/
+│   │   │   └── home.jsx                # Main authenticated screen
+│   ├── (tabs)/
+│   │   ├── _layout.js                 # Layout for bottom tab navigation
+│   │   ├── explore.js                 # Explore tab screen
+│   │   ├── index.js                   # Default tab (home or dashboard)
+│   │   └── _layout.js                 # Tab navigation layout
+│   ├── (auth)/
+│   │   ├── login.tsx                  # Login screen
+│   │   ├── register.tsx               # Registration screen
+│   │   ├── _layout.js                 # Authentication layout
+│   │   ├── +not-found.tsx             # 404 page for auth stack
+│   │   └── index.tsx                  # Default route in auth stack
 ├── assets                   # Assets folder for images, fonts, etc.
 ├── components               # Reusable UI components
 │   ├── Button.tsx           # Example button component
@@ -34,6 +31,9 @@ Frontend
 ├── constants                # Constants and configuration files
 │   ├── colors.ts            # Color palette
 │   ├── endpoints.ts         # API endpoints
+│
+├── context/                           # Contexts
+│   └── AuthContext.js                 # Authentication context
 │
 ├── hooks                    # Custom hooks
 │   ├── useAuth.ts           # Hook for authentication state

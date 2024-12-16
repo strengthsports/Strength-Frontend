@@ -1,6 +1,24 @@
-# Welcome to your Expo app 👋
+# Project Environment Setup
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This project uses environment variables to manage sensitive data and configuration settings. We use two important files for this purpose: `.env` and `expo-env.d.ts`.
+
+## `.env` File
+
+The `.env` file is used to store environment variables like API keys, base URLs, and other configuration settings. These variables are injected into the application at runtime.
+
+### Example `.env` file:
+```plaintext
+API_KEY=your-api-key
+BASE_URL=https://api.example.com
+```
+
+## `.expo-env.d.ts` File
+```
+declare module '@env' {
+  export const BASE_URL: string | number | bool |;  //etc
+  // Add other environment variables here as needed
+}
+```
 
 ### Project structure
 
@@ -20,9 +38,9 @@ Frontend
 │   ├── (auth)/
 │   │   ├── login.tsx                  # Login screen
 │   │   ├── register.tsx               # Registration screen
-│   │   ├── _layout.js                 # Authentication layout
-│   │   ├── +not-found.tsx             # 404 page for auth stack
-│   │   └── index.tsx                  # Default route in auth stack
+│   ├── _layout.js                     # layout
+│   ├── +not-found.tsx                 # 404 page for auth stack
+│   └── index.tsx                      # Entry Point || Default route in auth stack
 ├── assets                   # Assets folder for images, fonts, etc.
 ├── components               # Reusable UI components
 │   ├── Button.tsx           # Example button component

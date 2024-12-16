@@ -24,7 +24,11 @@ export default function LoginScreen() {
       await login(email, password);
       router.push('/(app)/(tabs)')
     } catch (err) {
-      console.error("Login failed:", err.message);
+      if (err instanceof Error) {
+        console.error("Login failed:", err.message);
+      } else {
+        console.error("Login failed:", err);
+      }
     } finally {
       if (isLoggedIn) { <Redirect href="/(app)/(tabs)" />}
     }

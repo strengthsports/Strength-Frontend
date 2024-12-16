@@ -45,6 +45,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="TabThreeScreen"
+        options={{
+          title: "TabThreeScreen",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

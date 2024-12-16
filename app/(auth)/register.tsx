@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();

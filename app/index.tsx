@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { Redirect, useRouter } from "expo-router"; // Import the router for navigation
 import { useAuth } from "@/context/AuthContext";
+import LoginScreen from "./(auth)/login";
 
 export default function Index() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function Index() {
     // On web, static rendering will stop here as the user is not authenticated
     // in the headless Node process that the pages are rendered in.
     return <Redirect href="/(app)/(tabs)" />;
+  } else {
+    return <LoginScreen />
   }
   const handleLogin = () => {
     // const { setIsLoggedIn } = useAuth();
@@ -27,14 +30,15 @@ export default function Index() {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.innerContainer}>
+      <LoginScreen />
+      {/* <View style={styles.innerContainer}>
         <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
           <Text style={styles.linkText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleLogin}>
           <Text style={styles.linkText}>Loggedin Screen</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 }

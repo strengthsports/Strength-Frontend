@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput,} from 'react-native'
 import React, { useState } from "react";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+// import AntDesign from '@expo/vector-icons/AntDesign';
 import Logo from "@/components/logo";
 import { useRouter } from "expo-router";
 import TextInputSection from "@/components/TextInputSection";
@@ -21,7 +21,7 @@ const signupEmail1 = () => {
     const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
     const [dateofBirth, setDateOfBirth] = useState('');
 
-    const handleDateChange = (selectedDate) => {
+    const handleDateChange = (selectedDate: any) => {
       setDateOfBirth(selectedDate);
       setIsDatePickerVisible(false);
      };
@@ -53,6 +53,22 @@ const signupEmail1 = () => {
 
   return (
     <View style={{backgroundColor:'black', height: '100%', width: '100%',}}>
+
+      {/* Optimised CODE for Dynamic UI */}
+
+       <View style={{ width:'100%', alignItems:'center', justifyContent:'space-between', marginTop: 60, paddingHorizontal:10, flexDirection:'row'}}>
+        <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5} style={{}}>
+          <MaterialCommunityIcons name="keyboard-backspace" size={25} color="white" />
+        </TouchableOpacity>
+        <Logo />
+        <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5} style={{}}>
+          <MaterialCommunityIcons name="window-close" size={25} color="white" />
+        </TouchableOpacity>
+      </View>
+
+       {/* 
+       OLD CODE
+       
        <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row'}}>
       <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5} style={{marginLeft: 15, marginTop: -15}}>
       <MaterialIcons name="keyboard-backspace" size={30} color="white" />
@@ -62,6 +78,7 @@ const signupEmail1 = () => {
       <AntDesign name="close" size={25} color="white" />
       </TouchableOpacity>
       </View>
+      </View> */}
 
       <View style={{marginLeft: 40, marginTop: 30}}>
         <Text style={{color:'white', fontSize: 28, fontWeight:'400'}}>Create your account</Text>
@@ -103,7 +120,7 @@ const signupEmail1 = () => {
         paddingLeft: 10,}}><Text style={{color:'white', fontSize: 16, fontWeight:'400'}}></Text>
         <TouchableOpacity onPress={() => setIsDatePickerVisible(!isDatePickerVisible)}
          activeOpacity={0.5} style={{marginTop: -15.5, marginLeft: 288}}>
-        <AntDesign name="calendar" size={25} color="white" />
+        <MaterialCommunityIcons name="calendar-month" size={25} color="white" />
         </TouchableOpacity>
         </TouchableOpacity>
       </View>

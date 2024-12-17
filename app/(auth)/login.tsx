@@ -1,46 +1,50 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, StatusBar, ScrollView} from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, StatusBar, ScrollView, Button} from "react-native";
+// import { useRouter } from "expo-router";
 import { Image } from 'expo-image';
 import { useAuth } from "@/context/AuthContext";
+import { Redirect, useRouter } from "expo-router";
+import "../../global.css"; 
+import Text1 from "@/components/Text";
+import TextInputSection from "@/components/TextInputSection";
+import SignupButton from "@/components/SignupButton";
 import logo from "@/assets/images/logo2.png"
 import banner from "@/assets/images/banner-gif.gif"
 import google from "@/assets/images/google.png"
-import SignupButton from "@/components/SignupButton";
-import TextInputSection from "@/components/TextInputSection";
-import Text1 from "@/components/Text";
 
-// Define the types for the authentication context
-interface AuthContextType {
-  setIsLoggedIn: (isLoggedIn: boolean) => void;
-}
+export default function LoginScreen() {
 
-// Define the LoginScreen component
-export default function LoginScreen(): JSX.Element {
-  const [email, setEmail] = useState<string>(""); // Explicitly type as string
-  const [password, setPassword] = useState<string>(""); // Explicitly type as string
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [inputError, setInputError] = useState("");
+  const { login, error, status, msgBackend, isLoggedIn } = useAuth();
+
   const router = useRouter();
-  const { setIsLoggedIn } = useAuth() as AuthContextType; // Type assertion for useAuth context
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setInputError("Both email and password are required.");
+      return;
+    }
+    setInputError("")
 
-
-  const handleLogin = (): void => {
-    // Implement actual login logic
-    // For now, just navigate to home
-    setIsLoggedIn(true);
-    router.replace("/(app)/(tabs)");
+    try {
+      await login(email, password);
+      router.push('/(app)/(tabs)')
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("Login failed:", err.message);
+      } else {
+        console.error("Login failed:", err);
+      }
+    } finally {
+      if (isLoggedIn) { <Redirect href="/(app)/(tabs)" />}
+    }
   };
 
-
-  
-
-
+const [showPassword, setShowPassword] = useState(false)
   const toggleShowPassword = () => {
-    setShowPassword(prevState => !prevState); // Toggle password visibility
+    setShowPassword(prevState => !prevState)
   };
-
-
-
 
   return (
     <KeyboardAvoidingView style={{backgroundColor:'black', height:'100%', width:'100%',}}>
@@ -50,7 +54,7 @@ export default function LoginScreen(): JSX.Element {
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
       <View style={{flexDirection:'row', marginLeft: 22, marginTop: 55}}>
         <Image style={{width: 45, height: 45,}} source={logo}></Image>
-      <Text1 style={{color:'white', fontSize: 26, fontWeight:'500', marginLeft: 7, marginTop: 3}}>Strength</Text1>
+      <Text style={{color:'white', fontSize: 26, fontWeight:'500', marginLeft: 7, marginTop: 3}}>Strength</Text>
       </View>
  
       <View style={{width: '100%', height: '31%', marginTop: 20}}>
@@ -78,7 +82,19 @@ export default function LoginScreen(): JSX.Element {
         value={password}
         onChangeText={setPassword}
         customStyle={{paddingEnd: 55,}}
+        // secureTextEntry
       />
+      {inputError ? <Text style={{ color: "red", marginBottom: 10, textAlign: "center",}}>{inputError}</Text> : null}
+      {error ? <Text style={{ color: "red", marginBottom: 10, textAlign: "center",}}>{error}</Text> : null}
+      {/* {status && (
+        <Text style={status === 200 ? styles.success : styles.error}>
+          {status === 200 ? `` : `Error: ${msgBackend}`}
+        </Text>
+      )} */}
+      {/* <Button  title="Login" onPress={handleLogin} /> */}
+      {/* <Text className='text-red-600 text-2xl' >NativeWind Check</Text> */}
+    {/* </SafeAreaView> */}
+      
       <TouchableOpacity activeOpacity={0.5} onPress={toggleShowPassword} style={{position:'absolute', top: 112, left: 288}}>
         <Text1 style={{color:'#12956B', fontSize: 13, fontWeight: '400'}}>{showPassword ? 'Hide' : 'Show'}</Text1>
         </TouchableOpacity>

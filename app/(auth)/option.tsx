@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import User from "@/assets/images/card.png"
 import page from "@/assets/images/page.png"
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import PageThemeView from "@/components/PageThemeView";
 import Logo from "@/components/logo";
 
 const option = () => {
@@ -11,7 +12,7 @@ const option = () => {
 
 
   return (
-    <View style={{width:'100%', height:'100%', backgroundColor:'black'}}>
+    <View style={{width: '100%', height: '100%', backgroundColor:'black'}}>
 
       <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row'}}>
       <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5} style={{marginLeft: 15, marginTop: -15}}>
@@ -21,7 +22,7 @@ const option = () => {
       </View>
 
       <View style={{width: '100%', justifyContent:'center', alignItems:'center', marginTop: 130}}>
-        <TouchableOpacity onPress={() => router.push("/signupEmail1")} activeOpacity={0.5} style={{backgroundColor:'white', width: '71%', height: 90, borderRadius: 5, flexDirection:'row', alignItems:'center'}}>
+        <TouchableOpacity onPress={() => router.push("/Signup/signupEmail1")} activeOpacity={0.5} style={{backgroundColor:'white', width: '71%', height: 90, borderRadius: 5, flexDirection:'row', alignItems:'center'}}>
           <Image source={User}  style={{width: 45, height: 45, marginLeft: 40}}/>
           <Text style={{color:'black', fontSize: 18, marginLeft: 40}}>Join as a user</Text>
         </TouchableOpacity>

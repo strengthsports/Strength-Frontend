@@ -8,8 +8,11 @@ import {
 import { Redirect, useRouter } from "expo-router"; // Import the router for navigation
 import { useAuth } from "@/context/AuthContext";
 import LoginScreen from "./(auth)/login";
+import "../global.css"; 
+import { verifyInstallation } from 'nativewind';
 
 export default function Index() {
+  verifyInstallation();
   const router = useRouter();
 
   const { isLoggedIn, setIsLoggedIn } = useAuth();

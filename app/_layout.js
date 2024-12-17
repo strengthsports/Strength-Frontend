@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import "../global.css"
 
 SplashScreen.preventAutoHideAsync();
 

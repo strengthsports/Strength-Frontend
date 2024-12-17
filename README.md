@@ -1,15 +1,14 @@
 # Project Environment Setup
 
-This project uses environment variables to manage sensitive data and configuration settings. We use two important files for this purpose: `.env` and `expo-env.d.ts`.
+This project uses environment variables to manage sensitive data and configuration settings. We use two important files for this purpose: `.env`.
 
 ## `.env` File
 
-The `.env` file is used to store environment variables like API keys, base URLs, and other configuration settings. These variables are injected into the application at runtime.
+The `.env` file is used to store environment variables like API keys, base URLs, and other configuration settings. These variables are injected into the application at runtime. Note - EXPO_PUBLIC_ prefix is necessary for env naming.
 
 ### Example `.env` file:
 ```plaintext
-API_KEY=your-api-key
-BASE_URL=https://api.example.com
+EXPO_PUBLIC_BASE_URL=https://api.example.com
 ```
 
 ## `.expo-env.d.ts` File

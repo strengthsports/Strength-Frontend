@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import {BASE_URL} from '@env'
 import { ToastAndroid } from "react-native";
 
 
@@ -37,7 +36,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Optionally handle session loading or persistence here
     const loadSession = async () => {
       console.log("No SecureStore logic applied.");
-      console.log("Base URL:", BASE_URL);
+      console.log("Base URL:", process.env.EXPO_PUBLIC_BASE_URL);
 
     };
 
@@ -51,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setMsgBackend(null)
 
       // const response = await fetch("http://192.168.157.28:3000/api/v1/login", {
-        const response = await fetch(`${BASE_URL}/api/v1/login`, {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/login`, {
           method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,12 +61,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await response.json();
       setStatus(response.status); // Set the status code
       setMsgBackend(data.message); // Set the status code
-      console.log("MsgBackend:", );
-
-      ToastAndroid.show(data.message, ToastAndroid.SHORT);
-
+      
       if (response.ok) {
         console.log("Login successful!");
+        ToastAndroid.show(data.message, ToastAndroid.SHORT);
         // ToastAndroid.show('Login successful!', ToastAndroid.SHORT);
         console.log("Full response:", data);
         console.log("Base URL:", process.env.REACT_APP_BASE_URL);

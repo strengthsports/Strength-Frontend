@@ -4,8 +4,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { Redirect, useRouter } from "expo-router";
+import "../../global.css"; 
 
 export default function LoginScreen() {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inputError, setInputError] = useState("");
@@ -36,7 +38,8 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
+      
+      <ThemedText type="title" >
         Login
       </ThemedText>
       <TextInput
@@ -61,7 +64,8 @@ export default function LoginScreen() {
           {status === 200 ? `` : `Error: ${msgBackend}`}
         </Text>
       )} */}
-      <Button title="Login" onPress={handleLogin} />
+      <Button  title="Login" onPress={handleLogin} />
+      <Text className='text-red-600 text-2xl' >NativeWind Check</Text>
     </SafeAreaView>
   );
 }
@@ -71,6 +75,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: "center",
+    // backgroundColor: '#000'
   },
   title: {
     fontSize: 24,

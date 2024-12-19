@@ -1,3 +1,23 @@
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+
+
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+// This context functionality has become OBSOLETE
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ToastAndroid } from "react-native";
 
@@ -37,7 +57,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const loadSession = async () => {
       console.log("No SecureStore logic applied.");
       console.log("Base URL:", process.env.EXPO_PUBLIC_BASE_URL);
-
     };
 
     loadSession();

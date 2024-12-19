@@ -6,14 +6,16 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router"; // Import the router for navigation
-import { useAuth } from "@/context/AuthContext";
+import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
 
 export default function Index() {
   const router = useRouter();
-  const { setIsLoggedIn } = useAuth();
+  const { isLoggedIn, error, msgBackend, status } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    // setIsLoggedIn(false);
+    console.log('soon to be implemented')
   };
 
   return (

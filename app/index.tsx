@@ -6,16 +6,17 @@ import {
   StyleSheet,
 } from "react-native";
 import { Redirect, useRouter } from "expo-router"; // Import the router for navigation
-import { useAuth } from "@/context/AuthContext";
 import LoginScreen from "./(auth)/login";
 import "../global.css"; 
 import { verifyInstallation } from 'nativewind';
+import { useSelector } from "react-redux";
+import { RootState } from "@/reduxStore";
 
 export default function Index() {
   verifyInstallation();
   const router = useRouter();
 
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
@@ -26,11 +27,11 @@ export default function Index() {
   } else {
     return <LoginScreen />
   }
-  const handleLogin = () => {
-    // const { setIsLoggedIn } = useAuth();
-    setIsLoggedIn(true);
-    router.push("/(app)/(tabs)")
-  };
+  // const handleLogin = () => {
+  //   // const { setIsLoggedIn } = useAuth();
+  //   setIsLoggedIn(true);
+  //   router.push("/(app)/(tabs)")
+  // };
   return (
     <SafeAreaView style={styles.container}>
       <LoginScreen />

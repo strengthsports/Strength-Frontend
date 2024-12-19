@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, StatusBar, ScrollView, Button} from "react-native";
-// import { useRouter } from "expo-router";
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, StatusBar, ScrollView, Button, ToastAndroid} from "react-native";
 import { Image } from 'expo-image';
-import { useAuth } from "@/context/AuthContext";
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import "../../global.css"; 
 import Text1 from "@/components/Text";
 import TextInputSection from "@/components/TextInputSection";
@@ -11,35 +9,63 @@ import SignupButton from "@/components/SignupButton";
 import logo from "@/assets/images/logo2.png"
 import banner from "@/assets/images/banner-gif.gif"
 import google from "@/assets/images/google.png"
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
+import { loginUser, resetAuthState } from "@/reduxStore/slices/authSlice";
 
 export default function LoginScreen() {
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { error, msgBackend} = useSelector((state: RootState) => state.auth);
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inputError, setInputError] = useState("");
-  const { login, error, status, msgBackend, isLoggedIn } = useAuth();
 
   const router = useRouter();
+
   const handleLogin = async () => {
     if (!email || !password) {
       setInputError("Both email and password are required.");
       return;
     }
-    setInputError("")
+
+    setInputError("");
+    dispatch(resetAuthState());
 
     try {
-      await login(email, password);
-      router.push('/(app)/(tabs)')
+      await dispatch(loginUser({ email, password })).unwrap();
+
+      console.log('backend - ',msgBackend )
+      ToastAndroid.show(msgBackend || "Login successful!", ToastAndroid.SHORT);
+      router.push("/(app)/(tabs)");
     } catch (err) {
-      if (err instanceof Error) {
-        console.error("Login failed:", err.message);
-      } else {
-        console.error("Login failed:", err);
-      }
-    } finally {
-      if (isLoggedIn) { <Redirect href="/(app)/(tabs)" />}
+      ToastAndroid.show(err as string, ToastAndroid.SHORT);
+      console.log('err - ',err )
     }
   };
+  
+  // const handleLogin = async () => {
+  //   if (!email || !password) {
+  //     setInputError("Both email and password are required.");
+  //     return;
+  //   }
+  //   setInputError("")
+
+  //   try {
+  //     await login(email, password);
+  //     router.push('/(app)/(tabs)')
+  //   } catch (err) {
+  //     if (err instanceof Error) {
+  //       console.error("Login failed:", err.message);
+  //     } else {
+  //       console.error("Login failed:", err);
+  //     }
+  //   } finally {
+  //     if (isLoggedIn) { <Redirect href="/(app)/(tabs)" />}
+  //   }
+  // };
 
 const [showPassword, setShowPassword] = useState(false)
   const toggleShowPassword = () => {

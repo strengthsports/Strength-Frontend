@@ -55,35 +55,37 @@ const signupEmail1 = () => {
 
   return (
     <PageThemeView>
-       <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row'}}>
-      <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5} style={{marginLeft: '4%', marginTop: -15}}>
+       <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
+      <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5}>
       <MaterialIcons name="keyboard-backspace" size={30} color="white" />
       </TouchableOpacity>
-      <View style={{marginLeft:'32.5%'}}>
       <Logo/>
-      </View>
-      <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5} style={{marginLeft: '33%', marginTop: -15}}>
+      <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}>
       <AntDesign name="close" size={25} color="white" />
       </TouchableOpacity>
       </View>
 
-      <View style={{marginLeft: 40, marginTop: 40}}>
-        <TextScallingFalse style={{color:'white', fontSize: 28, fontWeight:'400'}}>Create your account</TextScallingFalse>
+  
+     <View style={{justifyContent:'space-between', alignItems:'center'}}>
+      
+      <View style={{padding: 35, alignItems:'flex-start'}}>
+        <TextScallingFalse style={{color:'white', fontSize: 28, fontWeight:'500',}}>Create your account</TextScallingFalse>
       </View>
 
-     <View style={{justifyContent:'center', alignItems:'center'}}>
-      <View style={{width: '100%', marginTop: 40}}>
-        <View style={{flexDirection:'row'}}>
-          <TextScallingFalse style={{color:'white', fontSize: 14, marginLeft: 40, fontWeight:'500'}}>First Name</TextScallingFalse> 
-          <TextScallingFalse style={{color:'white', fontSize: 14, marginLeft: 94, fontWeight:'500'}}>Last Name</TextScallingFalse> 
+     
+     <View style={{ gap : 18}}>
+      <View style={{flexDirection:'row', gap: 10}}>
+        <View style={{}}>
+          <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>First Name</TextScallingFalse> 
+          <TextInput style={{width: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
-        <View style={{ marginLeft: 38, marginTop: 4, flexDirection:'row'}}>
-          <TextInput style={{minWidth: 162, maxWidth: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingStart: 10, paddingEnd: 10, paddingBottom: 8,}} />
-          <TextInput style={{minWidth: 162, maxWidth: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingStart: 10, paddingEnd: 10, marginLeft: 10,  paddingBottom: 8,}} />
+        <View>
+        <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Last Name</TextScallingFalse> 
+          <TextInput style={{width: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
       </View>
 
-      <View style={{ marginTop: 20}}>
+      <View>
       <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Email or phone number</TextScallingFalse>
       <TextInputSection
        placeholder="Email"
@@ -93,7 +95,7 @@ const signupEmail1 = () => {
        autoCapitalize="none"  />
       </View>
 
-      <View style={{ marginTop: 20}}>
+      <View>
       <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Date of birth</TextScallingFalse>
       <TouchableOpacity  activeOpacity={0.5}
        onPress={() => setIsDatePickerVisible(!isDatePickerVisible)} 
@@ -112,11 +114,11 @@ const signupEmail1 = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={{width: '100%', marginTop: 20}}>
+      <View>
         <View style={{flexDirection:'row'}}>
-          <TextScallingFalse style={{color:'white', fontSize: 14, marginLeft: 40, fontWeight:'500'}}>Gender</TextScallingFalse>  
+          <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Gender</TextScallingFalse>  
         </View>
-        <View style={{ marginLeft: 38, marginTop: 4, flexDirection:'row'}}>
+        <View style={{ flexDirection:'row'}}>
            <TouchableOpacity onPress={handleFemalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row'}}>
            <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 30}}>Female</TextScallingFalse>
            <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', marginLeft: 35, marginTop: 1.5, backgroundColor: femaleSelected ? '#12956B' : 'black',}}/>
@@ -128,9 +130,11 @@ const signupEmail1 = () => {
            </TouchableOpacity>
         </View>
       </View>
+      </View>
 
 
-      <View style={{width: 330, marginTop: 40, justifyContent:'center', alignItems:'center'}}>
+      <View style={{gap : 15, marginTop: 30}}>
+      <View style={{width: 330, justifyContent:'center', alignItems:'center',}}>
       <TextScallingFalse style={{fontSize: 11, color: 'white',}} allowFontScaling={false}>By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
       <TouchableOpacity activeOpacity={0.5} onPress={() => setOpenModal14(true)}>
       <TextScallingFalse style={{fontSize: 11, color: '#12956B',}} allowFontScaling={false}>User Agreement, Privacy Policy, Cookies Policy.</TextScallingFalse>
@@ -138,14 +142,15 @@ const signupEmail1 = () => {
       </View>
 
 
-      <View style={{marginTop: 20}}>
+      <View style={{marginTop: 25}}>
       <SignupButton onPress={() => router.push("/Signup/signupEnterOtp2")}>
        <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
       </SignupButton>
       </View>
-      <View style={{marginTop: 15, justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
+      <View style={{justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
         <TextScallingFalse style={{color:'white', fontSize: 14}}>Already on Strength?</TextScallingFalse>
         <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}><TextScallingFalse style={{color:'#12956B'}}>  Sign in</TextScallingFalse></TouchableOpacity>
+      </View>
       </View>
       </View>
 

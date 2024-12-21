@@ -10,6 +10,10 @@ import { useAuth } from "@/context/AuthContext";
 import LoginScreen from "./(auth)/login";
 import "../global.css"; 
 import { verifyInstallation } from 'nativewind';
+import SetHeadline from "./onboarding/SetHeadline";
+import SportsChoice from "./onboarding/SportsChoice";
+import ProfilePictureScreen from "./onboarding/SetProfile";
+import SuggestedSupportsScreen from "./onboarding/SuggestedFolllowers";
 
 export default function Index() {
   verifyInstallation();
@@ -24,7 +28,7 @@ export default function Index() {
     // in the headless Node process that the pages are rendered in.
     return <Redirect href="/(app)/(tabs)" />;
   } else {
-    return <LoginScreen />
+    return <SetHeadline/>
   }
   const handleLogin = () => {
     // const { setIsLoggedIn } = useAuth();

@@ -10,7 +10,7 @@ import TextScallingFalse from "@/components/CentralText";
 
 const signupSetPassword5 = () => {
   const router = useRouter();
-   const {password, setPassword} = useState('');
+   const [password, setPassword] = useState('');
 
    const handlePassword = () => {
     //function for handling password

@@ -9,7 +9,7 @@ import TextScallingFalse from "@/components/CentralText";
 
 
 const signupEnterUsername = () => {
-    const {username, setUsername} = useState('');
+    const [username, setUsername] = useState('');
     const router = useRouter();
 
     const handleUsername = () => {

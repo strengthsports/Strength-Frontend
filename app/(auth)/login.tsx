@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView} from "react-native";
 // import { useRouter } from "expo-router";
 import { Image } from 'expo-image';
-import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import "../../global.css"; 
 import TextScallingFalse from "@/components/CentralText";
@@ -14,13 +13,22 @@ import google from "@/assets/images/google.png"
 import PageThemeView from "@/components/PageThemeView";
 import Toast, { ToastConfig } from 'react-native-toast-message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
+import { loginUser, resetAuthState } from "@/reduxStore/slices/authSlice";
 
 export default function LoginScreen() {
 
+  const dispatch = useDispatch<AppDispatch>();
+  const { error, msgBackend} = useSelector((state: RootState) => state.auth);
+
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useAuth();
+  const [inputError, setInputError] = useState("");
+
   const router = useRouter();
+
 
 
 
@@ -68,16 +76,23 @@ export default function LoginScreen() {
       });
       return;
     }
-  
+
+    setInputError("");
+    dispatch(resetAuthState());
+
     try {
-      // Attempt login
-      await login(email, password);
+      await dispatch(loginUser({ email, password })).unwrap();
+
+      console.log('backend - ',msgBackend )
+      // ToastAndroid.show(msgBackend || "Login successful!", ToastAndroid.SHORT);
       Toast.show({
-        type: 'success',
-        text1: 'Login Successful',
-        text2: 'Welcome back!',
+        type: 'error',
+        text1: msgBackend || 'Login successful!',
+        visibilityTime: 1500,
+        autoHide: true,
       });
-      router.push('/(app)/(tabs)');
+      // ToastAndroid.show(msgBackend || "Login successful!", ToastAndroid.SHORT);
+      router.push("/(app)/(tabs)");
     } catch (err) {
       Toast.show({
         type: 'error',

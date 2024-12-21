@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking} from 'react-native'
 import React, { useState } from "react";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import Logo from "@/components/logo";
 import { useRouter } from "expo-router";
 import TextInputSection from "@/components/TextInputSection";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import SignupButton from "@/components/SignupButton";
-import Text1 from "@/components/Text";
+import TextScallingFalse from "@/components/CentralText";
+import PageThemeView from "@/components/PageThemeView";
 
 
 
@@ -54,26 +54,28 @@ const signupEmail1 = () => {
 
 
   return (
-    <View style={{width: '100%', height: '100%', backgroundColor:'black'}}>
+    <PageThemeView>
        <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row'}}>
-      <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5} style={{marginLeft: 15, marginTop: -15}}>
+      <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5} style={{marginLeft: '4%', marginTop: -15}}>
       <MaterialIcons name="keyboard-backspace" size={30} color="white" />
       </TouchableOpacity>
-      <Logo />
-      <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5} style={{marginLeft: 130, marginTop: -15}}>
+      <View style={{marginLeft:'32.5%'}}>
+      <Logo/>
+      </View>
+      <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5} style={{marginLeft: '33%', marginTop: -15}}>
       <AntDesign name="close" size={25} color="white" />
       </TouchableOpacity>
       </View>
 
       <View style={{marginLeft: 40, marginTop: 40}}>
-        <Text1 style={{color:'white', fontSize: 28, fontWeight:'400'}}>Create your account</Text1>
+        <TextScallingFalse style={{color:'white', fontSize: 28, fontWeight:'400'}}>Create your account</TextScallingFalse>
       </View>
 
      <View style={{justifyContent:'center', alignItems:'center'}}>
       <View style={{width: '100%', marginTop: 40}}>
         <View style={{flexDirection:'row'}}>
-          <Text1 style={{color:'white', fontSize: 14, marginLeft: 40, fontWeight:'500'}}>First Name</Text1> 
-          <Text1 style={{color:'white', fontSize: 14, marginLeft: 94, fontWeight:'500'}}>Last Name</Text1> 
+          <TextScallingFalse style={{color:'white', fontSize: 14, marginLeft: 40, fontWeight:'500'}}>First Name</TextScallingFalse> 
+          <TextScallingFalse style={{color:'white', fontSize: 14, marginLeft: 94, fontWeight:'500'}}>Last Name</TextScallingFalse> 
         </View>
         <View style={{ marginLeft: 38, marginTop: 4, flexDirection:'row'}}>
           <TextInput style={{minWidth: 162, maxWidth: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingStart: 10, paddingEnd: 10, paddingBottom: 8,}} />
@@ -82,7 +84,7 @@ const signupEmail1 = () => {
       </View>
 
       <View style={{ marginTop: 20}}>
-      <Text1 style={{color:'white', fontSize: 14, fontWeight:'500'}}>Email or phone number</Text1>
+      <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Email or phone number</TextScallingFalse>
       <TextInputSection
        placeholder="Email"
        value={email}
@@ -92,7 +94,7 @@ const signupEmail1 = () => {
       </View>
 
       <View style={{ marginTop: 20}}>
-      <Text1 style={{color:'white', fontSize: 14, fontWeight:'500'}}>Date of birth</Text1>
+      <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Date of birth</TextScallingFalse>
       <TouchableOpacity  activeOpacity={0.5}
        onPress={() => setIsDatePickerVisible(!isDatePickerVisible)} 
        style={{  maxWidth: 335,
@@ -102,7 +104,7 @@ const signupEmail1 = () => {
         borderColor: 'white',
         borderRadius: 5.5,
         marginTop: 4,
-        paddingLeft: 10,}}><Text1 style={{color:'white', fontSize: 16, fontWeight:'400'}}></Text1>
+        paddingLeft: 10,}}><TextScallingFalse style={{color:'white', fontSize: 16, fontWeight:'400'}}></TextScallingFalse>
         <TouchableOpacity onPress={() => setIsDatePickerVisible(!isDatePickerVisible)}
          activeOpacity={0.5} style={{marginTop: -14, marginLeft: 288}}>
         <AntDesign name="calendar" size={25} color="white" />
@@ -112,16 +114,16 @@ const signupEmail1 = () => {
 
       <View style={{width: '100%', marginTop: 20}}>
         <View style={{flexDirection:'row'}}>
-          <Text1 style={{color:'white', fontSize: 14, marginLeft: 40, fontWeight:'500'}}>Gender</Text1>  
+          <TextScallingFalse style={{color:'white', fontSize: 14, marginLeft: 40, fontWeight:'500'}}>Gender</TextScallingFalse>  
         </View>
         <View style={{ marginLeft: 38, marginTop: 4, flexDirection:'row'}}>
            <TouchableOpacity onPress={handleFemalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row'}}>
-           <Text1 style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 30}}>Female</Text1>
+           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 30}}>Female</TextScallingFalse>
            <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', marginLeft: 35, marginTop: 1.5, backgroundColor: femaleSelected ? '#12956B' : 'black',}}/>
            </TouchableOpacity>
 
            <TouchableOpacity onPress={handleMalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row', marginLeft: 10}}>
-           <Text1 style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 35}}>Male</Text1>
+           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 35}}>Male</TextScallingFalse>
            <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', marginLeft: 45, marginTop: 1.5, backgroundColor: maleSelected ? '#12956B' : 'black',}}/>
            </TouchableOpacity>
         </View>
@@ -129,21 +131,21 @@ const signupEmail1 = () => {
 
 
       <View style={{width: 330, marginTop: 40, justifyContent:'center', alignItems:'center'}}>
-      <Text1 style={{fontSize: 11, color: 'white',}} allowFontScaling={false}>By clicking Agree & Join you agree to the Strength.</Text1>
+      <TextScallingFalse style={{fontSize: 11, color: 'white',}} allowFontScaling={false}>By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
       <TouchableOpacity activeOpacity={0.5} onPress={() => setOpenModal14(true)}>
-      <Text1 style={{fontSize: 11, color: '#12956B',}} allowFontScaling={false}>User Agreement, Privacy Policy, Cookies Policy.</Text1>
+      <TextScallingFalse style={{fontSize: 11, color: '#12956B',}} allowFontScaling={false}>User Agreement, Privacy Policy, Cookies Policy.</TextScallingFalse>
       </TouchableOpacity>
       </View>
 
 
       <View style={{marginTop: 20}}>
       <SignupButton onPress={() => router.push("/Signup/signupEnterOtp2")}>
-       <Text1 style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</Text1>
+       <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
       </SignupButton>
       </View>
       <View style={{marginTop: 15, justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
-        <Text1 style={{color:'white', fontSize: 14}}>Already on Strength?</Text1>
-        <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}><Text1 style={{color:'#12956B'}}>  Sign in</Text1></TouchableOpacity>
+        <TextScallingFalse style={{color:'white', fontSize: 14}}>Already on Strength?</TextScallingFalse>
+        <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}><TextScallingFalse style={{color:'#12956B'}}>  Sign in</TextScallingFalse></TouchableOpacity>
       </View>
       </View>
 
@@ -228,7 +230,7 @@ const signupEmail1 = () => {
 
 
 </View>
-    </View>
+    </PageThemeView>
   )
 }
 

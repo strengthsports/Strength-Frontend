@@ -3,7 +3,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -15,7 +14,7 @@ import {
 interface Sport {
   id: string;
   name: string;
-  icon: any; // Replace with proper image import type
+  icon: any;
 }
 
 const sports: Sport[] = [
@@ -45,174 +44,68 @@ const SportsChoice: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-black px-6">
+        <NavigationLogo />
       <StatusBar barStyle="light-content" />
       
-     <NavigationLogo/>
 
-      <Text style={styles.title}>Ready to dive in?{'\n'}Fantastic!</Text>
+      <Text className="text-white text-4xl font-bold mt-8 mb-10 leading-tight">
+        Ready to dive in?{'\n'}Fantastic!
+      </Text>
       
-      <Text style={styles.subtitle}>What's your sport of choice?</Text>
-      <Text style={styles.description}>
+      <Text className="text-white text-2xl font-bold mb-3">
+        What's your sport of choice?
+      </Text>
+      
+      <Text className="text-gray-400 text-lg mb-8">
         Let us know your athletic passion as you sign up!
       </Text>
 
-      <View style={styles.searchContainer}>
+      <View className="flex-row items-center  rounded-2xl px-5 mb-8 h-14 border border-white">
         <Image
           source={require('../../assets/images/onboarding/logo2.png')}
-          style={styles.searchIcon}
+          className="w-5 h-5 mr-2"
         />
         <TextInput
-          style={styles.searchInput}
+          className="flex-1 text-white h-[50px]"
           placeholder="Search...."
           placeholderTextColor="#666"
         />
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.sportsGrid}>
+      <ScrollView className="flex-1">
+        <View className="flex-row flex-wrap justify-between">
           {sports.map((sport) => (
             <TouchableOpacity
               key={sport.id}
-              style={[
-                styles.sportItem,
-                selectedSports.has(sport.id) && styles.selectedSport,
-              ]}
+              className={`w-[31%] rounded-lg border mb-4 p-3 ${
+                selectedSports.has(sport.id)
+                  ? 'bg-[#00A67E] border-[#00A67E]'
+                  : 'border-[#464646]'
+              }`}
               onPress={() => toggleSport(sport.id)}
             >
-              <View style={styles.sportContent}>
-                <Image source={sport.icon} style={styles.sportIcon} />
-                <Text style={styles.sportText} numberOfLines={1}>
-  {sport.name}
-</Text>
+              <View className="flex-row items-center">
+                <Image source={sport.icon} className="w-5 h-5 mr-2" />
+                <Text className="text-white text-sm flex-1 text-center" numberOfLines={1}>
+                  {sport.name}
+                </Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
+      <View className="mt-6 mb-8 flex-row justify-between items-center">
+        <Text className="text-gray-300 text-base">
           You can always select more than 1
         </Text>
-        <TouchableOpacity style={styles.nextButton}>
-          <Text style={styles.nextButtonText}>Next</Text>
+        <TouchableOpacity className="bg-[#333] px-8 py-4 rounded-2xl">
+          <Text className="text-white text-lg font-medium">Next</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    paddingHorizontal: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  trophy: {
-    width: 40,
-    height: 40,
-    marginBottom: 5,
-  },
-  strengthText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  subtitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  description: {
-    color: '#666',
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    marginBottom: 20,
-  },
-  searchIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    color: '#fff',
-    height: 50,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  sportsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  sportItem: {
-    width: '31%',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#464646',
-    padding: 12,
-    marginBottom: 15,
-  },
-  selectedSport: {
-    backgroundColor: '#00A67E', // Filled background when selected
-    borderColor: '#00A67E',
-  },
-  sportContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sportIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 8,
-  },
-  sportText: {
-    color: '#fff',
-    fontSize: 14,
-    flex: 1,
-    textAlign: 'center',
-  },
-  footer: {
-    marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  nextButton: {
-    backgroundColor: '#333',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});
 
 export default SportsChoice;

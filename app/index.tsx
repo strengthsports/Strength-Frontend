@@ -13,7 +13,7 @@ import { verifyInstallation } from 'nativewind';
 import SetHeadline from "./onboarding/SetHeadline";
 import SportsChoice from "./onboarding/SportsChoice";
 import ProfilePictureScreen from "./onboarding/SetProfile";
-import SuggestedSupportsScreen from "./onboarding/SuggestedFolllowers";
+import SuggestedSupportsScreen from "./onboarding/SuggestedFollowers";
 
 export default function Index() {
   verifyInstallation();

@@ -45,12 +45,13 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
-        name="TabThreeScreen"
+        name="notification"
         options={{
-          title: "TabThreeScreen",
+          title: "notification",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={28} name="profile" color={color} />
           ),
         }}
       />

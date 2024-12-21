@@ -1,115 +1,216 @@
-import React, { useState } from 'react';
+import NavigationLogo from "@/components/onboarding/Logo";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   Image,
-  SafeAreaView,
+  TouchableOpacity,
   ScrollView,
+  SafeAreaView,
   StatusBar,
-} from 'react-native';
-import NavigationLogo from '../../components/onboarding/Logo';
+  ImageSourcePropType,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
+
+interface SportIcon {
+  id: string;
+  source: ImageSourcePropType;
+  title: string;
+  description: string;
+}
 
 interface SupportCardProps {
-  icon: string;
-  id: string;
+  icon: SportIcon;
   isSelected: boolean;
-  onToggleSelect: (id: string) => void;
+  onClose: (id: string) => void;
+  onSupport: (id: string) => void;
 }
 
-interface SportData {
-  id: string;
-  icon: string;
-}
-
-const SupportCard: React.FC<SupportCardProps> = ({ icon, id, isSelected, onToggleSelect }) => (
-  <View className="w-48 rounded-xl mb-4 border border-[#464646] p-4 relative">
-    <TouchableOpacity className="absolute right-2 top-2 z-10 p-1" onPress={() => onToggleSelect(id)}>
-      <Text className="text-[#808080] text-lg">✕</Text>
+const SupportCard: React.FC<SupportCardProps> = ({
+  icon,
+  isSelected,
+  onClose,
+  onSupport,
+}) => (
+  <View className="rounded-xl p-4 m-1 w-[180px] relative border border-[#464646]">
+    <TouchableOpacity
+      className="absolute right-2 top-2 z-10"
+      onPress={() => onClose(icon.id)}
+    >
+      <Text className="text-gray-400 text-lg">×</Text>
     </TouchableOpacity>
-    
-    <View className="items-center">
-      <View className="w-15 h-15 rounded-full bg-white justify-center items-center mb-3">
-        <Image 
-          source={{ uri: icon }}
+
+    <View className="items-center space-y-2">
+      <View className="bg-white rounded-full w-16 h-16 items-center justify-center">
+        <Image
+          source={icon.source}
           className="w-10 h-10"
+          resizeMode="contain"
         />
       </View>
-      
-      <Text className="text-white text-lg font-semibold mb-1">Strength</Text>
-      <Text className="text-[#808080] text-sm text-center mb-3">Step into the world of sports</Text>
-      
-      <TouchableOpacity 
-        className={`border border-[#00A67E] rounded-full py-2 px-6 ${isSelected ? 'bg-[#00A67E]' : ''}`}
-        onPress={() => onToggleSelect(id)}
+
+      <Text className="text-white text-lg font-semibold">{icon.title}</Text>
+
+      <Text className="text-gray-400 text-sm text-center">
+        {icon.description}
+      </Text>
+
+      <TouchableOpacity
+        className={`mt-4 border rounded-full px-6 py-2 ${
+          isSelected ? "bg-[#12956B]" : "border-[#12956B]"
+        }`}
+        onPress={() => onSupport(icon.id)}
       >
-        <Text className="text-white text-base font-semibold">{isSelected ? 'Remove' : 'Support'}</Text>
+        <Text
+          className={`text-center ${
+            isSelected ? "text-white" : "text-[#12956B]"
+          }`}
+        >
+          {isSelected ? "Unfollow" : "Follow"}
+        </Text>
       </TouchableOpacity>
     </View>
   </View>
 );
 
-const SuggestedSupportsScreen: React.FC = () => {
-  const sportsData: SportData[] = [
-    { id: '1', icon: 'trophy-icon-uri' },
-    { id: '2', icon: 'football-icon-uri' },
-    { id: '3', icon: 'basketball-icon-uri' },
-    { id: '4', icon: 'volleyball-icon-uri' },
-    { id: '5', icon: 'karate-icon-uri' },
-    { id: '6', icon: 'cricket-icon-uri' },
-    { id: '7', icon: 'tennis-icon-uri' },
-    { id: '8', icon: 'baseball-icon-uri' },
+interface SuggestedSupportScreenProps {
+  onSkip?: () => void;
+  onSupportSelected?: (id: string) => void;
+}
+
+const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
+  onSkip,
+  onSupportSelected,
+}) => {
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams();
+  const headline = params?.headline;
+  const selectedSports = params?.selectedSports;
+  const profileImage = params?.profileImage;
+
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+
+  const sportIcons: SportIcon[] = [
+    {
+      id: "1",
+      source: require("../../assets/images/onboarding/logo2.png"),
+      title: "MI",
+      description: "Step into the world of sports",
+    },
+    {
+      id: "2",
+      source: require("../../assets/images/onboarding/logo2.png"),
+      title: "CSK",
+      description: "Step into the world of sports",
+    },
+    {
+      id: "3",
+      source: require("../../assets/images/onboarding/logo2.png"),
+      title: "RCB",
+      description: "Step into the world of sports",
+    },
+    {
+      id: "4",
+      source: require("../../assets/images/onboarding/logo2.png"),
+      title: "KKR",
+      description: "Step into the world of sports",
+    },
+    {
+      id: "5",
+      source: require("../../assets/images/onboarding/logo2.png"),
+      title: "RR",
+      description: "Step into the world of sports",
+    },
+    {
+      id: "6",
+      source: require("../../assets/images/onboarding/logo2.png"),
+      title: "PBKS",
+      description: "Step into the world of sports",
+    },
   ];
 
-  const [selectedSupports, setSelectedSupports] = useState<string[]>([]);
-
-  const handleToggleSelect = (id: string) => {
-    setSelectedSupports(prevSelected => 
-      prevSelected.includes(id) ? prevSelected.filter(supportId => supportId !== id) : [...prevSelected, id]
-    );
+  const handleClose = (id: string) => {
+    setSelectedPlayers((prev) => prev.filter((player) => player !== id));
   };
 
-  const handleClose = () => {
-    console.log('Closed cards:', selectedSupports);
+  const handleSupport = (id: string) => {
+    if (selectedPlayers.includes(id)) {
+      setSelectedPlayers((prev) => prev.filter((player) => player !== id));
+    } else {
+      setSelectedPlayers((prev) => [...prev, id]);
+    }
+    onSupportSelected?.(id);
   };
 
-  const handleSupport = () => {
-    console.log('Supported cards:', selectedSupports);
+  const handleContinue = () => {
+    console.log("Selected players:", selectedPlayers);
+    console.log("Headline:", headline);
+    console.log("Selected sports:", selectedSports);
+    console.log("Profile image:", profileImage);
+    alert("Data submitted successfully!");
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black px-7">
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <NavigationLogo />
-    
-      <Text className="text-[#808080] text-lg mt-10">Step 3 of 3</Text>
-      <Text className="text-white text-3xl font-bold mt-3">Suggested Followers</Text>
-      <Text className="text-[#808080] text-lg mt-2 mb-6">
-        Supporting others lets you see updates and keep in touch.
-      </Text>
+      <StatusBar barStyle="light-content" />
 
-      <ScrollView className="flex-1">
-        <View className="flex-row flex-wrap justify-between">
-          {sportsData.map((sport) => (
-            <SupportCard
-              key={sport.id}
-              id={sport.id}
-              icon={sport.icon}
-              isSelected={selectedSupports.includes(sport.id)}
-              onToggleSelect={handleToggleSelect}
-            />
-          ))}
+      <View style={{ paddingTop: insets.top }} className="px-4 py-6 flex-1">
+        <View className="mb-6">
+          <Text className="text-gray-500 text-base">Step 3 of 3</Text>
+          <Text className="text-white text-3xl font-bold mt-1">
+            Suggested supports
+          </Text>
+          <Text className="text-gray-400 text-base mt-2">
+            Supporting others lets you see updates and keep in touch.
+          </Text>
         </View>
-      </ScrollView>
 
-      <TouchableOpacity 
-        className={`py-4 items-center ${selectedSupports.length > 0 ? ' rounded-xl w-2/4 self-center' : ''}`}
-        onPress={handleSupport}
-      >
-        <Text className="text-white text-lg">{selectedSupports.length > 0 ? 'Continue' : 'Skip for now'}</Text>
-      </TouchableOpacity>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingBottom: 20, // To ensure there's space when scrolling
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-row flex-wrap justify-center">
+            {sportIcons.map((icon) => (
+              <SupportCard
+                key={icon.id}
+                icon={icon}
+                isSelected={selectedPlayers.includes(icon.id)}
+                onClose={handleClose}
+                onSupport={handleSupport}
+              />
+            ))}
+          </View>
+        </ScrollView>
+
+        <TouchableOpacity
+          className={`py-4 mt-4 mx-4 rounded-full ${
+            selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
+          }`}
+          style={{
+            alignSelf: "center", // Center the button horizontally
+            width: "100%", // Full width of its parent container
+            maxWidth: 200, // Limit the maximum width of the button
+          }}
+          onPress={selectedPlayers.length > 0 ? handleContinue : onSkip}
+        >
+          <Text
+            className={`${
+              selectedPlayers.length > 0 ? "text-white" : "text-gray-400"
+            } text-center`}
+          >
+            {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
 
-export default SuggestedSupportsScreen;
+export default SuggestedSupportScreen;

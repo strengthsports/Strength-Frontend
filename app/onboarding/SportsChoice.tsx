@@ -10,12 +10,14 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 
 interface Sport {
   id: string;
   name: string;
   icon: any;
 }
+
 
 const sports: Sport[] = [
   { id: '1', name: 'Cricket', icon: require('../../assets/images/onboarding/logo2.png') },
@@ -32,6 +34,7 @@ const sports: Sport[] = [
 
 const SportsChoice: React.FC = () => {
   const [selectedSports, setSelectedSports] = React.useState<Set<string>>(new Set());
+  const router = useRouter();
 
   const toggleSport = (sportId: string) => {
     const newSelected = new Set(selectedSports);
@@ -43,25 +46,37 @@ const SportsChoice: React.FC = () => {
     setSelectedSports(newSelected);
   };
 
+  const handleNextClick = () => {
+    const selectedArray = Array.from(selectedSports)
+    .map((sportId) => sports.find((sport) => sport.id === sportId)?.name)
+    .filter((name): name is string => name !== undefined); // Type guard to filter out undefined
+  
+    console.log(selectedArray); // Logs the selected sports names in array format
+    router.push({
+      pathname: '/onboarding/SetProfile',
+      params: { selectedSports: selectedArray },
+    })
+  };
+  
+
   return (
     <SafeAreaView className="flex-1 bg-black px-6">
-        <NavigationLogo />
+      <NavigationLogo />
       <StatusBar barStyle="light-content" />
-      
 
       <Text className="text-white text-4xl font-bold mt-8 mb-10 leading-tight">
         Ready to dive in?{'\n'}Fantastic!
       </Text>
-      
+
       <Text className="text-white text-2xl font-bold mb-3">
         What's your sport of choice?
       </Text>
-      
+
       <Text className="text-gray-400 text-lg mb-8">
         Let us know your athletic passion as you sign up!
       </Text>
 
-      <View className="flex-row items-center  rounded-2xl px-5 mb-8 h-14 border border-white">
+      <View className="flex-row items-center rounded-[2rem] px-5 mb-8 h-14 border border-white">
         <Image
           source={require('../../assets/images/onboarding/logo2.png')}
           className="w-5 h-5 mr-2"
@@ -100,7 +115,13 @@ const SportsChoice: React.FC = () => {
         <Text className="text-gray-300 text-base">
           You can always select more than 1
         </Text>
-        <TouchableOpacity className="bg-[#333] px-8 py-4 rounded-2xl">
+        <TouchableOpacity
+          className={`px-8 py-4 rounded-2xl ${
+            selectedSports.size > 0 ? 'bg-[#00A67E]' : 'bg-[#333]'
+          }`}
+          onPress={handleNextClick}
+          disabled={selectedSports.size === 0}
+        >
           <Text className="text-white text-lg font-medium">Next</Text>
         </TouchableOpacity>
       </View>

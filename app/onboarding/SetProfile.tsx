@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState }from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,16 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import NavigationLogo from '@/components/onboarding/Logo';
+import * as FileSystem from 'expo-file-system';
 
 interface ProfilePictureScreenProps {
   onImageSelected?: (uri: string) => void;
   onSkip?: () => void;
   containerStyle?: string;
 }
+
 
 const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
   onImageSelected,
@@ -26,25 +29,47 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
   const [image, setImage] = useState<string | null>(null);
   const router = useRouter();
 
+  const params = useLocalSearchParams();
+  const selectedSports= params?.selectedSports;
+  // console.log(selectedSports);
+  
+
   const pickImage = async (): Promise<void> => {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
       if (permissionResult.status !== 'granted') {
         alert('Sorry, we need camera roll permissions to make this work!');
         return;
       }
-
+  
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 1,
       });
-
+  
       if (!result.canceled && result.assets?.[0]?.uri) {
-        setImage(result.assets[0].uri);
-        onImageSelected?.(result.assets[0].uri);
+        const originalUri = result.assets[0].uri;
+        
+        // Create a permanent path for the image
+        const fileName = `profile_${Date.now()}.jpg`;
+        const newUri = `${FileSystem.documentDirectory}${fileName}`;
+  
+        try {
+          // Copy the image to permanent storage
+          await FileSystem.copyAsync({
+            from: originalUri,
+            to: newUri
+          });
+  
+          // Update state and call callback with the new permanent URI
+          setImage(newUri);
+          onImageSelected?.(newUri);
+        } catch (copyError) {
+          console.error('Error copying image:', copyError);
+          alert('Failed to save image. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -53,13 +78,19 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
   };
 
   const handleSkip = (): void => {
-    onSkip?.();
+    router.push('/onboarding/SetHeadline');
   };
 
   const handleContinue = (): void => {
-    // Add your "Continue" functionality here (e.g., navigation or state updates)
-    router.push('/onboarding/SetHeadline'); // Replace with your actual route
+    if (image) {
+      console.log("Selected profile picture: "+ image);
+      router.push({
+        pathname: '/onboarding/SetHeadline',
+        params: { profileImage: image, selectedSports },
+      });
+    }
   };
+  
 
   return (
     <SafeAreaView className={`flex-1 bg-black px-8 pt-${Platform.OS === 'android' ? StatusBar.currentHeight : 0} ${containerStyle}`}>
@@ -67,7 +98,7 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
       <NavigationLogo />
 
-      <Text className="text-gray-400 text-lg mt-10">Step 2 of 3</Text>
+      <Text className="text-gray-400 text-lg mt-10">Step 1 of 3</Text>
 
       <Text className="text-white text-2xl font-bold mt-2">Pick a profile picture</Text>
       <Text className="text-gray-400 text-base mt-2">Adding a photo helps people recognize you.</Text>

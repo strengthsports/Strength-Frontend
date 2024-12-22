@@ -190,13 +190,14 @@ const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
         </ScrollView>
 
         <TouchableOpacity
-          className={`py-4 mt-4 mx-4 rounded-full ${
+          className={`py-2 mt-4 mx-4 rounded-full  ${
             selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
           }`}
           style={{
             alignSelf: "center", // Center the button horizontally
             width: "100%", // Full width of its parent container
-            maxWidth: 200, // Limit the maximum width of the button
+            maxWidth: 120, // Limit the maximum width of the button
+            height:36,
           }}
           onPress={selectedPlayers.length > 0 ? handleContinue : onSkip}
         >

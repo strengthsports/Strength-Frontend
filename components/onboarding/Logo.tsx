@@ -1,16 +1,21 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, SafeAreaView, Dimensions } from "react-native";
 
 const NavigationLogo: React.FC = () => {
-    return (
-        <View className="items-center pt-16">
-            <Image
-                source={require("../../assets/images/onboarding/logo2.png")}
-                className="w-14 h-16"
-            />
-            <Text className="text-white text-xs mt-2">Strength</Text>
-        </View>
-    );
+  const { height } = Dimensions.get("window"); // Get screen height
+  const topPadding = height * 0.07; // Adjust the padding dynamically (e.g., 2% of screen height)
+
+  return (
+    <SafeAreaView>
+      <View style={{ paddingTop: topPadding, alignItems: "center" }}>
+        <Image
+          source={require("../../assets/images/onboarding/logoHeader.png")}
+          style={{ width: 66, height: 55 }} // Use exact dimensions for the image
+          resizeMode="contain" // Ensure the image scales properly
+        />
+      </View>
+    </SafeAreaView>
+  );
 };
 
 export default NavigationLogo;

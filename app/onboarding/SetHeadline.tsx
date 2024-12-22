@@ -35,7 +35,6 @@ const SetHeadline: React.FC = () => {
       }
     : defaultImage;
 
-
   function handleNextPress() {
     if (!headline) {
       alert("Please enter a headline.");
@@ -53,7 +52,8 @@ const SetHeadline: React.FC = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black p-4">
+    <SafeAreaView className="flex-1 bg-black px-4">
+      <NavigationLogo />
       <StatusBar barStyle="light-content" />
       <TouchableWithoutFeedback>
         <ScrollView
@@ -61,16 +61,15 @@ const SetHeadline: React.FC = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View className="flex-1 px-3">
-            <NavigationLogo />
             <View className="flex-1 mt-6">
-              <Text className="text-white text-4xl font-semibold leading-tight">
+              <Text className="text-white text-[2.9rem] font-semibold leading-tight">
                 Let's get you{"\n"}started!
               </Text>
               <Text className="text-gray-500 text-base mt-4">Step 2 of 3</Text>
-              <Text className="text-white text-[1.6rem] font-semibold mt-2.5">
+              <Text className="text-white text-[24px] font-semibold mt-2.5">
                 Set your sports Headline
               </Text>
-              <Text className="text-gray-500 text-base mt-2">
+              <Text className="text-[#A5A5A5] text-base mt-2">
                 Let others know your position, you can always change it later.
               </Text>
 

@@ -7,8 +7,8 @@ import {
 } from "react-native";
 import { Redirect, useRouter } from "expo-router"; // Import the router for navigation
 import LoginScreen from "./(auth)/login";
-import "../global.css"; 
-import { verifyInstallation } from 'nativewind';
+import "../global.css";
+import { verifyInstallation } from "nativewind";
 import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 import SportsChoice from "./onboarding/SportsChoice";
@@ -26,7 +26,7 @@ export default function Index() {
     // in the headless Node process that the pages are rendered in.
     return <Redirect href="/(app)/(tabs)" />;
   } else {
-    return <SportsChoice/>
+    return <SportsChoice />;
   }
   // const handleLogin = () => {
   //   // const { setIsLoggedIn } = useAuth();

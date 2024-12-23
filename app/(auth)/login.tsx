@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator} from "react-native";
 // import { useRouter } from "expo-router";
 import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
@@ -26,6 +26,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inputError, setInputError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
@@ -81,6 +82,7 @@ export default function LoginScreen() {
     dispatch(resetAuthState());
 
     try {
+      setLoading(true);
       await dispatch(loginUser({ email, password })).unwrap();
 
       console.log('backend - ',msgBackend )
@@ -93,6 +95,7 @@ export default function LoginScreen() {
       });
       // ToastAndroid.show(msgBackend || "Login successful!", ToastAndroid.SHORT);
       router.push("/(app)/(tabs)");
+      setLoading(false);
     } catch (err) {
       Toast.show({
         type: 'error',
@@ -142,18 +145,22 @@ const [showPassword, setShowPassword] = useState(false)
 
   return (
     <PageThemeView>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={{flexDirection:'row', marginLeft: 22, marginTop: 55}}>
-        <Image style={{width: 45, height: 45,}} source={logo}></Image>
-      <Text style={{color:'white', fontSize: 26, fontWeight:'500', marginLeft: 7, marginTop: 3}}>Strength</Text>
-      </View>
+    <ScrollView  keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
+    <View style={{width: '100%', paddingHorizontal: 25}}>
+    <View style={{flexDirection:'row', marginTop: 55, gap: 7}}>
+      <Image style={{width: 45, height: 45,}} source={logo}></Image>
+      <Text style={{color:'white', fontSize: 26, fontWeight:'500', marginTop: 3}}>Strength</Text>
+    </View>
+    </View>
  
       <View style={{width: '100%', height: '31%', marginTop: 20}}>
         <Image source={banner} style={{width: '100%', height: '100%',}} />
       </View>
 
-      <View style={{ width: 290, marginTop: 10, marginLeft: 30}}>
-      <TextScallingFalse style={{color:'white', fontSize: 35, fontWeight:'500'}}>Step Into the World of Sports</TextScallingFalse>
+      <View style={{width: '100%', justifyContent:'center', alignItems:'center'}}>
+      <View style={{ width: '84%', marginTop: 12}}>
+      <TextScallingFalse style={{color:'white', fontSize: 35, fontWeight:'500', width: '80%'}}>Step Into the World of Sports</TextScallingFalse>
+      </View>
       </View>
 
       <View style={{marginTop: 15, width: '100%', alignItems:'center'}}>
@@ -202,9 +209,14 @@ const [showPassword, setShowPassword] = useState(false)
       </View>
 
       <View style={{marginTop: 27, width: '100%', alignItems:'center'}}>
-      <SignupButton  onPress={handleLogin}>
+      {
+        loading ? 
+        <ActivityIndicator size={'small'} style={{paddingVertical: 11.3}} color={'#12956B'} />
+        :
+        <SignupButton  onPress={handleLogin}>
           <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Sign in</TextScallingFalse>
           </SignupButton>
+      }
 
           <TouchableOpacity  onPress={() => router.push("/option")} activeOpacity={0.5} style={{width: 335, height: 42, borderColor: 'white', borderWidth: 1, justifyContent:'center', alignItems:'center', marginTop: 10, borderRadius: 40}}>
           <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>New to Strength? Join now</TextScallingFalse>

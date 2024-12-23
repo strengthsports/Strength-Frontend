@@ -1,16 +1,11 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-// import { AuthProvider, useAuth } from "../context/AuthContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import "../global.css"
+import "../global.css";
 import { Provider } from "react-redux";
 import store from "@/reduxStore";
 
@@ -34,8 +29,28 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Provider store = {store}>
-        <Slot />
+      <Provider store={store}>
+        {/* Configure Stack Navigator */}
+        <Stack
+          screenOptions={{
+            headerShown: false, // Disable headers globally
+            animation: "none",  // Disable default animations globally
+          }}
+        >
+          {/* Default screens */}
+          <Stack.Screen name="(tabs)" />
+
+          {/* Modal configuration */}
+          <Stack.Screen
+           name="(auth)/Signup/[modal]/index"
+           options={{
+           presentation: "modal",
+           headerShown: false,
+           animation: "slide_from_bottom",
+           gestureEnabled: true,
+           }} />
+
+        </Stack>
         <StatusBar style="auto" />
       </Provider>
     </ThemeProvider>

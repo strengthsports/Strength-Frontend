@@ -68,14 +68,14 @@ const signupEmail1 = () => {
   
      <View style={{justifyContent:'space-between', alignItems:'center'}}>
       
-      <View style={{padding: 35, alignItems:'flex-start'}}>
+      <View style={{padding: 40, width: '100%',}}>
         <TextScallingFalse style={{color:'white', fontSize: 28, fontWeight:'500',}}>Create your account</TextScallingFalse>
       </View>
 
      
      <View style={{ gap : 18}}>
       <View style={{flexDirection:'row', gap: 10}}>
-        <View style={{}}>
+        <View>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>First Name</TextScallingFalse> 
           <TextInput style={{width: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
@@ -136,7 +136,7 @@ const signupEmail1 = () => {
       <View style={{gap : 15, marginTop: 30}}>
       <View style={{width: 330, justifyContent:'center', alignItems:'center',}}>
       <TextScallingFalse style={{fontSize: 11, color: 'white',}} allowFontScaling={false}>By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
-      <TouchableOpacity activeOpacity={0.5} onPress={() => setOpenModal14(true)}>
+      <TouchableOpacity activeOpacity={0.5}  onPress={() => setOpenModal14(true)}>
       <TextScallingFalse style={{fontSize: 11, color: '#12956B',}} allowFontScaling={false}>User Agreement, Privacy Policy, Cookies Policy.</TextScallingFalse>
       </TouchableOpacity>
       </View>
@@ -149,7 +149,7 @@ const signupEmail1 = () => {
       </View>
       <View style={{justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
         <TextScallingFalse style={{color:'white', fontSize: 14}}>Already on Strength?</TextScallingFalse>
-        <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}><TextScallingFalse style={{color:'#12956B'}}>  Sign in</TextScallingFalse></TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('./[modal]')} activeOpacity={0.5}><TextScallingFalse style={{color:'#12956B'}}>  Sign in</TextScallingFalse></TouchableOpacity>
       </View>
       </View>
       </View>

@@ -20,10 +20,12 @@ const signupEnterOtp2 = () => {
       <View style={{marginLeft:'0.8%'}}>
       <Logo/>
       </View>
-      <View style={{ marginLeft: 30, marginTop: 55}}>
+      <View style={{marginTop: 55, width:'100%', justifyContent:'center', alignItems:'center'}}>
+        <View>
         <TextScallingFalse style={{color:'white', fontSize: 23, fontWeight:'500'}}>Enter the verification code</TextScallingFalse>
-        <View style={{width: '93%'}}>
+        <View style={{width: '81%'}}>
         <TextScallingFalse style={{fontSize: 12, color:'white'}}>We sent the verification code to- ExampleEmail@gmail.com <TextScallingFalse style={{fontSize: 13, color:'#12956B'}}>Edit mail</TextScallingFalse></TextScallingFalse>
+        </View>
         </View>
       </View>
       <View style={{width: '100%', justifyContent:'center', alignItems:'center', marginTop: 25}}>

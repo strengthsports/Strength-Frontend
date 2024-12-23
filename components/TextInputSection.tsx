@@ -36,9 +36,7 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
 
 const styles = StyleSheet.create({
   input: {
-    maxWidth: 335,
-    minWidth: 100,
-    width:'335',
+    width: 335,
     height: 44,
     borderWidth: 1,
     borderColor: 'white',

@@ -27,17 +27,18 @@ const signupSetPassword5 = () => {
       <View style={{marginTop: 110}}>
       <Logo />
       </View>
-      <View style={{marginLeft: 37, marginTop: 55}}>
+      <View style={{width: '100%', justifyContent:'center', alignItems:'center'}}>
+      <View style={{ width: '81.5%', marginTop: 55}}>
       <TextScallingFalse style={{color:'white', fontSize: 23, fontWeight:'500'}}>You'll need a password</TextScallingFalse>
       <TextScallingFalse style={{color:'white', fontSize: 12, fontWeight:'400'}}>Make sure it's 8 character or more.</TextScallingFalse>
       </View>
+      </View>
       <View style={{width: '100%', justifyContent:'center', alignItems:'center'}}>
-        <View style={{marginTop: 21,}}>
+        <View style={{marginTop: 21}}>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Create a password</TextScallingFalse>
           <TextInputSection 
            placeholder="Password"
            secureTextEntry={!showPassword}
-           value={password}
            onChangeText={handlePassword}
            autoCapitalize="none"
            />
@@ -46,7 +47,6 @@ const signupSetPassword5 = () => {
           <TextInputSection 
            placeholder="Password"
            secureTextEntry={!showPassword}
-           value={password}
            onChangeText={handlePassword}
            autoCapitalize="none"
            />

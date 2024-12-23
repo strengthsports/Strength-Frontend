@@ -7,10 +7,10 @@ interface PageThemeViewProps {
 
 const PageThemeView: React.FC<PageThemeViewProps> = ({ children }) => {
   return (
-    <SafeAreaView style={{ width: '100%', height: '100%', backgroundColor: 'black' }}>
+    <KeyboardAvoidingView style={{ width: '100%', height: '100%', backgroundColor: 'black' }}>
      <StatusBar backgroundColor={'black'} />
       {children}
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 

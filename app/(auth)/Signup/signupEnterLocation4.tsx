@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View, Text } from 'react-native'
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import Logo from "@/components/logo";
@@ -9,7 +9,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { MaterialIcons } from '@expo/vector-icons';
 
 const signupEnterLocation4 = () => {
-        const {location, setLocation} = useState('');
+        const [location, setLocation] = useState('');
         const router = useRouter();
     
         const handleLocation = () => {
@@ -19,7 +19,7 @@ const signupEnterLocation4 = () => {
   return (
     <PageThemeView>
     <View style={{marginTop: 110}}>
-     <View style={{marginLeft:'0.8%'}}>
+     <View>
      <Logo/>
      </View>
       </View>

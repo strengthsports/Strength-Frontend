@@ -26,7 +26,7 @@ export default function Index() {
     // in the headless Node process that the pages are rendered in.
     return <Redirect href="/(app)/(tabs)" />;
   } else {
-    return <SportsChoice />;
+    return <LoginScreen />;
   }
   // const handleLogin = () => {
   //   // const { setIsLoggedIn } = useAuth();

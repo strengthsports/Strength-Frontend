@@ -150,8 +150,7 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
       <TouchableOpacity
         className="mt-5 py-2 items-center"
         onPress={image ? handleRemovePic : handleSkip}
-        activeOpacity={0.6}
-      >
+        activeOpacity={0.6}>
         <Text className="text-gray-400 text-base">
           {image ? "Remove Pic" : "Skip for now"}
         </Text>

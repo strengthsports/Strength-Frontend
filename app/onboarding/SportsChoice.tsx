@@ -260,7 +260,7 @@ const SportsChoice: React.FC = () => {
               <Text className="text-gray-300 text-base">
                 You can always select more than 1
               </Text>
-              <TouchableOpacity
+              <TouchableOpacity 
                 className={`px-8 py-4 rounded-3xl ${
                   selectedSports.size > 0 ? "bg-[#00A67E]" : "bg-[#333]"
                 }`}

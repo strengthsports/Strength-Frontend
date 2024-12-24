@@ -7,7 +7,7 @@ import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 
-const signupEnterOtp2 = () => {
+const Forgot_Password_OTP = () => {
   const router = useRouter();
 
   const handleVerificationCode = () => {
@@ -41,7 +41,7 @@ const signupEnterOtp2 = () => {
         <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Resend code</TextScallingFalse>
         </TouchableOpacity>
         <View style={{marginTop: 50}}>
-          <SignupButton onPress={() => router.push("/Signup/signupEnterUsername3")}>
+          <SignupButton onPress={() => router.push("/Forgot_password/Forgot_Password_SetPassword")}>
             <TextScallingFalse style={{color:'white', fontSize: 15, fontWeight:'600'}}>Next</TextScallingFalse>
           </SignupButton>
         </View>
@@ -51,6 +51,6 @@ const signupEnterOtp2 = () => {
   )
 }
 
-export default signupEnterOtp2
+export default Forgot_Password_OTP
 
 const styles = StyleSheet.create({})

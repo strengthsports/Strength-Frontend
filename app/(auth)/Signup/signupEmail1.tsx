@@ -45,13 +45,11 @@ const signupEmail1 = () => {
       setGender('Female');
     };
 
-  
     const handleEmail = () => {
-      //your function for handling details
-    }
-    
-
-
+      router.push({
+        pathname: "/Signup/signupEnterOtp2",
+      });
+    };
 
   return (
     <PageThemeView>
@@ -75,20 +73,19 @@ const signupEmail1 = () => {
      
      <View style={{ gap : 18}}>
       <View style={{flexDirection:'row', gap: 10}}>
-        <View>
+        <View style={{ width: 162,}}>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>First Name</TextScallingFalse> 
-          <TextInput style={{width: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
+          <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
-        <View>
+        <View style={{width: 162,}}>
         <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Last Name</TextScallingFalse> 
-          <TextInput style={{width: 162, height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
+          <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
       </View>
 
       <View>
       <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Email or phone number</TextScallingFalse>
       <TextInputSection
-       placeholder="Email"
        value={email}
        onChangeText={setEmail}
        keyboardType="email-address" // Optional: Ensure proper keyboard type
@@ -143,7 +140,7 @@ const signupEmail1 = () => {
 
 
       <View style={{marginTop: 25}}>
-      <SignupButton onPress={() => router.push("/Signup/signupEnterOtp2")}>
+      <SignupButton onPress={handleEmail}>
        <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
       </SignupButton>
       </View>
@@ -160,11 +157,11 @@ const signupEmail1 = () => {
 
       <View style={{zIndex: 100,}}>
       {isDatePickerVisible && (
-  <View style={{ marginTop: 12, position: 'absolute', top: -65, left: -10 }}>
+  <View style={{ position:'absolute', top: -378, left: 3}}>
     <DateTimePicker
       value={new Date()} // Set an initial value for the date picker
       mode="date" // Set the picker mode to 'date'
-      display="default" // Default display style
+      display="spinner" // Default display style
       onChange={(event, selectedDate) => {
         if (selectedDate) {
           handleDateChange(selectedDate.toISOString().split('T')[0]); // Pass only the date part
@@ -187,13 +184,10 @@ const signupEmail1 = () => {
 
 <Modal visible={openModal14} animationType="slide" onRequestClose={() => setOpenModal14(false)} transparent={true}>
 
-
-<TouchableOpacity style={{flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0, 0, 0, 0.7)',
+<TouchableOpacity style={{flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0, 0, 0, 0.7)',
     alignItems: 'center',}} activeOpacity={1} onPress={() => setOpenModal14(false)}>
-  <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center',}}>
-    <View style={{ width: 410, height: 220, backgroundColor: '#1D1D1D', borderRadius: 25,}}>
-
-
+  <View style={{ width: '100%',  alignItems: 'center', position:'absolute', bottom:0}}>
+    <View style={{ width: '100%', height: 220, backgroundColor: '#1D1D1D', borderRadius: '7%',}}>
 
   
   <View style={{marginTop: 25, width: '100%', alignItems:'center', justifyContent:'center'}}>
@@ -201,7 +195,6 @@ const signupEmail1 = () => {
     <View style={{height: 0.2, width: 180, backgroundColor:'grey', marginTop: 6.5}}></View>
   </View>
  
-
 
 <View style={{marginLeft: 25, width: 360, marginTop: 15}}>
 <TouchableOpacity onPress={() => Linking.openURL('https://strength-sports.webflow.io/resources/instructions')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 10, alignItems:'center'}}>

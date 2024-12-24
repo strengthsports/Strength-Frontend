@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
 import { loginUser, resetAuthState } from "@/reduxStore/slices/authSlice";
 
-export default function LoginScreen() {
+const LoginScreen: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const { error, msgBackend} = useSelector((state: RootState) => state.auth);
@@ -167,7 +167,6 @@ const [showPassword, setShowPassword] = useState(false)
         <View>
         <TextScallingFalse style={{color:'white', fontSize: 13, fontWeight:'400'}}>Email or username</TextScallingFalse>
       <TextInputSection
-        placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address" // Optional: Ensure proper keyboard type
@@ -175,7 +174,6 @@ const [showPassword, setShowPassword] = useState(false)
 
       <TextScallingFalse style={{color:'white', fontSize: 13, fontWeight:'400', marginTop: 10}}>Password</TextScallingFalse>
       <TextInputSection
-        placeholder="Password"
         secureTextEntry={!showPassword}
         value={password}
         onChangeText={setPassword}
@@ -202,7 +200,7 @@ const [showPassword, setShowPassword] = useState(false)
         <TextScallingFalse style={{color:'#12956B', fontSize: 13, fontWeight: '400'}}>{showPassword ? 'Hide' : 'Show'}</TextScallingFalse>
         </TouchableOpacity>
 
-      <TouchableOpacity activeOpacity={0.5} style={{marginTop: 9}}>
+      <TouchableOpacity onPress={() => router.push("/Forgot_password/Forgot_Password_Enter_Email")} activeOpacity={0.5} style={{marginTop: 9}}>
         <TextScallingFalse style={{color:'#12956B', fontSize: 13.5, fontWeight:'400'}}>Forgot password?</TextScallingFalse>
         </TouchableOpacity>
       </View>
@@ -231,4 +229,6 @@ const [showPassword, setShowPassword] = useState(false)
       </ScrollView>
     </PageThemeView>
   );
-}
+};
+
+export default LoginScreen;

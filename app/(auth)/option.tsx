@@ -3,10 +3,10 @@ import React from 'react'
 import { useRouter } from "expo-router";
 import User from "@/assets/images/card.png"
 import page from "@/assets/images/page.png"
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import PageThemeView from "@/components/PageThemeView";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 const option = () => {
   const router = useRouter();
@@ -15,11 +15,14 @@ const option = () => {
   return (
     <PageThemeView>
       <View style={{gap : 130}}>
-      <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row', paddingHorizontal: '3.6%', gap: '35.6%'}}>
+      <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
       <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}>
       <MaterialIcons name="keyboard-backspace" size={30} color="white" />
       </TouchableOpacity>
       <Logo/>
+      <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}>
+      <AntDesign name="close" size={25} color="white" />
+      </TouchableOpacity>
       </View>
       
 

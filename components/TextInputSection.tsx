@@ -22,6 +22,7 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
     <View style={{marginTop: 4}}>
       <TextInput
         placeholder={placeholder}
+        placeholderTextColor={'transparent'}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}

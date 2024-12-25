@@ -39,18 +39,19 @@ export const loginUser = createAsyncThunk<
       },
       body: JSON.stringify({ email, password }),
     });
-
     const data = await response.json();
 
+    
     if (!response.ok) {
-      return rejectWithValue(data.message || "Login failed. Please try again.");
+      return rejectWithValue(data.data.message || "Login failed. Please try again.");
     }
-
+    
     // Convert tokens to strings and save in Secure Store
-    await SecureStore.setItemAsync("accessToken", String(data.accessToken));
-    await SecureStore.setItemAsync("refreshToken", String(data.refreshToken));
+    console.log('saving accessToken')
+    await SecureStore.setItemAsync("accessToken", String(data.data.accessToken));
+    await SecureStore.setItemAsync("refreshToken", String(data.data.refreshToken));
 
-    return { user: data.data.user, message: data.message };
+    return { user: data.data.user, message: data.data.message };
   } catch (err: any) {
     return rejectWithValue(err.message || "Something went wrong. Please try again.");
   }
@@ -69,7 +70,7 @@ export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { reject
 
     if (!response.ok) {
       const data = await response.json();
-      return rejectWithValue(data.message || "Logout failed. Please try again.");
+      return rejectWithValue(data.data.message || "Logout failed. Please try again.");
     }
 
     // Clear Secure Store

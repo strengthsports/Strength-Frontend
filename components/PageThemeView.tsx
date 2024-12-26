@@ -8,7 +8,6 @@ interface PageThemeViewProps {
 const PageThemeView: React.FC<PageThemeViewProps> = ({ children }) => {
   return (
     <KeyboardAvoidingView style={{ width: '100%', height: '100%', backgroundColor: 'black' }}>
-     <StatusBar backgroundColor={'black'} />
       {children}
     </KeyboardAvoidingView>
   );

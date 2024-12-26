@@ -11,8 +11,7 @@ import logo from "@/assets/images/logo2.png"
 import banner from "@/assets/images/banner-gif.gif"
 import google from "@/assets/images/google.png"
 import PageThemeView from "@/components/PageThemeView";
-import Toast, { ToastConfig } from 'react-native-toast-message';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Toast  from 'react-native-toast-message';
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
 import { loginUser, resetAuthState } from "@/reduxStore/slices/authSlice";
@@ -110,28 +109,6 @@ const LoginScreen: React.FC = () => {
 
 
 
-  const toastConfig: ToastConfig = {
-    error: ({ text1, text2 }) => (
-      <>
-        {
-          text1 ?
-        <View style={{ backgroundColor: '#181818', padding: 10, borderRadius: 8, width: 200, justifyContent:'center', alignItems:'center'}}>
-        <View style={{flexDirection:'row', alignItems:'center'}}>
-        <MaterialCommunityIcons name="window-close" size={20} style={{marginTop: 1.5, marginLeft: -7}} color="red" />
-        <Text style={{ color: 'white', fontSize: 15, fontWeight:'400', marginLeft: '6%'}}>{text1}</Text>
-        </View>
-        </View>
-        :
-        <View style={{ backgroundColor: '#181818', padding: 10, borderRadius: 8, width: 250, justifyContent:'center', alignItems:'center'}}>
-        <View style={{flexDirection:'row', alignItems:'center'}}>
-        <MaterialCommunityIcons name="window-close" size={20} style={{marginTop: 1.5, marginLeft: -4}} color="red" />
-        <Text style={{ color: 'white', fontSize: 15, fontWeight:'400', marginLeft: '6%'}}>{text2}</Text>
-        </View>
-        </View>
-        }
-      </>
-    ),
-  };
   
 
 
@@ -147,7 +124,7 @@ const [showPassword, setShowPassword] = useState(false)
     <PageThemeView>
     <ScrollView  keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
     <View style={{width: '100%', paddingHorizontal: 25}}>
-    <View style={{flexDirection:'row', marginTop: 55, gap: 7}}>
+    <View style={{flexDirection:'row', marginTop: 30, gap: 7}}>
       <Image style={{width: 45, height: 45,}} source={logo}></Image>
       <Text style={{color:'white', fontSize: 26, fontWeight:'500', marginTop: 3}}>Strength</Text>
     </View>
@@ -157,13 +134,13 @@ const [showPassword, setShowPassword] = useState(false)
         <Image source={banner} style={{width: '100%', height: '100%',}} />
       </View>
 
-      <View style={{width: '100%', justifyContent:'center', alignItems:'center'}}>
-      <View style={{ width: '84%', marginTop: 12}}>
+      <View style={{width: '100%', justifyContent:'center', alignItems:'center', paddingVertical: 15}}>
+      <View style={{ width: '84%'}}>
       <TextScallingFalse style={{color:'white', fontSize: 35, fontWeight:'500', width: '80%'}}>Step Into the World of Sports</TextScallingFalse>
       </View>
       </View>
 
-      <View style={{marginTop: 15, width: '100%', alignItems:'center'}}>
+      <View style={{ width: '100%', alignItems:'center'}}>
         <View>
         <TextScallingFalse style={{color:'white', fontSize: 13, fontWeight:'400'}}>Email or username</TextScallingFalse>
       <TextInputSection
@@ -225,7 +202,6 @@ const [showPassword, setShowPassword] = useState(false)
           <Image source={google} style={{width: 12, height: 12, marginLeft: 10, marginTop: 3.5}} />
           </TouchableOpacity>
       </View>
-      <Toast config={toastConfig} />
       </ScrollView>
     </PageThemeView>
   );

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   SafeAreaView,
@@ -11,8 +10,9 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
-import NavigationLogo from "@/components/onboarding/Logo";
+import TextScallingFalse from "@/components/CentralText";
 import * as FileSystem from "expo-file-system";
+import Logo from "@/components/logo";
 
 interface ProfilePictureScreenProps {
   onImageSelected?: (uri: string) => void;
@@ -96,29 +96,29 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
   return (
     <SafeAreaView
-      className={`flex-1 bg-black px-8 pt-${
+      className={`flex-1 bg-black px-8 mt-8 pt-${
         Platform.OS === "android" ? StatusBar.currentHeight : 0
       } ${containerStyle}`}
     >
       <StatusBar barStyle="light-content" />
 
-      <NavigationLogo />
+      <Logo />
 
-      <Text className="text-gray-400 text-lg mt-10">Step 1 of 3</Text>
+      <TextScallingFalse className="text-gray-400 text-lg mt-10">Step 1 of 3</TextScallingFalse>
 
-      <Text className="text-white text-2xl font-bold mt-2">
+      <TextScallingFalse className="text-white text-2xl font-bold mt-2">
         Pick a profile picture
-      </Text>
-      <Text className="text-gray-400 text-base mt-2">
+      </TextScallingFalse>
+      <TextScallingFalse className="text-gray-400 text-base mt-2">
         Adding a photo helps people recognize you.
-      </Text>
+      </TextScallingFalse>
 
       <View className="items-center mt-10">
-        <View className="w-36 h-36 rounded-full bg-gray-700 justify-center items-center relative">
+        <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
           {image ? (
             <Image
               source={{ uri: image }}
-              className="w-36 h-36 rounded-full"
+              className="w-40 h-40 rounded-full"
               resizeMode="cover"
             />
           ) : (
@@ -131,7 +131,7 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
             onPress={pickImage}
             activeOpacity={0.8}
           >
-            <Text className="text-white text-xl font-bold">+</Text>
+            <TextScallingFalse className="text-white text-xl font-bold">+</TextScallingFalse>
           </TouchableOpacity>
         </View>
       </View>
@@ -141,19 +141,19 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
         onPress={image ? handleContinue : pickImage} // Conditional function based on image state
         activeOpacity={0.8}
       >
-        <Text className="text-white text-base font-semibold">
+        <TextScallingFalse className="text-white text-base font-semibold">
           {image ? "Continue" : "Add a photo"}{" "}
           {/* Change text based on image state */}
-        </Text>
+        </TextScallingFalse>
       </TouchableOpacity>
 
       <TouchableOpacity
         className="mt-5 py-2 items-center"
         onPress={image ? handleRemovePic : handleSkip}
         activeOpacity={0.6}>
-        <Text className="text-gray-400 text-base">
+        <TextScallingFalse className="text-gray-400 text-base">
           {image ? "Remove Pic" : "Skip for now"}
-        </Text>
+        </TextScallingFalse>
       </TouchableOpacity>
     </SafeAreaView>
   );

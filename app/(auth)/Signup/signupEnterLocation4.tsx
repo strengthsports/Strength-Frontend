@@ -18,7 +18,7 @@ const signupEnterLocation4 = () => {
 
   return (
     <PageThemeView>
-    <View style={{marginTop: 110}}>
+    <View style={{marginTop: 80}}>
      <View>
      <Logo/>
      </View>

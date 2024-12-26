@@ -1,21 +1,19 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   TextInput,
   Image,
   SafeAreaView,
   StatusBar,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Keyboard,
 } from "react-native";
 import { useRouter } from "expo-router";
-import NavigationLogo from "@/components/onboarding/Logo";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import Logo from "@/components/logo";
+import TextScallingFalse from "@/components/CentralText";
 
 const { width } = Dimensions.get("window");
 
@@ -144,31 +142,31 @@ const SportsChoice: React.FC = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <View style={{ flex: 1 }}>
-        <View className="px-6">
-          <NavigationLogo />
+      <View style={{ flex: 1}}>
+        <View className="px-6 mt-8">
+          <Logo />
           <StatusBar barStyle="light-content" />
         </View>
 
         <ScrollView
-          className="flex-1 px-6"
+          className="flex-1 px-6 mt-4"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             flexGrow: 1,
             paddingBottom: keyboardVisible ? 20 : 100, // Adjust padding when keyboard is visible
           }}
         >
-          <Text className="text-white text-4xl font-bold mt-8 mb-10 leading-tight">
+          <TextScallingFalse className="text-white text-4xl font-bold mt-8 mb-10 leading-tight">
             Ready to dive in?{"\n"}Fantastic!
-          </Text>
+          </TextScallingFalse>
 
-          <Text className="text-white text-2xl font-bold mb-3">
+          <TextScallingFalse className="text-white text-2xl font-bold mb-3">
             What's your sport of choice?
-          </Text>
+          </TextScallingFalse>
 
-          <Text className="text-gray-400 text-lg mb-8">
+          <TextScallingFalse className="text-gray-400 text-lg mb-8">
             Let us know your athletic passion as you sign up!
-          </Text>
+          </TextScallingFalse>
 
           <View className="flex-row items-center rounded-[2rem] px-5 mb-8 h-14 border border-white">
             <Icon name="search" size={32} color="#fff" />
@@ -223,7 +221,7 @@ const SportsChoice: React.FC = () => {
                         marginRight: "6.5%",
                       }}
                     />
-                    <Text
+                    <TextScallingFalse
                       style={{
                         color: "white",
                         fontSize: width * 0.035,
@@ -234,7 +232,7 @@ const SportsChoice: React.FC = () => {
                       allowFontScaling={false}
                     >
                       {sport.name}
-                    </Text>
+                    </TextScallingFalse>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -257,17 +255,17 @@ const SportsChoice: React.FC = () => {
             }}
           >
             <View className="flex-row justify-between items-center">
-              <Text className="text-gray-300 text-base">
+              <TextScallingFalse className="text-gray-300 text-base">
                 You can always select more than 1
-              </Text>
-              <TouchableOpacity 
+              </TextScallingFalse>
+              <TouchableOpacity activeOpacity={0.5} 
                 className={`px-8 py-4 rounded-3xl ${
                   selectedSports.size > 0 ? "bg-[#00A67E]" : "bg-[#333]"
                 }`}
                 onPress={handleNextClick}
                 disabled={selectedSports.size === 0}
               >
-                <Text className="text-white text-lg font-medium">Next</Text>
+                <TextScallingFalse className="text-white text-lg font-medium">Next</TextScallingFalse>
               </TouchableOpacity>
             </View>
           </View>

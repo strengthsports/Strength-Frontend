@@ -53,7 +53,7 @@ const signupEmail1 = () => {
 
   return (
     <PageThemeView>
-       <View style={{ width:'100%', alignItems:'center', marginTop: 60, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
+       <View style={{ width:'100%', alignItems:'center', marginTop: 30, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
       <TouchableOpacity onPress={() => router.push("/option")} activeOpacity={0.5}>
       <MaterialIcons name="keyboard-backspace" size={30} color="white" />
       </TouchableOpacity>

@@ -12,7 +12,7 @@ const PasswordChanged_Successfully = () => {
 
   return (
     <PageThemeView>
-      <View style={{width: '100%', justifyContent:'center', alignItems:'center', marginTop: 100}}>
+      <View style={{width: '100%', justifyContent:'center', alignItems:'center', marginTop: 70}}>
         <Image source={tickmark} style={{width: '78%', height: 300}} />
         <TextScallingFalse style={{color:'white', fontWeight:'500', fontSize: 17, marginTop: -45}}>Password Changed Successfully</TextScallingFalse>
         <View style={{width: '80%', marginTop: 5}}>

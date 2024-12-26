@@ -2,7 +2,6 @@ import NavigationLogo from "@/components/onboarding/Logo";
 import React, { useState } from "react";
 import {
   View,
-  Text,
   Image,
   TouchableOpacity,
   ScrollView,
@@ -12,6 +11,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
+import TextScallingFalse from "@/components/CentralText";
+import Logo from "@/components/logo";
 
 interface SportIcon {
   id: string;
@@ -38,7 +39,7 @@ const SupportCard: React.FC<SupportCardProps> = ({
       className="absolute right-2 top-2 z-10"
       onPress={() => onClose(icon.id)}
     >
-      <Text className="text-gray-400 text-lg">×</Text>
+      <TextScallingFalse className="text-gray-400 text-lg">×</TextScallingFalse>
     </TouchableOpacity>
 
     <View className="items-center space-y-2">
@@ -50,11 +51,11 @@ const SupportCard: React.FC<SupportCardProps> = ({
         />
       </View>
 
-      <Text className="text-white text-lg font-semibold">{icon.title}</Text>
+      <TextScallingFalse className="text-white text-lg font-semibold">{icon.title}</TextScallingFalse>
 
-      <Text className="text-gray-400 text-sm text-center">
+      <TextScallingFalse className="text-gray-400 text-sm text-center">
         {icon.description}
-      </Text>
+      </TextScallingFalse>
 
       <TouchableOpacity
         className={`mt-4 border rounded-full px-6 py-2 ${
@@ -62,13 +63,13 @@ const SupportCard: React.FC<SupportCardProps> = ({
         }`}
         onPress={() => onSupport(icon.id)}
       >
-        <Text
+        <TextScallingFalse
           className={`text-center ${
             isSelected ? "text-white" : "text-[#12956B]"
           }`}
         >
           {isSelected ? "Unfollow" : "Follow"}
-        </Text>
+        </TextScallingFalse>
       </TouchableOpacity>
     </View>
   </View>
@@ -152,19 +153,19 @@ const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <NavigationLogo />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black", marginTop: 28}}>
+      <Logo />
       <StatusBar barStyle="light-content" />
 
-      <View style={{ paddingTop: insets.top }} className="px-4 py-6 flex-1">
+      <View style={{ paddingTop: insets.top }} className="px-4 py-6 flex-1 mt-6">
         <View className="mb-6">
-          <Text className="text-gray-500 text-base">Step 3 of 3</Text>
-          <Text className="text-white text-3xl font-bold mt-1">
+          <TextScallingFalse className="text-gray-500 text-base">Step 3 of 3</TextScallingFalse>
+          <TextScallingFalse className="text-white text-3xl font-bold mt-1">
             Suggested supports
-          </Text>
-          <Text className="text-gray-400 text-base mt-2">
+          </TextScallingFalse>
+          <TextScallingFalse className="text-gray-400 text-base mt-2">
             Supporting others lets you see updates and keep in touch.
-          </Text>
+          </TextScallingFalse>
         </View>
 
         <ScrollView
@@ -201,13 +202,13 @@ const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
           }}
           onPress={selectedPlayers.length > 0 ? handleContinue : onSkip}
         >
-          <Text
+          <TextScallingFalse
             className={`${
               selectedPlayers.length > 0 ? "text-white" : "text-gray-400"
             } text-center`}
           >
             {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
-          </Text>
+          </TextScallingFalse>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

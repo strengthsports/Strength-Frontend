@@ -24,7 +24,7 @@ const signupSetPassword5 = () => {
 
   return (
     <PageThemeView>
-      <View style={{marginTop: 110}}>
+      <View style={{marginTop: 80}}>
       <Logo />
       </View>
       <View style={{width: '100%', justifyContent:'center', alignItems:'center'}}>

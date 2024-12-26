@@ -18,6 +18,7 @@ export default function Index() {
     console.log('soon to be implemented')
   };
 
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>

@@ -1,13 +1,16 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { StatusBar} from 'react-native';
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import "../global.css";
 import { Provider } from "react-redux";
 import store from "@/reduxStore";
+import Toast from "react-native-toast-message";
+import { toastConfig } from '@/configs/toastConfig';
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,7 +41,11 @@ export default function RootLayout() {
           }}
         >
           {/* Default screens */}
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(tabs)" 
+          options={{
+            headerShown: false,
+            animation: "none",
+          }}/>
 
           {/* Modal configuration */}
           <Stack.Screen
@@ -51,7 +58,8 @@ export default function RootLayout() {
            }} />
 
         </Stack>
-        <StatusBar style="auto" />
+        <StatusBar backgroundColor="black" />
+        <Toast config={toastConfig}/>
       </Provider>
     </ThemeProvider>
   );

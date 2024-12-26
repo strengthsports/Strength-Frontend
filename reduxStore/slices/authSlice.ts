@@ -26,6 +26,13 @@ const initialState: AuthState = {
 };
 
 // Thunks
+export const initializeAuth = createAsyncThunk("auth/initializeAuth", async () => {
+  const accessToken = await getToken("accessToken");
+  if (accessToken) {
+    return { isLoggedIn: true }
+  }
+  return { isLoggedIn: false }
+})
 export const loginUser = createAsyncThunk<
   { user: User; message: string },
   { email: string; password: string },
@@ -94,6 +101,11 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    //login State
+    builder.addCase(initializeAuth.fulfilled, (state, action) => {
+      state.isLoggedIn = action.payload.isLoggedIn;
+    });
+    
     // Login
     builder.addCase(loginUser.pending, (state) => {
       state.error = null;

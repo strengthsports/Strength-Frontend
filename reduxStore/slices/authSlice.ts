@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import * as SecureStore from "expo-secure-store";
+import { getToken, removeToken, saveToken } from "@/utils/secureStore";
+import { createSlice, createAsyncThunk, } from "@reduxjs/toolkit";
 
 // Types
 interface User {
@@ -48,8 +48,7 @@ export const loginUser = createAsyncThunk<
     
     // Convert tokens to strings and save in Secure Store
     console.log('saving accessToken')
-    await SecureStore.setItemAsync("accessToken", String(data.data.accessToken));
-    await SecureStore.setItemAsync("refreshToken", String(data.data.refreshToken));
+    saveToken('accessToken', data.data.accessToken)
 
     return { user: data.data.user, message: data.data.message };
   } catch (err: any) {
@@ -63,7 +62,7 @@ export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { reject
     const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/logout`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${await SecureStore.getItemAsync("accessToken")}`,
+        Authorization: `Bearer ${await getToken("accessToken")}`,
         "Content-Type": "application/json",
       },
     });
@@ -74,8 +73,8 @@ export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { reject
     }
 
     // Clear Secure Store
-    await SecureStore.deleteItemAsync("accessToken");
-    await SecureStore.deleteItemAsync("refreshToken");
+    removeToken('accessToken')
+    console.log("From Redux - Logged out successfully!")
 
     return;
   } catch (err: any) {

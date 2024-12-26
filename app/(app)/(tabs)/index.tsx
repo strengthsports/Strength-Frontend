@@ -23,7 +23,6 @@ export default function Index() {
     // setIsLoggedIn(false);
     try {
       await dispatch(logoutUser()).unwrap();
-      console.log("Logged out successfully!");
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({

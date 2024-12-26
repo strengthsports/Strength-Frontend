@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "strength",
-    "slug": "strength",
+    "name": "Strength",
+    "slug": "Strength",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/strengthLogo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -12,9 +12,10 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "strength.net.in",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/strengthLogo.png",
+        "backgroundColor": "#000000"
       }
     },
     "web": {
@@ -27,16 +28,20 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splashScreenImg.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#000000"
         }
       ],
       "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3c71c451-0e10-4986-aa7d-1c1c599a272e"
+      }
     }
   }
 }

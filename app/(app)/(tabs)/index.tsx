@@ -4,18 +4,37 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
+  Platform,
+  ToastAndroid,
 } from "react-native";
 import { useRouter } from "expo-router"; // Import the router for navigation
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
+import { logoutUser } from "@/reduxStore/slices/authSlice";
+import Toast from "react-native-toast-message";
+
 
 export default function Index() {
   const router = useRouter();
-  const { isLoggedIn, error, msgBackend, status } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const isAndroid = Platform.OS == "android";
+
     // setIsLoggedIn(false);
-    console.log('soon to be implemented')
+    try {
+      await dispatch(logoutUser()).unwrap();
+      isAndroid
+        ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
+        : Toast.show({
+            type: "error",
+            text1: "Logged out successfully",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
 
@@ -30,6 +49,7 @@ export default function Index() {
           <Text style={styles.linkText}>Chats</Text>
         </TouchableOpacity>
       </View>
+      <Toast />
     </SafeAreaView>
   );
 }

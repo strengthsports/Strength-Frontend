@@ -11,7 +11,12 @@ interface CustomToastConfigParams extends ToastConfigParams<any> {
 export const toastConfig: ToastConfig = {
   error: ({ text1, text2, text3 }: CustomToastConfigParams) => {
     // Check if the message contains "Login successful!"
-    const isSuccess = [text1, text2, text3].some((text) => text?.includes("Login successful!"));
+    const isSuccess = [text1, text2, text3]
+  .filter((text) => text !== undefined) // Remove undefined values
+  .some((text) =>
+    ["Login successful!", "Logged out successfully"].includes(text!)
+  );
+
 
     return (
       <View

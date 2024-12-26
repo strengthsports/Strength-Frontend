@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, ToastAndroid, Platform, Vibration} from "react-native";
 // import { useRouter } from "expo-router";
 import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
@@ -30,50 +30,52 @@ const LoginScreen: React.FC = () => {
   const router = useRouter();
 
 
-
+const isAndroid = Platform.OS == 'android'
 
 
 
 
   const handleLogin = async () => {
+    //wait, vibrate, wait, vibrate
+    const vibrationPattern = [0, 50, 80, 50]
+
     // Email Validation
     if (!email) {
-      Toast.show({
-        type: 'error',
-        text1: 'Email is missing',
-        visibilityTime: 1500,
-        autoHide: true,
-      });
+      Vibration.vibrate(vibrationPattern);
+      isAndroid
+        ? ToastAndroid.show("Email is missing", ToastAndroid.SHORT)
+        : Toast.show({
+            type: "error",
+            text1: "Email is missing",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Toast.show({
-        type: 'error',
-        text1: 'Email is invalid',
-        visibilityTime: 1500,
-        autoHide: true,
-      });
-      return;
-    }
-  
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!emailRegex.test(email)) {
+    //   isAndroid
+    //     ? ToastAndroid.show("Email is invalid", ToastAndroid.SHORT)
+    //     : Toast.show({
+    //         type: "error",
+    //         text1: "Email is invalid",
+    //         visibilityTime: 1500,
+    //         autoHide: true,
+    //       });
+    //   return;
+    // }
+
     // Password Validation
     if (!password) {
-      Toast.show({
-        type: 'error',
-        text2: 'Password is missing',
-        visibilityTime: 1300,
-        autoHide: true,
-      });
-      return;
-    }
-    if (password.length < 6) { // Example condition for invalid password
-      Toast.show({
-        type: 'error',
-        text2: 'Password is invalid',
-        visibilityTime: 1300,
-        autoHide: true,
-      });
+      Vibration.vibrate(vibrationPattern);
+      isAndroid
+        ? ToastAndroid.show("Password is missing", ToastAndroid.SHORT)
+        : Toast.show({
+            type: "error",
+            text2: "Password is missing",
+            visibilityTime: 1300,
+            autoHide: true,
+          });
       return;
     }
 
@@ -83,28 +85,34 @@ const LoginScreen: React.FC = () => {
     try {
       setLoading(true);
       await dispatch(loginUser({ email, password })).unwrap();
+      isAndroid
+        ? ToastAndroid.show(
+            msgBackend || "Login successful!",
+            ToastAndroid.SHORT
+          )
+        : Toast.show({
+            type: "error",
+            text1: msgBackend || "Login successful!",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
+      console.log("backend - ", msgBackend);
 
-      console.log('backend - ',msgBackend )
-      // ToastAndroid.show(msgBackend || "Login successful!", ToastAndroid.SHORT);
-      Toast.show({
-        type: 'error',
-        text1: msgBackend || 'Login successful!',
-        visibilityTime: 1500,
-        autoHide: true,
-      });
-      // ToastAndroid.show(msgBackend || "Login successful!", ToastAndroid.SHORT);
       router.push("/(app)/(tabs)");
       setLoading(false);
-    } catch (err) {
-      Toast.show({
-        type: 'error',
-        text1: 'Login Failed',
-        text2: err instanceof Error ? err.message : 'An unknown error occurred.',
-      });
-      console.error(err);
+    } catch (err: any) {
+      Vibration.vibrate(vibrationPattern);
+      isAndroid
+        ? ToastAndroid.show(err, ToastAndroid.SHORT)
+        : Toast.show({
+            type: "error",
+            text1: err,
+          });
+      // console.error(err);
+      setLoading(false);
     }
+    // console.error(error);
   };
-
 
 
 
@@ -144,6 +152,7 @@ const [showPassword, setShowPassword] = useState(false)
         <View>
         <TextScallingFalse style={{color:'white', fontSize: 13, fontWeight:'400'}}>Email or username</TextScallingFalse>
       <TextInputSection
+        placeholder="example@gmail.com"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address" // Optional: Ensure proper keyboard type
@@ -151,6 +160,7 @@ const [showPassword, setShowPassword] = useState(false)
 
       <TextScallingFalse style={{color:'white', fontSize: 13, fontWeight:'400', marginTop: 10}}>Password</TextScallingFalse>
       <TextInputSection
+        placeholder="secured@pass"
         secureTextEntry={!showPassword}
         value={password}
         onChangeText={setPassword}

@@ -22,6 +22,7 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
     <View style={{marginTop: 4}}>
       <TextInput
         placeholder={placeholder}
+        placeholderTextColor={'transparent'}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
@@ -47,6 +48,7 @@ const styles = StyleSheet.create({
     paddingEnd: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 8,
     paddingBottom: 8,
   },
 });

@@ -5,62 +5,48 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { Redirect, useRouter } from "expo-router"; // Import the router for navigation
+import { Redirect, useRouter } from "expo-router";
 import LoginScreen from "./(auth)/login";
 import "../global.css";
 import { verifyInstallation } from "nativewind";
-import { useSelector } from "react-redux";
-import { RootState } from "@/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
 import SportsChoice from "./onboarding/SportsChoice";
+import { useEffect } from "react";
+import { initializeAuth } from "@/reduxStore/slices/authSlice";
+import * as SplashScreen from "expo-splash-screen";
+
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   verifyInstallation();
   const router = useRouter();
 
-  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoggedIn, status } = useSelector((state: RootState) => state.auth);
+console.log('islogin -', isLoggedIn)
+console.log('status -', status)
+  useEffect(() => {
+    // Dispatch the async thunk to initialize authentication
+    dispatch(initializeAuth());
+  }, [dispatch]);
 
-  // Only require authentication within the (app) group's layout as users
-  // need to be able to access the (auth) group and sign in again.
+  useEffect(() => {
+    // Hide the splash screen only when authentication is initialized
+    if (status === 1 ) {
+      SplashScreen.hideAsync();
+    }
+  }, [status]);
+
+  if (status === 0) {
+    // Optional: Add a placeholder while auth is initializing
+    return null;
+  }
+
   if (isLoggedIn) {
-    // On web, static rendering will stop here as the user is not authenticated
-    // in the headless Node process that the pages are rendered in.
     return <Redirect href="/(app)/(tabs)" />;
   } else {
     return <LoginScreen />;
   }
-  // const handleLogin = () => {
-  //   // const { setIsLoggedIn } = useAuth();
-  //   setIsLoggedIn(true);
-  //   router.push("/(app)/(tabs)")
-  // };
-  return (
-    <SafeAreaView style={styles.container}>
-      <LoginScreen />
-      {/* <View style={styles.innerContainer}>
-        <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
-          <Text style={styles.linkText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleLogin}>
-          <Text style={styles.linkText}>Loggedin Screen</Text>
-        </TouchableOpacity>
-      </View> */}
-    </SafeAreaView>
-  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, // Takes up the full screen height
-    justifyContent: "center", // Centers content vertically
-    alignItems: "center", // Centers content horizontally
-    backgroundColor: "white", // Optional, can set background color
-  },
-  innerContainer: {
-    alignItems: "center", // Align items in the center horizontally
-  },
-  linkText: {
-    color: "black",
-    fontSize: 18,
-    marginVertical: 10, // Adds space between the links
-  },
-});

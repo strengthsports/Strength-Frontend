@@ -34,7 +34,8 @@ const Forgot_Password_SetPassword = () => {
       </View>
       </View>
       <View style={{width: '100%', justifyContent:'center', alignItems:'center'}}>
-        <View style={{marginTop: 21}}>
+        <View style={{marginTop: 21, justifyContent:'center', alignItems:'center', gap: 20}}>
+          <View>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Create a password</TextScallingFalse>
           <TextInputSection 
            placeholder="Password"
@@ -42,18 +43,26 @@ const Forgot_Password_SetPassword = () => {
            onChangeText={handlePassword}
            autoCapitalize="none"
            />
+           </View>
 
-          <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', marginTop: 20}}>Confirm password</TextScallingFalse>
+          <View>
+          <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Confirm password</TextScallingFalse>
           <TextInputSection 
            placeholder="Password"
            secureTextEntry={!showPassword}
            onChangeText={handlePassword}
            autoCapitalize="none"
            />
-           <TouchableOpacity activeOpacity={0.5} onPress={toggleShowPassword} style={{marginTop: 6, marginLeft: '58%', width: '27%', alignItems: 'flex-end',}}>
-            <TextScallingFalse style={{color:'#12956B', fontSize: 13, textAlign: 'right'}}>{showPassword ? 'Hide' : 'Show'} Password</TextScallingFalse>
-            </TouchableOpacity>
+           </View>
         </View>
+        <View style={{ width: '81%', alignItems:'flex-end'}}>
+        <View style={{marginTop: 6, flexDirection: 'row',}}>
+        <TouchableOpacity activeOpacity={0.5} onPress={toggleShowPassword}>
+        <TextScallingFalse style={{color:'#12956B', fontSize: 13}}>{showPassword ? 'Hide' : 'Show'} Password</TextScallingFalse>
+        </TouchableOpacity>
+        </View>
+        </View>
+
         <View style={{marginTop: 40}}>
           <SignupButton onPress={() => router.push("/Forgot_password/PasswordChanged_Successfully")}>
             <TextScallingFalse style={{color:'white', fontSize: 15, fontWeight:'500'}}>Next</TextScallingFalse>

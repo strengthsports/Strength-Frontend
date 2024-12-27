@@ -105,7 +105,6 @@ const authSlice = createSlice({
     builder.addCase(initializeAuth.fulfilled, (state, action) => {
       state.isLoggedIn = action.payload.isLoggedIn;
     });
-    
     // Login
     builder.addCase(loginUser.pending, (state) => {
       state.error = null;

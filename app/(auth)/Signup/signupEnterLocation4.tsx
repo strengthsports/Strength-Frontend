@@ -38,9 +38,9 @@ const signupEnterLocation4 = () => {
              onChangeText={handleLocation}
              autoCapitalize="none"  />
         </View>
-        <TouchableOpacity activeOpacity={0.7} style={{width: 200, borderWidth: 0.5, justifyContent:'center', alignItems:'center', borderColor:'grey', height: 35, borderRadius: 20, marginTop: 35, flexDirection:'row'}}>
+        <TouchableOpacity activeOpacity={0.7} style={{width: 200, borderWidth: 0.5, justifyContent:'center', alignItems:'center', gap: 5, borderColor:'grey', height: 35, borderRadius: 20, marginTop: 35, flexDirection:'row'}}>
           <TextScallingFalse style={{color:'grey', fontSize: 12, fontWeight:'400'}}>Use my current location</TextScallingFalse>
-          <MaterialIcons style={{marginLeft: 5}} name="location-pin" size={17} color="grey" />
+          <MaterialIcons name="location-pin" size={17} color="grey" />
         </TouchableOpacity>
         <View style={{marginTop: 45}}>
         <SignupButton onPress={() => router.push("/(auth)/Signup/signupSetPassword5")}>

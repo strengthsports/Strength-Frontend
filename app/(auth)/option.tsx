@@ -44,7 +44,7 @@ const option = () => {
       <View style={{ flexDirection: 'row', width:'100%', justifyContent:'center'}}>
     <TextScallingFalse style={{color: 'white', fontSize: 13, fontWeight: '500'}} allowFontScaling={false}>Already on Strength?</TextScallingFalse>
 
-    <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5} style={{marginLeft: 5}}><TextScallingFalse style={{fontSize: 13, fontWeight: '500', color: '#12956B',}}>Sign in</TextScallingFalse></TouchableOpacity>
+    <TouchableOpacity onPress={() => router.push("/login")} activeOpacity={0.5}><TextScallingFalse style={{fontSize: 13, fontWeight: '500', color: '#12956B',}}>  Sign in</TextScallingFalse></TouchableOpacity>
     </View>
     </View>
     </PageThemeView>

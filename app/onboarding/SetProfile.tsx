@@ -26,11 +26,12 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
   containerStyle,
 }) => {
   const [image, setImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
   const router = useRouter();
 
   const params = useLocalSearchParams();
   const selectedSports = params?.selectedSports;
-  // console.log(selectedSports);
+  console.log(selectedSports);
 
   const pickImage = async (): Promise<void> => {
     try {
@@ -50,6 +51,7 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
       if (!result.canceled && result.assets?.[0]?.uri) {
         const originalUri = result.assets[0].uri;
+        setSelectedFile(result.assets[0]);  // Store the selected file
 
         // Create a permanent path for the image
         const fileName = `profile_${Date.now()}.jpg`;
@@ -77,7 +79,14 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
   };
 
   const handleSkip = (): void => {
-    router.push("/onboarding/SetHeadline");
+    router.push({
+      pathname: "/onboarding/SetHeadline",
+      params: { 
+        profileImage: image, 
+        selectedSports,
+        selectedFile: selectedFile ? JSON.stringify(selectedFile) : null 
+      },
+    });
   };
 
   const handleContinue = (): void => {
@@ -85,13 +94,18 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
       console.log("Selected profile picture: " + image);
       router.push({
         pathname: "/onboarding/SetHeadline",
-        params: { profileImage: image, selectedSports },
+        params: { 
+          profileImage: image, 
+          selectedSports,
+          selectedFile: selectedFile ? JSON.stringify(selectedFile) : null
+        },
       });
     }
   };
 
   const handleRemovePic = (): void => {
     setImage(null);
+    setSelectedFile(null);
   };
 
   return (
@@ -104,7 +118,9 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
       <Logo />
 
-      <TextScallingFalse className="text-gray-400 text-lg mt-10">Step 1 of 3</TextScallingFalse>
+      <TextScallingFalse className="text-gray-400 text-lg mt-10">
+        Step 1 of 3
+      </TextScallingFalse>
 
       <TextScallingFalse className="text-white text-2xl font-bold mt-2">
         Pick a profile picture
@@ -131,26 +147,28 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
             onPress={pickImage}
             activeOpacity={0.8}
           >
-            <TextScallingFalse className="text-white text-xl font-bold">+</TextScallingFalse>
+            <TextScallingFalse className="text-white text-xl font-bold">
+              +
+            </TextScallingFalse>
           </TouchableOpacity>
         </View>
       </View>
 
       <TouchableOpacity
         className="bg-[#00A67E] rounded-full h-12 justify-center items-center mt-10"
-        onPress={image ? handleContinue : pickImage} // Conditional function based on image state
+        onPress={image ? handleContinue : pickImage}
         activeOpacity={0.8}
       >
         <TextScallingFalse className="text-white text-base font-semibold">
-          {image ? "Continue" : "Add a photo"}{" "}
-          {/* Change text based on image state */}
+          {image ? "Continue" : "Add a photo"}
         </TextScallingFalse>
       </TouchableOpacity>
 
       <TouchableOpacity
         className="mt-5 py-2 items-center"
         onPress={image ? handleRemovePic : handleSkip}
-        activeOpacity={0.6}>
+        activeOpacity={0.6}
+      >
         <TextScallingFalse className="text-gray-400 text-base">
           {image ? "Remove Pic" : "Skip for now"}
         </TextScallingFalse>

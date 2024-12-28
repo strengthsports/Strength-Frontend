@@ -16,75 +16,15 @@ import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 
 const { width } = Dimensions.get("window");
+import { getToken } from "@/utils/secureStore";
 
-interface Sport {
-  id: string;
+interface sportsData {
+  _id: string; // Updated from 'id' to '_id'
   name: string;
+  logo: string;
   icon: any;
 }
-
-const sports: Sport[] = [
-  {
-    id: "1",
-    name: "Cricket",
-    icon: require("../../assets/images/onboarding/sportsIcon/okcricket.png"),
-  },
-  {
-    id: "2",
-    name: "Football",
-    icon: require("../../assets/images/onboarding/sportsIcon/okfootball.png"),
-  },
-  {
-    id: "3",
-    name: "Basketball",
-    icon: require("../../assets/images/onboarding/sportsIcon/okbasketball.png"),
-  },
-  {
-    id: "4",
-    name: "Badminton",
-    icon: require("../../assets/images/onboarding/sportsIcon/okbadminton.png"),
-  },
-  {
-    id: "5",
-    name: "Table Tennis",
-    icon: require("../../assets/images/onboarding/sportsIcon/oktabletenis.png"),
-  },
-  {
-    id: "6",
-    name: "Tennis",
-    icon: require("../../assets/images/onboarding/sportsIcon/oktenis.png"),
-  },
-  {
-    id: "7",
-    name: "Volleyball",
-    icon: require("../../assets/images/onboarding/sportsIcon/okvollyball.png"),
-  },
-  {
-    id: "8",
-    name: "Kabaddi",
-    icon: require("../../assets/images/onboarding/sportsIcon/okkabaddi.png"),
-  },
-  {
-    id: "9",
-    name: "Hockey",
-    icon: require("../../assets/images/onboarding/sportsIcon/okhockey.png"),
-  },
-  {
-    id: "10",
-    name: "Racing",
-    icon: require("../../assets/images/onboarding/sportsIcon/check.png"),
-  },
-  {
-    id: "11",
-    name: "Ice Hockey",
-    icon: require("../../assets/images/onboarding/sportsIcon/okicehockey.png"),
-  },
-  {
-    id: "12",
-    name: "Cyclist",
-    icon: require("../../assets/images/onboarding/sportsIcon/cycle.png"),
-  },
-];
+const defaultImage = require("../../assets/images/onboarding/sportsIcon/okcricket.png");
 
 const SportsChoice: React.FC = () => {
   const [selectedSports, setSelectedSports] = React.useState<Set<string>>(
@@ -92,7 +32,40 @@ const SportsChoice: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = React.useState("");
   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
+  const [token, setToken] = React.useState<string | null>(null);
+  const [sportsData, setSportsData] = React.useState<sportsData[]>([]);
   const router = useRouter();
+
+  React.useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const tokenValue = await getToken("accessToken");
+        setToken(tokenValue);
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+    fetchToken();
+  }, []);
+
+  React.useEffect(() => {
+    if (token) {
+      // Make the API call only after the token is available
+      fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/fetch-allSports`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log(data);
+          setSportsData(data.data); // Assuming the API returns data with 'data' field
+        })
+        .catch((error) => console.error("Error fetching sports:", error));
+    }
+  }, [token]);
 
   React.useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -114,19 +87,19 @@ const SportsChoice: React.FC = () => {
     };
   }, []);
 
-  const toggleSport = (sportId: string) => {
+  const toggleSport = (_id: string) => {
     const newSelected = new Set(selectedSports);
-    if (newSelected.has(sportId)) {
-      newSelected.delete(sportId);
+    if (newSelected.has(_id)) {
+      newSelected.delete(_id);
     } else {
-      newSelected.add(sportId);
+      newSelected.add(_id);
     }
     setSelectedSports(newSelected);
   };
 
   const handleNextClick = () => {
     const selectedArray = Array.from(selectedSports)
-      .map((sportId) => sports.find((sport) => sport.id === sportId)?.name)
+      .map((_id) => sportsData.find((sport) => sport._id === _id)?._id)
       .filter((name): name is string => name !== undefined);
 
     console.log(selectedArray);
@@ -136,13 +109,13 @@ const SportsChoice: React.FC = () => {
     });
   };
 
-  const filteredSports = sports.filter((sport) =>
+  const filteredSports = sportsData.filter((sport) =>
     sport.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <View style={{ flex: 1}}>
+      <View style={{ flex: 1 }}>
         <View className="px-6 mt-8">
           <Logo />
           <StatusBar barStyle="light-content" />
@@ -190,9 +163,9 @@ const SportsChoice: React.FC = () => {
           >
             {filteredSports.map((sport) => (
               <TouchableOpacity
-                key={sport.id}
+                key={sport._id} // Updated to use '_id'
                 style={{ margin: 4 }}
-                onPress={() => toggleSport(sport.id)}
+                onPress={() => toggleSport(sport._id)} // Updated to use '_id'
               >
                 <View style={{ flexDirection: "row" }}>
                   <View
@@ -200,21 +173,21 @@ const SportsChoice: React.FC = () => {
                       height: 40,
                       width: width * 0.27,
                       borderWidth: 0.5,
-                      borderColor: selectedSports.has(sport.id)
+                      borderColor: selectedSports.has(sport._id) // Updated to use '_id'
                         ? "#12956B"
                         : "white",
                       borderRadius: 8,
                       justifyContent: "center",
                       alignItems: "center",
                       flexDirection: "row",
-                      backgroundColor: selectedSports.has(sport.id)
+                      backgroundColor: selectedSports.has(sport._id) // Updated to use '_id'
                         ? "#12956B"
                         : "black",
                       paddingHorizontal: 10,
                     }}
                   >
                     <Image
-                      source={sport.icon}
+                      source={sport.logo ? { uri: sport.logo } : defaultImage}
                       style={{
                         width: width * 0.04,
                         height: width * 0.04,
@@ -225,7 +198,7 @@ const SportsChoice: React.FC = () => {
                       style={{
                         color: "white",
                         fontSize: width * 0.035,
-                        fontWeight: selectedSports.has(sport.id)
+                        fontWeight: selectedSports.has(sport._id) // Updated to use '_id'
                           ? "600"
                           : "400",
                       }}
@@ -258,14 +231,17 @@ const SportsChoice: React.FC = () => {
               <TextScallingFalse className="text-gray-300 text-base">
                 You can always select more than 1
               </TextScallingFalse>
-              <TouchableOpacity activeOpacity={0.5} 
+              <TouchableOpacity
+                activeOpacity={0.5}
                 className={`px-8 py-4 rounded-3xl ${
                   selectedSports.size > 0 ? "bg-[#00A67E]" : "bg-[#333]"
                 }`}
                 onPress={handleNextClick}
                 disabled={selectedSports.size === 0}
               >
-                <TextScallingFalse className="text-white text-lg font-medium">Next</TextScallingFalse>
+                <TextScallingFalse className="text-white text-lg font-medium">
+                  Next
+                </TextScallingFalse>
               </TouchableOpacity>
             </View>
           </View>

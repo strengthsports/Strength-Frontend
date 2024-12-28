@@ -98,7 +98,8 @@ const isAndroid = Platform.OS == 'android'
           });
       console.log("backend - ", msgBackend);
 
-      router.push("/(app)/(tabs)");
+      // router.push("/(app)/(tabs)");
+      router.push("/onboarding/SportsChoice")
       setLoading(false);
     } catch (err: any) {
       Vibration.vibrate(vibrationPattern);

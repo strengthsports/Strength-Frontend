@@ -12,8 +12,6 @@ import { useLocalSearchParams } from "expo-router";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
 import { getToken } from "@/utils/secureStore";
-import SetHeadline from "./SetHeadline";
-import * as FileSystem from "expo-file-system";
 
 interface SupportCardProps {
   user: any;

@@ -29,6 +29,8 @@ const SetHeadline: React.FC = () => {
 
   const profilePicture = params?.profileImage;
   const selectedSports = params?.selectedSports;
+  const selectedFile = params?.selectedFile;
+  // console.log(selectedFile);
 
   // Use profile image if provided, else use default
   const profileImageSource = profilePicture
@@ -45,11 +47,15 @@ const SetHeadline: React.FC = () => {
     console.log(headline);
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
-      params: { headline, profileImage: profilePicture, selectedSports },
+      params: { headline, profileImage: profilePicture, selectedSports, selectedFile },
     });
   }
 
   function handleSkipPress() {
+    router.push({
+      pathname: "/onboarding/SuggestedFollowers",
+      params: { headline, profileImage: profilePicture, selectedSports },
+    });
     console.log("Skip");
   }
 

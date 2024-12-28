@@ -2,11 +2,11 @@ import React, { Component } from 'react'
 import { Text, View } from 'react-native'
 import { ThemedText } from "@/components/ThemedText";
 
-const notification = () =>{
+const Explore = () =>{
     return (
       <View>
-        <ThemedText > notification </ThemedText>
+        <ThemedText > clips </ThemedText>
       </View>
     )
   }
-export default notification
+export default Explore

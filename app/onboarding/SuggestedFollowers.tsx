@@ -1,5 +1,4 @@
-import NavigationLogo from "@/components/onboarding/Logo";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Image,
@@ -7,29 +6,22 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  ImageSourcePropType,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
-
-interface SportIcon {
-  id: string;
-  source: ImageSourcePropType;
-  title: string;
-  description: string;
-}
+import { getToken } from "@/utils/secureStore";
 
 interface SupportCardProps {
-  icon: SportIcon;
+  user: any;
   isSelected: boolean;
   onClose: (id: string) => void;
   onSupport: (id: string) => void;
 }
 
 const SupportCard: React.FC<SupportCardProps> = ({
-  icon,
+  user,
   isSelected,
   onClose,
   onSupport,
@@ -37,7 +29,7 @@ const SupportCard: React.FC<SupportCardProps> = ({
   <View className="rounded-xl p-4 m-1 w-[180px] relative border border-[#464646]">
     <TouchableOpacity
       className="absolute right-2 top-2 z-10"
-      onPress={() => onClose(icon.id)}
+      onPress={() => onClose(user._id)}
     >
       <TextScallingFalse className="text-gray-400 text-lg">×</TextScallingFalse>
     </TouchableOpacity>
@@ -45,23 +37,25 @@ const SupportCard: React.FC<SupportCardProps> = ({
     <View className="items-center space-y-2">
       <View className="bg-white rounded-full w-16 h-16 items-center justify-center">
         <Image
-          source={icon.source}
+          source={{ uri: user.profilePic }}
           className="w-10 h-10"
           resizeMode="contain"
         />
       </View>
 
-      <TextScallingFalse className="text-white text-lg font-semibold">{icon.title}</TextScallingFalse>
+      <TextScallingFalse className="text-white text-lg font-semibold">
+        {user.firstName} {user.lastName}
+      </TextScallingFalse>
 
       <TextScallingFalse className="text-gray-400 text-sm text-center">
-        {icon.description}
+        {user.headline}
       </TextScallingFalse>
 
       <TouchableOpacity
         className={`mt-4 border rounded-full px-6 py-2 ${
           isSelected ? "bg-[#12956B]" : "border-[#12956B]"
         }`}
-        onPress={() => onSupport(icon.id)}
+        onPress={() => onSupport(user._id)}
       >
         <TextScallingFalse
           className={`text-center ${
@@ -75,61 +69,46 @@ const SupportCard: React.FC<SupportCardProps> = ({
   </View>
 );
 
-interface SuggestedSupportScreenProps {
-  onSkip?: () => void;
-  onSupportSelected?: (id: string) => void;
-}
-
-const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
-  onSkip,
-  onSupportSelected,
-}) => {
+const SuggestedSupportScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const headline = params?.headline;
   const selectedSports = params?.selectedSports;
-  const profileImage = params?.profileImage;
-
+  const selectedFile = params?.selectedFile;
+  var profileImage = params?.profileImage;
+  const [token, setToken] = useState<string | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [assets, setAssets] = useState<Blob | undefined>(undefined);
 
-  const sportIcons: SportIcon[] = [
-    {
-      id: "1",
-      source: require("../../assets/images/onboarding/logo2.png"),
-      title: "MI",
-      description: "Step into the world of sports",
-    },
-    {
-      id: "2",
-      source: require("../../assets/images/onboarding/logo2.png"),
-      title: "CSK",
-      description: "Step into the world of sports",
-    },
-    {
-      id: "3",
-      source: require("../../assets/images/onboarding/logo2.png"),
-      title: "RCB",
-      description: "Step into the world of sports",
-    },
-    {
-      id: "4",
-      source: require("../../assets/images/onboarding/logo2.png"),
-      title: "KKR",
-      description: "Step into the world of sports",
-    },
-    {
-      id: "5",
-      source: require("../../assets/images/onboarding/logo2.png"),
-      title: "RR",
-      description: "Step into the world of sports",
-    },
-    {
-      id: "6",
-      source: require("../../assets/images/onboarding/logo2.png"),
-      title: "PBKS",
-      description: "Step into the world of sports",
-    },
-  ];
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const tokenValue = await getToken("accessToken");
+        setToken(tokenValue);
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+    fetchToken();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setUsers(data.data); // Set the fetched users data
+        })
+        .catch((error) => console.error("Error fetching sports:", error));
+    }
+  }, [token]);
 
   const handleClose = (id: string) => {
     setSelectedPlayers((prev) => prev.filter((player) => player !== id));
@@ -141,25 +120,56 @@ const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
     } else {
       setSelectedPlayers((prev) => [...prev, id]);
     }
-    onSupportSelected?.(id);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     console.log("Selected players:", selectedPlayers);
-    console.log("Headline:", headline);
-    console.log("Selected sports:", selectedSports);
-    console.log("Profile image:", profileImage);
-    alert("Data submitted successfully!");
+
+    // Handle headline
+    const finalHeadline = headline === undefined ? "" : headline;
+
+    // Handle selectedSports
+    const sports = selectedSports.split(",");
+    console.log(selectedFile);
+    // console.log("Selected sports:", sports);
+    // Handle profileImage
+    const finalProfileImage = profileImage === undefined ? "" : profileImage;
+
+    await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        headline: finalHeadline,
+        assets: [selectedFile],
+        sports: sports,
+        followings: selectedPlayers,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black", marginTop: 28}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black", marginTop: 28 }}>
       <Logo />
       <StatusBar barStyle="light-content" />
 
-      <View style={{ paddingTop: insets.top }} className="px-4 py-6 flex-1 mt-6">
+      <View
+        style={{ paddingTop: insets.top }}
+        className="px-4 py-6 flex-1 mt-6"
+      >
         <View className="mb-6">
-          <TextScallingFalse className="text-gray-500 text-base">Step 3 of 3</TextScallingFalse>
+          <TextScallingFalse className="text-gray-500 text-base">
+            Step 3 of 3
+          </TextScallingFalse>
           <TextScallingFalse className="text-white text-3xl font-bold mt-1">
             Suggested supports
           </TextScallingFalse>
@@ -173,16 +183,16 @@ const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
             flexGrow: 1,
             justifyContent: "center",
             alignItems: "center",
-            paddingBottom: 20, // To ensure there's space when scrolling
+            paddingBottom: 20,
           }}
           showsVerticalScrollIndicator={false}
         >
           <View className="flex-row flex-wrap justify-center">
-            {sportIcons.map((icon) => (
+            {users.map((user) => (
               <SupportCard
-                key={icon.id}
-                icon={icon}
-                isSelected={selectedPlayers.includes(icon.id)}
+                key={user._id}
+                user={user}
+                isSelected={selectedPlayers.includes(user._id)}
                 onClose={handleClose}
                 onSupport={handleSupport}
               />
@@ -195,12 +205,12 @@ const SuggestedSupportScreen: React.FC<SuggestedSupportScreenProps> = ({
             selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
           }`}
           style={{
-            alignSelf: "center", // Center the button horizontally
-            width: "100%", // Full width of its parent container
-            maxWidth: 120, // Limit the maximum width of the button
-            height:36,
+            alignSelf: "center",
+            width: "100%",
+            maxWidth: 120,
+            height: 36,
           }}
-          onPress={selectedPlayers.length > 0 ? handleContinue : onSkip}
+          onPress={selectedPlayers.length > 0 ? handleContinue : undefined}
         >
           <TextScallingFalse
             className={`${

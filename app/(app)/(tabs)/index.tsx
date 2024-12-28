@@ -12,6 +12,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
 import { logoutUser } from "@/reduxStore/slices/authSlice";
 import Toast from "react-native-toast-message";
+import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/ThemedText";
 
 
 export default function Index() {
@@ -40,15 +42,15 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.innerContainer}>
-        <Text style={styles.linkText}>Home</Text>
+      <ThemedView style={styles.innerContainer}>
+        <ThemedText >Home</ThemedText>
         <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.linkText}>Logout</Text>
+          <ThemedText >Logout</ThemedText>
         </TouchableOpacity>
         <TouchableOpacity onPress={()=> router.push('../(main)/home')}>
-          <Text style={styles.linkText}>Chats</Text>
+          <ThemedText >Chats</ThemedText>
         </TouchableOpacity>
-      </View>
+      </ThemedView>
       <Toast />
     </SafeAreaView>
   );
@@ -59,13 +61,14 @@ const styles = StyleSheet.create({
     flex: 1, // Takes up the full screen height
     justifyContent: "center", // Centers content vertically
     alignItems: "center", // Centers content horizontally
-    backgroundColor: "white", // Optional, can set background color
+    // backgroundColor: "white", // Optional, can set background color
   },
   innerContainer: {
     alignItems: "center", // Align items in the center horizontally
+    gap:30
   },
   linkText: {
-    color: "black",
+    // color: "black",
     fontSize: 18,
     marginVertical: 10, // Adds space between the links
   },

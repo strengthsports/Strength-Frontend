@@ -31,8 +31,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name={focused ? 'home' : 'home-outline'} color={color} />
           ),
         }}
       />
@@ -40,21 +40,38 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: "Explore",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name="magnify" color={color} />
           ),
         }}
       />
-
+      <Tabs.Screen
+        name="clips"
+        options={{
+          title: "clips",
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name={focused ? 'play-circle' : 'play-circle-outline'} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="notification"
         options={{
           title: "notification",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="profile" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name={focused ? 'bell' : 'bell-outline'} color={color} />
           ),
         }}
       />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "profile",
+            tabBarIcon: ({ color, focused }) => (
+              <IconSymbol name={focused ? 'card-account-details' : 'card-account-details-outline'} color={color} />
+            ),
+          }}
+        />
     </Tabs>
   );
 }

@@ -8,10 +8,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import PageThemeView from "@/components/PageThemeView";
+import { z } from 'zod';
+import signupSchema from '@/schemas/signupSchema';
 
 
 
-const signupEmail1 = () => {
+const SignupEmail1 = () => {
   const router = useRouter();
   const [openModal14, setOpenModal14] = React.useState(false);
 
@@ -45,12 +47,39 @@ const signupEmail1 = () => {
       setGender('Female');
     };
 
-    const handleEmail = () => {
-      router.push({
-        pathname: "/Signup/signupEnterOtp2",
-      });
+    // const handleEmail = () => {
+    //   router.push({
+    //     pathname: "/Signup/signupEnterOtp2",
+    //   });
+    // };
+    const validateSignupForm = (formData: Record<string, any>) => {
+      try {
+        // Parse and validate data
+        const validData = signupSchema.parse(formData);
+    
+        console.log("Validated Data:", validData);
+        router.push({
+          pathname: "/Signup/signupEnterOtp2",
+        });
+        return validData;
+      } catch (err) {
+        if (err instanceof z.ZodError) {
+          console.error("Validation Errors:", err.errors);
+          return { errors: err.errors };
+        }
+        throw err;
+      }
     };
-
+    // Example Usage
+    const formData = {
+      email: 'ashhar@gmail.co',
+      firstName: "John",
+      lastName: "Doe",
+      dateOfBirth: "1990-01-01",
+      gender: "Male",
+    };
+    
+    // const validatedData = validateSignupForm(formData);
   return (
     <PageThemeView>
        <View style={{ width:'100%', alignItems:'center', marginTop: 30, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
@@ -141,8 +170,8 @@ const signupEmail1 = () => {
 
 
       <View style={{marginTop: 25}}>
-      <SignupButton onPress={handleEmail}>
-       <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
+      <SignupButton onPress={() => validateSignupForm(formData)}>
+      <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
       </SignupButton>
       </View>
       <View style={{justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
@@ -233,6 +262,5 @@ const signupEmail1 = () => {
   )
 }
 
-export default signupEmail1
+export default SignupEmail1
 
-const styles = StyleSheet.create({})

@@ -75,7 +75,7 @@ export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { reject
 
     if (!response.ok) {
       const data = await response.json();
-      return rejectWithValue(data.data.message || "Logout failed. Please try again.");
+      return rejectWithValue(data.message || "Logout failed. Please try again.");
     }
 
     // Clear Secure Store

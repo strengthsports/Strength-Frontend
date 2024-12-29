@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking} from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking, Vibration, Platform} from 'react-native'
 import React, { useState } from "react";
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import Logo from "@/components/logo";
@@ -10,76 +10,91 @@ import TextScallingFalse from "@/components/CentralText";
 import PageThemeView from "@/components/PageThemeView";
 import { z } from 'zod';
 import signupSchema from '@/schemas/signupSchema';
+import { useDispatch, useSelector } from 'react-redux';
+import { signupUser } from '@/reduxStore/slices/signupSlice';
+import { AppDispatch, RootState } from '@/reduxStore';
+import Toast from 'react-native-toast-message';
 
 
 
 const SignupEmail1 = () => {
   const router = useRouter();
-  const [openModal14, setOpenModal14] = React.useState(false);
-
-  //for email input section
-    const [email, setEmail] = useState<string>(""); // Explicitly type as string
-
-
-    //for date of birth
-    const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-    const [dateofBirth, setDateOfBirth] = useState('');
-
-    const handleDateChange = (selectedDate) => {
-      setDateOfBirth(selectedDate);
-      setIsDatePickerVisible(false);
-     };
-
-
-    //Gender option
-    const [maleSelected, setMaleSelected] = useState(false);
-    const [femaleSelected, setFemaleSelected] = useState(false);
-    const [gender, setGender] = useState('');
-    const handleMalePress = () => {
-      setMaleSelected(!maleSelected);
-      setFemaleSelected(false);
-      setGender('Male');
-    };
+  const dispatch = useDispatch<AppDispatch>();
+  // const isAndroid = Platform.OS === "android";
   
-    const handleFemalePress = () => {
-      setFemaleSelected(!femaleSelected);
-      setMaleSelected(false);
-      setGender('Female');
-    };
+  const [openModal14, setOpenModal14] = React.useState(false);
+  const [email, setEmail] = useState<string>(""); // Explicitly type as string
+  const [firstName, setFirstName] = useState<string>(""); // Explicitly type as string
+  const [lastName, setLastName] = useState<string>(""); // Explicitly type as string
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [maleSelected, setMaleSelected] = useState(false);
+  const [femaleSelected, setFemaleSelected] = useState(false);
+  
+  const handleDateChange = (selectedDate: string) => {
+    setDateOfBirth(selectedDate);
+    setIsDatePickerVisible(false);
+  };
 
-    // const handleEmail = () => {
-    //   router.push({
-    //     pathname: "/Signup/signupEnterOtp2",
-    //   });
-    // };
-    const validateSignupForm = (formData: Record<string, any>) => {
+  const [gender, setGender] = useState("");
+  const handleMalePress = () => {
+    setMaleSelected(!maleSelected);
+    setFemaleSelected(false);
+    setGender("male");
+  };
+  
+  const handleFemalePress = () => {
+    setFemaleSelected(!femaleSelected);
+    setMaleSelected(false);
+    setGender("female");
+  };
+
+      // Example Usage
+      const formData = {
+        email,
+        firstName,
+        lastName,
+        dateOfBirth,
+        gender,
+      };
+  const feedback = (message: string, type: "error" | "success" = "error") => {
+    const vibrationPattern = [0, 50, 80, 50];
+    
+    if (type === "error") {
+      Vibration.vibrate(vibrationPattern);
+    }  Toast.show({
+          type,
+          text1: message,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
+  };  
+  
+  const validateSignupForm = async () => {
+
       try {
         // Parse and validate data
         const validData = signupSchema.parse(formData);
     
-        console.log("Validated Data:", validData);
+        console.log("Validated Data:", formData);
+        const response = await dispatch(signupUser(validData)).unwrap()
+        feedback(response.message || "OTP sent to email", "success");
+
         router.push({
           pathname: "/Signup/signupEnterOtp2",
         });
-        return validData;
-      } catch (err) {
+        // return validData;
+      } catch (err: any) {
         if (err instanceof z.ZodError) {
-          console.error("Validation Errors:", err.errors);
-          return { errors: err.errors };
+          const validationError = err.errors[0]?.message || "Invalid input.";
+          feedback(validationError, "error");
+        } else {
+          feedback(err.message || "An error occurred. Please try again.", "error");
         }
-        throw err;
-      }
     };
-    // Example Usage
-    const formData = {
-      email: 'ashhar@gmail.co',
-      firstName: "John",
-      lastName: "Doe",
-      dateOfBirth: "1990-01-01",
-      gender: "Male",
-    };
+}
+
     
-    // const validatedData = validateSignupForm(formData);
   return (
     <PageThemeView>
        <View style={{ width:'100%', alignItems:'center', marginTop: 30, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
@@ -104,17 +119,24 @@ const SignupEmail1 = () => {
       <View style={{flexDirection:'row', gap: 10}}>
         <View style={{ width: 162, gap: 4}}>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>First Name</TextScallingFalse> 
-          <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
+          <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} 
+          value={firstName}
+          onChangeText={setFirstName}
+          />
         </View>
         <View style={{width: 162, gap: 4}}>
         <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Last Name</TextScallingFalse> 
-          <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
+          <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}}
+          value={lastName}
+          onChangeText={setLastName}
+          />
         </View>
       </View>
 
       <View>
       <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Email or phone number</TextScallingFalse>
       <TextInputSection
+       placeholder=''
        value={email}
        onChangeText={setEmail}
        keyboardType="email-address" // Optional: Ensure proper keyboard type
@@ -126,17 +148,17 @@ const SignupEmail1 = () => {
       <TouchableOpacity  activeOpacity={0.5}
        onPress={() => setIsDatePickerVisible(!isDatePickerVisible)} 
        style={{ 
-        width: 335,
-        height: 44,
-        borderWidth: 1,
-        borderColor: 'white',
-        flexDirection:'row',
-        borderRadius: 5.5,
-        marginTop: 4,
-        paddingLeft: 10, alignItems:'center'}}>
+         width: 335,
+         height: 44,
+         borderWidth: 1,
+         borderColor: 'white',
+         flexDirection:'row',
+         borderRadius: 5.5,
+         marginTop: 4,
+         paddingLeft: 10, alignItems:'center'}}>
         <TouchableOpacity style={{flexDirection:'row', gap: 15, alignItems:'center'}} onPress={() => setIsDatePickerVisible(!isDatePickerVisible)}
          activeOpacity={0.5}>
-        <AntDesign name="calendar" size={25} color="white" /><Text style={{color:'white', fontSize: 14, fontWeight:'400'}}>{dateofBirth}</Text>
+        <AntDesign name="calendar" size={25} color="white" /><Text style={{color:'white', fontSize: 14, fontWeight:'400'}}>{dateOfBirth}</Text>
         </TouchableOpacity>
         </TouchableOpacity>
       </View>
@@ -170,7 +192,7 @@ const SignupEmail1 = () => {
 
 
       <View style={{marginTop: 25}}>
-      <SignupButton onPress={() => validateSignupForm(formData)}>
+      <SignupButton onPress={() => validateSignupForm()}>
       <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
       </SignupButton>
       </View>

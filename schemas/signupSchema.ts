@@ -8,7 +8,7 @@ const signupSchema = z.object({
     const parsedDate = new Date(date);
     return !isNaN(parsedDate.getTime());
   },  { message: "Invalid date format. Use 'YYYY-MM-DD'." }),
-  gender: z.enum(["Male", "Female"], { errorMap: () => ({ message: "Invalid gender value" }) })
+  gender: z.enum(["male", "female"], { errorMap: () => ({ message: "Invalid gender value" }) })
 
   // password: z
   //   .string()

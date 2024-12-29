@@ -1,6 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
-import { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import Logo from "@/components/logo";
 import PageThemeView from "@/components/PageThemeView";
@@ -8,42 +13,55 @@ import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import { useLocalSearchParams } from "expo-router";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/reduxStore";
+import { verifyOtp } from "@/reduxStore/slices/forgotPasswordSlice";
+import Toast from "react-native-toast-message";
 
 const Forgot_Password_OTP = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false); // New state for loading
+  const dispatch = useDispatch<AppDispatch>();
 
   const email = params?.email;
-  const id = params?.id;
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const handleVerificationCode = async () => {
+    if (!otp) {
+      Toast.show({
+        type: "error",
+        text1: "Please enter the verification code.",
+      });
+      return;
+    }
+
+    setLoading(true); // Set loading state to true when button is clicked
+
     try {
-      console.log(id);
-      console.log(typeof otp);
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/forgot-password-verifyOtp`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            _id: id,
-            otp: otp,
-          }),
-        },
-      );
-      const data = await response.json();
-      console.log(data);
-      if (data.statusCode == 200) {
+      const resultAction = await dispatch(verifyOtp({ id, otp }));
+      if (verifyOtp.fulfilled.match(resultAction)) {
+        // On success, navigate to set new password page
         router.push({
           pathname: "/Forgot_password/Forgot_Password_SetPassword",
           params: { email },
         });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: resultAction.payload,
+        });
       }
     } catch (error) {
-      console.log(error);
+      console.error("Network error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Network error",
+      });
+    } finally {
+      setLoading(false); // Reset loading state once the operation is complete
     }
   };
 
@@ -107,15 +125,20 @@ const Forgot_Password_OTP = () => {
           </TouchableOpacity>
           <View style={{ marginTop: 50 }}>
             <SignupButton onPress={handleVerificationCode}>
-              <TextScallingFalse
-                style={{ color: "white", fontSize: 15, fontWeight: "600" }}
-              >
-                Next
-              </TextScallingFalse>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" /> // Loader when loading is true
+              ) : (
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 15, fontWeight: "600" }}
+                >
+                  Next
+                </TextScallingFalse>
+              )}
             </SignupButton>
           </View>
         </View>
       </View>
+      <Toast />
     </PageThemeView>
   );
 };

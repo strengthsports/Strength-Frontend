@@ -18,6 +18,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 import { setProfileHeadline } from "@/reduxStore/slices/profileSlice";
+import Toast from "react-native-toast-message";
 
 // const { height } = Dimensions.get("window");
 const firstName = "Utsav";
@@ -44,7 +45,10 @@ const SetHeadline: React.FC = () => {
 
   function handleNextPress() {
     if (!headline) {
-      alert("Please enter a headline.");
+      Toast.show({
+        type: "error",
+        text1: "Please enter your headline.",
+      });
       return;
     }
     dispatch(setProfileHeadline(headline));
@@ -140,6 +144,7 @@ const SetHeadline: React.FC = () => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
+      <Toast/>
     </SafeAreaView>
   );
 };

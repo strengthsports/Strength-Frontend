@@ -8,7 +8,7 @@ import {
   StatusBar,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, Redirect } from "expo-router";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
 import { useSelector } from "react-redux";
@@ -17,6 +17,7 @@ import { useDispatch } from "react-redux";
 import { fetchUserSuggestions } from "@/reduxStore/slices/profileSlice";
 import { AppDispatch } from "@/reduxStore";
 import { onboardingUser } from "@/reduxStore/slices/profileSlice";
+import Toast from "react-native-toast-message";
 
 interface SupportCardProps {
   user: any;
@@ -129,14 +130,22 @@ const SuggestedSupportScreen: React.FC = () => {
       const response = await dispatch(onboardingUser(onboardingData)).unwrap();
 
       // Alert the successful response
-      alert("User onboarded successfully: " + JSON.stringify(response));
+      Toast.show({
+        type: "success",
+        text1: "Successfully Updated Profile",
+      });
+      router.push("/(app)/(tabs)");
     } catch (error: unknown) {
       if (error && typeof error === "object" && "message" in error) {
-        alert(
-          "Error onboarding user: " + (error as { message: string }).message,
-        );
+        Toast.show({
+          type: "error",
+          text1: (error as { message: string }).message,
+        });
       } else {
-        alert("An unknown error occurred");
+        Toast.show({
+          type: "error",
+          text1: "An unknown error occurred",
+        });
       }
     }
   };
@@ -160,14 +169,22 @@ const SuggestedSupportScreen: React.FC = () => {
       const response = await dispatch(onboardingUser(onboardingData)).unwrap();
 
       // Alert the successful response
-      alert("User onboarded successfully: " + JSON.stringify(response));
+      Toast.show({
+        type: "success",
+        text1: "Successfully Updated Profile",
+      });
+      router.push("/(app)/(tabs)");
     } catch (error: unknown) {
       if (error && typeof error === "object" && "message" in error) {
-        alert(
-          "Error onboarding user: " + (error as { message: string }).message,
-        );
+        Toast.show({
+          type: "error",
+          text1: (error as { message: string }).message,
+        });
       } else {
-        alert("An  error occurred");
+        Toast.show({
+          type: "error",
+          text1: "An unknown error occurred",
+        });
       }
     }
   };
@@ -236,6 +253,7 @@ const SuggestedSupportScreen: React.FC = () => {
           </TextScallingFalse>
         </TouchableOpacity>
       </View>
+      <Toast />
     </SafeAreaView>
   );
 };

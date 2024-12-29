@@ -26,23 +26,23 @@ export default function Index() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn, status } = useSelector((state: RootState) => state.auth);
 console.log('islogin -', isLoggedIn)
-console.log('status -', status)
+// console.log('status -', status)
   useEffect(() => {
     // Dispatch the async thunk to initialize authentication
     dispatch(initializeAuth());
   }, [dispatch]);
 
-  useEffect(() => {
-    // Hide the splash screen only when authentication is initialized
-    if (status === 1 ) {
-      SplashScreen.hideAsync();
-    }
-  }, [status]);
+  // useEffect(() => {
+  //   // Hide the splash screen only when authentication is initialized
+  //   if (status === 1 ) {
+  //     SplashScreen.hideAsync();
+  //   }
+  // }, [status]);
 
-  if (status === 0) {
-    // Optional: Add a placeholder while auth is initializing
-    return null;
-  }
+  // if (status === 0) {
+  //   // Optional: Add a placeholder while auth is initializing
+  //   return null;
+  // }
 
   if (isLoggedIn) {
     return <Redirect href="/(app)/(tabs)" />;

@@ -47,17 +47,16 @@ export const loginUser = createAsyncThunk<
       body: JSON.stringify({ email, password }),
     });
     const data = await response.json();
-
     
     if (!response.ok) {
-      return rejectWithValue(data.data.message || "Login failed. Please try again.");
+      return rejectWithValue(data.message || "Login failed. Please try again.");
     }
     
     // Convert tokens to strings and save in Secure Store
     console.log('saving accessToken')
     saveToken('accessToken', data.data.accessToken)
 
-    return { user: data.data.user, message: data.data.message };
+    return { user: data.data.user, message: data.message };
   } catch (err: any) {
     return rejectWithValue(err.message || "Something went wrong. Please try again.");
   }

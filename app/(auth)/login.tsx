@@ -30,11 +30,11 @@ import loginSchema from "@/schemas/loginSchema";
 
 const LoginScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { msgBackend } = useSelector((state: RootState) => state.auth);
+  // const { status, error,  } = useSelector((state: RootState) => state.auth);
 
-  const [email, setEmail] = useState("");
+  
+   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [inputError, setInputError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -43,7 +43,7 @@ const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => setShowPassword((prevState) => !prevState);
 
-  const feedback = (message: string, type: "error" | "success" = "error") => {
+  const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
     const vibrationPattern = [0, 50, 80, 50];
     
     if (type === "error") {
@@ -51,19 +51,21 @@ const LoginScreen = () => {
     }
 
     isAndroid
-      ? ToastAndroid.show(message, ToastAndroid.SHORT)
+      ? ToastAndroid.show(errorMsg, ToastAndroid.SHORT)
       : Toast.show({
           type,
-          text1: message,
+          text1: errorMsg,
           visibilityTime: 1500,
           autoHide: true,
         });
   };
-  
+  // const e = 'anirbandutta@gmail.com';
+  // const p = 'ANIRBAN@1234';
 
+  
+  
   const handleLogin = async () => {
     try {
-      // Validate inputs using Zod
       const loginData = loginSchema.parse({ email, password });
 
       // Reset state and start loading
@@ -71,18 +73,17 @@ const LoginScreen = () => {
       setLoading(true);
 
       // Dispatch login action
-      await dispatch(loginUser(loginData)).unwrap();
+      const response = await dispatch(loginUser(loginData)).unwrap();
 
       // Feedback on success
-      feedback(msgBackend || "Login successful!", "success");
+      feedback(response.message || "Login successful!", "success");
       router.push("/(app)/(tabs)");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";
         feedback(validationError);
       } else {
-        const errorMessage = err?.message || "Login failed. Try again.";
-        feedback(errorMessage);
+        feedback(err);
       }
     } finally {
       setLoading(false); // Stop loading

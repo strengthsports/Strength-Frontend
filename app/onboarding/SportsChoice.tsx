@@ -16,7 +16,10 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSportsData,setSelectedSports } from "@/reduxStore/slices/profileSlice";
+import {
+  fetchSportsData,
+  setSelectedSports,
+} from "@/reduxStore/slices/profileSlice";
 import { RootState } from "@/reduxStore";
 import { AppDispatch } from "@/reduxStore";
 

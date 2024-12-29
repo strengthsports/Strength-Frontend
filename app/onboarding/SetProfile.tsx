@@ -72,10 +72,7 @@ const ProfilePictureScreen: React.FC = () => {
   const handleSkip = (): void => {
     router.push({
       pathname: "/onboarding/SetHeadline",
-      params: {
-        profileImage,
-        selectedSports,
-      },
+      params: {},
     });
   };
 

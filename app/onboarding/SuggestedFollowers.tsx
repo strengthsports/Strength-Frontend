@@ -11,8 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
-import { getToken } from "@/utils/secureStore";
-import { useSelector, UseSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 import { useDispatch } from "react-redux";
 import { fetchUserSuggestions } from "@/reduxStore/slices/profileSlice";
@@ -89,10 +88,7 @@ const SuggestedSupportScreen: React.FC = () => {
     (state: RootState) => state.profile.profileImage,
   );
   const dispatch = useDispatch<AppDispatch>();
-  const [token, setToken] = useState<string | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
-  const [assets, setAssets] = useState<Blob | undefined>(undefined);
 
   const { fetchedUsers, loading, error } = useSelector(
     (state: RootState) => state.profile,

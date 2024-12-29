@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 import { setProfileHeadline } from "@/reduxStore/slices/profileSlice";
 
-const { height } = Dimensions.get("window");
+// const { height } = Dimensions.get("window");
 const firstName = "Utsav";
 const secondName = "Tiwari";
 const defaultImage = require("../../assets/images/onboarding/nopic.jpg");

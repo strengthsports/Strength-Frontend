@@ -8,10 +8,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import PageThemeView from "@/components/PageThemeView";
+import { z } from 'zod';
+import signupSchema from '@/schemas/signupSchema';
 
 
 
-const signupEmail1 = () => {
+const SignupEmail1 = () => {
   const router = useRouter();
   const [openModal14, setOpenModal14] = React.useState(false);
 
@@ -45,12 +47,39 @@ const signupEmail1 = () => {
       setGender('Female');
     };
 
-    const handleEmail = () => {
-      router.push({
-        pathname: "/Signup/signupEnterOtp2",
-      });
+    // const handleEmail = () => {
+    //   router.push({
+    //     pathname: "/Signup/signupEnterOtp2",
+    //   });
+    // };
+    const validateSignupForm = (formData: Record<string, any>) => {
+      try {
+        // Parse and validate data
+        const validData = signupSchema.parse(formData);
+    
+        console.log("Validated Data:", validData);
+        router.push({
+          pathname: "/Signup/signupEnterOtp2",
+        });
+        return validData;
+      } catch (err) {
+        if (err instanceof z.ZodError) {
+          console.error("Validation Errors:", err.errors);
+          return { errors: err.errors };
+        }
+        throw err;
+      }
     };
-
+    // Example Usage
+    const formData = {
+      email: 'ashhar@gmail.co',
+      firstName: "John",
+      lastName: "Doe",
+      dateOfBirth: "1990-01-01",
+      gender: "Male",
+    };
+    
+    // const validatedData = validateSignupForm(formData);
   return (
     <PageThemeView>
        <View style={{ width:'100%', alignItems:'center', marginTop: 30, flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 15}}>
@@ -73,11 +102,11 @@ const signupEmail1 = () => {
      
      <View style={{ gap : 18}}>
       <View style={{flexDirection:'row', gap: 10}}>
-        <View style={{ width: 162,}}>
+        <View style={{ width: 162, gap: 4}}>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>First Name</TextScallingFalse> 
           <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
-        <View style={{width: 162,}}>
+        <View style={{width: 162, gap: 4}}>
         <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Last Name</TextScallingFalse> 
           <TextInput style={{width: '100%', height: 40, borderRadius: 5, fontSize: 16, color:'white', borderColor:'white', borderWidth: 1, paddingHorizontal: 10}} />
         </View>
@@ -96,34 +125,35 @@ const signupEmail1 = () => {
       <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Date of birth</TextScallingFalse>
       <TouchableOpacity  activeOpacity={0.5}
        onPress={() => setIsDatePickerVisible(!isDatePickerVisible)} 
-       style={{  maxWidth: 335,
-        minWidth: 335,
+       style={{ 
+        width: 335,
         height: 44,
         borderWidth: 1,
         borderColor: 'white',
+        flexDirection:'row',
         borderRadius: 5.5,
         marginTop: 4,
-        paddingLeft: 10,}}><TextScallingFalse style={{color:'white', fontSize: 16, fontWeight:'400'}}></TextScallingFalse>
-        <TouchableOpacity onPress={() => setIsDatePickerVisible(!isDatePickerVisible)}
-         activeOpacity={0.5} style={{marginTop: -14, marginLeft: 288}}>
-        <AntDesign name="calendar" size={25} color="white" />
+        paddingLeft: 10, alignItems:'center'}}>
+        <TouchableOpacity style={{flexDirection:'row', gap: 15, alignItems:'center'}} onPress={() => setIsDatePickerVisible(!isDatePickerVisible)}
+         activeOpacity={0.5}>
+        <AntDesign name="calendar" size={25} color="white" /><Text style={{color:'white', fontSize: 14, fontWeight:'400'}}>{dateofBirth}</Text>
         </TouchableOpacity>
         </TouchableOpacity>
       </View>
 
-      <View>
+      <View style={{gap: 4}}>
         <View style={{flexDirection:'row'}}>
           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'500'}}>Gender</TextScallingFalse>  
         </View>
-        <View style={{ flexDirection:'row'}}>
-           <TouchableOpacity onPress={handleFemalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row'}}>
-           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 30}}>Female</TextScallingFalse>
-           <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', marginLeft: 35, marginTop: 1.5, backgroundColor: femaleSelected ? '#12956B' : 'black',}}/>
+        <View style={{ flexDirection:'row', gap: 10}}>
+           <TouchableOpacity onPress={handleFemalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row', justifyContent:'center', gap: 25}}>
+           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Female</TextScallingFalse>
+           <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', backgroundColor: femaleSelected ? '#12956B' : 'black',}}/>
            </TouchableOpacity>
 
-           <TouchableOpacity onPress={handleMalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row', marginLeft: 10}}>
-           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', marginLeft: 35}}>Male</TextScallingFalse>
-           <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', marginLeft: 45, marginTop: 1.5, backgroundColor: maleSelected ? '#12956B' : 'black',}}/>
+           <TouchableOpacity onPress={handleMalePress} activeOpacity={0.5} style={{width: 162, height: 42, borderRadius: 5, borderColor:'white', borderWidth: 1, alignItems:'center', flexDirection:'row', justifyContent:'center', gap: 25}}>
+           <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Male</TextScallingFalse>
+           <View style={{width: 15, height: 15, borderWidth: 1, borderRadius: 10, borderColor:'white', backgroundColor: maleSelected ? '#12956B' : 'black',}}/>
            </TouchableOpacity>
         </View>
       </View>
@@ -132,16 +162,16 @@ const signupEmail1 = () => {
 
       <View style={{gap : 15, marginTop: 30}}>
       <View style={{width: 330, justifyContent:'center', alignItems:'center',}}>
-      <TextScallingFalse style={{fontSize: 11, color: 'white',}} allowFontScaling={false}>By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
+      <TextScallingFalse style={{fontSize: 11, color: 'white',}}>By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
       <TouchableOpacity activeOpacity={0.5}  onPress={() => setOpenModal14(true)}>
-      <TextScallingFalse style={{fontSize: 11, color: '#12956B',}} allowFontScaling={false}>User Agreement, Privacy Policy, Cookies Policy.</TextScallingFalse>
+      <TextScallingFalse style={{fontSize: 11, color: '#12956B',}}>User Agreement, Privacy Policy, Cookies Policy.</TextScallingFalse>
       </TouchableOpacity>
       </View>
 
 
       <View style={{marginTop: 25}}>
-      <SignupButton onPress={handleEmail}>
-       <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
+      <SignupButton onPress={() => validateSignupForm(formData)}>
+      <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
       </SignupButton>
       </View>
       <View style={{justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
@@ -196,20 +226,20 @@ const signupEmail1 = () => {
   </View>
  
 
-<View style={{marginLeft: 25, width: 360, marginTop: 15}}>
-<TouchableOpacity onPress={() => Linking.openURL('https://strength-sports.webflow.io/resources/instructions')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 10, alignItems:'center'}}>
+<View style={{ marginTop: 15, paddingHorizontal: 25}}>
+<TouchableOpacity onPress={() => Linking.openURL('https://strength-sports.webflow.io/resources/instructions')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 10, alignItems:'center', gap: 20}}>
 <View style={{backgroundColor:'#12956B', width: 10, height: 10, borderRadius: 10, marginTop: 1}}></View>
-<Text style={{color: 'white', fontSize: 14, fontWeight: '400', marginLeft: 20}}>User Agreement</Text>
+<Text style={{color: 'white', fontSize: 14, fontWeight: '400'}}>User Agreement</Text>
 </TouchableOpacity>
 
-<TouchableOpacity onPress={() => Linking.openURL('https://www.strength.net.in/?privacy')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 15, alignItems:'center'}}>
+<TouchableOpacity onPress={() => Linking.openURL('https://www.strength.net.in/?privacy')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 15, alignItems:'center', gap: 20}}>
 <View style={{backgroundColor:'#12956B', width: 10, height: 10, borderRadius: 10, marginTop: 1}}></View>
-<Text style={{color: 'white', fontSize: 14, fontWeight: '400', marginLeft: 20}}>Privacy Policy</Text>
+<Text style={{color: 'white', fontSize: 14, fontWeight: '400'}}>Privacy Policy</Text>
 </TouchableOpacity>
 
-<TouchableOpacity onPress={() => Linking.openURL('https://www.strength.net.in/?term')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 15, alignItems:'center'}}>
+<TouchableOpacity onPress={() => Linking.openURL('https://www.strength.net.in/?term')} activeOpacity={0.5} style={{flexDirection:'row', marginTop: 15, alignItems:'center', gap: 20}}>
 <View style={{backgroundColor:'#12956B', width: 10, height: 10, borderRadius: 10, marginTop: 1}}></View>
-<Text style={{color: 'white', fontSize: 14, fontWeight: '400', marginLeft: 20}}>Cookies Policy</Text>
+<Text style={{color: 'white', fontSize: 14, fontWeight: '400'}}>Cookies Policy</Text>
 </TouchableOpacity>
 </View>
     
@@ -232,6 +262,5 @@ const signupEmail1 = () => {
   )
 }
 
-export default signupEmail1
+export default SignupEmail1
 
-const styles = StyleSheet.create({})

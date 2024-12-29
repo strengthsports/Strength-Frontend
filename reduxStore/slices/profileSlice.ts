@@ -31,6 +31,7 @@ export const fetchSportsData = createAsyncThunk(
 interface ProfileState {
   sportsData: { _id: string; name: string }[]; // Adjust sportsData type based on your response
   selectedSports: string[]; // Array to store selected sports IDs
+  profileImage: string | null; // Store profile image URI
   loading: boolean;
   error: string | null;
 }
@@ -38,6 +39,7 @@ interface ProfileState {
 const initialState: ProfileState = {
   sportsData: [],
   selectedSports: [],
+  profileImage: null, // Initialize with null
   loading: false,
   error: null,
 };
@@ -54,13 +56,25 @@ const profileSlice = createSlice({
         : [...state.selectedSports, sportId]; // Add sport if not selected
       state.selectedSports = updatedSelectedSports;
     },
+
+    // Action to set the selected sports array
     setSelectedSports(state, action) {
-        state.selectedSports = action.payload;
-      },
+      state.selectedSports = action.payload;
+    },
 
     // Optional: Action to update selected sports directly (e.g., from another part of your app)
     updateSelectedSports(state, action) {
       state.selectedSports = action.payload;
+    },
+
+    // Action to set profile image
+    setProfileImage(state, action) {
+      state.profileImage = action.payload;
+    },
+
+    // Action to clear profile image
+    clearProfileImage(state) {
+      state.profileImage = null;
     },
   },
   extraReducers: (builder) => {
@@ -80,6 +94,12 @@ const profileSlice = createSlice({
   },
 });
 
-export const { toggleSportSelection, updateSelectedSports, setSelectedSports } = profileSlice.actions;
+export const {
+  toggleSportSelection,
+  updateSelectedSports,
+  setSelectedSports,
+  setProfileImage,
+  clearProfileImage,
+} = profileSlice.actions;
 
 export default profileSlice.reducer;

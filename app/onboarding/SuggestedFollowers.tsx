@@ -12,6 +12,12 @@ import { useLocalSearchParams } from "expo-router";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
 import { getToken } from "@/utils/secureStore";
+import { useSelector, UseSelector } from "react-redux";
+import { RootState } from "@/reduxStore";
+import { useDispatch } from "react-redux";
+import { fetchUserSuggestions } from "@/reduxStore/slices/profileSlice";
+import { AppDispatch } from "@/reduxStore";
+import { onboardingUser } from "@/reduxStore/slices/profileSlice";
 
 interface SupportCardProps {
   user: any;
@@ -72,43 +78,29 @@ const SupportCard: React.FC<SupportCardProps> = ({
 const SuggestedSupportScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const headline = params?.headline;
-  const selectedSports = params?.selectedSports;
+  const headline = useSelector(
+    (state: RootState) => state.profile.profileHeadline,
+  );
+  const selectedSports = useSelector(
+    (state: RootState) => state.profile.selectedSports,
+  );
   const selectedFile = params?.selectedFile;
-  var profileImage = params?.profileImage;
+  var profileImage = useSelector(
+    (state: RootState) => state.profile.profileImage,
+  );
+  const dispatch = useDispatch<AppDispatch>();
   const [token, setToken] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [assets, setAssets] = useState<Blob | undefined>(undefined);
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const tokenValue = await getToken("accessToken");
-        setToken(tokenValue);
-      } catch (error) {
-        console.error("Error fetching token:", error);
-      }
-    };
-    fetchToken();
-  }, []);
+  const { fetchedUsers, loading, error } = useSelector(
+    (state: RootState) => state.profile,
+  );
 
-  useEffect(() => {
-    if (token) {
-      fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setUsers(data.data); // Set the fetched users data
-        })
-        .catch((error) => console.error("Error fetching sports:", error));
-    }
-  }, [token]);
+  React.useEffect(() => {
+    dispatch(fetchUserSuggestions());
+  }, [dispatch]);
 
   const handleClose = (id: string) => {
     setSelectedPlayers((prev) => prev.filter((player) => player !== id));
@@ -123,38 +115,65 @@ const SuggestedSupportScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    console.log("Selected players:", selectedPlayers);
+    // console.log("Selected Players:", selectedPlayers);
+    // console.log("Selected File:", selectedFile);
+    // console.log("Selected Sports:", selectedSports);
+    // console.log("Profile Image:", profileImage);
+    // console.log("Headline:", headline);
 
-    // Handle headline
-    const finalHeadline = headline === undefined ? "" : headline;
+    const onboardingData = {
+      headline: headline,
+      assets: [profileImage],
+      sports: selectedSports,
+      followings: selectedPlayers,
+    };
 
-    // Handle selectedSports
-    const sports = selectedSports.split(",");
-    console.log(selectedFile);
-    // console.log("Selected sports:", sports);
-    // Handle profileImage
-    const finalProfileImage = profileImage === undefined ? "" : profileImage;
+    try {
+      // Dispatch the onboardingUser action and wait for the result using unwrap
+      const response = await dispatch(onboardingUser(onboardingData)).unwrap();
 
-    await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        headline: finalHeadline,
-        assets: [selectedFile],
-        sports: sports,
-        followings: selectedPlayers,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+      // Alert the successful response
+      alert("User onboarded successfully: " + JSON.stringify(response));
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "message" in error) {
+        alert(
+          "Error onboarding user: " + (error as { message: string }).message,
+        );
+      } else {
+        alert("An unknown error occurred");
+      }
+    }
+  };
+
+  const handleSkip = async () => {
+    // console.log("Selected Players:", selectedPlayers);
+    // console.log("Selected File:", selectedFile);
+    // console.log("Selected Sports:", selectedSports);
+    // console.log("Profile Image:", profileImage);
+    // console.log("Headline:", headline);
+
+    const onboardingData = {
+      headline: headline,
+      assets: [profileImage],
+      sports: selectedSports,
+      followings: selectedPlayers,
+    };
+
+    try {
+      // Dispatch the onboardingUser action and wait for the result using unwrap
+      const response = await dispatch(onboardingUser(onboardingData)).unwrap();
+
+      // Alert the successful response
+      alert("User onboarded successfully: " + JSON.stringify(response));
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "message" in error) {
+        alert(
+          "Error onboarding user: " + (error as { message: string }).message,
+        );
+      } else {
+        alert("An  error occurred");
+      }
+    }
   };
 
   return (
@@ -188,7 +207,7 @@ const SuggestedSupportScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           <View className="flex-row flex-wrap justify-center">
-            {users.map((user) => (
+            {fetchedUsers.map((user) => (
               <SupportCard
                 key={user._id}
                 user={user}
@@ -210,7 +229,7 @@ const SuggestedSupportScreen: React.FC = () => {
             maxWidth: 120,
             height: 36,
           }}
-          onPress={selectedPlayers.length > 0 ? handleContinue : undefined}
+          onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
         >
           <TextScallingFalse
             className={`${

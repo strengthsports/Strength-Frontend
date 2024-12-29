@@ -17,21 +17,23 @@ import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
+import { setProfileHeadline } from "@/reduxStore/slices/profileSlice";
 
 const { height } = Dimensions.get("window");
-const firstName = "Utsav"
-const secondName = "Tiwari"
+const firstName = "Utsav";
+const secondName = "Tiwari";
 const defaultImage = require("../../assets/images/onboarding/nopic.jpg");
 
 const SetHeadline: React.FC = () => {
   const [headline, setHeadline] = useState("");
   const router = useRouter();
+  const dispatch = useDispatch();
   const params = useLocalSearchParams();
 
   const profilePicture = useSelector(
     (state: RootState) => state.profile.profileImage,
   );
-  console.log("profilePicture" + profilePicture);
+  // console.log("profilePicture" + profilePicture);
   const selectedFile = params?.selectedFile;
   // Use profile image if provided, else use default
   const profileImageSource = profilePicture
@@ -45,17 +47,17 @@ const SetHeadline: React.FC = () => {
       alert("Please enter a headline.");
       return;
     }
-    console.log(headline);
+    dispatch(setProfileHeadline(headline));
+    // console.log(headline);
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
-      params: { headline, profileImage: profilePicture, selectedFile },
+      params: { selectedFile },
     });
   }
 
   function handleSkipPress() {
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
-      params: { headline, profileImage: profilePicture },
     });
     console.log("Skip");
   }

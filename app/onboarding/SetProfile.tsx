@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -9,29 +9,22 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
-import TextScallingFalse from "@/components/CentralText";
+import { useSelector, useDispatch } from "react-redux";
 import * as FileSystem from "expo-file-system";
 import Logo from "@/components/logo";
+import TextScallingFalse from "@/components/CentralText";
+import { RootState } from "@/reduxStore";
+import {
+  setProfileImage,
+  clearProfileImage,
+} from "@/reduxStore/slices/profileSlice";
 
-interface ProfilePictureScreenProps {
-  onImageSelected?: (uri: string) => void;
-  onSkip?: () => void;
-  containerStyle?: string;
-}
-
-const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
-  onImageSelected,
-  onSkip,
-  containerStyle,
-}) => {
-  const [image, setImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
+const ProfilePictureScreen: React.FC = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
-
-  const params = useLocalSearchParams();
-  const selectedSports = params?.selectedSports;
-  console.log(selectedSports);
+  const { profileImage, selectedSports } = useSelector(
+    (state: RootState) => state.profile,
+  );
 
   const pickImage = async (): Promise<void> => {
     try {
@@ -51,7 +44,6 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
       if (!result.canceled && result.assets?.[0]?.uri) {
         const originalUri = result.assets[0].uri;
-        setSelectedFile(result.assets[0]);  // Store the selected file
 
         // Create a permanent path for the image
         const fileName = `profile_${Date.now()}.jpg`;
@@ -64,9 +56,8 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
             to: newUri,
           });
 
-          // Update state and call callback with the new permanent URI
-          setImage(newUri);
-          onImageSelected?.(newUri);
+          // Dispatch action to save the profile image in Redux
+          dispatch(setProfileImage(newUri));
         } catch (copyError) {
           console.error("Error copying image:", copyError);
           alert("Failed to save image. Please try again.");
@@ -81,38 +72,32 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
   const handleSkip = (): void => {
     router.push({
       pathname: "/onboarding/SetHeadline",
-      params: { 
-        profileImage: image, 
-        selectedSports,
-        selectedFile: selectedFile ? JSON.stringify(selectedFile) : null 
-      },
+      params: {},
     });
   };
 
   const handleContinue = (): void => {
-    if (image) {
-      console.log("Selected profile picture: " + image);
+    if (profileImage) {
+      console.log("Selected profile picture: " + profileImage);
       router.push({
         pathname: "/onboarding/SetHeadline",
-        params: { 
-          profileImage: image, 
+        params: {
+          profileImage,
           selectedSports,
-          selectedFile: selectedFile ? JSON.stringify(selectedFile) : null
         },
       });
     }
   };
 
   const handleRemovePic = (): void => {
-    setImage(null);
-    setSelectedFile(null);
+    dispatch(clearProfileImage()); // Clear profile image from Redux store
   };
 
   return (
     <SafeAreaView
       className={`flex-1 bg-black px-8 mt-8 pt-${
         Platform.OS === "android" ? StatusBar.currentHeight : 0
-      } ${containerStyle}`}
+      }`}
     >
       <StatusBar barStyle="light-content" />
 
@@ -131,9 +116,9 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
       <View className="items-center mt-10">
         <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
-          {image ? (
+          {profileImage ? (
             <Image
-              source={{ uri: image }}
+              source={{ uri: profileImage }}
               className="w-40 h-40 rounded-full"
               resizeMode="cover"
             />
@@ -156,23 +141,35 @@ const ProfilePictureScreen: React.FC<ProfilePictureScreenProps> = ({
 
       <TouchableOpacity
         className="bg-[#00A67E] rounded-full h-12 justify-center items-center mt-10"
-        onPress={image ? handleContinue : pickImage}
+        onPress={profileImage ? handleContinue : pickImage}
         activeOpacity={0.8}
       >
         <TextScallingFalse className="text-white text-base font-semibold">
-          {image ? "Continue" : "Add a photo"}
+          {profileImage ? "Continue" : "Add a photo"}
         </TextScallingFalse>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        className="mt-5 py-2 items-center"
-        onPress={image ? handleRemovePic : handleSkip}
-        activeOpacity={0.6}
-      >
-        <TextScallingFalse className="text-gray-400 text-base">
-          {image ? "Remove Pic" : "Skip for now"}
-        </TextScallingFalse>
-      </TouchableOpacity>
+      {profileImage ? (
+        <TouchableOpacity
+          className="mt-4"
+          onPress={handleRemovePic}
+          activeOpacity={0.8}
+        >
+          <TextScallingFalse className="text-[#00A67E] text-center text-base font-semibold">
+            Remove Picture
+          </TextScallingFalse>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          className="mt-2"
+          onPress={handleSkip}
+          activeOpacity={0.8}
+        >
+          <TextScallingFalse className="text-[#B4B4B4] text-center text-base font-semibold">
+            Skip for now
+          </TextScallingFalse>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };

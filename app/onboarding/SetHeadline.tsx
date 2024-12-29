@@ -15,9 +15,12 @@ import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/reduxStore";
+import { setProfileHeadline } from "@/reduxStore/slices/profileSlice";
+import Toast from "react-native-toast-message";
 
-
-const { height } = Dimensions.get("window");
+// const { height } = Dimensions.get("window");
 const firstName = "Utsav";
 const secondName = "Tiwari";
 const defaultImage = require("../../assets/images/onboarding/nopic.jpg");
@@ -25,13 +28,14 @@ const defaultImage = require("../../assets/images/onboarding/nopic.jpg");
 const SetHeadline: React.FC = () => {
   const [headline, setHeadline] = useState("");
   const router = useRouter();
+  const dispatch = useDispatch();
   const params = useLocalSearchParams();
 
-  const profilePicture = params?.profileImage;
-  const selectedSports = params?.selectedSports;
+  const profilePicture = useSelector(
+    (state: RootState) => state.profile.profileImage,
+  );
+  // console.log("profilePicture" + profilePicture);
   const selectedFile = params?.selectedFile;
-  // console.log(selectedFile);
-
   // Use profile image if provided, else use default
   const profileImageSource = profilePicture
     ? {
@@ -41,20 +45,23 @@ const SetHeadline: React.FC = () => {
 
   function handleNextPress() {
     if (!headline) {
-      alert("Please enter a headline.");
+      Toast.show({
+        type: "error",
+        text1: "Please enter your headline.",
+      });
       return;
     }
-    console.log(headline);
+    dispatch(setProfileHeadline(headline));
+    // console.log(headline);
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
-      params: { headline, profileImage: profilePicture, selectedSports, selectedFile },
+      params: { selectedFile },
     });
   }
 
   function handleSkipPress() {
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
-      params: { headline, profileImage: profilePicture, selectedSports },
     });
     console.log("Skip");
   }
@@ -73,7 +80,9 @@ const SetHeadline: React.FC = () => {
               <TextScallingFalse className="text-white text-[2.9rem] font-semibold leading-tight">
                 Let's get you{"\n"}started!
               </TextScallingFalse>
-              <TextScallingFalse className="text-gray-500 text-base mt-4">Step 2 of 3</TextScallingFalse>
+              <TextScallingFalse className="text-gray-500 text-base mt-4">
+                Step 2 of 3
+              </TextScallingFalse>
               <TextScallingFalse className="text-white text-[24px] font-semibold mt-2.5">
                 Set your sports Headline
               </TextScallingFalse>
@@ -81,7 +90,9 @@ const SetHeadline: React.FC = () => {
                 Let others know your position, you can always change it later.
               </TextScallingFalse>
 
-              <TextScallingFalse className="text-white text-lg mt-4 mb-2">Headline</TextScallingFalse>
+              <TextScallingFalse className="text-white text-lg mt-4 mb-2">
+                Headline
+              </TextScallingFalse>
               <TextInput
                 className="border border-white rounded-md text-white h-12 px-4 text-lg"
                 placeholderTextColor="#666"
@@ -90,7 +101,9 @@ const SetHeadline: React.FC = () => {
                 onChangeText={setHeadline}
               />
 
-              <TextScallingFalse className="text-gray-500 text-base mt-6">Example:</TextScallingFalse>
+              <TextScallingFalse className="text-gray-500 text-base mt-6">
+                Example:
+              </TextScallingFalse>
               <View className="flex-row mt-4">
                 <View className="items-center flex-1">
                   <Image
@@ -115,18 +128,23 @@ const SetHeadline: React.FC = () => {
                 className="bg-[#00A67E] h-12 rounded-full justify-center items-center"
                 onPress={handleNextPress}
               >
-                <TextScallingFalse className="text-white text-lg font-medium">Next</TextScallingFalse>
+                <TextScallingFalse className="text-white text-lg font-medium">
+                  Next
+                </TextScallingFalse>
               </TouchableOpacity>
               <TouchableOpacity
                 className="mt-4 items-center"
                 onPress={handleSkipPress}
               >
-                <TextScallingFalse className="text-gray-500 text-base">Skip for now</TextScallingFalse>
+                <TextScallingFalse className="text-gray-500 text-base">
+                  Skip for now
+                </TextScallingFalse>
               </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
+      <Toast/>
     </SafeAreaView>
   );
 };

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking, Vibration, Platform} from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking, Vibration, Platform, ToastAndroid} from 'react-native'
 import React, { useState } from "react";
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import Logo from "@/components/logo";
@@ -9,7 +9,7 @@ import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import PageThemeView from "@/components/PageThemeView";
 import { z } from 'zod';
-import signupSchema from '@/schemas/signupSchema';
+import {signupSchema} from '@/schemas/signupSchema';
 import { useDispatch, useSelector } from 'react-redux';
 import { signupUser } from '@/reduxStore/slices/signupSlice';
 import { AppDispatch, RootState } from '@/reduxStore';
@@ -20,7 +20,7 @@ import Toast from 'react-native-toast-message';
 const SignupEmail1 = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  // const isAndroid = Platform.OS === "android";
+  const isAndroid = Platform.OS === "android";
   
   const [openModal14, setOpenModal14] = React.useState(false);
   const [email, setEmail] = useState<string>(""); // Explicitly type as string
@@ -59,25 +59,33 @@ const SignupEmail1 = () => {
       };
   const feedback = (message: string, type: "error" | "success" = "error") => {
     const vibrationPattern = [0, 50, 80, 50];
-    
+
     if (type === "error") {
       Vibration.vibrate(vibrationPattern);
-    }  Toast.show({
-          type,
-          text1: message,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+      isAndroid
+        ? ToastAndroid.show(message, ToastAndroid.SHORT)
+        : Toast.show({
+            type,
+            text1: message,
+            visibilityTime: 3000,
+            autoHide: true,
+          });
+    } else
+      Toast.show({
+        type,
+        text1: message,
+        visibilityTime: 3000,
+        autoHide: true,
+      });
   };  
   
   const validateSignupForm = async () => {
 
       try {
-        // Parse and validate data
-        const validData = signupSchema.parse(formData);
+        const signupPayloadData = signupSchema.parse(formData);
     
-        console.log("Validated Data:", formData);
-        const response = await dispatch(signupUser(validData)).unwrap()
+        // console.log("Validated Data:", formData);
+        const response = await dispatch(signupUser(signupPayloadData)).unwrap()
         feedback(response.message || "OTP sent to email", "success");
 
         router.push({

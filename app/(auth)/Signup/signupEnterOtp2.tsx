@@ -1,5 +1,5 @@
 import { Platform, StyleSheet, Text, ToastAndroid, TouchableOpacity, Vibration, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from "expo-router";
 import Logo from "@/components/logo";
 import PageThemeView from "@/components/PageThemeView";
@@ -8,7 +8,7 @@ import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/reduxStore';
-import { resetSignupState, verifyOTPSignup } from '@/reduxStore/slices/signupSlice';
+import { verifyOTPSignup } from '@/reduxStore/slices/signupSlice';
 import { z } from 'zod';
 import Toast from 'react-native-toast-message';
 import { otpSchema } from '@/schemas/signupSchema';
@@ -24,8 +24,6 @@ const SignupEnterOtp2 = () => {
   const [OTP, setOTP] = useState<string>(""); // Explicitly typed as string
   // console.log('OTP', OTP)
   // console.log('type', typeof OTP)
-
-  console.log("Redux State userId:", userId); // Debug userId value
 
   console.log("Response before:", userId, OTP);
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {

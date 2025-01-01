@@ -49,7 +49,7 @@ export const signupUser = createAsyncThunk<
     if (!response.ok) {
       return rejectWithValue(data.message || "Signup failed. Please try again.");
     }
-    console.log('redux userid ', data.data.user._id)
+    // console.log('redux userid ', data.data.user._id)
     return { message: data.message, userId: data.data.user._id };
   } catch (error: any) {
     console.error("Signup Error:", error);

@@ -20,6 +20,7 @@ import Toast from 'react-native-toast-message';
 const SignupEmail1 = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  // const { loading, success, error, userId, message } = useSelector((state: RootState) => state.signup);
   const isAndroid = Platform.OS === "android";
   
   const [openModal14, setOpenModal14] = React.useState(false);
@@ -86,6 +87,7 @@ const SignupEmail1 = () => {
     
         // console.log("Validated Data:", formData);
         const response = await dispatch(signupUser(signupPayloadData)).unwrap()
+        console.log('frontend response',response)
         feedback(response.message || "OTP sent to email", "success");
 
         router.push({
@@ -97,7 +99,7 @@ const SignupEmail1 = () => {
           const validationError = err.errors[0]?.message || "Invalid input.";
           feedback(validationError, "error");
         } else {
-          feedback(err.message || "An error occurred. Please try again.", "error");
+          feedback(err || "An error occurred. Please try again.", "error");
         }
     };
 }

@@ -24,3 +24,16 @@ export const Colors = {
     tabIconSelected: tintColorDark,
   },
 };
+
+export const NAV_THEME = {
+  light: {
+    background: 'hsl(0 0% 100%)',
+    border: 'hsl(240 5.9% 90%)',
+    // Add other properties as needed
+  },
+  dark: {
+    background: 'hsl(240 10% 3.9%)',
+    border: 'hsl(240 3.7% 15.9%)',
+    // Add other properties as needed
+  },
+};

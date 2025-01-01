@@ -197,13 +197,14 @@ const LoginScreen = () => {
               alignItems: "center",
               marginTop: 3,
               borderRadius: 40,
+              gap: 10,
               flexDirection: "row",
             }}
           >
             <TextScallingFalse style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}>
               or continue with
             </TextScallingFalse>
-            <Image source={google} style={{ width: 12, height: 12, marginLeft: 10, marginTop: 3.5 }} />
+            <Image source={google} style={{ width: 12, height: 12, marginTop: 3.5 }} />
           </TouchableOpacity>
         </View>
       </ScrollView>

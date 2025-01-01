@@ -15,15 +15,12 @@ import { otpSchema } from '@/schemas/signupSchema';
 
 const SignupEnterOtp2 = () => {
   const router = useRouter();
+  const isAndroid = Platform.OS === "android";
   console.log('Redux State:', useSelector((state: RootState) => state.signup));
-
   const dispatch = useDispatch<AppDispatch>()
   const { loading, success, error, userId } = useSelector((state: RootState) => state.signup);
-  const isAndroid = Platform.OS === "android";
 
   const [OTP, setOTP] = useState<string>(""); // Explicitly typed as string
-  // console.log('OTP', OTP)
-  // console.log('type', typeof OTP)
 
   console.log("Response before:", userId, OTP);
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
@@ -33,7 +30,7 @@ const SignupEnterOtp2 = () => {
       Vibration.vibrate(vibrationPattern);
     }
   
-    Platform.OS === "android"
+    isAndroid
       ? ToastAndroid.show(errorMsg, ToastAndroid.LONG)
       : Toast.show({
           type,
@@ -42,9 +39,8 @@ const SignupEnterOtp2 = () => {
           autoHide: true,
         });
   };
-
   
-  const handleVerificationCode = async () => {
+  const handleOTPAndNextScreen = async () => {
     try {
       const verificationData = otpSchema.parse({ OTP, userId });
   
@@ -53,6 +49,8 @@ const SignupEnterOtp2 = () => {
       ).unwrap();
   
       feedback(response.message || "OTP verified successfully!", "success");
+      router.push("/Signup/signupEnterUsername3"); // Navigate to the next screen
+
       // handleNextScreen(); // Navigate to the next screen on success
     } catch (err: any) {
       if (err instanceof z.ZodError) {
@@ -64,11 +62,6 @@ const SignupEnterOtp2 = () => {
     }
 
   };
-  const handleNextScreen = async () => {
-    router.push("/Signup/signupEnterUsername3"); // Navigate to the next screen
-  };
-
-
 
   return (
     <PageThemeView>
@@ -96,12 +89,9 @@ const SignupEnterOtp2 = () => {
        </View>
        <TouchableOpacity activeOpacity={0.5} style={{marginTop:35}}>
         <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Resend code</TextScallingFalse>
-        <TouchableOpacity onPress={handleVerificationCode} >  
-          <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400', paddingVertical:20}}>Varify code</TextScallingFalse>
-        </TouchableOpacity>
         </TouchableOpacity>
         <View style={{marginTop: 50}}>
-          <SignupButton onPress={handleNextScreen}>
+          <SignupButton onPress={handleOTPAndNextScreen}>
             <TextScallingFalse style={{color:'white', fontSize: 15, fontWeight:'600'}}>Next</TextScallingFalse>
           </SignupButton>
         </View>

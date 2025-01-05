@@ -19,9 +19,8 @@ const signupEnterLocation4 = () => {
   // Hardcoded address
   const hardCodedAddress = {
     location: {
-      latitude: 22.5769,
-      longitude: 88.4265,
-    },
+        coordinates:[" 22.5769","88.4265"]
+    }
   };
 
   const handleNext = () => {

@@ -11,6 +11,7 @@ import { AppDispatch, RootState } from "@/reduxStore";
 import { setUsername } from "@/reduxStore/slices/profileSlice";
 import Toast from "react-native-toast-message";
 import { usernameSchema } from "~/schemas/profileSchema";
+import { vibrationPattern } from "~/constants/vibrationPattern";
 
 const signupEnterUsername3 = () => {
   const router = useRouter();
@@ -21,8 +22,6 @@ const signupEnterUsername3 = () => {
 
   // Feedback function for error/success messages
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
-    const vibrationPattern = [0, 50, 80, 50];
-
     if (type === "error") {
       Vibration.vibrate(vibrationPattern);
     }

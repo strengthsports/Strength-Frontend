@@ -104,6 +104,8 @@ interface User{
   profileImage: string;
 }
 interface ProfileState {
+  username: string | null; // Store username
+  address: object | null; // Store username
   sportsData: { _id: string; name: string }[]; // Adjust sportsData type based on your response
   fetchedUsers: User[];
   selectedSports: string[]; // Array to store selected sports IDs
@@ -114,6 +116,8 @@ interface ProfileState {
 }
 
 const initialState: ProfileState = {
+  username: null,
+  address: null,
   sportsData: [],
   fetchedUsers: [],
   selectedSports: [],
@@ -167,7 +171,19 @@ const profileSlice = createSlice({
     //Action to edit profile headline
     editProfileHeadline(state, action) {
       state.profileHeadline = action.payload;
-    }
+    },
+    setUsername(state, action) {
+      state.username = action.payload;
+    },
+    clearUsername(state) {
+      state.username = "";
+    },
+    setAddress(state, action) {
+      state.address = action.payload;
+    },
+    clearAddress(state) {
+      state.address = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -208,6 +224,10 @@ export const {
   setProfileHeadline,
   clearProfileHeadline,
   editProfileHeadline,
+  setUsername,
+  clearUsername,
+  setAddress,
+  clearAddress,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

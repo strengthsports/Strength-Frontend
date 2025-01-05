@@ -8,24 +8,6 @@ interface SignupState {
   userId: string | null; // Track user ID
   email: string | null; // Track user email
 }
-
-interface SignupPayload {
-  email: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
-}
-
-interface OTPPayload {
-  _id: string;
-  otp: string;
-}
-interface resendOTPPayload {
-  _id: string;
-  email : string;
-}
-
 // Initial State
 const initialState: SignupState = {
   loading: false,
@@ -35,6 +17,13 @@ const initialState: SignupState = {
   email: null,
 };
 
+interface SignupPayload {
+  email: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: string;
+}
 // Thunk for Signup
 export const signupUser = createAsyncThunk<
   { message: string; userId: string, email: string }, // Returned data type on success
@@ -62,6 +51,10 @@ export const signupUser = createAsyncThunk<
   }
 });
 
+interface OTPPayload {
+  _id: string;
+  otp: string;
+}
 // Thunk for Verify OTP
 export const verifyOTPSignup = createAsyncThunk<
   { message: string },
@@ -90,6 +83,10 @@ export const verifyOTPSignup = createAsyncThunk<
   }
 });
 
+interface resendOTPPayload {
+  _id: string;
+  email : string;
+}
 // Resend OTP Thunk
 export const resendOtp = createAsyncThunk<
   { message: string },
@@ -117,6 +114,44 @@ export const resendOtp = createAsyncThunk<
     return rejectWithValue("Something went wrong. Please try again later.");
   }
 });
+
+interface completeSignupPayload {
+  email: string;
+  password: string;
+  username: string;
+  address: object;
+}
+export const completeSignup = createAsyncThunk<
+  { message: string },
+  completeSignupPayload,
+  { rejectValue: string }
+>(
+  "user/completeSignup",
+  async (completeSignupPayload, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/complete-signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(completeSignupPayload),
+      });
+
+      const data = await response.json();
+      console.log('redux data',data)
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Something went wrong!");
+      }
+
+      return { message: data.message }; // Return the response data for the fulfilled state
+    } catch (error: any) {
+      console.error("Complete Signup Error:", error);
+      return rejectWithValue(error.message || "Network error!");
+    }
+  }
+);
+
 
 // Slice
 const signupSlice = createSlice({
@@ -185,6 +220,22 @@ const signupSlice = createSlice({
       state.loading = false;
       state.success = false;
       state.error = action.payload || "Unexpected error occurred while resending OTP.";
+    });
+    // Complete Signup Thunk State Handling
+    builder
+    .addCase(completeSignup.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(completeSignup.fulfilled, (state, action) => {
+      state.loading = false;
+      state.success = true;
+      state.error = null;
+    })
+    .addCase(completeSignup.rejected, (state, action) => {
+      state.loading = false;
+      state.success = false;
+      state.error = action.payload || "Unexpected error occurred during complete signup.";
     });
   },
 });

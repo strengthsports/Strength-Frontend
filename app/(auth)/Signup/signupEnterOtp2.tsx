@@ -12,6 +12,7 @@ import { resendOtp, verifyOTPSignup } from '@/reduxStore/slices/signupSlice';
 import { z } from 'zod';
 import Toast from 'react-native-toast-message';
 import { otpSchema, resendOtpSchema } from '@/schemas/signupSchema';
+import { vibrationPattern } from '~/constants/vibrationPattern';
 
 const SignupEnterOtp2 = () => {
   const router = useRouter();
@@ -22,9 +23,7 @@ const SignupEnterOtp2 = () => {
   const [OTP, setOTP] = useState<string>(""); // Explicitly typed as string
 
   // console.log("Response before:", userId, OTP);
-  const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
-    const vibrationPattern = [0, 50, 80, 50];
-    
+  const feedback = (errorMsg: string, type: "error" | "success" = "error") => {    
     if (type === "error") {
       Vibration.vibrate(vibrationPattern);
     }
@@ -96,7 +95,11 @@ const SignupEnterOtp2 = () => {
         <View>
         <TextScallingFalse style={{color:'white', fontSize: 23, fontWeight:'500'}}>Enter the verification code</TextScallingFalse>
         <View style={{width: '81%'}}>
-        <TextScallingFalse style={{fontSize: 12, color:'white'}}>We sent the verification code to- ExampleEmail@gmail.com <TextScallingFalse style={{fontSize: 13, color:'#12956B'}}>Edit mail</TextScallingFalse></TextScallingFalse>
+        <TextScallingFalse style={{fontSize: 12, color:'white'}}>
+          We sent the verification code to {email} 
+          <TextScallingFalse onPress={() => router.push("/Signup/signupEmail1")} style={{fontSize: 13, color:'#12956B'}}> Edit email
+            </TextScallingFalse>
+          </TextScallingFalse>
         </View>
         </View>
       </View>

@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signupUser } from '@/reduxStore/slices/signupSlice';
 import { AppDispatch, RootState } from '@/reduxStore';
 import Toast from 'react-native-toast-message';
+import { vibrationPattern } from '~/constants/vibrationPattern';
 
 
 
@@ -59,8 +60,6 @@ const SignupEmail1 = () => {
         gender,
       };
   const feedback = (message: string, type: "error" | "success" = "error") => {
-    const vibrationPattern = [0, 50, 80, 50];
-
     if (type === "error") {
       Vibration.vibrate(vibrationPattern);
       isAndroid
@@ -82,9 +81,9 @@ const SignupEmail1 = () => {
   
   const validateSignupForm = async () => {
       try {
-        const signupPayloadData = signupSchema.parse(formData);
+        const SignupPayload = signupSchema.parse(formData);
     
-        const response = await dispatch(signupUser(signupPayloadData)).unwrap()
+        const response = await dispatch(signupUser(SignupPayload)).unwrap()
         // console.log('frontend response',response)
         feedback(response.message || "OTP sent to email", "success");
 

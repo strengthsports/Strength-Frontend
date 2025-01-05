@@ -5,7 +5,8 @@ interface SignupState {
   loading: boolean;
   success: boolean;
   error: string | null;
-  userId: string | null; // Track user ID for OTP verification
+  userId: string | null; // Track user ID
+  email: string | null; // Track user email
 }
 
 interface SignupPayload {
@@ -20,28 +21,33 @@ interface OTPPayload {
   _id: string;
   otp: string;
 }
+interface resendOTPPayload {
+  _id: string;
+  email : string;
+}
 
 // Initial State
 const initialState: SignupState = {
   loading: false,
   success: false,
   error: null,
-  userId: null, // Initially, no user is associated
+  userId: null,
+  email: null,
 };
 
 // Thunk for Signup
 export const signupUser = createAsyncThunk<
-  { message: string; userId: string }, // Returned data type on success
+  { message: string; userId: string, email: string }, // Returned data type on success
   SignupPayload, // Argument type
   { rejectValue: string } // Rejected value type
->("auth/signupUser", async (signupPayloadData, { rejectWithValue }) => {
+>("auth/signupUser", async (SignupPayload, { rejectWithValue }) => {
   try {
     const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/initiate-signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(signupPayloadData),
+      body: JSON.stringify(SignupPayload),
     });
 
     const data = await response.json();
@@ -49,8 +55,7 @@ export const signupUser = createAsyncThunk<
     if (!response.ok) {
       return rejectWithValue(data.message || "Signup failed. Please try again.");
     }
-    // console.log('redux userid ', data.data.user._id)
-    return { message: data.message, userId: data.data.user._id };
+    return { message: data.message, userId: data.data.user._id, email: data.data.user.email };
   } catch (error: any) {
     console.error("Signup Error:", error);
     return rejectWithValue("Something went wrong. Please try again later.");
@@ -59,9 +64,9 @@ export const signupUser = createAsyncThunk<
 
 // Thunk for Verify OTP
 export const verifyOTPSignup = createAsyncThunk<
-  { message: string }, // Returned data type on success
-  OTPPayload, // Argument type
-  { rejectValue: string } // Rejected value type
+  { message: string },
+  OTPPayload,
+  { rejectValue: string }
 >("auth/verifyOtp", async (OTPPayload, { rejectWithValue }) => {
   try {
     const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/verify-otp`, {
@@ -85,6 +90,34 @@ export const verifyOTPSignup = createAsyncThunk<
   }
 });
 
+// Resend OTP Thunk
+export const resendOtp = createAsyncThunk<
+  { message: string },
+  resendOTPPayload,
+  { rejectValue: string }
+>("auth/resendOtp", async (resendOTPPayload, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/resend-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(resendOTPPayload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Resending OTP failed. Please try again.");
+    }
+
+    return { message: data.message };
+  } catch (error: any) {
+    console.error("Resend OTP Error:", error);
+    return rejectWithValue("Something went wrong. Please try again later.");
+  }
+});
+
 // Slice
 const signupSlice = createSlice({
   name: "signup",
@@ -95,6 +128,7 @@ const signupSlice = createSlice({
       state.success = false;
       state.error = null;
       state.userId = null;
+      state.email = null;
     },
   },
   extraReducers: (builder) => {
@@ -105,12 +139,14 @@ const signupSlice = createSlice({
         state.error = null;
         state.success = false;
         state.userId = null;
+        state.email = null;
       })
       .addCase(signupUser.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
         state.error = null;
-        state.userId = action.payload.userId; // Store user ID for OTP verification
+        state.userId = action.payload.userId; // Store user ID
+        state.email = action.payload.email; // Store userEmail
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.loading = false;
@@ -134,6 +170,22 @@ const signupSlice = createSlice({
         state.success = false;
         state.error = action.payload || "Unexpected error occurred during OTP verification.";
       });
+          // Resend OTP
+    builder
+    .addCase(resendOtp.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(resendOtp.fulfilled, (state, action) => {
+      state.loading = false;
+      state.success = true;
+      state.error = null;
+    })
+    .addCase(resendOtp.rejected, (state, action) => {
+      state.loading = false;
+      state.success = false;
+      state.error = action.payload || "Unexpected error occurred while resending OTP.";
+    });
   },
 });
 

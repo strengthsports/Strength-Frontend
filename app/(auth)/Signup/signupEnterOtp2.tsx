@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, Text, ToastAndroid, TouchableOpacity, Vibration, View } from 'react-native'
+import { ActivityIndicator, Platform, StyleSheet, Text, ToastAndroid, TouchableOpacity, Vibration, View } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from "expo-router";
 import Logo from "@/components/logo";
@@ -8,21 +8,20 @@ import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/reduxStore';
-import { verifyOTPSignup } from '@/reduxStore/slices/signupSlice';
+import { resendOtp, verifyOTPSignup } from '@/reduxStore/slices/signupSlice';
 import { z } from 'zod';
 import Toast from 'react-native-toast-message';
-import { otpSchema } from '@/schemas/signupSchema';
+import { otpSchema, resendOtpSchema } from '@/schemas/signupSchema';
 
 const SignupEnterOtp2 = () => {
   const router = useRouter();
   const isAndroid = Platform.OS === "android";
-  console.log('Redux State:', useSelector((state: RootState) => state.signup));
   const dispatch = useDispatch<AppDispatch>()
-  const { loading, success, error, userId } = useSelector((state: RootState) => state.signup);
+  const { loading, success, error, userId, email } = useSelector((state: RootState) => state.signup);
 
   const [OTP, setOTP] = useState<string>(""); // Explicitly typed as string
 
-  console.log("Response before:", userId, OTP);
+  // console.log("Response before:", userId, OTP);
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
     const vibrationPattern = [0, 50, 80, 50];
     
@@ -40,12 +39,36 @@ const SignupEnterOtp2 = () => {
         });
   };
   
-  const handleOTPAndNextScreen = async () => {
+  const handleResendOtp = async () => {
     try {
-      const verificationData = otpSchema.parse({ OTP, userId });
+      const resendOTPPayload = resendOtpSchema.parse({ userId, email });
   
       const response = await dispatch(
-        verifyOTPSignup({ _id: verificationData.userId, otp: verificationData.OTP })
+        resendOtp({ _id: resendOTPPayload.userId, email: resendOTPPayload.email })
+      ).unwrap();
+  
+      feedback(response.message || "OTP sent successfully!", "success");
+      console.log('backend response for resendotp - ', response.message)
+
+      // handleNextScreen(); // Navigate to the next screen on success
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        const validationError = err.errors[0]?.message || "Invalid input.";
+        console.log('zod error - ', validationError)
+        feedback(validationError);
+      } else {
+        feedback(err || "Verification failed. Please try again.");
+        console.log('backend error - ', err)
+      }
+    }
+  };
+
+  const handleOTPAndNextScreen = async () => {
+    try {
+      const OTPPayload = otpSchema.parse({ OTP, userId });
+  
+      const response = await dispatch(
+        verifyOTPSignup({ _id: OTPPayload.userId, otp: OTPPayload.OTP })
       ).unwrap();
   
       feedback(response.message || "OTP verified successfully!", "success");
@@ -84,15 +107,18 @@ const SignupEnterOtp2 = () => {
        placeholder="Email"
        value={OTP}
        onChangeText={setOTP}
-       keyboardType="email-address" // Optional: Ensure proper keyboard type
+       keyboardType="numeric" // Optional: Ensure proper keyboard type
        autoCapitalize="none"  />
        </View>
-       <TouchableOpacity activeOpacity={0.5} style={{marginTop:35}}>
+       <TouchableOpacity onPress={handleResendOtp} activeOpacity={0.5} style={{marginTop:35}}>
         <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight:'400'}}>Resend code</TextScallingFalse>
         </TouchableOpacity>
         <View style={{marginTop: 50}}>
           <SignupButton onPress={handleOTPAndNextScreen}>
+          {
+          loading ? <ActivityIndicator color='white' /> :
             <TextScallingFalse style={{color:'white', fontSize: 15, fontWeight:'600'}}>Next</TextScallingFalse>
+          }
           </SignupButton>
         </View>
        </View>

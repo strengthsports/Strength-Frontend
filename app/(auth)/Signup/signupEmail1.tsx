@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking, Vibration, Platform, ToastAndroid} from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Modal, Linking, Vibration, Platform, ToastAndroid, ActivityIndicator} from 'react-native'
 import React, { useState } from "react";
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import Logo from "@/components/logo";
@@ -20,7 +20,7 @@ import Toast from 'react-native-toast-message';
 const SignupEmail1 = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  // const { loading, success, error, userId, message } = useSelector((state: RootState) => state.signup);
+  const { loading } = useSelector((state: RootState) => state.signup);
   const isAndroid = Platform.OS === "android";
   
   const [openModal14, setOpenModal14] = React.useState(false);
@@ -50,7 +50,7 @@ const SignupEmail1 = () => {
     setGender("female");
   };
 
-      // Example Usage
+      // form order 
       const formData = {
         email,
         firstName,
@@ -81,19 +81,16 @@ const SignupEmail1 = () => {
   };  
   
   const validateSignupForm = async () => {
-
       try {
         const signupPayloadData = signupSchema.parse(formData);
     
-        // console.log("Validated Data:", formData);
         const response = await dispatch(signupUser(signupPayloadData)).unwrap()
-        console.log('frontend response',response)
+        // console.log('frontend response',response)
         feedback(response.message || "OTP sent to email", "success");
 
         router.push({
           pathname: "/Signup/signupEnterOtp2",
         });
-        // return validData;
       } catch (err: any) {
         if (err instanceof z.ZodError) {
           const validationError = err.errors[0]?.message || "Invalid input.";
@@ -194,7 +191,7 @@ const SignupEmail1 = () => {
 
       <View style={{gap : 15, marginTop: 30}}>
       <View style={{width: 330, justifyContent:'center', alignItems:'center',}}>
-      <TextScallingFalse style={{fontSize: 11, color: 'white',}}>By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
+      <TextScallingFalse style={{fontSize: 11, color: 'white',}}> By clicking Agree & Join you agree to the Strength.</TextScallingFalse>
       <TouchableOpacity activeOpacity={0.5}  onPress={() => setOpenModal14(true)}>
       <TextScallingFalse style={{fontSize: 11, color: '#12956B',}}>User Agreement, Privacy Policy, Cookies Policy.</TextScallingFalse>
       </TouchableOpacity>
@@ -203,7 +200,8 @@ const SignupEmail1 = () => {
 
       <View style={{marginTop: 25}}>
       <SignupButton onPress={() => validateSignupForm()}>
-      <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>
+        {loading ? <ActivityIndicator color='white' /> :
+      <TextScallingFalse style={{color:'white', fontSize: 14.5, fontWeight:'500'}}>Agree & join</TextScallingFalse>}
       </SignupButton>
       </View>
       <View style={{justifyContent:'center', alignItems:'center', flexDirection:'row'}}>

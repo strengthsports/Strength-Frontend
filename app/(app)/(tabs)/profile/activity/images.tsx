@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const Events = () => {
+const images = () => {
   return (
     <View>
-      <Text style={{color:'white'}}>Events</Text>
+      <Text>images</Text>
     </View>
   )
 }
 
-export default Events
+export default images
 
 const styles = StyleSheet.create({})

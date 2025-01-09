@@ -7,7 +7,7 @@ interface PageThemeViewProps {
 
 const PageThemeView: React.FC<PageThemeViewProps> = ({ children }) => {
   return (
-    <KeyboardAvoidingView   behavior={Platform.OS === 'ios' ? 'padding' : ''}
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''}
     style={{ width: '100%', height: '100%', backgroundColor: 'black' }}>
       {children}
     </KeyboardAvoidingView>

@@ -4,8 +4,9 @@ import { ThemedText } from "@/components/ThemedText";
 
 const notification = () =>{
     return (
+      //this is experimented to check the height of the page
       <View>
-        <ThemedText > notification </ThemedText>
+       <Text style={{color:'white'}}>Notification Page</Text>
       </View>
     )
   }

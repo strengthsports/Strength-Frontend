@@ -3,7 +3,6 @@ import { Redirect, Stack } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 
-
 export default function AppLayout() {
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
 
@@ -11,5 +10,11 @@ export default function AppLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  return <Stack />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false, // Disable headers globally
+      }}
+    />
+  );
 }

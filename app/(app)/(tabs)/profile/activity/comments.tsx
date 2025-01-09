@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const Teams = () => {
+const comments = () => {
   return (
     <View>
-      <Text style={{color:'white'}}>Teams</Text>
+      <Text>comments</Text>
     </View>
   )
 }
 
-export default Teams
+export default comments
 
 const styles = StyleSheet.create({})

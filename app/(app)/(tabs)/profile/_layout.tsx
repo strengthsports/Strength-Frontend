@@ -10,6 +10,7 @@ import { MaterialCommunityIcons, Entypo } from '@expo/vector-icons';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { responsiveHeight, responsiveWidth, responsiveFontSize } from "react-native-responsive-dimensions";
 import ProfileTabsNavigator from '~/components/ProfileTabsNavigator';
+import { Slot } from 'expo-router';
 
 
 
@@ -30,60 +31,7 @@ const profile = () =>{
 
 
 
-  const posts = [
-    {
-      id: 1,
-      firstName: 'Sebastian',
-      lastName: 'Cilb',
-      profilepic: 'https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8',
-      headline: 'Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness',
-      caption: 'Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues',
-      image: 'https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07',
-      likes: ["harshal_123", "Miraj_123"],
-      comments: [
-        {
-          id: 1,
-          firstName: "harshl",
-          lastName: 'mishra',
-          description: 'kjaskjdashdkasjndjansjndjan',
-          comment: "amazing",
-        },
-        {
-          id: 2,
-          firstName: "harshl",
-          lastName: 'mishra',
-          description: 'kjaskjdashdkasjndjansjndjan',
-          comment: "agg laga deya",
-        },
-      ],
-    },
-    {
-      id: 2,
-      firstName: 'Sebastian',
-      lastName: 'Cilb',
-      profilepic: 'https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8',
-      headline: 'Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness',
-      caption: 'Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues',
-      image: 'https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c',
-      likes: ["harshal_123", "Miraj_123"],
-      comments: [
-        {
-          id: 1,
-          firstName: "harshl",
-          lastName: 'mishra',
-          description: 'kjaskjdashdkasjndjansjndjan',
-          comment: "amazing",
-        },
-        {
-          id: 2,
-          firstName: "harshl",
-          lastName: 'mishra',
-          description: 'kjaskjdashdkasjndjansjndjan',
-          comment: "agg laga deya",
-        },
-      ],
-    },
-  ];
+
 
 
 
@@ -190,10 +138,8 @@ const profile = () =>{
           
 
         <View style={{borderBottomWidth: 0.3, borderBottomColor:'#505050', position:'relative', top: 45, width: '97%', alignSelf:'center'}}></View>
-
-        <ProfileTabsNavigator posts={posts} />
-      
-
+      <ProfileTabsNavigator />
+      <Slot />
           </ScrollView>
       </PageThemeView>
     )

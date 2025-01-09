@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const Activity = () => {
+const writtenpost = () => {
   return (
     <View>
-      <Text style={{color:'white'}}>Activity</Text>
+      <Text>writtenpost</Text>
     </View>
   )
 }
 
-export default Activity
+export default writtenpost
 
 const styles = StyleSheet.create({})

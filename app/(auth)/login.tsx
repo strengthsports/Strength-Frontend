@@ -32,8 +32,7 @@ const LoginScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   // const { status, error,  } = useSelector((state: RootState) => state.auth);
 
-  
-   const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -45,7 +44,7 @@ const LoginScreen = () => {
 
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
     const vibrationPattern = [0, 50, 80, 50];
-    
+
     if (type === "error") {
       Vibration.vibrate(vibrationPattern);
     }
@@ -62,8 +61,6 @@ const LoginScreen = () => {
   // const e = 'anirbandutta@gmail.com';
   // const p = 'ANIRBAN@1234';
 
-  
-  
   const handleLogin = async () => {
     try {
       const loginData = loginSchema.parse({ email, password });
@@ -77,7 +74,8 @@ const LoginScreen = () => {
 
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
-      router.push("/(app)/(tabs)");
+      // router.push("/(app)/(tabs)");
+      router.push("/(app)/(main)/teams/InitiateCreateTeam");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";
@@ -91,11 +89,21 @@ const LoginScreen = () => {
   };
   return (
     <PageThemeView>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <View style={{ width: "100%", paddingHorizontal: 25 }}>
           <View style={{ flexDirection: "row", marginTop: 30, gap: 7 }}>
             <Image style={{ width: 45, height: 45 }} source={logo} />
-            <Text style={{ color: "white", fontSize: 26, fontWeight: "500", marginTop: 3 }}>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 26,
+                fontWeight: "500",
+                marginTop: 3,
+              }}
+            >
               Strength
             </Text>
           </View>
@@ -105,9 +113,23 @@ const LoginScreen = () => {
           <Image source={banner} style={{ width: "100%", height: "100%" }} />
         </View>
 
-        <View style={{ width: "100%", justifyContent: "center", alignItems: "center", paddingVertical: 15 }}>
+        <View
+          style={{
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingVertical: 15,
+          }}
+        >
           <View style={{ width: "84%" }}>
-            <TextScallingFalse style={{ color: "white", fontSize: 35, fontWeight: "500", width: "80%" }}>
+            <TextScallingFalse
+              style={{
+                color: "white",
+                fontSize: 35,
+                fontWeight: "500",
+                width: "80%",
+              }}
+            >
               Step Into the World of Sports
             </TextScallingFalse>
           </View>
@@ -115,7 +137,9 @@ const LoginScreen = () => {
 
         <View style={{ width: "100%", alignItems: "center" }}>
           <View>
-            <TextScallingFalse style={{ color: "white", fontSize: 13, fontWeight: "400" }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 13, fontWeight: "400" }}
+            >
               Email or username
             </TextScallingFalse>
             <TextInputSection
@@ -126,7 +150,14 @@ const LoginScreen = () => {
               autoCapitalize="none"
             />
 
-            <TextScallingFalse style={{ color: "white", fontSize: 13, fontWeight: "400", marginTop: 10 }}>
+            <TextScallingFalse
+              style={{
+                color: "white",
+                fontSize: 13,
+                fontWeight: "400",
+                marginTop: 10,
+              }}
+            >
               Password
             </TextScallingFalse>
             <TextInputSection
@@ -141,17 +172,23 @@ const LoginScreen = () => {
               onPress={toggleShowPassword}
               style={{ position: "absolute", top: 112, left: 288 }}
             >
-              <TextScallingFalse style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}>
+              <TextScallingFalse
+                style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
+              >
                 {showPassword ? "Hide" : "Show"}
               </TextScallingFalse>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.push("/Forgot_password/Forgot_Password_Enter_Email")}
+              onPress={() =>
+                router.push("/Forgot_password/Forgot_Password_Enter_Email")
+              }
               activeOpacity={0.5}
               style={{ marginTop: 9 }}
             >
-              <TextScallingFalse style={{ color: "#12956B", fontSize: 13.5, fontWeight: "400" }}>
+              <TextScallingFalse
+                style={{ color: "#12956B", fontSize: 13.5, fontWeight: "400" }}
+              >
                 Forgot password?
               </TextScallingFalse>
             </TouchableOpacity>
@@ -160,10 +197,16 @@ const LoginScreen = () => {
 
         <View style={{ marginTop: 27, width: "100%", alignItems: "center" }}>
           {loading ? (
-            <ActivityIndicator size={"small"} style={{ paddingVertical: 11.3 }} color={"#12956B"} />
+            <ActivityIndicator
+              size={"small"}
+              style={{ paddingVertical: 11.3 }}
+              color={"#12956B"}
+            />
           ) : (
             <SignupButton onPress={handleLogin}>
-              <TextScallingFalse style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
+              >
                 Sign in
               </TextScallingFalse>
             </SignupButton>
@@ -183,7 +226,9 @@ const LoginScreen = () => {
               borderRadius: 40,
             }}
           >
-            <TextScallingFalse style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
+            >
               New to Strength? Join now
             </TextScallingFalse>
           </TouchableOpacity>
@@ -201,10 +246,15 @@ const LoginScreen = () => {
               flexDirection: "row",
             }}
           >
-            <TextScallingFalse style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
+            >
               or continue with
             </TextScallingFalse>
-            <Image source={google} style={{ width: 12, height: 12, marginTop: 3.5 }} />
+            <Image
+              source={google}
+              style={{ width: 12, height: 12, marginTop: 3.5 }}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>

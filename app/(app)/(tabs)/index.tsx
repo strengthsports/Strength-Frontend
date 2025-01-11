@@ -15,7 +15,6 @@ import Toast from "react-native-toast-message";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 
-
 export default function Index() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -35,28 +34,27 @@ export default function Index() {
             autoHide: true,
           });
     } catch (err) {
-      console.error("Logout failed:", err)
+      console.error("Logout failed:", err);
       isAndroid
-      ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
-      : Toast.show({
-          type: "error",
-          text1: "Logged out successfully",
-          visibilityTime: 1500,
-          autoHide: true,
-        });
+        ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
+        : Toast.show({
+            type: "error",
+            text1: "Logged out successfully",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
     }
   };
-
 
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.innerContainer}>
-        <ThemedText >Home</ThemedText>
+        <ThemedText>Home</ThemedText>
         <TouchableOpacity onPress={handleLogout}>
-          <ThemedText >Logout</ThemedText>
+          <ThemedText>Logout</ThemedText>
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> router.push('../(main)/home')}>
-          <ThemedText >Chats</ThemedText>
+        <TouchableOpacity onPress={() => router.push("../(main)/home")}>
+          <ThemedText>Chats</ThemedText>
         </TouchableOpacity>
       </ThemedView>
       <Toast />
@@ -73,7 +71,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     alignItems: "center", // Align items in the center horizontally
-    gap:30
+    gap: 30,
   },
   linkText: {
     // color: "black",

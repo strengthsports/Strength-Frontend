@@ -52,7 +52,6 @@ const handleNext = () => {
   }
   // Navigate to the next screen if validation passes
   router.push("/Signup/signupEnterLocation4");
-  console.log("Correct format - ",username);
 };
 
 

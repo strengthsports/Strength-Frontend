@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, Text, Platform, Vibration, ToastAndroid } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text, Platform, Vibration, ToastAndroid, ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,20 +8,20 @@ import PageThemeView from "@/components/PageThemeView";
 import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
-import { completeSignup } from "~/reduxStore/slices/signupSlice";
+import { completeSignup, completeSignupPayload } from "~/reduxStore/slices/signupSlice";
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import Toast from "react-native-toast-message";
+import { string } from "zod";
+// import completeSignupPayload from "~/reduxStore/slices/profileSlice"
 
 const signupSetPassword5 = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const isAndroid = Platform.OS === "android";
 
-  const email = useSelector((state: RootState) => state.signup.email);
-  console.log("email:", email)
+  const {loading,email} = useSelector((state: RootState) => state.signup);
 
   const { username, address } = useSelector((state: RootState) => state.profile);
-
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -60,15 +60,15 @@ const signupSetPassword5 = () => {
       feedback("Passwords do not match. Please try again.", "error");
       return;
     }
-    const payload = {
-      email,
-      username,
-      password,
-      address,
+    const completeSignupPayload: completeSignupPayload = {
+      email: email || "",
+      username: username || "",
+      password : password || null,
+      address: address || {},
     };
-    console.log(payload);
+    console.log("final payload data", completeSignupPayload);
     try {
-      const result = await dispatch(completeSignup(payload)).unwrap();
+      const result = await dispatch(completeSignup(completeSignupPayload)).unwrap();
       feedback(result.message, "success");
       router.push("/Signup/signupAccountCreated6");
     } catch (error) {
@@ -132,9 +132,10 @@ const signupSetPassword5 = () => {
 
         <View style={{ marginTop: 40 }}>
           <SignupButton onPress={handleNext}>
-            <TextScallingFalse style={{ color: "white", fontSize: 15, fontWeight: "500" }}>
-              Next
-            </TextScallingFalse>
+          {
+          loading ? <ActivityIndicator color='white' /> :
+            <TextScallingFalse style={{color:'white', fontSize: 15, fontWeight:'600'}}>Next</TextScallingFalse>
+          }
           </SignupButton>
         </View>
       </View>

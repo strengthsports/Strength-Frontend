@@ -25,7 +25,7 @@ export default function Index() {
 
     // setIsLoggedIn(false);
     try {
-      await dispatch(logoutUser()).unwrap();
+      const response = await dispatch(logoutUser()).unwrap();
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
@@ -35,7 +35,15 @@ export default function Index() {
             autoHide: true,
           });
     } catch (err) {
-      console.error("Logout failed:", err);
+      console.error("Logout failed:", err)
+      isAndroid
+      ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
+      : Toast.show({
+          type: "error",
+          text1: "Logged out successfully",
+          visibilityTime: 1500,
+          autoHide: true,
+        });
     }
   };
 

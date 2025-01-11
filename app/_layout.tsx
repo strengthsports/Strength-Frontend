@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { StatusBar} from 'react-native';
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Slot, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -34,20 +34,18 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
         {/* Configure Stack Navigator */}
-        <Stack
+        {/* <Stack
           screenOptions={{
             headerShown: false, // Disable headers globally
             animation: "none",  // Disable default animations globally
           }}
         >
-          {/* Default screens */}
           <Stack.Screen name="(tabs)" 
           options={{
             headerShown: false,
             animation: "none",
           }}/>
 
-          {/* Modal configuration */}
           <Stack.Screen
            name="(auth)/Signup/[modal]/index"
            options={{
@@ -57,7 +55,8 @@ export default function RootLayout() {
            gestureEnabled: true,
            }} />
 
-        </Stack>
+        </Stack> */}
+        <Slot />
         <StatusBar backgroundColor="black" />
         <Toast config={toastConfig}/>
       </Provider>

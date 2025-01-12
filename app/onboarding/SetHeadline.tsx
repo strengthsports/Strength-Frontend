@@ -17,45 +17,51 @@ import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
-import { setProfileHeadline } from "@/reduxStore/slices/profileSlice";
+import { setHeadline } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
 
 // const { height } = Dimensions.get("window");
-const firstName = "Utsav";
-const secondName = "Tiwari";
+// const firstName = "Utsav";
+// const secondName = "Tiwari";
 const defaultImage = require("../../assets/images/onboarding/nopic.jpg");
 
 const SetHeadline: React.FC = () => {
-  const [headline, setHeadline] = useState("");
+  const [currentHeadline, setCurrentHeadline] = useState("");
   const router = useRouter();
   const dispatch = useDispatch();
   const params = useLocalSearchParams();
 
-  const profilePicture = useSelector(
-    (state: RootState) => state.profile.profileImage,
+  const { profilePic } = useSelector((state: RootState) => state?.onboarding);
+
+  const { loading, error, user } = useSelector(
+    (state: RootState) => state?.auth
   );
+  console.log("Loading", loading);
+  console.log("Error", error);
+  console.log("User", user);
+
   // console.log("profilePicture" + profilePicture);
-  const selectedFile = params?.selectedFile;
+  // const selectedFile = params?.selectedFile;
   // Use profile image if provided, else use default
-  const profileImageSource = profilePicture
+  const profileImageSource = profilePic
     ? {
-        uri: profilePicture,
+        uri: profilePic,
       }
     : defaultImage;
 
   function handleNextPress() {
-    if (!headline) {
+    if (!currentHeadline) {
       Toast.show({
         type: "error",
         text1: "Please enter your headline.",
       });
       return;
     }
-    dispatch(setProfileHeadline(headline));
+    dispatch(setHeadline(currentHeadline));
     // console.log(headline);
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
-      params: { selectedFile },
+      // params: { selectedFile },
     });
   }
 
@@ -97,8 +103,8 @@ const SetHeadline: React.FC = () => {
                 className="border border-white rounded-md text-white h-12 px-4 text-lg"
                 placeholderTextColor="#666"
                 placeholder="Enter your headline"
-                value={headline}
-                onChangeText={setHeadline}
+                value={currentHeadline}
+                onChangeText={setCurrentHeadline}
               />
 
               <TextScallingFalse className="text-gray-500 text-base mt-6">
@@ -113,7 +119,8 @@ const SetHeadline: React.FC = () => {
                   />
 
                   <TextScallingFalse className="text-white text-[1.3rem] mt-2">
-                    {firstName} {secondName}
+                    {user?.firstName || "Firstname"}{" "}
+                    {user?.lastName || "Lastname"}
                   </TextScallingFalse>
                   <TextScallingFalse className="text-gray-500 text-[1rem] text-center mt-1 leading-5">
                     Cricketer-Right hand batsman,{"\n"}Ranji Trophy player
@@ -144,7 +151,7 @@ const SetHeadline: React.FC = () => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
-      <Toast/>
+      <Toast />
     </SafeAreaView>
   );
 };

@@ -15,7 +15,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { useLocalSearchParams } from "expo-router";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/reduxStore";
-import { verifyOtp } from "@/reduxStore/slices/forgotPasswordSlice";
+import { verifyOtp } from "~/reduxStore/slices/user/forgotPasswordSlice";
 import Toast from "react-native-toast-message";
 
 const Forgot_Password_OTP = () => {

@@ -11,9 +11,9 @@ import "../global.css";
 import { verifyInstallation } from "nativewind";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
-import SportsChoice from "./onboarding/SportsChoice";
+import SportsChoice from "./onboarding/sportsChoice1";
 import { useEffect } from "react";
-import { initializeAuth } from "@/reduxStore/slices/authSlice";
+import { initializeAuth } from "~/reduxStore/slices/user/authSlice";
 import * as SplashScreen from "expo-splash-screen";
 
 // Prevent the splash screen from auto-hiding
@@ -25,8 +25,8 @@ export default function Index() {
 
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn, status } = useSelector((state: RootState) => state.auth);
-console.log('islogin -', isLoggedIn)
-// console.log('status -', status)
+  console.log("islogin -", isLoggedIn);
+  // console.log('status -', status)
   useEffect(() => {
     // Dispatch the async thunk to initialize authentication
     dispatch(initializeAuth());

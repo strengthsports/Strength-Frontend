@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router"; // Import useRouter from expo-router
 
 const ProfileTabsNavigator = () => {
@@ -25,7 +20,7 @@ const ProfileTabsNavigator = () => {
             styles.tabButton,
             activeTab === "Overview" && styles.activeTab,
           ]}
-          onPress={() => handleTabPress("Overview", "/(app)/(tabs)/profile")}
+          onPress={() => handleTabPress("Overview", "/profile")}
         >
           <Text
             style={[
@@ -41,7 +36,7 @@ const ProfileTabsNavigator = () => {
             styles.tabButton,
             activeTab === "Activity" && styles.activeTab,
           ]}
-          onPress={() => handleTabPress("Activity", "/(app)/(tabs)/profile/Activity")}
+          onPress={() => handleTabPress("Activity", "/profile/activity")}
         >
           <Text
             style={[
@@ -54,7 +49,7 @@ const ProfileTabsNavigator = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === "Events" && styles.activeTab]}
-          onPress={() => handleTabPress("Events", "/events")}
+          onPress={() => handleTabPress("Events", "/profile/events")}
         >
           <Text
             style={[
@@ -67,7 +62,7 @@ const ProfileTabsNavigator = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === "Teams" && styles.activeTab]}
-          onPress={() => handleTabPress("Teams", "/teams")}
+          onPress={() => handleTabPress("Teams", "/profile/teams")}
         >
           <Text
             style={[

@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSportsData,
   setSelectedSports,
-} from "@/reduxStore/slices/profileSlice";
+} from "~/reduxStore/slices/user/onboardingSlice";
 import { RootState } from "@/reduxStore";
 import { AppDispatch } from "@/reduxStore";
 
@@ -46,7 +46,7 @@ const SportsChoice: React.FC = () => {
   const router = useRouter();
 
   const { sportsData, loading, error } = useSelector(
-    (state: RootState) => state.profile,
+    (state: RootState) => state.onboarding
   );
 
   // Fetch sports data on component mount
@@ -60,13 +60,13 @@ const SportsChoice: React.FC = () => {
       "keyboardDidShow",
       () => {
         setKeyboardVisible(true);
-      },
+      }
     );
     const keyboardDidHideListener = Keyboard.addListener(
       "keyboardDidHide",
       () => {
         setKeyboardVisible(false);
-      },
+      }
     );
 
     return () => {
@@ -101,7 +101,7 @@ const SportsChoice: React.FC = () => {
 
   // Filter sports data based on search query
   const filteredSports = sportsData.filter((sport: Sport) =>
-    sport.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

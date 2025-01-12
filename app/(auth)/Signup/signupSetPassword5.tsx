@@ -1,4 +1,12 @@
-import { StyleSheet, TouchableOpacity, View, Text, Platform, Vibration, ToastAndroid } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+  Platform,
+  Vibration,
+  ToastAndroid,
+} from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +16,7 @@ import PageThemeView from "@/components/PageThemeView";
 import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
-import { completeSignup } from "~/reduxStore/slices/signupSlice";
+import { completeSignup } from "~/reduxStore/slices/user/signupSlice";
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import Toast from "react-native-toast-message";
 
@@ -18,9 +26,11 @@ const signupSetPassword5 = () => {
   const isAndroid = Platform.OS === "android";
 
   const email = useSelector((state: RootState) => state.signup.email);
-  console.log("email:", email)
+  console.log("email:", email);
 
-  const { username, address } = useSelector((state: RootState) => state.profile);
+  const { username, address } = useSelector(
+    (state: RootState) => state.onboarding
+  );
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -82,20 +92,45 @@ const signupSetPassword5 = () => {
       <View style={{ marginTop: 80 }}>
         <Logo />
       </View>
-      <View style={{ width: "100%", justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          width: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <View style={{ width: "81.5%", marginTop: 55 }}>
-          <TextScallingFalse style={{ color: "white", fontSize: 23, fontWeight: "500" }}>
+          <TextScallingFalse
+            style={{ color: "white", fontSize: 23, fontWeight: "500" }}
+          >
             You'll need a password
           </TextScallingFalse>
-          <TextScallingFalse style={{ color: "white", fontSize: 12, fontWeight: "400" }}>
+          <TextScallingFalse
+            style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+          >
             Make sure it's 8 characters or more.
           </TextScallingFalse>
         </View>
       </View>
-      <View style={{ width: "100%", justifyContent: "center", alignItems: "center" }}>
-        <View style={{ marginTop: 21, justifyContent: "center", alignItems: "center", gap: 20 }}>
+      <View
+        style={{
+          width: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            marginTop: 21,
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 20,
+          }}
+        >
           <View>
-            <TextScallingFalse style={{ color: "white", fontSize: 14, fontWeight: "400" }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+            >
               Create a password
             </TextScallingFalse>
             <TextInputSection
@@ -108,7 +143,9 @@ const signupSetPassword5 = () => {
           </View>
 
           <View>
-            <TextScallingFalse style={{ color: "white", fontSize: 14, fontWeight: "400" }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+            >
               Confirm password
             </TextScallingFalse>
             <TextInputSection
@@ -132,7 +169,9 @@ const signupSetPassword5 = () => {
 
         <View style={{ marginTop: 40 }}>
           <SignupButton onPress={handleNext}>
-            <TextScallingFalse style={{ color: "white", fontSize: 15, fontWeight: "500" }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 15, fontWeight: "500" }}
+            >
               Next
             </TextScallingFalse>
           </SignupButton>

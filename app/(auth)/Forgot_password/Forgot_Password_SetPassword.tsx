@@ -15,7 +15,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { useLocalSearchParams } from "expo-router";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/reduxStore";
-import { setNewPassword } from "@/reduxStore/slices/forgotPasswordSlice";
+import { setNewPassword } from "~/reduxStore/slices/user/forgotPasswordSlice";
 import Toast from "react-native-toast-message";
 
 const Forgot_Password_SetPassword = () => {
@@ -48,7 +48,7 @@ const Forgot_Password_SetPassword = () => {
 
     try {
       const resultAction = await dispatch(
-        setNewPassword({ email, newPassword: createPassword }),
+        setNewPassword({ email, newPassword: createPassword })
       );
 
       if (setNewPassword.fulfilled.match(resultAction)) {

@@ -1,5 +1,31 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
+import { User, OnboardingData } from "@/types/user";
+
+interface OnboardingState {
+  sportsData: { _id: string; name: string }[];
+  fetchedUsers: User[];
+  selectedSports: string[];
+  profilePic: string | null;
+  headline: string;
+  username: string;
+  address: object | null;
+  loading: boolean;
+  error: string | null;
+}
+
+//initial state
+const initialState: OnboardingState = {
+  sportsData: [],
+  fetchedUsers: [],
+  selectedSports: [],
+  profilePic: null,
+  headline: "",
+  username: "",
+  address: null,
+  loading: false,
+  error: null,
+};
 
 // Async thunk for fetching sports data
 export const fetchSportsData = createAsyncThunk(
@@ -8,13 +34,16 @@ export const fetchSportsData = createAsyncThunk(
     try {
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/fetch-allSports`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/fetch-allSports`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         return rejectWithValue(data.message || "Error fetching sports data");
@@ -22,7 +51,8 @@ export const fetchSportsData = createAsyncThunk(
       return data.data;
     } catch (error: unknown) {
       // Type assertion to Error
-      const errorMessage = error instanceof Error ? error.message : "Unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
       return rejectWithValue(errorMessage);
     }
   }
@@ -35,38 +65,36 @@ export const fetchUserSuggestions = createAsyncThunk(
     try {
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
-        return rejectWithValue(data.message || "Error fetching user suggestions");
+        return rejectWithValue(
+          data.message || "Error fetching user suggestions"
+        );
       }
       return data.data;
     } catch (error: unknown) {
       // Type assertion to Error
-      const errorMessage = error instanceof Error ? error.message : "Unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
       return rejectWithValue(errorMessage);
     }
   }
 );
 
-//async thunk for onboarding users
-interface OnboardingData {
-  headline: any;
-  assets: any;
-  sports: any;
-  followings: any;
-}
-
 export const onboardingUser = createAsyncThunk<
-  any,  // The return type of the payload (data from the API)
-  OnboardingData,  // The argument passed to the action (i.e., data)
-  { rejectValue: string }  // The type for the error message
+  any, // The return type of the payload (data from the API)
+  OnboardingData, // The argument passed to the action (i.e., data)
+  { rejectValue: string } // The type for the error message
 >(
   "profile/onboardingUser",
   async (data: OnboardingData, { rejectWithValue }) => {
@@ -74,14 +102,17 @@ export const onboardingUser = createAsyncThunk<
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       const data1 = await response.json();
       if (!response.ok) {
@@ -89,45 +120,14 @@ export const onboardingUser = createAsyncThunk<
       }
       return data1.data;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
       return rejectWithValue(errorMessage);
     }
   }
 );
 
-
-
-interface User{
-  _id: string;
-  firstName: string;
-  lastName: string;
-  profileImage: string;
-}
-interface ProfileState {
-  username: string | null; // Store username
-  address: object | null; // Store username
-  sportsData: { _id: string; name: string }[]; // Adjust sportsData type based on your response
-  fetchedUsers: User[];
-  selectedSports: string[]; // Array to store selected sports IDs
-  profileImage: string | null; // Store profile image URI
-  profileHeadline: string;
-  loading: boolean;
-  error: string | null;
-}
-
-const initialState: ProfileState = {
-  username: null,
-  address: null,
-  sportsData: [],
-  fetchedUsers: [],
-  selectedSports: [],
-  profileImage: null, // Initialize with null
-  profileHeadline: "",
-  loading: false,
-  error: null,
-};
-
-const profileSlice = createSlice({
+const onboardlingSlice = createSlice({
   name: "profile",
   initialState,
   reducers: {
@@ -151,26 +151,20 @@ const profileSlice = createSlice({
     },
 
     // Action to set profile image
-    setProfileImage(state, action) {
-      state.profileImage = action.payload;
+    setProfilePic(state, action) {
+      state.profilePic = action.payload;
     },
-
     // Action to clear profile image
-    clearProfileImage(state) {
-      state.profileImage = null;
+    clearProfilePic(state) {
+      state.profilePic = null;
     },
-
     // Action to set profile headline
-    setProfileHeadline(state, action) {
-      state.profileHeadline = action.payload;
+    setHeadline(state, action) {
+      state.headline = action.payload;
     },
     //Action to clear profile headline
-    clearProfileHeadline(state) {
-      state.profileHeadline = "";
-    },
-    //Action to edit profile headline
-    editProfileHeadline(state, action) {
-      state.profileHeadline = action.payload;
+    clearHeadline(state) {
+      state.headline = "";
     },
     setUsername(state, action) {
       state.username = action.payload;
@@ -212,22 +206,20 @@ const profileSlice = createSlice({
         state.error = action.payload as string;
       });
   },
-
 });
 
 export const {
   toggleSportSelection,
   updateSelectedSports,
   setSelectedSports,
-  setProfileImage,
-  clearProfileImage,
-  setProfileHeadline,
-  clearProfileHeadline,
-  editProfileHeadline,
-  setUsername,
-  clearUsername,
+  setProfilePic,
+  clearProfilePic,
+  setHeadline,
+  clearHeadline,
   setAddress,
+  setUsername,
   clearAddress,
-} = profileSlice.actions;
+  clearUsername,
+} = onboardlingSlice.actions;
 
-export default profileSlice.reducer;
+export default onboardlingSlice.reducer;

@@ -27,12 +27,64 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserProfile } from "~/reduxStore/slices/user/profileSlice";
 import { AppDispatch } from "~/reduxStore";
 import { dateFormatter } from "~/utils/dateFormatter";
+import { useRouter } from "expo-router";
+import { ThemedText } from "~/components/ThemedText";
 
 const ProfileLayout = () => {
-  const { error, loading, user } = useSelector((state: any) => state?.auth);
-  console.log("Loading:", loading);
-  console.log("Error:", error);
-  console.log("Profile:", user);
+  const params = useLocalSearchParams();
+  console.log(params);
+  const userId = params.userId
+    ? JSON.parse(decodeURIComponent(params.userId))
+    : null;
+  console.log("userId:", userId);
+  const dispatch = useDispatch<AppDispatch>();
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user || !userId) {
+      dispatch(
+        getUserProfile({
+          targetUserId: userId?.id,
+          targetUserType: userId?.type,
+        })
+      ).unwrap();
+    }
+  }, [dispatch, userId, user]);
+
+  console.log(error);
+  console.log(loading);
+
+  // if (error !== null) {
+  //   return (
+  //     <PageThemeView>
+  //       <ScrollView>
+  //         <View>
+  //           <ThemedText>{error}</ThemedText>
+  //         </View>
+  //       </ScrollView>
+  //     </PageThemeView>
+  //   );
+  // }
+
+  // if (loading) {
+  //   return (
+  //     <PageThemeView>
+  //       <ScrollView>
+  //         <View>
+  //           <ThemedText>Loading...</ThemedText>
+  //         </View>
+  //       </ScrollView>
+  //     </PageThemeView>
+  //   );
+  // }
+
+  const [activeTab, setActiveTab] = useState("Overview"); // Default active tab
+
+  const handleTabPress = (tabName, route) => {
+    setActiveTab(tabName); // Set active tab state
+    router.replace(route); // Navigate to the route
+  };
 
   return (
     <PageThemeView>
@@ -173,7 +225,7 @@ const ProfileLayout = () => {
                     />
                     <TextScallingFalse style={styles.ProfileKeyPoints}>
                       {" "}
-                      Age: {user?.age}{" "}
+                      Age: {user?.age}
                       <TextScallingFalse style={{ color: "grey" }}>
                         ({dateFormatter(user?.dateOfBirth)})
                       </TextScallingFalse>
@@ -188,10 +240,7 @@ const ProfileLayout = () => {
                     />
                     <TextScallingFalse style={styles.ProfileKeyPoints}>
                       {" "}
-                      Height:{" "}
-                      {user?.height || (
-                        <Text style={{ color: "grey" }}>undefined</Text>
-                      )}
+                      Height: {user?.height}
                     </TextScallingFalse>
                   </View>
 
@@ -203,10 +252,7 @@ const ProfileLayout = () => {
                     />
                     <TextScallingFalse style={styles.ProfileKeyPoints}>
                       {" "}
-                      Weight:{" "}
-                      {user?.weight || (
-                        <Text style={{ color: "grey" }}>undefined</Text>
-                      )}
+                      Weight: {user?.weight}
                     </TextScallingFalse>
                   </View>
                 </View>
@@ -221,13 +267,10 @@ const ProfileLayout = () => {
                     <TextScallingFalse style={styles.ProfileKeyPoints}>
                       {" "}
                       Teams:{" "}
-                      {user?.createdTeams?.length > 0 &&
-                        user.createdTeams.map((team: any) => (
-                          <TextScallingFalse style={{ color: "grey" }}>
-                            {" "}
-                            {team.name}
-                          </TextScallingFalse>
-                        ))}
+                      <TextScallingFalse style={{ color: "grey" }}>
+                        {" "}
+                        Pro Trackers
+                      </TextScallingFalse>
                     </TextScallingFalse>
                   </View>
                 </View>
@@ -251,9 +294,7 @@ const ProfileLayout = () => {
                       width: "63.25%",
                     }}
                   >
-                    {`${user?.address?.city || "undefined"}, ${
-                      user?.address?.state || "undefined"
-                    }, ${user?.address?.country || "undefined"}`}
+                    {`${user?.address.city}, ${user?.address.state}, ${user?.address.country}`}
                   </TextScallingFalse>
                 </View>
                 <View style={{ flexDirection: "row" }}>
@@ -367,7 +408,98 @@ const ProfileLayout = () => {
             alignSelf: "center",
           }}
         ></View>
-        <ProfileTabsNavigator />
+        {/* <ProfileTabsNavigator /> */}
+        <View style={styles.tabContainer}>
+          {/* Tab buttons */}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Overview" && styles.activeTab,
+              ]}
+              onPress={() => handleTabPress("Overview", `/profile/${params}`)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Overview" && styles.activeTabText,
+                ]}
+              >
+                Overview
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Activity" && styles.activeTab,
+              ]}
+              onPress={() =>
+                handleTabPress("Activity", `/profile/${params}/activity`)
+              }
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Activity" && styles.activeTabText,
+                ]}
+              >
+                Activity
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Events" && styles.activeTab,
+              ]}
+              onPress={() =>
+                handleTabPress("Events", `/profile/${params}/activity`)
+              }
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Events" && styles.activeTabText,
+                ]}
+              >
+                Events
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Teams" && styles.activeTab,
+              ]}
+              onPress={() =>
+                handleTabPress("Teams", `/profile/${params}/activity`)
+              }
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Teams" && styles.activeTabText,
+                ]}
+              >
+                Teams
+              </Text>
+            </TouchableOpacity>
+            <View
+              style={[
+                styles.tabIndicator,
+                {
+                  left: `${
+                    activeTab === "Overview"
+                      ? 2
+                      : activeTab === "Activity"
+                      ? 27.6
+                      : activeTab === "Events"
+                      ? 51.4
+                      : 74
+                  }%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
         <Slot />
       </ScrollView>
     </PageThemeView>
@@ -389,6 +521,39 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: responsiveFontSize(1.17),
     fontWeight: "semibold",
+  },
+  tabContainer: {
+    flex: 1,
+  },
+  tabs: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: "11%",
+    paddingTop: "0.5%",
+    paddingBottom: "2%",
+  },
+  tabButton: {
+    paddingVertical: 10,
+  },
+  tabText: {
+    color: "white",
+    fontSize: 15,
+  },
+  activeTab: {
+    borderBottomWidth: 0,
+    borderBottomColor: "#12956B",
+  },
+  activeTabText: {
+    color: "#12956B",
+  },
+  tabIndicator: {
+    position: "absolute",
+    top: "106%",
+    alignSelf: "center",
+    width: "25%", // Adjust width as needed to fit the number of tabs
+    height: 1.5,
+    backgroundColor: "#12956B",
+    borderRadius: 2,
   },
 });
 

@@ -22,7 +22,7 @@ import {
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
 import ProfileTabsNavigator from "~/components/ProfileTabsNavigator";
-import { Slot, useLocalSearchParams } from "expo-router";
+import { Slot, useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserProfile } from "~/reduxStore/slices/user/profileSlice";
 import { AppDispatch } from "~/reduxStore";
@@ -30,6 +30,7 @@ import { dateFormatter } from "~/utils/dateFormatter";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
+  const router = useRouter();
   console.log("Loading:", loading);
   console.log("Error:", error);
   console.log("Profile:", user);
@@ -303,6 +304,25 @@ const ProfileLayout = () => {
               justifyContent: "center",
               alignItems: "center",
             }}
+            onPress={() =>
+              router.push({
+                pathname: "/(app)/(main)/edit-profile",
+                params: {
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                  username: user.username,
+                  headline: user.headline,
+                  dateOfBirth: user.dateOfBirth,
+                  city: user.address.city,
+                  state: user.address.state,
+                  country: user.address.country,
+                  latitude: user.address.location.coordinates[0],
+                  longitude: user.address.location.coordinates[1],
+                  height: user.height,
+                  weight: user.weight,
+                },
+              })
+            }
           >
             <TextScallingFalse
               style={{

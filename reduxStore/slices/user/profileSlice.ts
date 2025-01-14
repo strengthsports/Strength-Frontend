@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { TargetUser, ProfileState } from "@/types/user";
+import { TargetUser, ProfileState, UserData } from "@/types/user";
 
 // Initial State
 const initialState: ProfileState = {
@@ -42,6 +42,47 @@ export const getUserProfile = createAsyncThunk<
       }
       // console.log("Data : ", data);
       return { user: data.data };
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const editUserProfile = createAsyncThunk<
+  any,
+  UserData,
+  { rejectValue: string }
+>(
+  "profile/editUserProfile",
+  async (userdata: UserData, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+      console.log("Token : ", token);
+      console.log("User data input :", userdata);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userdata),
+        }
+      );
+
+      console.log("Response:", response);
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Error getting user");
+      }
+      // console.log("Data : ", data.data.updatedUser);
+      return data.data.updatedUser;
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unexpected error occurred";

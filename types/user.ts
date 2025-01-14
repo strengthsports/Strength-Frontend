@@ -40,3 +40,14 @@ export interface ProfileState {
   loading: boolean;
   error: string | null;
 }
+
+export interface UserData {
+  firstName: string;
+  lastName: string;
+  username: string;
+  headline: string | "";
+  dateOfBirth: Date | null;
+  address: object;
+  height: string | null;
+  weight: string | null;
+}

@@ -2,6 +2,7 @@ import { getToken, removeToken, saveToken } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser } from "./onboardingSlice";
+import { editUserProfile } from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
 // Initial State
@@ -180,6 +181,26 @@ const authSlice = createSlice({
         state.isLoggedIn = false;
         state.error =
           action.payload || "Unexpected error occurred during onboarding user.";
+      });
+
+    // Update user data
+    builder
+      .addCase(editUserProfile.pending, (state, action) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        // console.log("State updates...", action.payload);
+        state.user = { ...state.user, ...action.payload };
+        state.msgBackend = action.payload.message;
+        state.error = null;
+      })
+      .addCase(editUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.error =
+          action.payload || "Unexpected error occurred during updating user.";
       });
   },
 });

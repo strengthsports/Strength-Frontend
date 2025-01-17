@@ -14,9 +14,9 @@ import Logo from "@/components/logo";
 import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 import { useDispatch } from "react-redux";
-import { fetchUserSuggestions } from "@/reduxStore/slices/profileSlice";
+import { fetchUserSuggestions } from "~/reduxStore/slices/user/onboardingSlice";
 import { AppDispatch } from "@/reduxStore";
-import { onboardingUser } from "@/reduxStore/slices/profileSlice";
+import { onboardingUser } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
 
 interface SupportCardProps {
@@ -78,21 +78,15 @@ const SupportCard: React.FC<SupportCardProps> = ({
 const SuggestedSupportScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const headline = useSelector(
-    (state: RootState) => state.profile.profileHeadline,
-  );
-  const selectedSports = useSelector(
-    (state: RootState) => state.profile.selectedSports,
-  );
-  const selectedFile = params?.selectedFile;
-  var profileImage = useSelector(
-    (state: RootState) => state.profile.profileImage,
-  );
+  // const selectedFile = params?.selectedFile;
+  // var profileImage = useSelector(
+  //   (state: RootState) => state.onboarding.profileImage
+  // );
   const dispatch = useDispatch<AppDispatch>();
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
-  const { fetchedUsers, loading, error } = useSelector(
-    (state: RootState) => state.profile,
+  const { fetchedUsers, headline, profilePic, loading, error } = useSelector(
+    (state: RootState) => state.onboarding
   );
 
   React.useEffect(() => {
@@ -120,8 +114,8 @@ const SuggestedSupportScreen: React.FC = () => {
 
     const onboardingData = {
       headline: headline,
-      assets: [profileImage],
-      sports: selectedSports,
+      assets: [profilePic],
+      sports: [{}],
       followings: selectedPlayers,
     };
 
@@ -136,6 +130,7 @@ const SuggestedSupportScreen: React.FC = () => {
       });
       router.push("/(app)/(tabs)");
     } catch (error: unknown) {
+      console.log(error);
       if (error && typeof error === "object" && "message" in error) {
         Toast.show({
           type: "error",
@@ -159,8 +154,8 @@ const SuggestedSupportScreen: React.FC = () => {
 
     const onboardingData = {
       headline: headline,
-      assets: [profileImage],
-      sports: selectedSports,
+      assets: [profilePic],
+      sports: [{}],
       followings: selectedPlayers,
     };
 

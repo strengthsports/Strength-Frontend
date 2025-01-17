@@ -9,7 +9,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { setAddress } from "~/reduxStore/slices/profileSlice";
+import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 
 const signupEnterLocation4 = () => {
   const [location, setLocation] = useState(""); // Currently unused, can be used if user manually enters location
@@ -19,8 +19,8 @@ const signupEnterLocation4 = () => {
   // Hardcoded address
   const hardCodedAddress = {
     location: {
-        coordinates:[" 22.5769","88.4265"]
-    }
+      coordinates: [" 22.5769", "88.4265"],
+    },
   };
 
   const handleNext = () => {

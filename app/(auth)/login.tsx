@@ -24,7 +24,7 @@ import PageThemeView from "@/components/PageThemeView";
 import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
-import { loginUser, resetAuthState } from "@/reduxStore/slices/authSlice";
+import { loginUser, resetAuthState } from "~/reduxStore/slices/user/authSlice";
 import { z } from "zod";
 import loginSchema from "@/schemas/loginSchema";
 

@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
 
@@ -10,6 +10,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   return (
     <Tabs
@@ -32,7 +33,10 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol name={focused ? 'home' : 'home-outline'} color={color} />
+            <IconSymbol
+              name={focused ? "home" : "home-outline"}
+              color={color}
+            />
           ),
         }}
       />
@@ -48,30 +52,44 @@ export default function TabLayout() {
       <Tabs.Screen
         name="clips"
         options={{
-          title: "clips",
+          title: "Clips",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol name={focused ? 'play-circle' : 'play-circle-outline'} color={color} />
+            <IconSymbol
+              name={focused ? "play-circle" : "play-circle-outline"}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="notification"
         options={{
-          title: "notification",
+          title: "Notification",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol name={focused ? 'bell' : 'bell-outline'} color={color} />
+            <IconSymbol
+              name={focused ? "bell" : "bell-outline"}
+              color={color}
+            />
           ),
         }}
       />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "profile",
-            tabBarIcon: ({ color, focused }) => (
-              <IconSymbol name={focused ? 'card-account-details' : 'card-account-details-outline'} color={color} />
-            ),
-          }}
-        />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          href: "/(app)/profile",
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol
+              name={
+                focused
+                  ? "card-account-details"
+                  : "card-account-details-outline"
+              }
+              color={color}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

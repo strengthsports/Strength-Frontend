@@ -1,0 +1,487 @@
+import React, { Component, useEffect, useState } from "react";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Image,
+  Dimensions,
+  ScrollView,
+  Text,
+} from "react-native";
+import PageThemeView from "~/components/PageThemeView";
+import PostButton from "~/components/PostButton";
+import nocover from "@/assets/images/cover.jpg";
+import nopic from "@/assets/images/pro.jpg";
+import flag from "@/assets/images/IN.png";
+import TextScallingFalse from "@/components/CentralText";
+import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import {
+  responsiveHeight,
+  responsiveWidth,
+  responsiveFontSize,
+} from "react-native-responsive-dimensions";
+import ProfileTabsNavigator from "~/components/ProfileTabsNavigator";
+import { Slot, useLocalSearchParams } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserProfile } from "~/reduxStore/slices/user/profileSlice";
+import { AppDispatch } from "~/reduxStore";
+import { dateFormatter } from "~/utils/dateFormatter";
+import { useRouter } from "expo-router";
+import { ThemedText } from "~/components/ThemedText";
+
+const ProfileLayout = () => {
+  const params = useLocalSearchParams();
+  console.log(params);
+  const userId = params.userId
+    ? JSON.parse(decodeURIComponent(params.userId))
+    : null;
+  console.log("userId:", userId);
+  const dispatch = useDispatch<AppDispatch>();
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user || !userId) {
+      dispatch(
+        getUserProfile({
+          targetUserId: userId?.id,
+          targetUserType: userId?.type,
+        })
+      ).unwrap();
+    }
+  }, [dispatch, userId, user]);
+
+  console.log(error);
+  console.log(loading);
+
+  // if (error !== null) {
+  //   return (
+  //     <PageThemeView>
+  //       <ScrollView>
+  //         <View>
+  //           <ThemedText>{error}</ThemedText>
+  //         </View>
+  //       </ScrollView>
+  //     </PageThemeView>
+  //   );
+  // }
+
+  // if (loading) {
+  //   return (
+  //     <PageThemeView>
+  //       <ScrollView>
+  //         <View>
+  //           <ThemedText>Loading...</ThemedText>
+  //         </View>
+  //       </ScrollView>
+  //     </PageThemeView>
+  //   );
+  // }
+
+  const [activeTab, setActiveTab] = useState("Overview"); // Default active tab
+
+  const handleTabPress = (tabName, route) => {
+    setActiveTab(tabName); // Set active tab state
+    router.replace(route); // Navigate to the route
+  };
+
+  return (
+    <PageThemeView>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* username */}
+        <View
+          style={{
+            justifyContent: "space-between",
+            paddingHorizontal: 13,
+            flexDirection: "row",
+            height: 45,
+            alignItems: "center",
+          }}
+        >
+          <TextScallingFalse style={{ color: "white", fontSize: 19 }}>
+            @{user?.username}
+          </TextScallingFalse>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
+            <View style={{ marginTop: 1.5 }}>
+              <PostButton />
+            </View>
+            <TouchableOpacity activeOpacity={0.5}>
+              <MaterialCommunityIcons
+                name="message-reply-text-outline"
+                size={27}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* profile pic and cover image */}
+        <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
+          <Image
+            source={{ uri: user?.coverPic }}
+            style={{ width: "100%", height: "100%" }}
+          ></Image>
+          <View
+            style={{
+              paddingHorizontal: "4.87%",
+              position: "relative",
+              top: "-45%",
+              zIndex: 100,
+            }}
+          >
+            <View
+              style={{
+                width: responsiveWidth(31),
+                height: responsiveHeight(15),
+                backgroundColor: "black",
+                borderRadius: 100,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={{ uri: user?.profilePic }}
+                style={{
+                  width: responsiveWidth(29.6),
+                  height: responsiveHeight(14.4),
+                  borderRadius: 100,
+                }}
+              ></Image>
+            </View>
+          </View>
+        </View>
+
+        {/* user info */}
+        <View style={{ width: "100%", alignItems: "center", paddingTop: "2%" }}>
+          <View
+            style={{
+              width: "95.12%",
+              backgroundColor: "#171717",
+              borderRadius: 33,
+              padding: 25,
+            }}
+          >
+            {/* first name, last name, country */}
+            <View
+              style={{ position: "relative", top: -9, flexDirection: "row" }}
+            >
+              <View style={{ width: "47.1%" }}>
+                <TextScallingFalse
+                  style={{
+                    color: "white",
+                    fontSize: responsiveFontSize(2.35),
+                    fontWeight: "bold",
+                  }}
+                >
+                  {user?.firstName} {user?.lastName}
+                </TextScallingFalse>
+              </View>
+              <View style={{ width: "19.70%" }}>
+                <View style={{ height: 7 }} />
+                <View style={{ flexDirection: "row", gap: 3 }}>
+                  <Image
+                    source={flag}
+                    style={{ width: "23.88%", height: "90%" }}
+                  />
+                  <TextScallingFalse
+                    style={{
+                      color: "white",
+                      fontSize: responsiveFontSize(1.41),
+                      fontWeight: "400",
+                    }}
+                  >
+                    {user?.address?.country || "undefined"}
+                  </TextScallingFalse>
+                </View>
+              </View>
+            </View>
+
+            {/* headline */}
+            <View style={{ width: "67.64%", position: "relative", top: -9 }}>
+              <TextScallingFalse
+                style={{
+                  color: "white",
+                  fontSize: responsiveFontSize(1.3),
+                  fontWeight: "400",
+                }}
+              >
+                {user?.headline}
+              </TextScallingFalse>
+            </View>
+
+            <View style={{ paddingTop: "3.6%" }}>
+              {/* age, height, weight, teams */}
+              <View style={{ position: "relative", left: -3 }}>
+                <View style={{ flexDirection: "row", gap: "3.65%" }}>
+                  <View style={{ flexDirection: "row" }}>
+                    <Entypo
+                      name="dot-single"
+                      size={responsiveDotSize}
+                      color="white"
+                    />
+                    <TextScallingFalse style={styles.ProfileKeyPoints}>
+                      {" "}
+                      Age: {user?.age}
+                      <TextScallingFalse style={{ color: "grey" }}>
+                        ({dateFormatter(user?.dateOfBirth)})
+                      </TextScallingFalse>
+                    </TextScallingFalse>
+                  </View>
+
+                  <View style={{ flexDirection: "row" }}>
+                    <Entypo
+                      name="dot-single"
+                      size={responsiveDotSize}
+                      color="white"
+                    />
+                    <TextScallingFalse style={styles.ProfileKeyPoints}>
+                      {" "}
+                      Height: {user?.height}
+                    </TextScallingFalse>
+                  </View>
+
+                  <View style={{ flexDirection: "row" }}>
+                    <Entypo
+                      name="dot-single"
+                      size={responsiveDotSize}
+                      color="white"
+                    />
+                    <TextScallingFalse style={styles.ProfileKeyPoints}>
+                      {" "}
+                      Weight: {user?.weight}
+                    </TextScallingFalse>
+                  </View>
+                </View>
+
+                <View style={{ paddingTop: "3%" }}>
+                  <View style={{ flexDirection: "row" }}>
+                    <Entypo
+                      name="dot-single"
+                      size={responsiveDotSize}
+                      color="white"
+                    />
+                    <TextScallingFalse style={styles.ProfileKeyPoints}>
+                      {" "}
+                      Teams:{" "}
+                      <TextScallingFalse style={{ color: "grey" }}>
+                        {" "}
+                        Pro Trackers
+                      </TextScallingFalse>
+                    </TextScallingFalse>
+                  </View>
+                </View>
+              </View>
+
+              {/* address and followings */}
+              <View
+                style={{
+                  paddingHorizontal: 7,
+                  gap: 3,
+                  paddingTop: "3.5%",
+                  position: "relative",
+                  bottom: "-10%",
+                }}
+              >
+                <View>
+                  <TextScallingFalse
+                    style={{
+                      color: "grey",
+                      fontSize: responsiveFontSize(1.35),
+                      width: "63.25%",
+                    }}
+                  >
+                    {`${user?.address.city}, ${user?.address.state}, ${user?.address.country}`}
+                  </TextScallingFalse>
+                </View>
+                <View style={{ flexDirection: "row" }}>
+                  <TouchableOpacity activeOpacity={0.5}>
+                    <TextScallingFalse
+                      style={{
+                        color: "#12956B",
+                        fontSize: responsiveFontSize(1.64),
+                      }}
+                    >
+                      {user?.followerCount} Followers
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                  <TouchableOpacity activeOpacity={0.5}>
+                    <TextScallingFalse
+                      style={{
+                        color: "#12956B",
+                        fontSize: responsiveFontSize(1.64),
+                      }}
+                    >
+                      {" "}
+                      - {user?.followingCount} Following
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={{
+            borderBottomWidth: 0.3,
+            borderBottomColor: "#505050",
+            position: "relative",
+            top: 45,
+            width: "97%",
+            alignSelf: "center",
+          }}
+        ></View>
+        {/* <ProfileTabsNavigator /> */}
+        <View style={styles.tabContainer}>
+          {/* Tab buttons */}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Overview" && styles.activeTab,
+              ]}
+              onPress={() => handleTabPress("Overview", `/profile/${params}`)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Overview" && styles.activeTabText,
+                ]}
+              >
+                Overview
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Activity" && styles.activeTab,
+              ]}
+              onPress={() =>
+                handleTabPress("Activity", `/profile/${params}/activity`)
+              }
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Activity" && styles.activeTabText,
+                ]}
+              >
+                Activity
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Events" && styles.activeTab,
+              ]}
+              onPress={() =>
+                handleTabPress("Events", `/profile/${params}/activity`)
+              }
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Events" && styles.activeTabText,
+                ]}
+              >
+                Events
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "Teams" && styles.activeTab,
+              ]}
+              onPress={() =>
+                handleTabPress("Teams", `/profile/${params}/activity`)
+              }
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "Teams" && styles.activeTabText,
+                ]}
+              >
+                Teams
+              </Text>
+            </TouchableOpacity>
+            <View
+              style={[
+                styles.tabIndicator,
+                {
+                  left: `${
+                    activeTab === "Overview"
+                      ? 2
+                      : activeTab === "Activity"
+                      ? 27.6
+                      : activeTab === "Events"
+                      ? 51.4
+                      : 74
+                  }%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
+        <Slot />
+      </ScrollView>
+    </PageThemeView>
+  );
+};
+
+const { width: screenWidth } = Dimensions.get("window"); // Get the screen width
+const containerWidth = 340; // Original container width
+const dotPercentageSize = 11 / containerWidth; // Dot size as a percentage of container width
+
+const responsiveDotSize = screenWidth * dotPercentageSize;
+// const Tab = createMaterialTopTabNavigator();
+
+const { width: screenWidth2 } = Dimensions.get("window");
+const scaleFactor = screenWidth2 / 410;
+
+const styles = StyleSheet.create({
+  ProfileKeyPoints: {
+    color: "white",
+    fontSize: responsiveFontSize(1.17),
+    fontWeight: "semibold",
+  },
+  tabContainer: {
+    flex: 1,
+  },
+  tabs: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: "11%",
+    paddingTop: "0.5%",
+    paddingBottom: "2%",
+  },
+  tabButton: {
+    paddingVertical: 10,
+  },
+  tabText: {
+    color: "white",
+    fontSize: 15,
+  },
+  activeTab: {
+    borderBottomWidth: 0,
+    borderBottomColor: "#12956B",
+  },
+  activeTabText: {
+    color: "#12956B",
+  },
+  tabIndicator: {
+    position: "absolute",
+    top: "106%",
+    alignSelf: "center",
+    width: "25%", // Adjust width as needed to fit the number of tabs
+    height: 1.5,
+    backgroundColor: "#12956B",
+    borderRadius: 2,
+  },
+});
+
+export default ProfileLayout;

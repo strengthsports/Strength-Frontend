@@ -6,7 +6,7 @@ import PageThemeView from "@/components/PageThemeView";
 import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
-import { forgotPassword } from "@/reduxStore/slices/forgotPasswordSlice";
+import { forgotPassword } from "~/reduxStore/slices/user/forgotPasswordSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/reduxStore";
 import Toast from "react-native-toast-message"; // Import Toast

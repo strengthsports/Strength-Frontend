@@ -1,4 +1,10 @@
-import { StyleSheet, View, ToastAndroid, Platform, Vibration } from "react-native";
+import {
+  StyleSheet,
+  View,
+  ToastAndroid,
+  Platform,
+  Vibration,
+} from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +14,7 @@ import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import { AppDispatch, RootState } from "@/reduxStore";
-import { setUsername } from "@/reduxStore/slices/profileSlice";
+import { setUsername } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
 import { usernameSchema } from "~/schemas/profileSchema";
 import { vibrationPattern } from "~/constants/vibrationPattern";
@@ -18,7 +24,8 @@ const signupEnterUsername3 = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   // Get username from Redux store
-  const username = useSelector((state: RootState) => state.profile.username) || "";
+  const username =
+    useSelector((state: RootState) => state.onboarding.username) || "";
 
   // Feedback function for error/success messages
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
@@ -40,21 +47,25 @@ const signupEnterUsername3 = () => {
     dispatch(setUsername(value)); // Update Redux store with the username
   };
 
-const handleNext = () => {
-  const validation = usernameSchema.safeParse({ username });
-  if (!validation.success) {
-    const errorMessage = validation.error.errors[0]?.message || "Invalid username. Please try again.";
+  const handleNext = () => {
+    const validation = usernameSchema.safeParse({ username });
+    if (!validation.success) {
+      const errorMessage =
+        validation.error.errors[0]?.message ||
+        "Invalid username. Please try again.";
 
-    console.log("Username validation error:", validation.error.errors[0]?.message);
+      console.log(
+        "Username validation error:",
+        validation.error.errors[0]?.message
+      );
 
-    feedback(errorMessage);
-    return;
-  }
-  // Navigate to the next screen if validation passes
-  router.push("/Signup/signupEnterLocation4");
-  console.log("Correct format - ",username);
-};
-
+      feedback(errorMessage);
+      return;
+    }
+    // Navigate to the next screen if validation passes
+    router.push("/Signup/signupEnterLocation4");
+    console.log("Correct format - ", username);
+  };
 
   return (
     <PageThemeView>

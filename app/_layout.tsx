@@ -1,5 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { StatusBar} from 'react-native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { StatusBar } from "react-native";
 import { useFonts } from "expo-font";
 import { Slot, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -9,8 +13,7 @@ import "../global.css";
 import { Provider } from "react-redux";
 import store from "@/reduxStore";
 import Toast from "react-native-toast-message";
-import { toastConfig } from '@/configs/toastConfig';
-
+import { toastConfig } from "@/configs/toastConfig";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,32 +36,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
-        {/* Configure Stack Navigator */}
-        {/* <Stack
-          screenOptions={{
-            headerShown: false, // Disable headers globally
-            animation: "none",  // Disable default animations globally
-          }}
-        >
-          <Stack.Screen name="(tabs)" 
-          options={{
-            headerShown: false,
-            animation: "none",
-          }}/>
-
-          <Stack.Screen
-           name="(auth)/Signup/[modal]/index"
-           options={{
-           presentation: "modal",
-           headerShown: false,
-           animation: "slide_from_bottom",
-           gestureEnabled: true,
-           }} />
-
-        </Stack> */}
         <Slot />
         <StatusBar backgroundColor="black" />
-        <Toast config={toastConfig}/>
+        <Toast config={toastConfig} />
       </Provider>
     </ThemeProvider>
   );

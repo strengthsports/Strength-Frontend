@@ -15,15 +15,15 @@ import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 import { RootState } from "@/reduxStore";
 import {
-  setProfileImage,
-  clearProfileImage,
-} from "@/reduxStore/slices/profileSlice";
+  setProfilePic,
+  clearProfilePic,
+} from "~/reduxStore/slices/user/onboardingSlice";
 
 const ProfilePictureScreen: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { profileImage, selectedSports } = useSelector(
-    (state: RootState) => state.profile,
+  const { profilePic, selectedSports } = useSelector(
+    (state: RootState) => state.onboarding
   );
 
   const pickImage = async (): Promise<void> => {
@@ -57,7 +57,7 @@ const ProfilePictureScreen: React.FC = () => {
           });
 
           // Dispatch action to save the profile image in Redux
-          dispatch(setProfileImage(newUri));
+          dispatch(setProfilePic(newUri));
         } catch (copyError) {
           console.error("Error copying image:", copyError);
           alert("Failed to save image. Please try again.");
@@ -77,20 +77,16 @@ const ProfilePictureScreen: React.FC = () => {
   };
 
   const handleContinue = (): void => {
-    if (profileImage) {
-      console.log("Selected profile picture: " + profileImage);
+    if (profilePic) {
+      console.log("Selected profile picture: " + profilePic);
       router.push({
         pathname: "/onboarding/SetHeadline",
-        params: {
-          profileImage,
-          selectedSports,
-        },
       });
     }
   };
 
   const handleRemovePic = (): void => {
-    dispatch(clearProfileImage()); // Clear profile image from Redux store
+    dispatch(clearProfilePic()); // Clear profile image from Redux store
   };
 
   return (
@@ -116,9 +112,9 @@ const ProfilePictureScreen: React.FC = () => {
 
       <View className="items-center mt-10">
         <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
-          {profileImage ? (
+          {profilePic ? (
             <Image
-              source={{ uri: profileImage }}
+              source={{ uri: profilePic }}
               className="w-40 h-40 rounded-full"
               resizeMode="cover"
             />
@@ -141,15 +137,15 @@ const ProfilePictureScreen: React.FC = () => {
 
       <TouchableOpacity
         className="bg-[#00A67E] rounded-full h-12 justify-center items-center mt-10"
-        onPress={profileImage ? handleContinue : pickImage}
+        onPress={profilePic ? handleContinue : pickImage}
         activeOpacity={0.8}
       >
         <TextScallingFalse className="text-white text-base font-semibold">
-          {profileImage ? "Continue" : "Add a photo"}
+          {profilePic ? "Continue" : "Add a photo"}
         </TextScallingFalse>
       </TouchableOpacity>
 
-      {profileImage ? (
+      {profilePic ? (
         <TouchableOpacity
           className="mt-4"
           onPress={handleRemovePic}

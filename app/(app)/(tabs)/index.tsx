@@ -10,12 +10,12 @@ import {
 import { useRouter } from "expo-router"; // Import the router for navigation
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
-import { logoutUser } from "@/reduxStore/slices/authSlice";
+import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import Toast from "react-native-toast-message";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 
-export default function Index() {
+export default function Home() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -46,6 +46,9 @@ export default function Index() {
     }
   };
 
+  const user = { id: "67667870ba4cfa5c24a3dc0b", type: "User" }; // Example object
+  const serializedUser = encodeURIComponent(JSON.stringify(user)); //
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.innerContainer}>
@@ -53,7 +56,9 @@ export default function Index() {
         <TouchableOpacity onPress={handleLogout}>
           <ThemedText>Logout</ThemedText>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("../(main)/home")}>
+        <TouchableOpacity
+          onPress={() => router.push(`../(main)/profile/${serializedUser}`)}
+        >
           <ThemedText>Chats</ThemedText>
         </TouchableOpacity>
       </ThemedView>

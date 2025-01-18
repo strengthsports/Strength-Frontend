@@ -135,9 +135,9 @@ export const resendOtp = createAsyncThunk<
   }
 });
 
-interface completeSignupPayload {
+export interface completeSignupPayload {
   email: string;
-  password: string;
+  password: string | null;
   username: string;
   address: object;
 }

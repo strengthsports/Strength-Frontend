@@ -86,7 +86,7 @@ const SuggestedSupportScreen: React.FC = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
   const { fetchedUsers, headline, profilePic, loading, error } = useSelector(
-    (state: RootState) => state.onboarding
+    (state: RootState) => state.onboarding,
   );
 
   React.useEffect(() => {
@@ -185,7 +185,7 @@ const SuggestedSupportScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black", marginTop: 28 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black"}} className="py-12">
       <Logo />
       <StatusBar barStyle="light-content" />
 

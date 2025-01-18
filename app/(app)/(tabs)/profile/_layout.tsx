@@ -320,6 +320,8 @@ const ProfileLayout = () => {
                   longitude: user.address.location.coordinates[1],
                   height: user.height,
                   weight: user.weight,
+                  coverPic: user.coverPic,
+                  profilePic: user.profilePic,
                 },
               })
             }

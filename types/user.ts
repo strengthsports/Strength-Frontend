@@ -9,6 +9,7 @@ export interface User {
   fetchedUsers: User[];
   selectedSports: string[];
   profilePic: string | null;
+  coverPic: string | null;
   headline: string;
   [key: string]: any;
 }
@@ -50,4 +51,5 @@ export interface UserData {
   address: object;
   height: string | null;
   weight: string | null;
+  assets: Array<object> | Array<string> | null;
 }

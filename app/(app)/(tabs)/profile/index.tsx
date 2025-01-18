@@ -108,7 +108,7 @@ const Overview = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSubSection, setActiveSubSection] = useState(
-    sports[0]?.sport.name
+    sports[0]?.sport?.name
   );
 
   //toggle see more

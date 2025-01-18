@@ -9,8 +9,9 @@ import {
   ToastAndroid,
   Platform,
   Keyboard,
+  Text,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -30,6 +31,9 @@ import { UserData } from "@/types/user";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { getToken } from "~/utils/secureStore";
 import Toast from "react-native-toast-message";
+import CustomModal from "react-native-modal";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 
 const EditProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,8 +46,6 @@ const EditProfile = () => {
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [picType, setPicType] = useState<keyof typeof formData | "">("");
-  const [coverPhoto, setCoverPhoto] = useState("");
-  const [profilePhoto, setProfilePhoto] = useState("");
 
   const closeModal = () => setModalVisible(false);
   const openModal = (type: React.SetStateAction<string>) => {
@@ -122,6 +124,7 @@ const EditProfile = () => {
     },
     height: params.height.toString(),
     weight: params.weight.toString(),
+    assets: [params.coverPic?.toString(), params.profilePic?.toString()],
   });
 
   useEffect(() => {
@@ -219,6 +222,70 @@ const EditProfile = () => {
   const [weightInKg, setWeightInKg] = useState("");
   const [weightInLbs, setWeightInLbs] = useState("");
 
+  // Profile pic and cover pic modal
+  const [picModalVisible, setPicModalVisible] = useState({
+    coverPic: false,
+    profilePic: false,
+  });
+  const [coverImage, setCoverImage] = useState(formData.assets?.[0]);
+  const [profileImage, setProfileImage] = useState(formData.assets?.[1]);
+
+  // Unified toggle function for pic modal
+  const togglePicModal = (type) => {
+    setPicModalVisible((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  const pickImage = async (imageType) => {
+    // Request permission
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permission to access the camera roll is required!");
+      return;
+    }
+
+    // Open image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const file = result.assets[0]; // Image URI
+      const fileInfo = await FileSystem.getInfoAsync(file.uri); // File info for upload
+
+      const fullFileObject = {
+        uri: file.uri,
+        type: file.type, // Image type (e.g., 'image/jpeg')
+        name: file.fileName, // File name
+      };
+
+      if (imageType === "cover") {
+        setFormData({
+          ...formData,
+          assets: [fullFileObject, formData.assets[1]],
+        });
+        setCoverImage(fullFileObject.uri);
+      } else if (imageType === "profile") {
+        setFormData({
+          ...formData,
+          assets: [formData.assets[0], fullFileObject],
+        });
+        setProfileImage(fullFileObject.uri);
+      }
+
+      console.log(`${imageType} image ready for upload:`, fileInfo);
+      console.log("Ready for upload:", fileInfo);
+    }
+
+    setPicModalVisible({ coverPic: false, profilePic: false });
+  };
+
   const toggleSelectedField = (field: string) => {
     setSelectedField(field);
   };
@@ -298,6 +365,7 @@ const EditProfile = () => {
   };
 
   const handleFormSubmit = () => {
+    console.log("Final Form Data : ", formData);
     dispatch(editUserProfile(formData));
     router.push("/profile");
   };
@@ -337,23 +405,6 @@ const EditProfile = () => {
           </TouchableOpacity>
         </View>
 
-        {/* <View>
-      <TouchableOpacity activeOpacity={0.9} style={{width: '100%', height: 135, justifyContent:'center', alignItems:'center'}}>
-      <Image source={{}} style={{ backgroundColor:'white', width:'100%', height: '100%',}}/>
-      <MaterialCommunityIcons style={{position:'absolute', zIndex: 100, left: 190}} name="camera-plus-outline" size={30} color="white" />
-      <View style={styles.overlay} />
-      </TouchableOpacity>      
-      <View style={{alignItems:'flex-end', borderWidth: 0.3, borderColor:'white', position:'relative', top:'-25%'}}>
-        <View style={{paddingRight: 25}}>
-        <TouchableOpacity activeOpacity={0.9} style={{ width: '35.06%', aspectRatio: 1, borderRadius: 100,  justifyContent:'center', alignItems:'center'}}>
-          <Image source={{}} style={{width: '100%', height: '100%', borderRadius: 100, backgroundColor:'grey',}}/>
-          <MaterialCommunityIcons style={{position:'absolute', zIndex: 100,}} name="camera-plus-outline" size={30} color="white" />
-          <View style={[styles.overlay, {borderRadius: 100}]}/>
-        </TouchableOpacity>
-        </View>
-        </View>
-        </View> */}
-
         {/* Profile and cover image */}
         <View
           style={{
@@ -366,18 +417,30 @@ const EditProfile = () => {
             alignItems: "center",
           }}
         >
+          {/* cover pic */}
           <TouchableOpacity
-            onPress={() => router.push("/(app)/(main)/modal?picType=cover")}
+            onPress={() => togglePicModal("coverPic")}
             activeOpacity={0.9}
             style={{ backgroundColor: "black", height: "100%", width: "100%" }}
           >
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              }}
-              style={{ width: "100%", height: "100%", opacity: 0.5 }}
-              resizeMode="cover"
-            />
+            {coverImage ? (
+              <Image
+                source={{
+                  uri: coverImage,
+                }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Image
+                source={{
+                  uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                resizeMode="cover"
+              />
+            )}
+
             <MaterialCommunityIcons
               style={{
                 position: "absolute",
@@ -390,8 +453,9 @@ const EditProfile = () => {
               color="white"
             />
           </TouchableOpacity>
+          {/* profile pic */}
           <TouchableOpacity
-            onPress={() => router.push("/(app)/(main)/modal?picType=profile")}
+            onPress={() => togglePicModal("profilePic")}
             activeOpacity={0.9}
             style={{
               position: "absolute",
@@ -405,14 +469,25 @@ const EditProfile = () => {
               borderWidth: 3,
             }}
           >
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              }}
-              style={{ width: "100%", height: "100%", opacity: 0.5 }}
-              borderRadius={100}
-              resizeMode="cover"
-            />
+            {profileImage ? (
+              <Image
+                source={{
+                  uri: profileImage,
+                }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                borderRadius={100}
+                resizeMode="cover"
+              />
+            ) : (
+              <Image
+                source={{
+                  uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                borderRadius={100}
+                resizeMode="cover"
+              />
+            )}
             <MaterialCommunityIcons
               style={{
                 position: "absolute",
@@ -554,13 +629,13 @@ const EditProfile = () => {
               style={[
                 styles.AnswerText,
                 styles.shortedWidth,
-                { color: "grey" },
+                { color: formData.address ? "white" : "grey" },
               ]}
             >
               {formData.address.city +
-                "," +
+                ", " +
                 formData.address.state +
-                "," +
+                ", " +
                 formData.address.country || "not given"}
             </TextScallingFalse>
             <MaterialIcons
@@ -714,6 +789,167 @@ const EditProfile = () => {
             />
           </TouchableOpacity>
         </View>
+        {/* Profile pic, cover pic modal */}
+        <CustomModal
+          isVisible={picModalVisible.coverPic}
+          onBackdropPress={() => togglePicModal("coverPic")}
+          onSwipeComplete={() => togglePicModal("coverPic")}
+          swipeDirection="down"
+          backdropTransitionOutTiming={0}
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          style={styles.modal}
+        >
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "#1D1D1D",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 15,
+                gap: 4,
+              }}
+            >
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 13, fontWeight: "500" }}
+              >
+                Add Tour Cover Picture
+              </TextScallingFalse>
+              <View
+                style={{ height: 1, backgroundColor: "white", width: "28%" }}
+              />
+            </View>
+            <View
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 20,
+                marginBottom: "3%",
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: "row",
+                  gap: "3%",
+                  paddingHorizontal: 30,
+                }}
+                onPress={() => pickImage("cover")}
+              >
+                <FontAwesome5
+                  name="images"
+                  style={{ marginTop: "1%" }}
+                  size={24}
+                  color="white"
+                />
+                <View>
+                  <TextScallingFalse
+                    style={{
+                      color: "white",
+                      fontSize: 16,
+                      fontWeight: "semibold",
+                    }}
+                  >
+                    Upload your Cover Picture
+                  </TextScallingFalse>
+                  <TextScallingFalse
+                    style={{ color: "white", fontSize: 13, fontWeight: "300" }}
+                  >
+                    On Strength we require members to use their standard details
+                    so upload a meaningful cover pic
+                  </TextScallingFalse>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </CustomModal>
+        <CustomModal
+          isVisible={picModalVisible.profilePic}
+          onBackdropPress={() => togglePicModal("profilePic")}
+          onSwipeComplete={() => togglePicModal("profilePic")}
+          swipeDirection="down"
+          backdropTransitionOutTiming={0}
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          style={styles.modal}
+        >
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "#1D1D1D",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 15,
+                gap: 4,
+              }}
+            >
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 13, fontWeight: "500" }}
+              >
+                Add your Profile Picture
+              </TextScallingFalse>
+              <View
+                style={{ height: 1, backgroundColor: "white", width: "28%" }}
+              />
+            </View>
+            <View
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 20,
+                marginBottom: "3%",
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: "row",
+                  gap: "3%",
+                  paddingHorizontal: 30,
+                }}
+                onPress={() => pickImage("profile")}
+              >
+                <FontAwesome5
+                  name="images"
+                  style={{ marginTop: "1%" }}
+                  size={24}
+                  color="white"
+                />
+                <View>
+                  <TextScallingFalse
+                    style={{
+                      color: "white",
+                      fontSize: 16,
+                      fontWeight: "semibold",
+                    }}
+                  >
+                    Upload your Profile Picture
+                  </TextScallingFalse>
+                  <TextScallingFalse
+                    style={{ color: "white", fontSize: 13, fontWeight: "300" }}
+                  >
+                    On Strength we require members to use their real identities
+                    so upload a photo of yourself
+                  </TextScallingFalse>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </CustomModal>
       </ScrollView>
 
       {isDatePickerVisible && (
@@ -1065,5 +1301,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "300",
     paddingStart: 0,
+  },
+  modal: {
+    justifyContent: "flex-end",
+    margin: 0,
+  },
+  modalContent: {
+    // backgroundColor: "white",
+    padding: 20,
+    height: "30%", // Controls the modal height
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  modalText: {
+    fontSize: 18,
+    marginVertical: 10,
   },
 });

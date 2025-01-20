@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { Component, useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -7,6 +7,9 @@ import {
   Dimensions,
   ScrollView,
   Text,
+  BackHandler,
+  Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
@@ -14,33 +17,57 @@ import nocover from "@/assets/images/cover.jpg";
 import nopic from "@/assets/images/pro.jpg";
 import flag from "@/assets/images/IN.png";
 import TextScallingFalse from "@/components/CentralText";
-import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import {
+  MaterialCommunityIcons,
+  Entypo,
+  FontAwesome5,
+  MaterialIcons,
+  FontAwesome6,
+} from "@expo/vector-icons";
 import {
   responsiveHeight,
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import ProfileTabsNavigator from "~/components/ProfileTabsNavigator";
 import { Slot, useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserProfile } from "~/reduxStore/slices/user/profileSlice";
+import {
+  getUserProfile,
+  followUser,
+  unFollowUser,
+} from "~/reduxStore/slices/user/profileSlice";
 import { AppDispatch } from "~/reduxStore";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { useRouter } from "expo-router";
-import { ThemedText } from "~/components/ThemedText";
+import CustomModal from "react-native-modal";
+import ProfileTabsNavigator from "~/components/ProfileTabsNavigator";
 
 const ProfileLayout = () => {
   const params = useLocalSearchParams();
-  console.log(params);
-  const userId = params.userId
-    ? JSON.parse(decodeURIComponent(params.userId))
-    : null;
+  const userId = useMemo(() => {
+    return params.userId ? JSON.parse(decodeURIComponent(params.userId)) : null;
+  }, [params.userId]);
+
   console.log("userId:", userId);
+
   const dispatch = useDispatch<AppDispatch>();
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const router = useRouter();
 
+  console.log("User : ", user);
+  console.log(error);
+  console.log(loading);
+
+  const [activeTab, setActiveTab] = useState("Overview");
+  const [currentFollowingStatus, setCurrentFollowingStatus] = useState(
+    user?.followingStatus
+  );
+  const [isSettingsModalVisible, setSettingsModalVisible] = useState({
+    status: false,
+    message: "",
+  });
+
+  //get current user data
   useEffect(() => {
     if (!user || !userId) {
       dispatch(
@@ -50,40 +77,83 @@ const ProfileLayout = () => {
         })
       ).unwrap();
     }
-  }, [dispatch, userId, user]);
+  }, [dispatch, userId]);
 
-  console.log(error);
-  console.log(loading);
+  useEffect(() => {
+    if (user) {
+      setCurrentFollowingStatus(user.followingStatus);
+    }
+  }, [user]);
 
-  // if (error !== null) {
-  //   return (
-  //     <PageThemeView>
-  //       <ScrollView>
-  //         <View>
-  //           <ThemedText>{error}</ThemedText>
-  //         </View>
-  //       </ScrollView>
-  //     </PageThemeView>
-  //   );
-  // }
+  //close modal on back button press
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (isSettingsModalVisible.status) {
+        setSettingsModalVisible((prev) => ({ ...prev, status: false }));
+        return true;
+      }
+      return false;
+    };
 
-  // if (loading) {
-  //   return (
-  //     <PageThemeView>
-  //       <ScrollView>
-  //         <View>
-  //           <ThemedText>Loading...</ThemedText>
-  //         </View>
-  //       </ScrollView>
-  //     </PageThemeView>
-  //   );
-  // }
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleBackPress
+    );
 
-  const [activeTab, setActiveTab] = useState("Overview"); // Default active tab
+    return () => backHandler.remove(); // Cleanup the event listener
+  }, [isSettingsModalVisible]);
 
+  //set active tab
   const handleTabPress = (tabName, route) => {
     setActiveTab(tabName); // Set active tab state
     router.replace(route); // Navigate to the route
+  };
+
+  //handle follow
+  const handleFollow = () => {
+    if (user || userId) {
+      dispatch(
+        followUser({
+          followingId: userId?.id,
+          followingType: userId?.type,
+        })
+      )
+        .unwrap()
+        .catch((err) => console.error("Error following user:", err));
+      setCurrentFollowingStatus((prev) => !prev);
+    }
+  };
+
+  //handle unfollow
+  const handleUnfollow = () => {
+    setSettingsModalVisible((prev) => ({ ...prev, status: false }));
+    if (user || userId) {
+      dispatch(
+        unFollowUser({
+          followingId: userId?.id,
+          followingType: userId?.type,
+        })
+      )
+        .unwrap()
+        .catch((err) => console.error("Error unfollowing user:", err));
+      setCurrentFollowingStatus((prev) => !prev);
+    }
+  };
+
+  //handle message
+  const handleMessage = () => {
+    if (!currentFollowingStatus) {
+      setSettingsModalVisible({ status: true, message: "Message" });
+    } else {
+      router.push("/");
+    }
+  };
+
+  //handle settings modal
+  const handleOpenSettingsModal = (settingsType: string) => {
+    console.log("Button clicked");
+
+    setSettingsModalVisible({ status: true, message: settingsType });
   };
 
   return (
@@ -324,7 +394,7 @@ const ProfileLayout = () => {
             </View>
           </View>
         </View>
-        {/* follow profile and message */}
+        {/* follow, message, three dots */}
         <View
           style={{
             width: "100%",
@@ -334,37 +404,52 @@ const ProfileLayout = () => {
             paddingTop: "2.5%",
           }}
         >
-          <TouchableOpacity
-            activeOpacity={0.5}
-            style={{
-              width: "34.14%",
-              borderRadius: 10,
-              backgroundColor: "#12956B",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: responsiveFontSize(1.7),
-                fontWeight: "500",
-              }}
+          {/* follow button */}
+          {currentFollowingStatus ? (
+            <TouchableOpacity
+              activeOpacity={0.5}
+              className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
+              onPress={() => handleOpenSettingsModal("Unfollow")}
             >
-              Follow
-            </TextScallingFalse>
-          </TouchableOpacity>
+              <TextScallingFalse
+                style={{
+                  color: "white",
+                  fontSize: responsiveFontSize(1.7),
+                  fontWeight: "500",
+                }}
+              >
+                <Entypo
+                  style={{ marginLeft: -4 * scaleFactor }}
+                  name="check"
+                  size={17.5 * scaleFactor}
+                  color="white"
+                />
+                Following
+              </TextScallingFalse>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={0.5}
+              className="basis-1/3 rounded-[0.70rem] bg-[#12956B] justify-center items-center"
+              onPress={handleFollow}
+            >
+              <TextScallingFalse
+                style={{
+                  color: "white",
+                  fontSize: responsiveFontSize(1.7),
+                  fontWeight: "500",
+                }}
+              >
+                Follow
+              </TextScallingFalse>
+            </TouchableOpacity>
+          )}
 
+          {/* message button */}
           <TouchableOpacity
             activeOpacity={0.5}
-            style={{
-              width: "34.14%",
-              borderRadius: 10,
-              borderColor: "#12956B",
-              borderWidth: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
+            onPress={handleMessage}
           >
             <TextScallingFalse
               style={{
@@ -377,6 +462,7 @@ const ProfileLayout = () => {
             </TextScallingFalse>
           </TouchableOpacity>
 
+          {/* three dots settings */}
           <TouchableOpacity
             activeOpacity={0.5}
             style={{
@@ -388,6 +474,7 @@ const ProfileLayout = () => {
               borderWidth: 1,
               borderColor: "#12956B",
             }}
+            onPress={() => handleOpenSettingsModal("")}
           >
             <MaterialCommunityIcons
               name="dots-horizontal"
@@ -396,109 +483,149 @@ const ProfileLayout = () => {
             />
           </TouchableOpacity>
         </View>
-        <View
-          style={{
-            borderBottomWidth: 0.3,
-            borderBottomColor: "#505050",
-            position: "relative",
-            top: 45,
-            width: "97%",
-            alignSelf: "center",
-          }}
-        ></View>
-        {/* <ProfileTabsNavigator /> */}
-        <View style={styles.tabContainer}>
-          {/* Tab buttons */}
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "Overview" && styles.activeTab,
-              ]}
-              onPress={() => handleTabPress("Overview", `/profile/${params}`)}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "Overview" && styles.activeTabText,
-                ]}
-              >
-                Overview
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "Activity" && styles.activeTab,
-              ]}
-              onPress={() =>
-                handleTabPress("Activity", `/profile/${params}/activity`)
-              }
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "Activity" && styles.activeTabText,
-                ]}
-              >
-                Activity
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "Events" && styles.activeTab,
-              ]}
-              onPress={() =>
-                handleTabPress("Events", `/profile/${params}/activity`)
-              }
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "Events" && styles.activeTabText,
-                ]}
-              >
-                Events
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "Teams" && styles.activeTab,
-              ]}
-              onPress={() =>
-                handleTabPress("Teams", `/profile/${params}/activity`)
-              }
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "Teams" && styles.activeTabText,
-                ]}
-              >
-                Teams
-              </Text>
-            </TouchableOpacity>
-            <View
-              style={[
-                styles.tabIndicator,
-                {
-                  left: `${
-                    activeTab === "Overview"
-                      ? 2
-                      : activeTab === "Activity"
-                      ? 27.6
-                      : activeTab === "Events"
-                      ? 51.4
-                      : 74
-                  }%`,
-                },
-              ]}
-            />
-          </View>
-        </View>
+        {/* Tab buttons */}
+        <Tabs
+          activeTab={activeTab}
+          handleTabPress={handleTabPress}
+          params={params}
+        />
         <Slot />
+        {/* Settings modal */}
+        <Modal
+          visible={isSettingsModalVisible.status}
+          animationType="slide"
+          onRequestClose={() =>
+            setSettingsModalVisible((prev) => ({ ...prev, status: false }))
+          }
+          transparent={true}
+        >
+          <TouchableOpacity
+            className="flex-1 justify-end items-center bg-black/20"
+            activeOpacity={1}
+            onPress={() =>
+              setSettingsModalVisible((prev) => ({ ...prev, status: false }))
+            }
+          >
+            <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto p-5 pt-7">
+              {isSettingsModalVisible.message === "" ? (
+                <View>
+                  {/* block */}
+                  <View className="items-center flex-row">
+                    <MaterialIcons
+                      name="block"
+                      size={20 * scaleFactor}
+                      color="white"
+                    />
+                    <TextScallingFalse className="text-white font-semibold text-base">
+                      Block this profile
+                    </TextScallingFalse>
+                  </View>
+                  {/* report */}
+                  <View className="items-center flex-row">
+                    <MaterialIcons
+                      name="report-problem"
+                      size={20 * scaleFactor}
+                      color="white"
+                    />
+                    <TextScallingFalse className="text-white font-semibold text-base">
+                      Report this profile
+                    </TextScallingFalse>
+                  </View>
+                  {/* follow/unfollow */}
+                  {currentFollowingStatus ? (
+                    <TouchableOpacity
+                      className="flex-row items-center"
+                      onPress={handleUnfollow}
+                    >
+                      <Entypo
+                        name="cross"
+                        size={28 * scaleFactor}
+                        color="white"
+                      />
+                      <TextScallingFalse className="text-white font-semibold text-base">
+                        Unfollow {user?.firstName}
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      className="flex-row items-center"
+                      onPress={handleFollow}
+                    >
+                      <FontAwesome6
+                        name="plus"
+                        size={20 * scaleFactor}
+                        color="white"
+                      />
+                      <TextScallingFalse className="text-white font-semibold text-base">
+                        Follow {user?.firstName}
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : isSettingsModalVisible.message === "Unfollow" ? (
+                <View>
+                  <TextScallingFalse className="text-white text-xl font-semibold">
+                    Unfollow {user?.firstName}
+                  </TextScallingFalse>
+                  <TextScallingFalse className="text-white mt-1 font-light text-sm">
+                    Stop seeing posts from {user?.firstName} on your feed.{" "}
+                    {user?.firstName} won't be notified that you've unfollowed
+                  </TextScallingFalse>
+                  <View className="items-center justify-evenly flex-row mt-5">
+                    {/* cancel unfollow */}
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      className="px-14 py-1.5 justify-center items-center border rounded-xl border-[#12956B]"
+                      onPress={() =>
+                        setSettingsModalVisible((prev) => ({
+                          ...prev,
+                          status: false,
+                        }))
+                      }
+                    >
+                      <TextScallingFalse className="text-[#12956B] text-[1rem] font-medium">
+                        Cancel
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                    {/* do unfollow */}
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      className="px-14 py-1.5 justify-center items-center bg-[#12956B] border rounded-xl border-[#12956B]"
+                      onPress={handleUnfollow}
+                    >
+                      <TextScallingFalse className="text-white text-[1rem] font-medium">
+                        Unfollow
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <View>
+                  <TextScallingFalse className="text-white font-semibold text-xl">
+                    Follow {user?.firstName} to Message
+                  </TextScallingFalse>
+                  <TextScallingFalse className="text-white font-normal mt-2">
+                    Unlock Messaging Power: Follow Friends and Athletes for a
+                    good Career Growth in your Choosen Sports game
+                  </TextScallingFalse>
+                  <TouchableOpacity
+                    onPress={() =>
+                      setSettingsModalVisible((prev) => ({
+                        ...prev,
+                        status: false,
+                      }))
+                    }
+                    className="w-5/12 py-1.5 mt-4 rounded-lg border border-[#12956B] justify-center items-center"
+                  >
+                    <TextScallingFalse className="text-[#12956B] font-medium">
+                      Close
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </ScrollView>
     </PageThemeView>
   );
@@ -520,39 +647,39 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.17),
     fontWeight: "semibold",
   },
-  tabContainer: {
-    flex: 1,
-  },
-  tabs: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: "11%",
-    paddingTop: "0.5%",
-    paddingBottom: "2%",
-  },
-  tabButton: {
-    paddingVertical: 10,
-  },
-  tabText: {
-    color: "white",
-    fontSize: 15,
-  },
-  activeTab: {
-    borderBottomWidth: 0,
-    borderBottomColor: "#12956B",
-  },
-  activeTabText: {
-    color: "#12956B",
-  },
-  tabIndicator: {
-    position: "absolute",
-    top: "106%",
-    alignSelf: "center",
-    width: "25%", // Adjust width as needed to fit the number of tabs
-    height: 1.5,
-    backgroundColor: "#12956B",
-    borderRadius: 2,
-  },
 });
+
+const Tabs = ({ activeTab, handleTabPress, params }) => {
+  const tabs = [
+    { name: "Overview", path: `/profile/${params}` },
+    { name: "Activity", path: `/profile/${params}/activity` },
+    { name: "Events", path: `/profile/${params}/events` },
+    { name: "Teams", path: `/profile/${params}/teams` },
+  ];
+
+  return (
+    <View className="flex-row justify-evenly mt-2 border-b-[0.5px] border-gray-600">
+      {tabs.map((tab, index) => (
+        <TouchableOpacity
+          key={index}
+          className={`py-2 px-5 ${
+            activeTab === tab.name ? "border-b-[1.5px] border-[#12956B]" : ""
+          }`}
+          onPress={() => handleTabPress(tab.name, tab.path)}
+        >
+          <Text
+            className={`text-[1.1rem] ${
+              activeTab === tab.name ? "text-[#12956B]" : "text-white"
+            }`}
+          >
+            {tab.name}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+export { Tabs };
 
 export default ProfileLayout;

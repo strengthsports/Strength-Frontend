@@ -347,6 +347,9 @@ const ProfileLayout = () => {
               justifyContent: "center",
               alignItems: "center",
             }}
+            onPress={() =>
+              router.push({ pathname: "/(app)/(main)/edit-overview" })
+            }
           >
             <TextScallingFalse
               style={{

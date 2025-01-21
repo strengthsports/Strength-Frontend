@@ -41,6 +41,11 @@ import { dateFormatter } from "~/utils/dateFormatter";
 import { useRouter } from "expo-router";
 import CustomModal from "react-native-modal";
 import ProfileTabsNavigator from "~/components/ProfileTabsNavigator";
+import {
+  useFindFollowersMutation,
+  useFindFollowingsMutation,
+} from "~/reduxStore/api/profileApi";
+import { TargetUser } from "~/types/user";
 
 const ProfileLayout = () => {
   const params = useLocalSearchParams();
@@ -66,6 +71,19 @@ const ProfileLayout = () => {
     status: false,
     message: "",
   });
+
+  const [
+    findFollowers,
+    { data: followers, isLoading: isFollowersLoading, isError: followersError },
+  ] = useFindFollowersMutation();
+  const [
+    findFollowings,
+    {
+      data: followings,
+      isLoading: isFollowingsLoading,
+      isError: followingsError,
+    },
+  ] = useFindFollowingsMutation();
 
   //get current user data
   useEffect(() => {
@@ -120,7 +138,7 @@ const ProfileLayout = () => {
       )
         .unwrap()
         .catch((err) => console.error("Error following user:", err));
-      setCurrentFollowingStatus((prev) => !prev);
+      setCurrentFollowingStatus((prev: boolean) => !prev);
     }
   };
 
@@ -136,7 +154,7 @@ const ProfileLayout = () => {
       )
         .unwrap()
         .catch((err) => console.error("Error unfollowing user:", err));
-      setCurrentFollowingStatus((prev) => !prev);
+      setCurrentFollowingStatus((prev: boolean) => !prev);
     }
   };
 
@@ -154,6 +172,32 @@ const ProfileLayout = () => {
     console.log("Button clicked");
 
     setSettingsModalVisible({ status: true, message: settingsType });
+  };
+
+  //handle find follwers list
+  const handleFindFollowersList = () => {
+    if (user || userId) {
+      const targetUser: TargetUser = {
+        targetUserId: userId?.id,
+        targetUserType: userId?.type,
+      };
+      findFollowers(targetUser)
+        .unwrap()
+        .catch((err) => console.error("Error finding followers list:", err));
+    }
+  };
+
+  //handle find follwings list
+  const handleFindFollowingsList = () => {
+    if (user || userId) {
+      const targetUser: TargetUser = {
+        targetUserId: userId?.id,
+        targetUserType: userId?.type,
+      };
+      findFollowings(targetUser)
+        .unwrap()
+        .catch((err) => console.error("Error finding followers list:", err));
+    }
   };
 
   return (
@@ -368,7 +412,10 @@ const ProfileLayout = () => {
                   </TextScallingFalse>
                 </View>
                 <View style={{ flexDirection: "row" }}>
-                  <TouchableOpacity activeOpacity={0.5}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={handleFindFollowersList}
+                  >
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
@@ -378,7 +425,10 @@ const ProfileLayout = () => {
                       {user?.followerCount} Followers
                     </TextScallingFalse>
                   </TouchableOpacity>
-                  <TouchableOpacity activeOpacity={0.5}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={handleFindFollowingsList}
+                  >
                     <TextScallingFalse
                       style={{
                         color: "#12956B",

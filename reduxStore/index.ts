@@ -5,6 +5,7 @@ import signupReducer from "./slices/user/signupSlice";
 import onboardingReducer from "./slices/user/onboardingSlice";
 import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import profileReducer from "./slices/user/profileSlice";
+import { profileApi } from "./api/profileApi";
 
 const store = configureStore({
   reducer: {
@@ -13,7 +14,12 @@ const store = configureStore({
     onboarding: onboardingReducer,
     forgotPassword: forgotPasswordReducer,
     profile: profileReducer,
+
+    // Add the RTK Query reducer
+    [profileApi.reducerPath]: profileApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(profileApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

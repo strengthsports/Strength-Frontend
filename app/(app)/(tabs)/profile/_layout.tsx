@@ -42,20 +42,12 @@ const ProfileLayout = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* username */}
-        <View
-          style={{
-            justifyContent: "space-between",
-            paddingHorizontal: 13,
-            flexDirection: "row",
-            height: 45,
-            alignItems: "center",
-          }}
-        >
-          <TextScallingFalse style={{ color: "white", fontSize: 19 }}>
+        <View className="justify-between px-3 flex-row h-12 items-center">
+          <TextScallingFalse className="text-white text-xl">
             @{user?.username}
           </TextScallingFalse>
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
-            <View style={{ marginTop: 1.5 }}>
+          <View className="flex-row gap-[0.85rem] mt-1">
+            <View>
               <PostButton />
             </View>
             <TouchableOpacity activeOpacity={0.5}>
@@ -69,19 +61,15 @@ const ProfileLayout = () => {
         </View>
 
         {/* profile pic and cover image */}
-        <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
+        <View
+          className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-yellow-300 relative"
+          style={{ alignItems: "flex-end", height: 135 * scaleFactor }}
+        >
           <Image
             source={{ uri: user?.coverPic }}
             style={{ width: "100%", height: "100%" }}
-          ></Image>
-          <View
-            style={{
-              paddingHorizontal: "4.87%",
-              position: "relative",
-              top: "-45%",
-              zIndex: 100,
-            }}
-          >
+          />
+          <View className="absolute h-full z-50 flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]">
             <View
               style={{
                 width: responsiveWidth(31),
@@ -91,6 +79,7 @@ const ProfileLayout = () => {
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              className="lg:w-14 lg:h-14"
             >
               <Image
                 source={{ uri: user?.profilePic }}
@@ -99,17 +88,19 @@ const ProfileLayout = () => {
                   height: responsiveHeight(14.4),
                   borderRadius: 100,
                 }}
-              ></Image>
+                className="lg:w-14 lg:h-14"
+              />
             </View>
           </View>
         </View>
 
         {/* user info */}
-        <View style={{ width: "100%", alignItems: "center", paddingTop: "2%" }}>
+        <View className="w-full lg:w-[600px] mx-auto items-center pt-[2%]">
           <View
             style={{
               width: "95.12%",
               backgroundColor: "#171717",
+              // backgroundColor: "red",
               borderRadius: 33,
               padding: 25,
             }}
@@ -258,7 +249,17 @@ const ProfileLayout = () => {
                   </TextScallingFalse>
                 </View>
                 <View style={{ flexDirection: "row" }}>
-                  <TouchableOpacity activeOpacity={0.5}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={() => {
+                      const serializedUser = encodeURIComponent(
+                        JSON.stringify({ userId: user._id, type: user.type })
+                      );
+                      return router.push(
+                        `/(app)/(main)/followers/${serializedUser}?pageType=followers`
+                      );
+                    }}
+                  >
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
@@ -268,7 +269,17 @@ const ProfileLayout = () => {
                       {user?.followerCount} Followers
                     </TextScallingFalse>
                   </TouchableOpacity>
-                  <TouchableOpacity activeOpacity={0.5}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={() => {
+                      const serializedUser = encodeURIComponent(
+                        JSON.stringify({ userId: user._id, type: user.type })
+                      );
+                      return router.push(
+                        `/(app)/(main)/followers/${serializedUser}?pageType=followings`
+                      );
+                    }}
+                  >
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
@@ -373,6 +384,7 @@ const ProfileLayout = () => {
               borderWidth: 1,
               borderColor: "#12956B",
             }}
+            onPress={() => router.push({ pathname: "/(app)/(main)/settings" })}
           >
             <MaterialCommunityIcons
               name="dots-horizontal"

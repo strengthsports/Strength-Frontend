@@ -14,6 +14,7 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     fontSize: {
+      xxs: ['0.625rem', { lineHeight: '0.825rem' }],
       xs: ['0.75rem', { lineHeight: '1rem' }],
       sm: ['0.875rem', { lineHeight: '1.1rem' }],
       base: ['1rem', { lineHeight: '1.5rem' }],

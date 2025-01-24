@@ -83,7 +83,7 @@ export default function Home() {
       </TouchableOpacity>
 
       {/* Container */}
-      <ScrollView className="w-screen pl-8 mt-8" >
+      <ScrollView className="w-screen pl-2 mt-8" >
 
       <PostContainer  />
 

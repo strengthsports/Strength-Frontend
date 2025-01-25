@@ -122,8 +122,8 @@ const EditProfile = () => {
         coordinates: [params.latitude, params.longitude],
       },
     },
-    height: params.height.toString(),
-    weight: params.weight.toString(),
+    height: params.height?.toString(),
+    weight: params.weight?.toString(),
     assets: [params.coverPic?.toString(), params.profilePic?.toString()],
   });
 
@@ -366,7 +366,78 @@ const EditProfile = () => {
 
   const handleFormSubmit = () => {
     console.log("Final Form Data : ", formData);
-    dispatch(editUserProfile(formData));
+    const prepareFormData = () => {
+      const formDataObject = new FormData();
+
+      // Append text fields
+      formDataObject.append("firstName", formData.firstName);
+      formDataObject.append("lastName", formData.lastName);
+      formDataObject.append("username", formData.username);
+      formDataObject.append("headline", formData.headline);
+      formDataObject.append("dateOfBirth", formData.dateOfBirth);
+      formDataObject.append("height", formData.height);
+      formDataObject.append("weight", formData.weight);
+
+      // // Append address fields
+      // formDataObject.append("city", formData.address.city);
+      // formDataObject.append("state", formData.address.state);
+      // formDataObject.append("country", formData.address.country);
+      // formDataObject.append(
+      //   "latitude",
+      //   formData.address.location.coordinates[0]
+      // );
+      // formDataObject.append(
+      //   "longitude",
+      //   formData.address.location.coordinates[1]
+      // );
+
+      //Append address field
+      formDataObject.append(
+        "address",
+        JSON.stringify({
+          city: formData.address.city,
+          state: formData.address.state,
+          country: formData.address.country,
+          location: {
+            coordinates: [
+              formData.address.location.coordinates[0],
+              formData.address.location.coordinates[1],
+            ],
+          },
+        })
+      );
+
+      // Append assets (files)
+      // if (formData.assets[0]) {
+      //   formDataObject.append("coverPic", {
+      //     uri: formData.assets[0].uri, // File URI
+      //     type: formData.assets[0].type || "image/jpeg", // File type
+      //     name: formData.assets[0].name || "coverPic.jpg", // File name
+      //   });
+      // }
+
+      // if (formData.assets[1]) {
+      //   formDataObject.append("profilePic", {
+      //     uri: formData.assets[1].uri, // File URI
+      //     type: formData.assets[1].type || "image/jpeg", // File type
+      //     name: formData.assets[1].name || "profilePic.jpg", // File name
+      //   });
+      // }
+
+      if (formData.assets && formData.assets.length > 0) {
+        formData.assets.forEach((asset, index) => {
+          formDataObject.append("assets", {
+            uri: asset.uri, // File URI
+            type: asset.type || "image/jpeg", // File type
+            name: asset.name || `asset_${index + 1}.jpg`, // File name
+          });
+        });
+      }
+
+      return formDataObject;
+    };
+    const data = prepareFormData();
+    dispatch(editUserProfile(data));
     router.push("/profile");
   };
 

@@ -1,30 +1,39 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { TargetUser } from "~/types/user";
 import { getToken } from "~/utils/secureStore";
 
 export const profileApi = createApi({
   reducerPath: "profileApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1`,
-    prepareHeaders: (headers) => {
-      const token = getToken("accessToken"); // Get the token
-      if (!token) throw new Error("Token not found"); // Handle missing token
-
-      headers.set("Authorization", `Bearer ${token}`); // Add the token to headers
+    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
+    prepareHeaders: async (headers) => {
+      const token = await getToken("accessToken");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      headers.set("Content-Type", "application/json");
       return headers;
     },
   }),
   endpoints: (builder) => ({
-    getUserProfile: builder.mutation({
-      query: (data) => ({
-        url: "/getProfile",
+    findFollowers: builder.mutation<any, Partial<TargetUser>>({
+      query: (body) => ({
+        url: "/api/v1/findFollowers",
         method: "POST",
-        body: data,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        body,
       }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    findFollowings: builder.mutation<any, Partial<TargetUser>>({
+      query: (body) => ({
+        url: "/api/v1/findFollowings",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
     }),
   }),
 });
 
-export const { useGetUserProfileMutation } = profileApi;
+export const { useFindFollowersMutation, useFindFollowingsMutation } =
+  profileApi;

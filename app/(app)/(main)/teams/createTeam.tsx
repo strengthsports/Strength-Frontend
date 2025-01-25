@@ -12,6 +12,7 @@ import * as ImagePicker from "expo-image-picker";
 import { NavigationProp } from "@react-navigation/native";
 import AddMembersModal from "./addMembersModal";
 import { ThemedText } from "~/components/ThemedText";
+import { router } from "expo-router";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -43,20 +44,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     location: "",
     gender: "male",
     description: "",
-    members: [
-      {
-        id: "1",
-        name: "Prathik Jha",
-        role: "Cricketer - Ranji trophy player",
-        image: "https://placekitten.com/100/100",
-      },
-      {
-        id: "2",
-        name: "Rohan Deb Nath",
-        role: "Cricketer - Right hand Batsman",
-        image: "https://placekitten.com/101/101",
-      },
-    ],
+    members: [],
   });
 
   const selectImage = async () => {
@@ -304,6 +292,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
             className="bg-[#12956B] rounded-lg p-4 mt-8 mb-6"
             onPress={() => {
               // Handle team creation
+              router.push("../teams/showTeam");
               console.log("Create team", formData);
             }}
           >

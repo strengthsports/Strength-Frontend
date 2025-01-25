@@ -181,7 +181,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
                 <View
                   className={`w-6 h-6 rounded border ${
                     member.selected
-                      ? "bg-green-500 border-green-500"
+                      ? "bg-[#12956B] border-[#12956B]"
                       : "border-gray-600"
                   } items-center justify-center`}
                 >
@@ -196,7 +196,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
           {/* Invite Button */}
           <TouchableOpacity
             onPress={handleInvite}
-            className="bg-green-600 rounded-lg p-4 mt-4"
+            className="bg-[#12956B] rounded-lg p-4 mt-4"
           >
             <Text className="text-white text-center text-lg">Invite</Text>
           </TouchableOpacity>

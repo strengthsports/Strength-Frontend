@@ -75,8 +75,7 @@ const LoginScreen = () => {
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
       // router.push("/(app)/(tabs)");
-      // router.push("/(app)/(main)/teams/InitiateCreateTeam");
-      router.push("/onboarding/sportsChoice1");
+      router.push("/(app)/(main)/teams/InitiateCreateTeam");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";

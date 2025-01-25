@@ -14,7 +14,7 @@ const SubCategories = () => {
   };
 
   return (
-    <View className="flex-1 mt-[65%] px-2">
+    <View className="flex-1 mt-[65%] px-2 max-width-[500] mx-auto">
       {/* Tab Buttons */}
       <View className="flex-row  p-2 px-4 bg-[#191919] rounded-[10px]">
         <TouchableOpacity

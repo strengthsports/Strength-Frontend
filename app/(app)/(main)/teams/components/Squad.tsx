@@ -17,10 +17,12 @@ const Squad: React.FC = () => {
     "Sansation-Regular": require("../../../../../assets/fonts/Sansation_Bold_Italic.ttf"),
   });
 
+  const [showMembersModal, setShowMembersModal] = useState(false);
+
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="white" />;
   }
-  const [showMembersModal, setShowMembersModal] = useState(false);
+
   const properties = [
     "Batter",
     "Bowler",
@@ -118,15 +120,15 @@ const Squad: React.FC = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-black p-4">
+    <ScrollView className="flex-1 bg-black p-1 max-w-screen-lg mx-auto">
       {properties.map((property) => (
         <View key={property}>
-          <View className="flex flex-row justify-between items-center mb-4 px-4 mt-2">
+          <View className="flex flex-row justify-between items-center  px-4 mt-2">
             <Text
               style={{
                 fontFamily: "Sansation-Regular",
                 color: "white",
-                fontSize: 32,
+                fontSize: 24,
               }}
             >
               {property}
@@ -147,6 +149,10 @@ const Squad: React.FC = () => {
                     imageUrl={user.imageUrl}
                     name={user.name}
                     description={user.description}
+                    isCaptain={user.id === "1"}
+                    isViceCaptain={user.id === "2"}
+                    isAdmin={true}
+                    onRemove={() => console.log("Removing user:", user)}
                   />
                 </View>
               ))}
@@ -156,7 +162,7 @@ const Squad: React.FC = () => {
               className="w-1/2 p-2"
               onPress={() => setShowMembersModal(true)} // Opens modal to add a new member
             >
-              <View className="flex justify-center h-[200] border border-gray-700 items-center rounded-lg">
+              <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
                 <Text
                   style={{
                     color: "white",
@@ -178,13 +184,11 @@ const Squad: React.FC = () => {
       ))}
 
       {/* Modal to add new members */}
-      {showMembersModal && (
-        <AddMembersModal
-          onInvite={handleInvite}
-          visible={showMembersModal}
-          onClose={() => setShowMembersModal(false)}
-        />
-      )}
+      <AddMembersModal
+        onInvite={handleInvite}
+        visible={showMembersModal}
+        onClose={() => setShowMembersModal(false)}
+      />
     </ScrollView>
   );
 };

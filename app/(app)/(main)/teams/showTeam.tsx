@@ -2,30 +2,43 @@ import React from "react";
 import { View, ScrollView } from "react-native";
 import TeamCard from "./components/teamCard";
 import SubCategories from "./components/subCategories";
-import Drawer from "./components/drawer";
+import CombinedDrawer from "./components/combinedDrawer";
+import { useRouter } from "expo-router";
 
 const showTeam = () => {
+  const router = useRouter();
+  const menuItems = [
+    {
+      label: "Edit Team",
+      onPress: () => router.push("/teams/edit/editTeam"), // Example function for "Home"
+    },
+    {
+      label: "Members",
+      onPress: () => router.push("/teams/edit/members"), // Example function for "Settings"
+    },
+    {
+      label: "Add members",
+      onPress: () => console.log("Profile clicked!"), // Example function for "Profile"
+    },
+    {
+      label: "Delete Team",
+      onPress: () => console.log("Logout clicked!"), // Example function for "Logout"
+    },
+  ];
   return (
-    <View style={{ flex: 1 }}>
-      {/* Make Drawer fixed at top */}
-      <Drawer
-        style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}
-      />
-
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, padding: 10, paddingTop: 60 }} // Adjust for the space taken by the drawer
-      >
-        <View style={{ flex: 1 }}>
-          <TeamCard
-            sportCategory="Cricket"
-            captain="Rahul Sharma"
-            viceCapt="Piyush Shukla"
-            location="Kolkata, India"
-          />
-          <SubCategories />
-        </View>
-      </ScrollView>
-    </View>
+    <CombinedDrawer menuItems={menuItems}>
+      <View>
+        <TeamCard
+          teamName="Kolkata Knights Rider"
+          sportCategory="Cricket"
+          captain="Rahul Sharma"
+          viceCapt="Piyush Shukla"
+          location="Kolkata, India"
+          teamLogo="https://picsum.photos/200/200"
+        />
+        <SubCategories />
+      </View>
+    </CombinedDrawer>
   );
 };
 

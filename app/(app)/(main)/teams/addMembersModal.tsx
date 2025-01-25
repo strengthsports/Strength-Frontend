@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,11 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
-  Dimensions,
+  StyleSheet,
 } from "react-native";
+import Icon from "react-native-vector-icons/AntDesign";
+import { ThemedText } from "~/components/ThemedText";
 
-// Types for member data
 interface PotentialMember {
   id: string;
   name: string;
@@ -26,7 +27,6 @@ interface AddMembersModalProps {
   onInvite: (selectedMembers: PotentialMember[]) => void;
 }
 
-// Dummy data for potential members
 const dummyMembers: PotentialMember[] = [
   {
     id: "1",
@@ -136,28 +136,28 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView className="flex-1 bg-black">
-        <View className="px-4 py-2 flex-1">
+        <View className="flex-1 px-4 py-2">
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
             <TouchableOpacity onPress={onClose}>
-              <Text className="text-white text-2xl">←</Text>
+              <Icon name="arrowleft" size={30} color="white" />
             </TouchableOpacity>
             <Text className="text-white text-xl font-semibold">
-              Add members
+              Invite members
             </Text>
-            <View className="w-8" /> {/* Spacer for alignment */}
+            <View className="w-8" />
           </View>
 
           {/* Search Bar */}
           <View className="mb-6">
-            <View className="flex-row items-center bg-gray-900 rounded-full px-4 py-2">
-              <Text className="text-gray-400 mr-2">🔍</Text>
+            <View className="flex-row items-center bg-[#1F2937] rounded-full px-4 py-2">
+              <Icon name="search1" size={30} color="#666" />
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder="Search..."
                 placeholderTextColor="#666"
-                className="flex-1 text-white"
+                className="flex-1 text-white px-4 text-base"
               />
             </View>
           </View>
@@ -168,7 +168,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
               <TouchableOpacity
                 key={member.id}
                 onPress={() => toggleMemberSelection(member.id)}
-                className="flex-row items-center py-4 border-b border-gray-800"
+                className="flex-row items-center py-4 border-b border-[#1F2937]"
               >
                 <Image
                   source={{ uri: member.image }}
@@ -176,17 +176,17 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
                 />
                 <View className="flex-1">
                   <Text className="text-white text-lg">{member.name}</Text>
-                  <Text className="text-gray-400">{member.role}</Text>
+                  <Text className="text-[#9CA3AF]">{member.role}</Text>
                 </View>
                 <View
-                  className={`w-6 h-6 rounded border ${
+                  className={`w-6 h-6 rounded-md border ${
                     member.selected
                       ? "bg-[#12956B] border-[#12956B]"
-                      : "border-gray-600"
+                      : "border-[#4B5563]"
                   } items-center justify-center`}
                 >
                   {member.selected && (
-                    <Text className="text-white text-sm">✓</Text>
+                    <Icon name="check" size={20} color="white" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -196,9 +196,11 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
           {/* Invite Button */}
           <TouchableOpacity
             onPress={handleInvite}
-            className="bg-[#12956B] rounded-lg p-4 mt-4"
+            className="bg-[#12956B] rounded-md py-4 mt-4"
           >
-            <Text className="text-white text-center text-lg">Invite</Text>
+            <ThemedText className="text-white text-center text-lg">
+              Invite
+            </ThemedText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

@@ -3,35 +3,38 @@ import { View, Text, Image } from "react-native";
 import { ThemedText } from "~/components/ThemedText";
 
 type TeamCardProps = {
+  teamName: string;
   sportCategory: string;
   captain: string;
   viceCapt: string;
   location: string;
+  teamLogo: string;
 };
 const TeamCard: React.FC<TeamCardProps> = ({
+  teamName,
   sportCategory,
   captain,
   viceCapt,
   location,
+  teamLogo,
 }) => {
   return (
     <>
-      <View className="h-[140px] rounded-lg">
-        <View className="flex flex-row items-center p-4">
+      <View className="h-[140px] rounded-lg max-width-[500]">
+        <View className="flex flex-row py-4 w-64 max-w-84">
           <Image
-            source={{ uri: "https://picsum.photos/200/300" }}
-            className="w-20 h-28 ml-8"
+            source={{ uri: teamLogo }}
+            className="w-32 h-30 ml-8"
           />
-          <View className="flex flex-row items-center pl-28">
+          <View className="flex flex-row items-center pl-10">
             <Image
               source={require("../../../../../assets/images/teams/Vector 64.png")}
-              className="mr-2"
+              className="mr-2 h-[108px]"
             />
             <View className="flex flex-col pl-4">
-              <Text className="text-white font-bold text-3xl">
-                {sportCategory}
+              <Text className="text-white font-bold  items-center text-2xl">
+                {teamName}
               </Text>
-              <Text className="text-white text-xl">{location}</Text>
             </View>
           </View>
         </View>

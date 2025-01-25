@@ -53,7 +53,7 @@ export default function PostContainer() {
 
   const imageUris = useMemo<string[]>(() => [
     "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
-    "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8"
+    "https://images.unsplash.com/photo-1547469447-4afec158715b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   ], []);
 
   const swiperConfig = useMemo(() => ({
@@ -84,24 +84,32 @@ export default function PostContainer() {
       <View className="flex">
 
         {/* Profile Section */}
-        <View className={`ml-[6%] flex flex-row gap-3 z-20  ${
-      parentWidth >= 300 ? 'pb-0' : 'pb-3'}`}>
-          <Image
-            className="w-[18%] h-[18%] aspect-square rounded-full bg-slate-400"
-            source={{ uri: imageUris[1] }}
-          />
+        <View className={`ml-[5%] flex flex-row gap-2 z-20   ${
+      parentWidth >= 300 ? 'pb-0' : 'pb-[7%]'} `}>
+<Image
+  className="w-[16%] h-[16%] mt-[2px] aspect-square rounded-full bg-slate-400"
+  source={{ uri: imageUris[1] }}
+  style={{
+    elevation: 8, // Shadow for Android
+    shadowColor: 'black', // Shadow color for iOS
+    shadowOffset: { width: 0, height: 4 }, // Offset for iOS
+    shadowOpacity: 0.8, // Opacity for iOS
+    shadowRadius: 4, // Blur radius for iOS
+  }}
+/>
+
           <View>
             <TextScallingFalse className="text-white font-bold">Rahul Sharma</TextScallingFalse>
-            <TextScallingFalse className="text-white text-xs">Cricketer | Right hand batsman</TextScallingFalse>
+            <TextScallingFalse className="text-neutral-300 text-sm">Cricketer | Right hand batsman</TextScallingFalse>
           </View>
         </View>
 
         {/* Grey Top Caption Div */}
-        <View className={`relative left-[6%] bottom-0 w-[94%] min-h-16 h-auto mt-[-20] ${
+        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] ${
       parentWidth >= 300 ? 'rounded-tl-[72px] rounded-tr-[20px]' : 'rounded-tl-[44px] rounded-tr-[15px]'}  pb-3 bg-neutral-900`}>
-          <View className={`w-full pl-[17%] ${ parentWidth >= 300 ? 'pt-1' : 'pt-0'} flex flex-row justify-between items-center `}>
+          <View className={`w-full pl-[17%] ${ parentWidth >= 300 ? 'pt-2' : 'pt-0'} flex flex-row justify-between items-center `}>
             <View className="flex flex-row justify-center items-center">
-              <TextScallingFalse className="text-xs ml-3 text-neutral-400">8 h ago  &bull;  </TextScallingFalse>
+              <TextScallingFalse className="text-xs ml-1 text-neutral-400">8 h ago  &bull;  </TextScallingFalse>
               <MaterialIcons name="public" size={12} color="gray" />
             </View>
             <MaterialIcons className="mr-6" name="more-horiz" size={20} color="white" />
@@ -122,7 +130,7 @@ export default function PostContainer() {
         </Swiper>
 
         {/* Bottom Grey Div */}
-        <View className={`relative left-[6%] bottom-0 w-[94%] min-h-12 h-auto ${
+        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto ${
       parentWidth >= 300 ? 'rounded-bl-[72px] rounded-br-[20px]' : 'rounded-bl-[44px] rounded-br-[15px]'}  bg-neutral-900`}>
           <View className="w-full pl-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row justify-between items-center gap-2">

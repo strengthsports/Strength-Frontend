@@ -1,9 +1,10 @@
 import { SafeAreaView, View, TouchableOpacity, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router"; // Import the router for navigation
 import TextScallingFalse from "~/components/CentralText";
-import PostContainer from "~/components/feedPage/postContainer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostSmallCard from "~/components/Cards/PostSmallCard";
+import { useGetFeedPostQuery } from "~/reduxStore/api/feedPostApi";
+import PostContainer from "~/components/Cards/postContainer";
 
 export default function Home() {
   const router = useRouter();
@@ -72,6 +73,20 @@ export default function Home() {
       ],
     },
   ];
+
+  const { data, error, isLoading, refetch } = useGetFeedPostQuery({
+    limit: 20,
+    lastTimestamp: '1737657000000' // Pass lastTimestamp for pagination
+  });
+  useEffect(() => {
+    if (data) {
+      console.log('Feed Data:', data);
+    }
+    if (error) {
+      console.log('Feed Error:', error);
+    }
+  }, [data, error]);
+
   return (
     <SafeAreaView className="pt-16">
       <TouchableOpacity
@@ -83,7 +98,7 @@ export default function Home() {
       </TouchableOpacity>
 
       {/* Container */}
-      <ScrollView className="w-screen pl-2 mt-8" >
+      <ScrollView className="w-screen pl-4 mt-8" >
 
       <PostContainer  />
 

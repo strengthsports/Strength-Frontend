@@ -14,26 +14,44 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     fontSize: {
-      xxs: ['0.625rem', { lineHeight: '0.825rem' }],
-      xs: ['0.75rem', { lineHeight: '1rem' }],
-      sm: ['0.875rem', { lineHeight: '1.1rem' }],
-      base: ['1rem', { lineHeight: '1.5rem' }],
-      lg: ['1.125rem', { lineHeight: '2rem' }],
-      xl: ['1.25rem', { lineHeight: '1.75rem' }],
-      '2xl': ['1.5rem', { lineHeight: '2rem' }],
-      '3xl': ['2rem', { lineHeight: '3rem' }],
-      '4xl': ['2.5rem', { lineHeight: '3rem' }],
-      '5xl': ['3rem', { lineHeight: '1' }],
-      '6xl': ['3.75rem', { lineHeight: '1' }],
-      '7xl': ['4.5rem', { lineHeight: '1' }],
-      '8xl': ['6rem', { lineHeight: '1' }],
-      '9xl': ['8rem', { lineHeight: '1' }],
+      xxs: ['8px', { lineHeight: '11px' }], 
+      xs: ['9px', { lineHeight: '11px' }], 
+      sm: ['10px', { lineHeight: '14px' }], 
+      base: ['11px', { lineHeight: '14px' }], 
+      lg: ['12px', { lineHeight: '16px' }], 
+      xl: ['13px', { lineHeight: '16px' }], 
+      '2xl': ['14px', { lineHeight: '20px' }], 
+     ' 3xl': ['15px', { lineHeight: '20px' }], 
+      '4xl': ['16px', { lineHeight: '28px' }], 
+      '5xl': ['18px', { lineHeight: '24px' }], 
+      '6xl': ['22px', { lineHeight: '28px' }], 
+      '7xl': ['28px', { lineHeight: '42px' }], 
+      '8xl': ['36px', { lineHeight: '46px' }], 
+      '9xl': ['44px', { lineHeight: '1' }], 
+      // '6xl': ['56px', { lineHeight: '1' }], 
+      // '7xl': ['68px', { lineHeight: '1' }], 
+      // '8xl': ['84px', { lineHeight: '1' }], 
+      // '9xl': ['120px', { lineHeight: '1' }], 
     },
+    
     extend: {
       colors: {
         background: 'hsl(var(--background))', // Use CSS variables for colors
         foreground: 'hsl(var(--foreground))',
         // Add additional CSS variable-based colors here if needed
+        theme: {
+          DEFAULT: '#12956B', // Default shade
+          50: '#e6f5f0',  // Lightest shade
+          100: '#ccebe1',
+          200: '#99d7c3',
+          300: '#66c3a5',
+          400: '#33af87',
+          500: '#12956B', // Base shade
+          600: '#0f7a58',
+          700: '#0c5f45',
+          800: '#094532',
+          900: '#062a1f', // Darkest shade
+        }
       },
     },
   },

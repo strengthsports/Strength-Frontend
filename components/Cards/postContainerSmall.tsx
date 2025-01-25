@@ -26,9 +26,8 @@ interface SwiperImageProps {
 const ActionButton = memo<ActionButtonProps>(({ iconName, text }) => (
   <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
     <MaterialIcons name={iconName} size={16} color="gray" />
-    <TextScallingFalse className="text-lg text-white">{text}</TextScallingFalse>
   </View>
-))
+));
 
 const SwiperImage = memo<SwiperImageProps>(({ uri }) => (
   <Image
@@ -38,9 +37,7 @@ const SwiperImage = memo<SwiperImageProps>(({ uri }) => (
   />
 ));
 
-export default function PostContainer() {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showSeeMore, setShowSeeMore] = useState(false);
+export default function PostContainerSmall() {
 
   const imageUris = useMemo<string[]>(() => [
     "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
@@ -55,24 +52,25 @@ export default function PostContainer() {
     paginationStyle: { bottom: -22, zIndex: 20 },
     dotStyle: {
       backgroundColor: 'grey',
-      width: 4,
-      height: 4,
+      width: 3,
+      height: 3,
       marginHorizontal: 20,
     },
     activeDotStyle: {
       backgroundColor: "white",
-      width: 5,
-      height: 5,
+      width: 4,
+      height: 4,
       marginLeft: 20,
+      // marginHorizontal: 20,
       zIndex: 30
     }
   }), []);
-  // setIsExpanded(false)
+  // console.log(parentWidth)
+
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8"
     >
       <View className="flex">
-
         {/* Profile Section */}
         <View className={`ml-[5%] flex flex-row gap-2 z-20 pb-0' `}>
           <Image
@@ -89,51 +87,25 @@ export default function PostContainer() {
 
           <View className="flex flex-col justify-between ">
             <View>
-              <TextScallingFalse className="text-white font-bold">Rahul Sharma</TextScallingFalse>
-              <TextScallingFalse className="text-neutral-300 text-base">Cricketer | Right hand batsman</TextScallingFalse>
+              <TextScallingFalse className="text-white text-xl font-bold">Rahul Sharma</TextScallingFalse>
+              <TextScallingFalse className="text-neutral-300 text-sm">Cricketer | Right hand batsman</TextScallingFalse>
             </View>
             <View className="flex flex-row  items-center">
-              <TextScallingFalse className="text-lg text-neutral-400">8 h ago  &bull;  </TextScallingFalse>
+              <TextScallingFalse className="text-base text-neutral-400">8 h ago  &bull;  </TextScallingFalse>
               <MaterialIcons name="public" size={12} color="gray" />
             </View>
           </View>
 
         </View>
 
-        {/* Grey Top Caption Div */}
-        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[72px] rounded-tr-[20px] pb-3 bg-neutral-900`}>
-      <MaterialIcons className="absolute right-8 top-2" name="more-horiz" size={20} color="white" />
-      
-      <View className={`${isExpanded ? 'pl-8' : 'pl-12'} pr-6 pt-12 pb-4`}>
-        <Text
-          // className={`${isExpanded ? 'text-xl' : 'text-lg'}  text-neutral-200`}
-          className='text-xl text-neutral-200'
-          numberOfLines={isExpanded ? undefined : 2}
-          ellipsizeMode="tail"
-          onTextLayout={(e) => {
-            const { lines } = e.nativeEvent;
-            if (!isExpanded) {
-              // Show "See more" only if text is truncated
-              setShowSeeMore(lines.length > 2 || (lines as any).some((line:any) => line.truncated));
-            }
-          }}
-        >
-Absolutely! If you're using NativeWind, you can leverage its built-in transition utilities to simplify the animation process. NativeWind uses Tailwind CSS under the hood, so we can use Tailwind's transition classes to achieve smooth animations
-        </Text>
 
-        {showSeeMore && !isExpanded && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setIsExpanded(true)}
-            className="mt-1"
-          >
-            <Text className="text-theme text-sm">
-              See more
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+        {/* Grey Top Caption Div */}
+        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[50px] rounded-tr-[16px]  pb-3 bg-neutral-900`}>
+          <MaterialIcons className="absolute right-6 top-2" name="more-horiz" size={18} color="white" />
+          <TextScallingFalse className=" pl-10 pr-6 pt-10 pb-3 text-sm text-white ">
+            A lon asd asd asd  iksad fsafjkakj sfjh hja  h    j a asdss jhasd jhasd hja sdh asd hjaksdkjh
+          </TextScallingFalse>
+        </View>
 
         {/* Swiper Section */}
         <Swiper {...swiperConfig} className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400">
@@ -143,19 +115,19 @@ Absolutely! If you're using NativeWind, you can leverage its built-in transition
         </Swiper>
 
         {/* Bottom Grey Div */}
-        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[20px]  bg-neutral-900`}>
-          <View className="w-full pl-8 pr-6 py-3 flex flex-row justify-between items-center">
+        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto rounded-b-[50px]  bg-neutral-900`}>
+          <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row justify-between items-center gap-2">
               <MaterialIcons name="thumb-up" size={16} color="yellow" />
-              <TextScallingFalse className="text-lg text-white ">40 likes</TextScallingFalse>
+              <TextScallingFalse className="text-base text-white ">40 likes</TextScallingFalse>
             </View>
-            <TextScallingFalse className="text-lg text-white ">3 Comments</TextScallingFalse>
+            <TextScallingFalse className="text-base text-white ">3 Comments</TextScallingFalse>
           </View>
 
           <Divider style={{ marginLeft: '12%', width: '80%' }} width={0.2} color="grey" />
 
           <View
-            className="w-full pl-16 pr-6 py-5 mb-1 flex flex-row justify-between items-center"
+            className="w-full px-6 py-5 mb-1 mr flex flex-row justify-evenly items-center"
           >
             <ActionButton iconName="thumb-up-off-alt" text="Like" />
             <ActionButton iconName="comment" text="Comment" />

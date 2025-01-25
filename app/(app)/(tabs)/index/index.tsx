@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PostSmallCard from "~/components/Cards/PostSmallCard";
 import { useGetFeedPostQuery } from "~/reduxStore/api/feedPostApi";
 import PostContainer from "~/components/Cards/postContainer";
+import PostContainerSmall from "~/components/Cards/postContainerSmall";
 
 export default function Home() {
   const router = useRouter();
@@ -78,14 +79,14 @@ export default function Home() {
     limit: 20,
     lastTimestamp: '1737657000000' // Pass lastTimestamp for pagination
   });
-  useEffect(() => {
-    if (data) {
-      console.log('Feed Data:', data);
-    }
-    if (error) {
-      console.log('Feed Error:', error);
-    }
-  }, [data, error]);
+  // useEffect(() => {
+  //   if (data) {
+  //     console.log('Feed Data:', data);
+  //   }
+  //   if (error) {
+  //     console.log('Feed Error:', error);
+  //   }
+  // }, [data, error]);
 
   return (
     <SafeAreaView className="pt-16">
@@ -98,9 +99,13 @@ export default function Home() {
       </TouchableOpacity>
 
       {/* Container */}
-      <ScrollView className="w-screen pl-4 mt-8" >
+      <ScrollView className="w-screen pl-3 mt-8" >
 
       <PostContainer  />
+      <View className="w-80">
+        <PostContainerSmall  />
+
+      </View>
 
       {/* <PostContainer /> */}
       <TextScallingFalse className="p-6  text-xl text-white">

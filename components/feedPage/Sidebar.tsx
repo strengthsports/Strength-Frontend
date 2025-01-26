@@ -1,197 +1,179 @@
-import React, { useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  Text,
-  Pressable,
-} from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import {
-  PanGestureHandler,
-  GestureHandlerRootView,
-  PanGestureHandlerGestureEvent,
-} from 'react-native-gesture-handler';
+import React, { useCallback, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
 import Animated, {
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
   useSharedValue,
+  useAnimatedStyle,
   withSpring,
-  interpolate,
+  withTiming,
   runOnJS,
 } from 'react-native-reanimated';
+import {
+  GestureDetector,
+  Gesture,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.7;
-const THRESHOLD = SIDEBAR_WIDTH / 3;
-
-type SidebarProps = {
+interface SidebarProps {
   isVisible: boolean;
   onClose: () => void;
-  onLogout: () => void;
-  onProfile: () => void;
+  children?: React.ReactNode;
+}
+
+const SIDEBAR_WIDTH = 300;
+const SWIPE_VELOCITY_THRESHOLD = 800;
+const SPRING_CONFIG = {
+  damping: 20,
+  stiffness: 100,
 };
 
-type ContextType = {
-  x: number;
-};
+const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, children }) => {
+  const translateX = useSharedValue(-SIDEBAR_WIDTH);
+  const isInteracting = useSharedValue(false);
 
-const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, onLogout, onProfile }) => {
-  const translateX = useSharedValue(SIDEBAR_WIDTH);
-  const context = useSharedValue<ContextType>({ x: 0 });
+  const animateSidebar = useCallback((visible: boolean) => {
+    translateX.value = withSpring(
+      visible ? 0 : -SIDEBAR_WIDTH,
+      SPRING_CONFIG,
+      (finished) => {
+        if (finished && !visible) {
+          runOnJS(onClose)();
+        }
+      }
+    );
+  }, []);
 
-React.useEffect(() => {
-  if (isVisible) {
-    console.log('Opening sidebar...');
-    translateX.value = withSpring(0, { damping: 15 });
-  } else {
-    console.log('Closing sidebar...');
-    translateX.value = withSpring(SIDEBAR_WIDTH, { damping: 15 });
-  }
-}, [isVisible]);
+  useEffect(() => {
+    if (isVisible) {
+      translateX.value = withTiming(0, { duration: 300 });
+    } else {
+      translateX.value = withTiming(-SIDEBAR_WIDTH, { duration: 300 });
+    }
+  }, [isVisible]);
 
-const animatedStyle = useAnimatedStyle(() => {
-  console.log('translateX.value:', translateX.value);
-  return {
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: (translateX.value / -SIDEBAR_WIDTH) * -1,
+    display: translateX.value === -SIDEBAR_WIDTH ? 'none' : 'flex',
+  }));
+
+  const sidebarStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
-  };
-});
+  }));
 
-  const panGestureHandler = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    ContextType
-  >({
-    onStart: (_, ctx) => {
-      ctx.x = translateX.value;
-    },
-    onActive: (event, ctx) => {
-      const newTranslateX = ctx.x + event.translationX;
-      if (newTranslateX >= 0) {
-        translateX.value = newTranslateX;
-      }
-    },
-    onEnd: (event) => {
-      if (event.translationX > THRESHOLD) {
-        translateX.value = withSpring(SIDEBAR_WIDTH, { damping: 15 });
-        runOnJS(onClose)();
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      isInteracting.value = true;
+    })
+    .onUpdate((e) => {
+      if (e.translationX < 0) {
+        translateX.value = Math.max(-SIDEBAR_WIDTH, e.translationX);
       } else {
-        translateX.value = withSpring(0, { damping: 15 });
+        translateX.value = Math.min(0, e.translationX);
       }
-    },
-  });
-
-  // const animatedStyle = useAnimatedStyle(() => ({
-  //   transform: [{ translateX: translateX.value }],
-  // }));
-
-  const overlayAnimatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(translateX.value, [0, SIDEBAR_WIDTH], [0.5, 0]);
-    return {
-      opacity,
-      display: opacity === 0 ? 'none' : 'flex',
-    };
-  });
-
-  const closeSidebar = () => {
-    translateX.value = withSpring(SIDEBAR_WIDTH, { damping: 15 });
-    onClose();
-  };
-
-  if (!isVisible) return null;
+    })
+    .onEnd((e) => {
+      const shouldClose =
+        e.translationX < -SIDEBAR_WIDTH / 3 ||
+        e.velocityX < -SWIPE_VELOCITY_THRESHOLD;
+      
+      if (shouldClose) {
+        animateSidebar(false);
+      } else {
+        animateSidebar(true);
+      }
+      isInteracting.value = false;
+    });
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={closeSidebar}>
-        <Animated.View style={[styles.overlay, overlayAnimatedStyle]} />
-        <PanGestureHandler onGestureEvent={panGestureHandler}>
-          <Animated.View style={[styles.sidebarContainer, animatedStyle]}>
-            <View style={styles.header}>
-              <TouchableOpacity onPress={closeSidebar} style={styles.closeButton}>
-                <MaterialCommunityIcons name="close" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.content}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  onProfile();
-                  closeSidebar();
-                }}
-              >
-                <MaterialCommunityIcons name="account" size={24} color="white" />
-                <Text style={styles.buttonText}>Profile</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  onLogout();
-                  closeSidebar();
-                }}
-              >
-                <MaterialCommunityIcons name="logout" size={24} color="white" />
-                <Text style={styles.buttonText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </PanGestureHandler>
-      </Pressable>
+    <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+      {/* Overlay with high zIndex */}
+      <Animated.View style={[
+        styles.overlay, 
+        overlayStyle,
+        { zIndex: 9998, elevation: 9998 }
+      ]}>
+        <TouchableOpacity
+          style={styles.overlayTouchable}
+          onPress={() => animateSidebar(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Close sidebar"
+          activeOpacity={1}
+        />
+      </Animated.View>
+
+      {/* Sidebar with highest zIndex */}
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={[
+          styles.sidebar, 
+          sidebarStyle,
+          { zIndex: 9999, elevation: 9999 }
+        ]}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Navigation</Text>
+            <TouchableOpacity
+              onPress={() => animateSidebar(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Close sidebar"
+            >
+              <Text style={styles.closeIcon}>×</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {/* Scrollable Content */}
+          <Animated.ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+            accessibilityRole="menu"
+          >
+            {children}
+          </Animated.ScrollView>
+        </Animated.View>
+      </GestureDetector>
     </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'black',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  sidebarContainer: {
+  overlayTouchable: {
+    flex: 1,
+  },
+  sidebar: {
     position: 'absolute',
+    left: 0,
     top: 0,
     bottom: 0,
-    right: -SIDEBAR_WIDTH,
     width: SIDEBAR_WIDTH,
-    backgroundColor: '#1a1a1a',
-    borderLeftWidth: 1,
-    borderLeftColor: '#333',
+    backgroundColor: '#1c1c1c',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
   },
   header: {
-    height: 60,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
-  closeButton: {
-    padding: 8,
+  title: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  closeIcon: {
+    color: 'white',
+    fontSize: 32,
+    lineHeight: 32,
   },
   content: {
     flex: 1,
-    paddingTop: 20,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-    backgroundColor: '#2a2a2a',
-  },
-  buttonText: {
-    color: 'white',
-    marginLeft: 15,
-    fontSize: 16,
+    paddingHorizontal: 16,
   },
 });
 
-export default Sidebar;
+export default React.memo(Sidebar);

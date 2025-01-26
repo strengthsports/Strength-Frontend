@@ -65,19 +65,6 @@ const ProfileLayout = () => {
     message: "",
   });
 
-  // useEffect(() => {
-  //   if (userId) {
-  //     dispatch(
-  //       getUserProfile({
-  //         targetUserId: userId?.id,
-  //         targetUserType: userId?.type,
-  //       })
-  //     )
-  //       .unwrap()
-  //       .catch((err) => console.error("Error fetching user profile:", err));
-  //   }
-  // }, [dispatch, userId]);
-
   useEffect(() => {
     if (userId && (!profiles || !profiles[userId?.id])) {
       // Dispatch API call only if the profile is not cached
@@ -97,12 +84,6 @@ const ProfileLayout = () => {
       });
     }
   }, [dispatch, userId, profiles]);
-
-  // useEffect(() => {
-  //   if (user) {
-  //     setCurrentFollowingStatus(user.followingStatus);
-  //   }
-  // }, [user]);
 
   //close modal on back button press
   useEffect(() => {

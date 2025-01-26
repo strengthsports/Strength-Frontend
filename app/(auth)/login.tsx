@@ -74,7 +74,7 @@ const LoginScreen = () => {
 
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
-      router.push("/(app)/(tabs)");
+      router.push("/(app)/(tabs)/home");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";

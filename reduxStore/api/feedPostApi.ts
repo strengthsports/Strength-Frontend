@@ -2,6 +2,21 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { number } from "zod";
 import { getToken } from "~/utils/secureStore";
 
+// In your feedPostApi.ts
+interface Post {
+  _id: string;
+  caption: string;
+  assets: Array<{ url: string }>;
+  postedBy: {
+    firstName: string;
+    lastName: string;
+    headline: string;
+  };
+  createdAt: string;
+  likesCount: number;
+  commentsCount: number;
+}
+
 interface FeedResponse {
   data: {
     posts: Post[];

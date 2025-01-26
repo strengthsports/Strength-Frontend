@@ -69,48 +69,45 @@ export const getUserProfile = createAsyncThunk<
 
 export const editUserProfile = createAsyncThunk<
   any,
-  FormData,
+  any,
   { rejectValue: string }
->(
-  "profile/editUserProfile",
-  async (userdata: FormData, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      if (!token) throw new Error("Token not found");
-      console.log("Token : ", token);
-      console.log("User data input :", userdata);
+>("profile/editUserProfile", async (userdata, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+    console.log("Token : ", token);
+    console.log("User data input :", userdata);
 
-      userdata.forEach((value, key) => {
-        console.log(`${key}: ${value}`);
-      });
+    userdata.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
 
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: userdata,
-        }
-      );
-
-      console.log("Response:", response);
-      const data = await response.json();
-
-      if (!response.ok) {
-        return rejectWithValue(data.message || "Error getting user");
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: userdata,
       }
-      // console.log("Data : ", data.data.updatedUser);
-      return data.data.updatedUser;
-    } catch (error: unknown) {
-      console.log("Actual api error : ", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unexpected error occurred";
-      return rejectWithValue(errorMessage);
+    );
+
+    console.log("Response:", response);
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Error getting user");
     }
+    console.log("Data : ", data.data.updatedUser);
+    return data.data.updatedUser;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
   }
-);
+});
 
 export const followUser = createAsyncThunk<
   any,

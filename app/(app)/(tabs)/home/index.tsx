@@ -77,7 +77,7 @@ export default function Home() {
 
   const { data, error, isLoading, refetch } = useGetFeedPostQuery({
     limit: 20,
-    lastTimestamp: '1737697000000' // Pass lastTimestamp for pagination
+    lastTimeStamp: '1737697000000' // Pass lastTimestamp for pagination
   });
   useEffect(() => {
     if (data) {

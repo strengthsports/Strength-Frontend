@@ -40,6 +40,7 @@ export interface ProfileState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  profiles: { [key: string]: User } | null;
 }
 
 export interface UserData {
@@ -51,5 +52,5 @@ export interface UserData {
   address: object;
   height: string | null;
   weight: string | null;
-  assets: Array<object> | Array<string> | null;
+  assets: Array<string> | Array<Blob> | Array<File> | null;
 }

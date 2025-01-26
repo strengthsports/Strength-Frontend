@@ -2,7 +2,7 @@ import { getToken, removeToken, saveToken } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser } from "./onboardingSlice";
-import { editUserProfile } from "./profileSlice";
+import { editUserProfile, followUser, unFollowUser } from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
 // Initial State
@@ -192,7 +192,6 @@ const authSlice = createSlice({
       })
       .addCase(editUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        // console.log("State updates...", action.payload);
         state.user = { ...state.user, ...action.payload };
         state.msgBackend = action.payload.message;
         state.error = null;
@@ -202,6 +201,36 @@ const authSlice = createSlice({
         state.success = false;
         state.error =
           action.payload || "Unexpected error occurred during updating user.";
+      });
+
+    // Update followers/followings
+    // Following a user
+    builder
+      .addCase(followUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(followUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user.followingCount += 1;
+      })
+      .addCase(followUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+    // Unfollowing an user
+    builder
+      .addCase(unFollowUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unFollowUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user.followingCount -= 1;
+      })
+      .addCase(unFollowUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

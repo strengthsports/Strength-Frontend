@@ -14,6 +14,7 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerShown: false, // Disable headers globally
+        animation: "none",
       }}
     />
   );

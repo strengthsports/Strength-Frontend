@@ -92,7 +92,7 @@ const PostItem = ({ item }: { item: PostData }) => {
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
-    const shouldShowSeeMore = lines.length > 2 || lines.some(line => line.truncated);
+    const shouldShowSeeMore = lines.length > 2 || (lines as any).some((line:any) => line.truncated);
     setShowSeeMore(shouldShowSeeMore);
   };
 

@@ -3,9 +3,15 @@ import { number } from "zod";
 import { getToken } from "~/utils/secureStore";
 
 interface FeedResponse {
+  data: {
     posts: Post[];
     lastTimestamp: string | null;
+  };
+  message: string;
+  statusCode: number;
+  success: boolean;
 }
+
 interface Post {
     _id: string;
     content: string;

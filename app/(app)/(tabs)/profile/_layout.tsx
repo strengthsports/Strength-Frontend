@@ -167,7 +167,7 @@ const ProfileLayout = () => {
                       {" "}
                       Age: {user?.age}{" "}
                       <TextScallingFalse style={{ color: "grey" }}>
-                        ({dateFormatter(user?.dateOfBirth)})
+                        ({dateFormatter(user?.dateOfBirth, "text")})
                       </TextScallingFalse>
                     </TextScallingFalse>
                   </View>

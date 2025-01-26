@@ -51,6 +51,7 @@ export const loginUser = createAsyncThunk<
 
     // Convert tokens to strings and save in Secure Store
     console.log("saving accessToken");
+    // console.log("accessToken", data.data.accessToken);
     saveToken("accessToken", data.data.accessToken);
 
     return { user: data.data.user, message: data.message };

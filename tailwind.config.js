@@ -36,7 +36,7 @@ module.exports = {
     
     extend: {
       colors: {
-        background: 'hsl(var(--background))', // Use CSS variables for colors
+        background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         // Add additional CSS variable-based colors here if needed
         theme: {

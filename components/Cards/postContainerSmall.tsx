@@ -7,14 +7,14 @@ import {
   ImageStyle,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useCallback, useState, memo, useMemo } from "react";
 
 // Type definitions for components
 interface ActionButtonProps {
-  iconName: keyof typeof MaterialIcons.glyphMap; // Correct type for icon names
+  iconName: keyof typeof FontAwesome.glyphMap; // Correct type for icon names
   text: string;
 }
 
@@ -25,7 +25,7 @@ interface SwiperImageProps {
 // Memoized components with proper typing
 const ActionButton = memo<ActionButtonProps>(({ iconName, text }) => (
   <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-    <MaterialIcons name={iconName} size={16} color="gray" />
+    <FontAwesome name={iconName} size={16} color="gray" />
   </View>
 ));
 
@@ -118,8 +118,8 @@ export default function PostContainerSmall() {
         <View className={`relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto rounded-b-[50px]  bg-neutral-900`}>
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row justify-between items-center gap-2">
-              <MaterialIcons name="thumb-up" size={16} color="yellow" />
-              <TextScallingFalse className="text-base text-white ">40 likes</TextScallingFalse>
+            <FontAwesome name="thumbs-up" size={16} color="yellow" />
+            <TextScallingFalse className="text-base text-white ">40 likes</TextScallingFalse>
             </View>
             <TextScallingFalse className="text-base text-white ">3 Comments</TextScallingFalse>
           </View>
@@ -129,9 +129,9 @@ export default function PostContainerSmall() {
           <View
             className="w-full px-6 py-5 mb-1 mr flex flex-row justify-evenly items-center"
           >
-            <ActionButton iconName="thumb-up-off-alt" text="Like" />
+            <ActionButton iconName="thumbs-o-up" text="Like" />
             <ActionButton iconName="comment" text="Comment" />
-            <ActionButton iconName="share" text="Share" />
+            <ActionButton iconName="paper-plane" text="Share" />
           </View>
         </View>
 

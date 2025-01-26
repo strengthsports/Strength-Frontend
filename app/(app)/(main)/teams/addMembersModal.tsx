@@ -25,97 +25,40 @@ interface AddMembersModalProps {
   visible: boolean;
   onClose: () => void;
   onInvite: (selectedMembers: PotentialMember[]) => void;
+  buttonName: string;
+  multiselect: boolean;
+  player: PotentialMember[];
 }
 
-const dummyMembers: PotentialMember[] = [
-  {
-    id: "1",
-    name: "Prathik Jha",
-    role: "Cricketer | Ranji Trophy Player",
-    image: "https://picsum.photos/id/1/100/100",
-    selected: false,
-  },
-  {
-    id: "2",
-    name: "Rohan Deb Nath",
-    role: "Cricketer | Right-Hand Batsman",
-    image: "https://picsum.photos/id/2/100/100",
-    selected: false,
-  },
-  {
-    id: "3",
-    name: "Aditi Mehra",
-    role: "Cricketer | Left-Hand Batsman",
-    image: "https://picsum.photos/id/3/100/100",
-    selected: false,
-  },
-  {
-    id: "4",
-    name: "Arjun Kapoor",
-    role: "All-Rounder | State Team Player",
-    image: "https://picsum.photos/id/4/100/100",
-    selected: false,
-  },
-  {
-    id: "5",
-    name: "Sneha Roy",
-    role: "Cricketer | Wicket-Keeper",
-    image: "https://picsum.photos/id/5/100/100",
-    selected: false,
-  },
-  {
-    id: "6",
-    name: "Rajesh Kumar",
-    role: "Bowler | Swing Specialist",
-    image: "https://picsum.photos/id/6/100/100",
-    selected: false,
-  },
-  {
-    id: "7",
-    name: "Priya Singh",
-    role: "All-Rounder | District Team Player",
-    image: "https://picsum.photos/id/7/100/100",
-    selected: false,
-  },
-  {
-    id: "8",
-    name: "Vikram Joshi",
-    role: "Cricketer | Opening Batsman",
-    image: "https://picsum.photos/id/8/100/100",
-    selected: false,
-  },
-  {
-    id: "9",
-    name: "Tanya Sharma",
-    role: "Cricketer | Spin Bowler",
-    image: "https://picsum.photos/id/9/100/100",
-    selected: false,
-  },
-  {
-    id: "10",
-    name: "Karan Patel",
-    role: "Bowler | Fast Bowling Specialist",
-    image: "https://picsum.photos/id/10/100/100",
-    selected: false,
-  },
-];
 
 const AddMembersModal: React.FC<AddMembersModalProps> = ({
   visible,
   onClose,
   onInvite,
+  buttonName,
+  multiselect,
+  player,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [members, setMembers] = useState<PotentialMember[]>(dummyMembers);
+  const [members, setMembers] = useState<PotentialMember[]>(player);
 
   const toggleMemberSelection = (memberId: string) => {
-    setMembers(
-      members.map((member) =>
-        member.id === memberId
-          ? { ...member, selected: !member.selected }
-          : member,
-      ),
-    );
+    setMembers((prevMembers) => {
+      if (multiselect) {
+        // Allow multiple selection
+        return prevMembers.map((member) =>
+          member.id === memberId
+            ? { ...member, selected: !member.selected }
+            : member,
+        );
+      } else {
+        // Allow only single selection
+        return prevMembers.map((member) => ({
+          ...member,
+          selected: member.id === memberId ? !member.selected : false,
+        }));
+      }
+    });
   };
 
   const filteredMembers = members.filter((member) =>
@@ -199,7 +142,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
             className="bg-[#12956B] rounded-md py-4 mt-4"
           >
             <ThemedText className="text-white text-center text-lg">
-              Invite
+              {buttonName}
             </ThemedText>
           </TouchableOpacity>
         </View>

@@ -12,6 +12,14 @@ import { useFonts } from "expo-font";
 import AddMembersModal from "../addMembersModal";
 import { useState } from "react";
 
+
+interface PotentialMember {
+  id: string;
+  name: string;
+  role: string;
+  image: string;
+  selected?: boolean;
+}
 const Squad: React.FC = () => {
   const [fontsLoaded] = useFonts({
     "Sansation-Regular": require("../../../../../assets/fonts/Sansation_Bold_Italic.ttf"),
@@ -31,7 +39,7 @@ const Squad: React.FC = () => {
     "All-Rounder",
   ];
 
-  const dummyUsers = [
+  const teamMembers = [
     {
       id: "1",
       name: "Rahul Sharma",
@@ -113,7 +121,78 @@ const Squad: React.FC = () => {
       description: "A talented bowler with excellent control and flight.",
     },
   ];
-
+  const dummyMembers: PotentialMember[] = [
+    {
+      id: "1",
+      name: "Prathik Jha",
+      role: "Cricketer | Ranji Trophy Player",
+      image: "https://picsum.photos/id/1/100/100",
+      selected: false,
+    },
+    {
+      id: "2",
+      name: "Rohan Deb Nath",
+      role: "Cricketer | Right-Hand Batsman",
+      image: "https://picsum.photos/id/2/100/100",
+      selected: false,
+    },
+    {
+      id: "3",
+      name: "Aditi Mehra",
+      role: "Cricketer | Left-Hand Batsman",
+      image: "https://picsum.photos/id/3/100/100",
+      selected: false,
+    },
+    {
+      id: "4",
+      name: "Arjun Kapoor",
+      role: "All-Rounder | State Team Player",
+      image: "https://picsum.photos/id/4/100/100",
+      selected: false,
+    },
+    {
+      id: "5",
+      name: "Sneha Roy",
+      role: "Cricketer | Wicket-Keeper",
+      image: "https://picsum.photos/id/5/100/100",
+      selected: false,
+    },
+    {
+      id: "6",
+      name: "Rajesh Kumar",
+      role: "Bowler | Swing Specialist",
+      image: "https://picsum.photos/id/6/100/100",
+      selected: false,
+    },
+    {
+      id: "7",
+      name: "Priya Singh",
+      role: "All-Rounder | District Team Player",
+      image: "https://picsum.photos/id/7/100/100",
+      selected: false,
+    },
+    {
+      id: "8",
+      name: "Vikram Joshi",
+      role: "Cricketer | Opening Batsman",
+      image: "https://picsum.photos/id/8/100/100",
+      selected: false,
+    },
+    {
+      id: "9",
+      name: "Tanya Sharma",
+      role: "Cricketer | Spin Bowler",
+      image: "https://picsum.photos/id/9/100/100",
+      selected: false,
+    },
+    {
+      id: "10",
+      name: "Karan Patel",
+      role: "Bowler | Fast Bowling Specialist",
+      image: "https://picsum.photos/id/10/100/100",
+      selected: false,
+    },
+  ];
   const handleInvite = (selectedUsers: any) => {
     console.log("Inviting users:", selectedUsers);
     setShowMembersModal(false);
@@ -140,7 +219,7 @@ const Squad: React.FC = () => {
 
           {/* Displaying two team members per row */}
           <View className="flex flex-row flex-wrap">
-            {dummyUsers
+            {teamMembers
               .filter((user) => user.position === property)
               .map((user) => (
                 <View key={user.id} className="w-1/2 p-2">
@@ -188,6 +267,9 @@ const Squad: React.FC = () => {
         onInvite={handleInvite}
         visible={showMembersModal}
         onClose={() => setShowMembersModal(false)}
+        buttonName="Invite"
+        multiselect={true}
+        player={dummyMembers}
       />
     </ScrollView>
   );

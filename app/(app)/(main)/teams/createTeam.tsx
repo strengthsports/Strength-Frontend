@@ -26,6 +26,13 @@ interface Member {
   role: string;
   image: string;
 }
+interface PotentialMember {
+  id: string;
+  name: string;
+  role: string;
+  image: string;
+  selected?: boolean;
+}
 
 interface FormData {
   logo: string | null;
@@ -81,6 +88,79 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     }
   }
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+  const dummyMembers: PotentialMember[] = [
+    {
+      id: "1",
+      name: "Prathik Jha",
+      role: "Cricketer | Ranji Trophy Player",
+      image: "https://picsum.photos/id/1/100/100",
+      selected: false,
+    },
+    {
+      id: "2",
+      name: "Rohan Deb Nath",
+      role: "Cricketer | Right-Hand Batsman",
+      image: "https://picsum.photos/id/2/100/100",
+      selected: false,
+    },
+    {
+      id: "3",
+      name: "Aditi Mehra",
+      role: "Cricketer | Left-Hand Batsman",
+      image: "https://picsum.photos/id/3/100/100",
+      selected: false,
+    },
+    {
+      id: "4",
+      name: "Arjun Kapoor",
+      role: "All-Rounder | State Team Player",
+      image: "https://picsum.photos/id/4/100/100",
+      selected: false,
+    },
+    {
+      id: "5",
+      name: "Sneha Roy",
+      role: "Cricketer | Wicket-Keeper",
+      image: "https://picsum.photos/id/5/100/100",
+      selected: false,
+    },
+    {
+      id: "6",
+      name: "Rajesh Kumar",
+      role: "Bowler | Swing Specialist",
+      image: "https://picsum.photos/id/6/100/100",
+      selected: false,
+    },
+    {
+      id: "7",
+      name: "Priya Singh",
+      role: "All-Rounder | District Team Player",
+      image: "https://picsum.photos/id/7/100/100",
+      selected: false,
+    },
+    {
+      id: "8",
+      name: "Vikram Joshi",
+      role: "Cricketer | Opening Batsman",
+      image: "https://picsum.photos/id/8/100/100",
+      selected: false,
+    },
+    {
+      id: "9",
+      name: "Tanya Sharma",
+      role: "Cricketer | Spin Bowler",
+      image: "https://picsum.photos/id/9/100/100",
+      selected: false,
+    },
+    {
+      id: "10",
+      name: "Karan Patel",
+      role: "Bowler | Fast Bowling Specialist",
+      image: "https://picsum.photos/id/10/100/100",
+      selected: false,
+    },
+  ];
+  
 
   const handleSelectGame = (game: string) => {
     setSelectedGame(game);
@@ -353,6 +433,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                 visible={showMembersModal}
                 onClose={() => setShowMembersModal(false)}
                 onInvite={handleInviteMembers}
+                buttonName="Invite"
+                multiselect={true}
+                player={dummyMembers}
               />
             </View>
           </View>

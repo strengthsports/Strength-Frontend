@@ -6,6 +6,7 @@ import onboardingReducer from "./slices/user/onboardingSlice";
 import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profileApi";
+import { feedPostApi } from "./api/feedPostApi";
 
 const store = configureStore({
   reducer: {
@@ -15,11 +16,16 @@ const store = configureStore({
     forgotPassword: forgotPasswordReducer,
     profile: profileReducer,
 
-    // Add the RTK Query reducer
+    // Add both API reducers
     [profileApi.reducerPath]: profileApi.reducer,
+    [feedPostApi.reducerPath]: feedPostApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(profileApi.middleware),
+    getDefaultMiddleware()
+      .concat(
+        profileApi.middleware,
+        feedPostApi.middleware // Add feed API middleware
+      ),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

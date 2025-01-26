@@ -77,17 +77,11 @@ const HeaderFeed = ({onPress}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Avatar */}
+      {/* Avatar - sidebar trigger */}
       <TouchableOpacity onPress={onPress} style={styles.avatarContainer}>
         <Image source={profilePic} style={styles.avatarImage} />
       </TouchableOpacity>
-      {/* Sidebar */}
-        {/* <Sidebar 
-                isVisible={isSidebarVisible}
-        onClose={() => setSidebarVisible(false)}
-        onLogout={{}}
-        onProfile={{}}
-      /> */}
+
       
       {/* Add Post Section */}
       <TouchableOpacity style={styles.postSection} activeOpacity={0.5}>

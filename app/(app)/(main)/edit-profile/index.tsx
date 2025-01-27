@@ -33,6 +33,7 @@ import Toast from "react-native-toast-message";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from "react-native";
+import { Text } from "react-native";
 
 const finalUploadData = new FormData();
 
@@ -45,9 +46,25 @@ const EditProfile = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState("");
   const [picType, setPicType] = useState<keyof typeof formData | "">("");
 
+  const [selectedField, setSelectedField] = useState<string | null>(
+    picType === "height" ? "feetInches" : "kilograms" // this is the default unit for each section
+  );
+  // Units state
+  const [heightInFeet, setHeightInFeet] = useState("");
+  const [heightInCentimeters, setHeightInCentimeters] = useState("");
+  const [heightInMeters, setHeightInMeters] = useState("");
+  const [weightInKg, setWeightInKg] = useState("");
+  const [weightInLbs, setWeightInLbs] = useState("");
+
+  // Profile pic and cover pic modal
+  const [picModalVisible, setPicModalVisible] = useState({
+    coverPic: false,
+    profilePic: false,
+  });
+
+  // Main form data of profile
   const [formData, setFormData] = useState<UserData>({
     firstName: params.firstName.toString(),
     lastName: params.lastName.toString(),
@@ -67,12 +84,21 @@ const EditProfile = () => {
     assets: [params.coverPic?.toString(), params.profilePic?.toString()],
   });
 
+  // Cover Image, Profile Image states
+  const [coverImage, setCoverImage] = useState(formData.assets?.[0]);
+  const [profileImage, setProfileImage] = useState(formData.assets?.[1]);
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Modal toggle functions
   const closeModal = () => setModalVisible(false);
   const openModal = (type: React.SetStateAction<string>) => {
     setPicType(type);
     setModalVisible(true);
   };
 
+  // Render modal content based on type
   const renderModalContent = () => {
     switch (picType) {
       case "username":
@@ -98,7 +124,7 @@ const EditProfile = () => {
         };
       case "address":
         return {
-          label: "address",
+          label: "Location",
           placeholder: "city, state, country",
           description:
             "Connect with local sports enthusiasts by sharing your address. Update manually or use automatic detection to stay visible and accessible to the community.",
@@ -128,6 +154,7 @@ const EditProfile = () => {
   const { label, placeholder, unit1, unit2, unit3, description } =
     renderModalContent();
 
+  // Set form data on visiting edit profile page
   useEffect(() => {
     if (picType && value) {
       setFormData((prev) => ({
@@ -138,7 +165,29 @@ const EditProfile = () => {
     console.log("formData-", formData);
   }, [picType, value]);
 
+  // Handle done click after changing input value
   const handleDone = async (field, value) => {
+    // Check if the value is empty
+    if (
+      ["username", "dateOfBirth", "address"].includes(field) &&
+      (!value || value.trim() === "")
+    ) {
+      // Show a popup message for empty fields
+      const message = "This field must not be empty!";
+      if (isAndroid) {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+      } else {
+        Toast.show({
+          type: "error",
+          text1: message,
+          visibilityTime: 1500,
+          autoHide: true,
+        });
+      }
+      return; // Exit the function early if the value is empty
+    }
+
+    // Handle specific fields
     if (field === "height") {
       const heightValue = renderFieldValue(selectedField); // Get the value in the selected unit
       setFormData((prev) => ({
@@ -180,17 +229,19 @@ const EditProfile = () => {
           setFormData((prev) => ({ ...prev, [field]: value }));
         } else {
           Keyboard.dismiss();
-          isAndroid
-            ? ToastAndroid.show(
-                data.message || "Username already exists!",
-                ToastAndroid.SHORT
-              )
-            : Toast.show({
-                type: "error",
-                text1: data.message || "Username already exists!",
-                visibilityTime: 1500,
-                autoHide: true,
-              });
+          if (isAndroid) {
+            ToastAndroid.show(
+              data.message || "Username already exists!",
+              ToastAndroid.SHORT
+            );
+          } else {
+            Toast.show({
+              type: "error",
+              text1: data.message || "Username already exists!",
+              visibilityTime: 1500,
+              autoHide: true,
+            });
+          }
           return;
         }
       } catch (error) {
@@ -200,39 +251,18 @@ const EditProfile = () => {
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
     }
+
     closeModal();
   };
 
   useEffect(() => {
     if (picType) {
+      console.log("Input value changed");
       setInputValue(formData[picType] || "");
     }
   }, [picType]);
 
-  const handleDateChange = (selectedDate: string) => {
-    setDateOfBirth(selectedDate);
-    setIsDatePickerVisible(false);
-  };
-
-  const [selectedField, setSelectedField] = useState<string | null>(
-    picType === "height" ? "feetInches" : "kilograms" // this is the default unit for each section
-  );
-  const [heightInFeet, setHeightInFeet] = useState("");
-  const [heightInCentimeters, setHeightInCentimeters] = useState("");
-  const [heightInMeters, setHeightInMeters] = useState("");
-  const [weightInKg, setWeightInKg] = useState("");
-  const [weightInLbs, setWeightInLbs] = useState("");
-
-  // Profile pic and cover pic modal
-  const [picModalVisible, setPicModalVisible] = useState({
-    coverPic: false,
-    profilePic: false,
-  });
-  const [coverImage, setCoverImage] = useState(formData.assets?.[0]);
-  const [profileImage, setProfileImage] = useState(formData.assets?.[1]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Replace the entire pickImage function with this corrected version
+  // Pick Image (Cover pic, Profile Pic)
   const pickImage = async (imageType: "cover" | "profile") => {
     try {
       const permissionResult =
@@ -277,48 +307,6 @@ const EditProfile = () => {
     }
   };
 
-  // Modified handleFormSubmit with error handling
-  const handleFormSubmit = async () => {
-    try {
-      setIsLoading(true);
-      // Append text fields
-      finalUploadData.set("firstName", formData.firstName);
-      finalUploadData.set("lastName", formData.lastName);
-      finalUploadData.set("username", formData.username);
-      finalUploadData.set("headline", formData.headline);
-      finalUploadData.set("dateOfBirth", formData.dateOfBirth);
-      finalUploadData.set("height", formData.height);
-      finalUploadData.set("weight", formData.weight);
-
-      // Append address
-      finalUploadData.set(
-        "address",
-        JSON.stringify({
-          city: formData.address.city,
-          state: formData.address.state,
-          country: formData.address.country,
-          location: {
-            coordinates: [
-              formData.address.location.coordinates[0],
-              formData.address.location.coordinates[1],
-            ],
-          },
-        })
-      );
-
-      await dispatch(editUserProfile(finalUploadData)).unwrap();
-      router.push("/profile");
-    } catch (error) {
-      console.error("Submission error:", error);
-      alert(`Update failed: ${error}`);
-    } finally {
-      setIsLoading(false);
-      for (const key of finalUploadData.keys()) {
-        finalUploadData.delete(key);
-      }
-    }
-  };
-
   // Unified toggle function for pic modal
   const togglePicModal = (type) => {
     setPicModalVisible((prev) => ({
@@ -331,19 +319,19 @@ const EditProfile = () => {
     setSelectedField(field);
   };
 
+  // <------ Units related functions --->
   const renderFieldValue = (field: string) => {
     switch (field) {
       case "feetInches":
-        return heightInFeet;
+        return `${heightInFeet} ft`;
       case "centimeters":
-        return heightInCentimeters;
+        return `${heightInCentimeters} cm`;
       case "meters":
-        return heightInMeters;
+        return `${heightInMeters} m`;
       case "kilograms":
-        return weightInKg;
+        return `${weightInKg} kg`;
       case "pounds":
-        return weightInLbs;
-
+        return `${weightInLbs} lbs`;
       default:
         return "";
     }
@@ -404,6 +392,98 @@ const EditProfile = () => {
       setWeightInKg((lbs / 2.20462).toFixed(2));
     }
   };
+  // <------ Units related functions --->
+
+  // Handle FormSubmit with error handling
+  const handleFormSubmit = async () => {
+    try {
+      setIsLoading(true);
+      // Append text fields
+      finalUploadData.set("firstName", formData.firstName);
+      finalUploadData.set("lastName", formData.lastName);
+      finalUploadData.set("username", formData.username);
+      finalUploadData.set("headline", formData.headline);
+      finalUploadData.set("dateOfBirth", formData.dateOfBirth);
+      finalUploadData.set("height", formData.height);
+      finalUploadData.set("weight", formData.weight);
+
+      // Append address
+      finalUploadData.set(
+        "address",
+        JSON.stringify({
+          city: formData.address.city,
+          state: formData.address.state,
+          country: formData.address.country,
+          location: {
+            coordinates: [
+              formData.address.location.coordinates[0],
+              formData.address.location.coordinates[1],
+            ],
+          },
+        })
+      );
+
+      await dispatch(editUserProfile(finalUploadData)).unwrap();
+      router.push("/profile");
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert(`Update failed: ${error}`);
+    } finally {
+      setIsLoading(false);
+      for (const key of finalUploadData.keys()) {
+        finalUploadData.delete(key);
+      }
+    }
+  };
+
+  const formConfig = [
+    { type: "username", label: "Username*", icon: null },
+    { type: "headline", label: "Headline", icon: null },
+    {
+      type: "dateOfBirth",
+      label: "Birth Date*",
+      icon: <AntDesign name="calendar" size={24} color="grey" />,
+    },
+    {
+      type: "address",
+      label: "Location*",
+      icon: <MaterialIcons name="location-pin" size={22.5} color="grey" />,
+    },
+    {
+      type: "height",
+      label: "Height",
+      icon: <AntDesign name="down" size={20} color="grey" />,
+    },
+    {
+      type: "weight",
+      label: "Weight",
+      icon: <AntDesign name="down" size={20} color="grey" />,
+    },
+    {
+      type: "team",
+      label: "Team",
+      icon: <AntDesign name="down" size={20} color="grey" />,
+      placeholder: "not joined yet",
+    },
+    {
+      type: "academy",
+      label: "Academy",
+      icon: <AntDesign name="down" size={20} color="grey" />,
+      placeholder: "not joined yet",
+    },
+    {
+      type: "club",
+      label: "Club",
+      icon: <AntDesign name="down" size={20} color="grey" />,
+      placeholder: "not joined yet",
+    },
+    {
+      type: "gym",
+      label: "Gym",
+      icon: <AntDesign name="down" size={20} color="grey" />,
+      placeholder: "not joined yet",
+    },
+  ];
 
   return (
     <SafeAreaView>
@@ -413,31 +493,20 @@ const EditProfile = () => {
           showsVerticalScrollIndicator={false}
         >
           {/* Top Header */}
-          <View
-            style={{
-              width: "100%",
-              // height: 48,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingHorizontal: 20,
-            }}
-            className="h-12"
-          >
-            <TouchableOpacity onPress={() => router.back()}>
-              <TextScallingFalse
-                style={{ color: "grey", fontSize: 16, fontWeight: "400" }}
-              >
+          <View className="h-12 w-full flex-row justify-between items-center px-5">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="basis-[10%]"
+            >
+              <TextScallingFalse className="text-[#808080] text-4xl font-normal">
                 Back
               </TextScallingFalse>
             </TouchableOpacity>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 18, fontWeight: "300" }}
-            >
+            <TextScallingFalse className="flex-grow text-center text-white font-light text-5xl">
               Edit profile
             </TextScallingFalse>
             {isLoading ? (
-              <View>
+              <View className="basis-[10%]">
                 <ActivityIndicator
                   size="small"
                   color="#12956B"
@@ -445,14 +514,11 @@ const EditProfile = () => {
                 />
               </View>
             ) : (
-              <TouchableOpacity onPress={handleFormSubmit}>
-                <TextScallingFalse
-                  style={{
-                    color: "#12956B",
-                    fontSize: 16,
-                    fontWeight: "500",
-                  }}
-                >
+              <TouchableOpacity
+                onPress={handleFormSubmit}
+                className="basis-[10%]"
+              >
+                <TextScallingFalse className="text-[#12956B] text-4xl font-medium">
                   Save
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -460,26 +526,12 @@ const EditProfile = () => {
           </View>
 
           {/* Profile and cover image */}
-          <View
-            style={{
-              position: "relative",
-              width: "100%",
-              height: 136,
-              marginBottom: 85,
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+          <View className="relative w-full h-36 lg:h-60 mb-24 flex justify-center items-center">
             {/* cover pic */}
             <TouchableOpacity
               onPress={() => togglePicModal("coverPic")}
               activeOpacity={0.9}
-              style={{
-                backgroundColor: "black",
-                height: "100%",
-                width: "100%",
-              }}
+              className="bg-black h-full w-full"
             >
               {coverImage ? (
                 <Image
@@ -500,12 +552,7 @@ const EditProfile = () => {
               )}
 
               <MaterialCommunityIcons
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: [{ translateY: -15 }, { translateX: -15 }],
-                }}
+                className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
                 name="camera-plus-outline"
                 size={30}
                 color="white"
@@ -515,44 +562,25 @@ const EditProfile = () => {
             <TouchableOpacity
               onPress={() => togglePicModal("profilePic")}
               activeOpacity={0.9}
-              style={{
-                position: "absolute",
-                width: 132,
-                height: 132,
-                backgroundColor: "black",
-                borderRadius: 100,
-                right: 20,
-                bottom: -72,
-                borderColor: "black",
-                borderWidth: 3,
-              }}
+              className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full border-2 border-black"
             >
               {profileImage ? (
                 <Image
                   source={{
                     uri: profileImage,
                   }}
-                  style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                  borderRadius={100}
-                  resizeMode="cover"
+                  className="w-full h-full opacity-50 rounded-full bg-cover"
                 />
               ) : (
                 <Image
                   source={{
                     uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                   }}
-                  style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                  borderRadius={100}
-                  resizeMode="cover"
+                  className="w-full h-full opacity-50 rounded-full bg-cover"
                 />
               )}
               <MaterialCommunityIcons
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: [{ translateY: -15 }, { translateX: -15 }],
-                }}
+                className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
                 name="camera-plus-outline"
                 size={30}
                 color="white"
@@ -562,300 +590,53 @@ const EditProfile = () => {
 
           {/* Form Part */}
           {/* first name */}
-          <View
-            style={[
-              styles.ContainerViews,
-              { borderTopWidth: 0.5, borderTopColor: "#303030" },
-            ]}
-          >
-            <TextScallingFalse style={styles.QuestionText}>
+          <View className="flex-row items-center justify-between px-6 border-b border-[#3030309a]">
+            <Text className="text-white text-4xl font-medium w-1/3">
               First Name*
-            </TextScallingFalse>
-            <TouchableOpacity activeOpacity={0.5} style={styles.Button}>
-              <TextInput
-                placeholder="enter your first name"
-                placeholderTextColor={"grey"}
-                style={[styles.AnswerText, styles.InputSections]}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, firstName: text })
-                }
-                value={formData.firstName}
-              />
-            </TouchableOpacity>
+            </Text>
+            <TextInput
+              placeholder="enter your first name"
+              placeholderTextColor={"grey"}
+              className="text-2xl font-light flex-grow text-white pl-0"
+              onChangeText={(text) =>
+                setFormData({ ...formData, firstName: text })
+              }
+              value={formData.firstName}
+            />
           </View>
           {/* last name */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
+          <View className="flex-row items-center justify-between px-6 h-14 border-b border-[#3030309a]">
+            <Text className="text-white text-4xl font-medium w-1/3">
               Last Name*
-            </TextScallingFalse>
-            <TouchableOpacity activeOpacity={0.5} style={styles.Button}>
-              <TextInput
-                placeholder="enter your last name"
-                placeholderTextColor={"grey"}
-                style={[styles.AnswerText, styles.InputSections]}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, lastName: text })
-                }
-                value={formData.lastName}
-              />
-            </TouchableOpacity>
+            </Text>
+            <TextInput
+              placeholder="enter your first name"
+              placeholderTextColor={"grey"}
+              className="text-2xl font-light flex-grow text-white pl-0"
+              onChangeText={(text) =>
+                setFormData({ ...formData, lastName: text })
+              }
+              value={formData.lastName}
+            />
           </View>
-          {/* username */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Username*
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => openModal("username")}
-              activeOpacity={0.5}
-              style={styles.Button}
-            >
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  {
-                    color: formData.username ? "white" : "grey",
-                  },
-                ]}
-              >
-                {formData.username || "not given"}
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-          {/* headline */}
-          <View style={styles.DescriptiveView}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Headline
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => openModal("headline")}
-              activeOpacity={0.5}
-              style={styles.Button}
-            >
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  {
-                    color: formData.headline ? "white" : "grey",
-                  },
-                ]}
-              >
-                {formData.headline || "not given"}
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-          {/* date of birth */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Birth Date*
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => openModal("dateOfBirth")}
-              activeOpacity={0.5}
-              style={styles.Button}
-            >
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  {
-                    color: formData.dateOfBirth?.toString() ? "white" : "grey",
-                  },
-                ]}
-              >
-                {dateFormatter(formData.dateOfBirth?.toString(), "date") ||
-                  "not given"}
-              </TextScallingFalse>
-              <AntDesign
-                name="calendar"
-                style={styles.PaddingLeft}
-                size={24}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* location */}
-          <View style={styles.DescriptiveView}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Location*
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => openModal("address")}
-              activeOpacity={0.5}
-              style={styles.Button}
-            >
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  { color: formData.address ? "white" : "grey" },
-                ]}
-              >
-                {formData.address.city +
-                  ", " +
-                  formData.address.state +
-                  ", " +
-                  formData.address.country || "not given"}
-              </TextScallingFalse>
-              <MaterialIcons
-                name="location-pin"
-                style={styles.PaddingLeft}
-                size={22.5}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* height */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Height
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => openModal("height")}
-              activeOpacity={0.5}
-              style={styles.Button}
-            >
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  { color: formData.height ? "white" : "grey" },
-                ]}
-              >
-                {formData.height || "not given"}
-              </TextScallingFalse>
-              <AntDesign
-                name="down"
-                style={styles.PaddingLeft}
-                size={20}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* weight */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Weight
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => openModal("weight")}
-              activeOpacity={0.5}
-              style={styles.Button}
-            >
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  { color: formData.weight ? "white" : "grey" },
-                ]}
-              >
-                {formData.weight || "not given"}
-              </TextScallingFalse>
-              <AntDesign
-                name="down"
-                style={styles.PaddingLeft}
-                size={20}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* Team */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Team
-            </TextScallingFalse>
-            <View
-              style={[
-                styles.DescriptiveView,
-                { paddingHorizontal: 0, alignItems: "center", gap: "4%" },
-              ]}
-            >
-              <TextScallingFalse
-                style={{
-                  fontWeight: "300",
-                  color: "#12956B",
-                  fontSize: responsiveFontSize(1.41),
-                }}
-              >
-                ●
-              </TextScallingFalse>
-              <TextScallingFalse
-                style={[styles.AnswerText, { width: "65.5%" }]}
-              >
-                Pro Trackers
-              </TextScallingFalse>
-              <AntDesign name="right" size={20} color="grey" />
-            </View>
-          </View>
-          {/* academy */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Academy
-            </TextScallingFalse>
-            <TouchableOpacity activeOpacity={0.5} style={styles.Button}>
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  { color: "grey" },
-                ]}
-              >
-                not joined yet
-              </TextScallingFalse>
-              <AntDesign
-                name="down"
-                style={styles.PaddingLeft}
-                size={20}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* club */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Club
-            </TextScallingFalse>
-            <TouchableOpacity activeOpacity={0.5} style={styles.Button}>
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  { color: "grey" },
-                ]}
-              >
-                not joined yet
-              </TextScallingFalse>
-              <AntDesign
-                name="down"
-                style={styles.PaddingLeft}
-                size={20}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* gym */}
-          <View style={styles.ContainerViews}>
-            <TextScallingFalse style={styles.QuestionText}>
-              Gym
-            </TextScallingFalse>
-            <TouchableOpacity activeOpacity={0.5} style={styles.Button}>
-              <TextScallingFalse
-                style={[
-                  styles.AnswerText,
-                  styles.shortedWidth,
-                  { color: "grey" },
-                ]}
-              >
-                not joined yet
-              </TextScallingFalse>
-              <AntDesign
-                name="down"
-                style={styles.PaddingLeft}
-                size={20}
-                color="grey"
-              />
-            </TouchableOpacity>
-          </View>
+          {/* username, dob, location, height, weight */}
+          {formConfig.map(({ type, label, icon, placeholder }, index) => (
+            <FormField
+              key={type}
+              label={label}
+              value={
+                type === "address" // Check if the type is "address"
+                  ? `${formData.address.city}, ${formData.address.state}, ${formData.address.country}` // Concatenate address properties
+                  : formData[type] || "" // Use the value directly for other fields
+              }
+              isDate={type === "dateOfBirth" && true}
+              placeholder={placeholder || "not given"}
+              onPress={() => openModal(type)}
+              icon={icon}
+              isLast={index === formConfig.length - 1}
+            />
+          ))}
+
           {/* Profile pic, cover pic modal */}
           <Modal
             visible={picModalVisible.coverPic}
@@ -1011,6 +792,7 @@ const EditProfile = () => {
           </Modal>
         </ScrollView>
 
+        {/* Date picker component */}
         {isDatePickerVisible && (
           <View>
             <DateTimePicker
@@ -1031,247 +813,174 @@ const EditProfile = () => {
           </View>
         )}
 
-        <Modal
-          visible={isModalVisible}
-          transparent={true}
-          onRequestClose={closeModal}
-        >
-          <PageThemeView>
-            <View
-              style={{
-                width: "100%",
-                flexDirection: "row",
-                padding: 20,
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <TouchableOpacity activeOpacity={0.5} onPress={closeModal}>
-                  <AntDesign name="arrowleft" size={28} color="white" />
-                </TouchableOpacity>
-                <TextScallingFalse
-                  style={{
-                    color: "white",
-                    fontSize: 19,
-                    fontWeight: "500",
-                    paddingLeft: 20,
-                  }}
-                >
-                  {label}
-                </TextScallingFalse>
-              </View>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                onPress={() => handleDone(picType, inputValue)}
-              >
-                <MaterialIcons name="done" size={28} color="#12956B" />
-              </TouchableOpacity>
-            </View>
-
-            {picType === "height" || picType === "weight" ? (
-              <View style={styles.ContainerView2}>
-                <View style={styles.QuestionBoxView}>
-                  <TextScallingFalse style={styles.QuestionText2}>
-                    {unit1}
-                  </TextScallingFalse>
-                  {picType === "height" ? (
-                    <View style={styles.FlexContainer}>
-                      <TextInput
-                        value={heightInFeet}
-                        onChangeText={handleFeetChange}
-                        keyboardType="numeric"
-                        style={styles.NumberInput}
-                      ></TextInput>
-                      <CustomButton
-                        field="feetInches"
-                        selectedField={selectedField}
-                        toggleSelectedField={toggleSelectedField}
-                        renderFieldValue={() => renderFieldValue("feetInches")}
-                      />
-                    </View>
-                  ) : (
-                    <View style={styles.FlexContainer}>
-                      <TextInput
-                        value={weightInKg}
-                        onChangeText={handleKgChange}
-                        keyboardType="numeric"
-                        style={styles.NumberInput}
-                      ></TextInput>
-                      <CustomButton
-                        field="kilograms"
-                        selectedField={selectedField}
-                        toggleSelectedField={toggleSelectedField}
-                        renderFieldValue={() => renderFieldValue("kilograms")}
-                      />
-                    </View>
-                  )}
+        {/* Edit Modal */}
+        <Modal visible={isModalVisible} transparent onRequestClose={closeModal}>
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={closeModal}
+          >
+            <View className="bg-black h-full">
+              {/* Modal Header */}
+              <View className="flex-row justify-between items-center p-5 border-b border-gray-800">
+                <View className="flex-row items-center">
+                  <TouchableOpacity onPress={closeModal}>
+                    <AntDesign name="arrowleft" size={28} color="white" />
+                  </TouchableOpacity>
+                  <Text className="text-white text-5xl font-medium ml-6">
+                    {label}
+                  </Text>
                 </View>
-                {picType === "weight" ? (
-                  ""
-                ) : (
-                  <View style={styles.QuestionBoxView}>
-                    <TextScallingFalse style={styles.QuestionText2}>
-                      {unit2}
-                    </TextScallingFalse>
-                    <View style={styles.FlexContainer}>
-                      <TextInput
-                        value={heightInCentimeters}
-                        onChangeText={handleCentimetersChange}
-                        keyboardType="numeric"
-                        style={styles.NumberInput}
-                      ></TextInput>
-                      <CustomButton
-                        field="centimeters"
-                        selectedField={selectedField}
-                        toggleSelectedField={toggleSelectedField}
-                        renderFieldValue={() => renderFieldValue("centimeters")}
-                      />
-                    </View>
-                  </View>
-                )}
-                <View style={[styles.QuestionBoxView, { marginBottom: 35 }]}>
-                  <TextScallingFalse style={styles.QuestionText2}>
-                    {unit3}
-                  </TextScallingFalse>
-                  {picType === "height" ? (
-                    <View style={styles.FlexContainer}>
-                      <TextInput
-                        value={heightInMeters}
-                        onChangeText={handleMetersChange}
-                        keyboardType="numeric"
-                        style={styles.NumberInput}
-                      ></TextInput>
-                      <CustomButton
-                        field="meters"
-                        selectedField={selectedField}
-                        toggleSelectedField={toggleSelectedField}
-                        renderFieldValue={() => renderFieldValue("meters")}
-                      />
-                    </View>
-                  ) : (
-                    <View style={styles.FlexContainer}>
-                      <TextInput
-                        value={weightInLbs}
-                        onChangeText={handleLbsChange}
-                        keyboardType="numeric"
-                        style={styles.NumberInput}
-                      ></TextInput>
-                      <CustomButton
-                        field="pounds"
-                        selectedField={selectedField}
-                        toggleSelectedField={toggleSelectedField}
-                        renderFieldValue={() => renderFieldValue("pounds")}
-                      />
-                    </View>
-                  )}
-                </View>
-              </View>
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  paddingVertical: 20,
-                  paddingHorizontal: 25,
-                  gap: 10,
-                }}
-              >
-                <TextScallingFalse
-                  style={{ color: "grey", fontSize: 13, fontWeight: "400" }}
-                >
-                  {label}
-                </TextScallingFalse>
-                <View style={{ flexDirection: "row" }}>
-                  <TextInput
-                    value={inputValue}
-                    onChangeText={setInputValue}
-                    placeholder={placeholder}
-                    placeholderTextColor={"grey"}
-                    style={{
-                      color: "white",
-                      width: picType === "dateOfBirth" ? "90%" : "100%",
-                      fontSize: 17,
-                      fontWeight: "400",
-                      borderBottomWidth: 1,
-                      borderBottomColor: "white",
-                      paddingBottom: 3,
-                      paddingStart: 0,
-                    }}
-                  />
-                  {picType === "dateOfBirth" ? (
-                    <TouchableOpacity
-                      onPress={() =>
-                        setIsDatePickerVisible(!isDatePickerVisible)
-                      }
-                      activeOpacity={0.5}
-                      style={{
-                        justifyContent: "flex-end",
-                        paddingVertical: 5,
-                        width: "10%",
-                        marginTop: "0.5%",
-                        borderBottomWidth: 1,
-                        borderBottomColor: "white",
-                      }}
-                    >
-                      <AntDesign
-                        name="calendar"
-                        size={22}
-                        style={{}}
-                        color="white"
-                      />
-                    </TouchableOpacity>
-                  ) : (
-                    ""
-                  )}
-                </View>
-              </View>
-            )}
-            <View style={{ paddingHorizontal: 22 }}>
-              <TextScallingFalse
-                style={{
-                  color: "grey",
-                  fontSize: 12.5,
-                  fontWeight: "400",
-                  textAlign: picType === "address" ? "center" : "left",
-                }}
-              >
-                {description}
-              </TextScallingFalse>
-              {picType === "address" ? (
                 <TouchableOpacity
-                  activeOpacity={0.5}
-                  style={{
-                    flexDirection: "row",
-                    width: "50%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: 30,
-                    gap: "5%",
-                    marginTop: "5%",
-                    borderWidth: 0.3,
-                    borderColor: "white",
-                    borderRadius: 30,
-                    alignSelf: "center",
-                  }}
+                  onPress={() => handleDone(picType, inputValue)}
                 >
-                  <TextScallingFalse
-                    style={{ color: "grey", fontSize: 11, fontWeight: "400" }}
-                  >
-                    Use my current address
-                  </TextScallingFalse>
-                  <FontAwesome5 name="map-marker-alt" size={13} color="grey" />
+                  <MaterialIcons name="done" size={28} color="#12956B" />
                 </TouchableOpacity>
-              ) : (
-                ""
-              )}
+              </View>
+
+              {/* Modal Content */}
+              <View className="p-5">
+                {["height", "weight"].includes(picType) ? (
+                  <>
+                    {picType === "height" && (
+                      <>
+                        <MeasurementInput
+                          unit="In feet inches [approx.]-"
+                          value={heightInFeet}
+                          onChange={handleFeetChange}
+                          field="feetInches"
+                          selectedField={selectedField}
+                          toggleField={() => toggleSelectedField("feetInches")}
+                          renderFieldValue={() =>
+                            renderFieldValue("feetInches")
+                          }
+                        />
+                        <MeasurementInput
+                          unit="In Centimeters [approx.]-"
+                          value={heightInCentimeters}
+                          onChange={handleCentimetersChange}
+                          field="centimeters"
+                          selectedField={selectedField}
+                          toggleField={() => toggleSelectedField("centimeters")}
+                          renderFieldValue={() =>
+                            renderFieldValue("centimeters")
+                          }
+                        />
+                        <MeasurementInput
+                          unit="In meters [approx.]-"
+                          value={heightInMeters}
+                          onChange={handleMetersChange}
+                          field="meters"
+                          selectedField={selectedField}
+                          toggleField={() => toggleSelectedField("meters")}
+                          renderFieldValue={() => renderFieldValue("meters")}
+                        />
+                      </>
+                    )}
+                    {picType === "weight" && (
+                      <>
+                        <MeasurementInput
+                          unit="In Kilograms [approx.]-"
+                          value={weightInKg}
+                          onChange={handleKgChange}
+                          field="kilograms"
+                          selectedField={selectedField}
+                          toggleField={() => toggleSelectedField("kilograms")}
+                          renderFieldValue={() => renderFieldValue("kilograms")}
+                        />
+                        <MeasurementInput
+                          unit="In pounds [approx.]-"
+                          value={weightInLbs}
+                          onChange={handleLbsChange}
+                          field="pounds"
+                          selectedField={selectedField}
+                          toggleField={() => toggleSelectedField("pounds")}
+                          renderFieldValue={() => renderFieldValue("pounds")}
+                        />
+                      </>
+                    )}
+                  </>
+                ) : picType === "dateOfBirth" ? (
+                  <>
+                    <Text className="text-gray-500 text-xl">{label}</Text>
+                    <View className="flex-row border-b border-white">
+                      <TextInput
+                        value={dateFormatter(inputValue, "date")}
+                        onChangeText={setInputValue}
+                        placeholder={placeholder}
+                        placeholderTextColor="gray"
+                        className="text-white text-4xl flex-1 pl-0 pb-0"
+                      />
+                      {picType === "dateOfBirth" && (
+                        <TouchableOpacity
+                          onPress={() => setIsDatePickerVisible(true)}
+                          className="inset-y-3"
+                        >
+                          <AntDesign name="calendar" size={22} color="white" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <Text className="text-gray-500 text-xl">{label}</Text>
+                    <View className="flex-row border-b border-white">
+                      <TextInput
+                        value={inputValue}
+                        onChangeText={setInputValue}
+                        placeholder={placeholder}
+                        placeholderTextColor="gray"
+                        className="text-white text-4xl flex-1 pl-0 pb-0"
+                      />
+                      {picType === "dateOfBirth" && (
+                        <TouchableOpacity
+                          onPress={() => setIsDatePickerVisible(true)}
+                          className="inset-y-3"
+                        >
+                          <AntDesign name="calendar" size={22} color="white" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </>
+                )}
+
+                <Text className="text-gray-500 text-base mt-4">
+                  {description}
+                </Text>
+                {picType === "address" ? (
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    style={{
+                      flexDirection: "row",
+                      width: "50%",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: 30,
+                      gap: "5%",
+                      marginTop: "5%",
+                      borderWidth: 0.3,
+                      borderColor: "white",
+                      borderRadius: 30,
+                      alignSelf: "center",
+                    }}
+                  >
+                    <TextScallingFalse
+                      style={{ color: "grey", fontSize: 11, fontWeight: "400" }}
+                    >
+                      Use my current address
+                    </TextScallingFalse>
+                    <FontAwesome5
+                      name="map-marker-alt"
+                      size={13}
+                      color="grey"
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  ""
+                )}
+              </View>
             </View>
-          </PageThemeView>
+          </TouchableOpacity>
         </Modal>
       </PageThemeView>
     </SafeAreaView>
@@ -1385,3 +1094,118 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
 });
+
+// Reusable FormField Component
+const FormField = ({
+  label,
+  value,
+  placeholder,
+  onPress,
+  icon,
+  isLast,
+  isDate,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onPress: () => void;
+  icon?: React.ReactNode;
+  isLast?: boolean;
+  isDate?: boolean;
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    activeOpacity={0.5}
+    className={`flex-row items-center justify-between px-6 h-14 ${
+      !isLast ? "border-b border-[#3030309a]" : ""
+    }`}
+  >
+    <Text className="text-white text-4xl font-medium w-1/3">{label}</Text>
+    <View className="flex-row items-center justify-between w-2/3">
+      <Text
+        className={`text-2xl font-light ${
+          value ? "text-white" : "text-gray-500"
+        }`}
+      >
+        {isDate ? dateFormatter(value, "date") : value || placeholder}
+      </Text>
+      {icon && <View className="">{icon}</View>}
+    </View>
+  </TouchableOpacity>
+);
+
+// Measurement Input Component
+const MeasurementInput = ({
+  unit,
+  value,
+  onChange,
+  field,
+  selectedField,
+  toggleField,
+  renderFieldValue,
+}: {
+  unit: string;
+  value: string;
+  onChange: (text: string) => void;
+  field: string;
+  selectedField: string;
+  toggleField: () => void;
+  renderFieldValue: () => string;
+}) => {
+  // Validation logic for height and weight
+  const handleInputChange = (text: string) => {
+    const numericValue = parseFloat(text);
+
+    if (isNaN(numericValue)) {
+      onChange(""); // Allow empty input
+      return;
+    }
+
+    // Define reasonable limits for height and weight
+    let maxValue: number;
+    switch (field) {
+      case "feetInches": // Height in feet (e.g., max 10 feet)
+        maxValue = 10;
+        break;
+      case "centimeters": // Height in centimeters (e.g., max 300 cm)
+        maxValue = 300;
+        break;
+      case "meters": // Height in meters (e.g., max 3 meters)
+        maxValue = 3;
+        break;
+      case "kilograms": // Weight in kilograms (e.g., max 500 kg)
+        maxValue = 500;
+        break;
+      case "pounds": // Weight in pounds (e.g., max 1100 lbs)
+        maxValue = 1100;
+        break;
+      default:
+        maxValue = Infinity; // No limit for other fields
+    }
+
+    // Restrict input to the defined limits
+    if (numericValue <= maxValue) {
+      onChange(text);
+    }
+  };
+
+  return (
+    <View className="flex-row items-center justify-between w-full mb-4">
+      <Text className="text-white text-3xl font-light basis-[55%]">{unit}</Text>
+      <View className="flex-row basis-[45%]">
+        <TextInput
+          value={value}
+          onChangeText={handleInputChange} // Use the validated input handler
+          keyboardType="numeric"
+          className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-24"
+        />
+        <CustomButton
+          field={field}
+          selectedField={selectedField}
+          toggleSelectedField={toggleField}
+          renderFieldValue={() => renderFieldValue(field)}
+        />
+      </View>
+    </View>
+  );
+};

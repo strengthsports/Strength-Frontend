@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import "../global.css";
 import { Provider } from "react-redux";
-import { PersistGate } from 'redux-persist/integration/react';
+import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/configs/toastConfig";
@@ -36,14 +36,16 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <GestureHandlerRootView>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
             <Slot />
             <StatusBar backgroundColor="black" />
             <Toast config={toastConfig} />
           </Provider>
-      </PersistGate>
-    </ThemeProvider>
+        </PersistGate>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

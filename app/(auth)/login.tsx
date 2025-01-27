@@ -76,9 +76,9 @@ const LoginScreen = () => {
       feedback(response.message || "Login successful!", "success");
 
       // router.push("/(app)/(tabs)");
-      // router.push("/(app)/(main)/teams/InitiateCreateTeam");
+      router.push("/(app)/(main)/teams/InitiateCreateTeam");
 
-      router.push("/(app)/(tabs)/home");
+      // router.push("/(app)/(tabs)/home");
 
     } catch (err: any) {
       if (err instanceof z.ZodError) {

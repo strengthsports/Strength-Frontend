@@ -1,5 +1,4 @@
 import { AntDesign, Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
@@ -19,10 +19,12 @@ import {
 } from "~/reduxStore/api/profileApi";
 import { TargetUser } from "~/types/user";
 import nopic from "@/assets/images/pro.jpg";
+import { useSelector } from "react-redux";
 
 const FollowersPage = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user } = useSelector((state) => state?.auth);
 
   const type = useMemo(() => {
     return params.pageType
@@ -71,16 +73,21 @@ const FollowersPage = () => {
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item._id, type: item.type })
     );
+    console.log(item);
     return (
       <TouchableOpacity
         className="flex-row mt-5 items-center"
-        onPress={() => router.push(`/(app)/(main)/profile/${serializedUser}`)}
+        onPress={() =>
+          item._id === user._id
+            ? router.push("/(app)/(tabs)/profile")
+            : router.push(`/(app)/(main)/profile/${serializedUser}`)
+        }
       >
         <View className="w-12 h-12 rounded-full overflow-hidden">
           {item.profilePic ? (
             <Image
               source={{ uri: item.profilePic }}
-              className="w-full h-full rounded-full"
+              className="w-full h-full"
               contentFit="cover"
             />
           ) : (
@@ -93,7 +100,7 @@ const FollowersPage = () => {
         </View>
         <View className="ml-3">
           <Text
-            className="text-white text-base font-medium"
+            className="text-white text-2xl font-medium"
             numberOfLines={1}
             allowFontScaling={false}
           >
@@ -129,7 +136,7 @@ const FollowersPage = () => {
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
         <View>
-          <TextScallingFalse className="text-white text-xl font-light">
+          <TextScallingFalse className="text-white text-4xl font-light">
             {type}
           </TextScallingFalse>
         </View>
@@ -140,7 +147,7 @@ const FollowersPage = () => {
         <TextInput
           placeholder={`Search for ${type.toLowerCase()}...`}
           placeholderTextColor="grey"
-          className="flex-1 text-white rounded-lg text-base font-normal h-full bg-[#121212] pl-4"
+          className="flex-1 text-white rounded-lg text-lg font-normal h-full bg-[#121212] pl-4"
           allowFontScaling={false}
           cursorColor="#12956B"
         />
@@ -153,7 +160,7 @@ const FollowersPage = () => {
         className="relative w-[360px] lg:w-[600px] mx-auto"
       >
         <TextScallingFalse
-          className="text-xs top-2 right-7 absolute"
+          className="text-base top-2 right-7 absolute"
           style={{ color: "grey" }}
         >
           {data?.length || 0} {type.toLowerCase()}

@@ -43,7 +43,7 @@ const ProfileLayout = () => {
       >
         {/* username */}
         <View className="justify-between px-3 flex-row h-12 items-center">
-          <TextScallingFalse className="text-white text-xl">
+          <TextScallingFalse className="text-white text-5xl">
             @{user?.username}
           </TextScallingFalse>
           <View className="flex-row gap-[0.85rem] mt-1">

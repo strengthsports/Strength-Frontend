@@ -15,6 +15,8 @@ import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 
 // Type definitions
 interface ActionButtonProps {
@@ -33,6 +35,9 @@ interface PostData {
   caption: string;
   assets: Array<{ url: string }>;
   postedBy: {
+    _id: string;
+    type: string;
+    profilePic: string;
     firstName: string;
     lastName: string;
     headline: string;
@@ -82,6 +87,11 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
 
 // Individual Post Component
 const PostItem = ({ item }: { item: PostData }) => {
+  const router = useRouter();
+  const { user } = useSelector((state) => state?.auth);
+  const serializedUser = encodeURIComponent(
+    JSON.stringify({ id: item.postedBy._id, type: item.postedBy.type })
+  );
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
@@ -92,14 +102,15 @@ const PostItem = ({ item }: { item: PostData }) => {
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
-    const shouldShowSeeMore = lines.length > 2 || (lines as any).some((line:any) => line.truncated);
+    const shouldShowSeeMore =
+      lines.length > 2 || (lines as any).some((line: any) => line.truncated);
     setShowSeeMore(shouldShowSeeMore);
   };
 
   const handleDoubleTap = () => {
     if (!isLiked) {
       setIsLiked(true);
-      setLikeCount(prev => prev + 1);
+      setLikeCount((prev) => prev + 1);
 
       scaleAnim.setValue(0);
       Animated.sequence([
@@ -145,17 +156,30 @@ const PostItem = ({ item }: { item: PostData }) => {
       <View className="flex">
         {/* Profile Section */}
         <View className="ml-[5%] flex flex-row gap-2 z-20 pb-0">
-          <Image
+          <TouchableOpacity
             className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
-            source={{ uri: item.assets[0]?.url || "https://placehold.co/400" }}
-            style={{
-              elevation: 8,
-              shadowColor: "black",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.8,
-              shadowRadius: 4,
-            } as ImageStyle}
-          />
+            onPress={() =>
+              user._id === item.postedBy._id
+                ? router.push("/(app)/(tabs)/profile")
+                : router.push(`../(main)/profile/${serializedUser}`)
+            }
+          >
+            <Image
+              className="w-full h-full rounded-full"
+              source={{
+                uri: item.postedBy.profilePic || "https://placehold.co/400",
+              }}
+              style={
+                {
+                  elevation: 8,
+                  shadowColor: "black",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.8,
+                  shadowRadius: 4,
+                } as ImageStyle
+              }
+            />
+          </TouchableOpacity>
 
           <View className="flex flex-col justify-between">
             <View>
@@ -202,7 +226,11 @@ const PostItem = ({ item }: { item: PostData }) => {
                 />
                 <View className="flex-1 justify-evenly">
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <MaterialIcons name="bookmark-border" size={24} color="white" />
+                    <MaterialIcons
+                      name="bookmark-border"
+                      size={24}
+                      color="white"
+                    />
                     <Text className="text-white ml-4">Bookmark</Text>
                   </TouchableOpacity>
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
@@ -210,12 +238,18 @@ const PostItem = ({ item }: { item: PostData }) => {
                     <Text className="text-white ml-4">Share</Text>
                   </TouchableOpacity>
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <MaterialIcons name="report-problem" size={22} color="white" />
+                    <MaterialIcons
+                      name="report-problem"
+                      size={22}
+                      color="white"
+                    />
                     <Text className="text-white ml-4">Report</Text>
                   </TouchableOpacity>
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
                     <FontAwesome name="user-plus" size={19} color="white" />
-                    <Text className="text-white ml-4">Follow {item.postedBy.firstName}</Text>
+                    <Text className="text-white ml-4">
+                      Follow {item.postedBy.firstName}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -245,7 +279,10 @@ const PostItem = ({ item }: { item: PostData }) => {
         </View>
 
         {/* Image Swiper */}
-        <Swiper {...swiperConfig} className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400">
+        <Swiper
+          {...swiperConfig}
+          className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400"
+        >
           {item.assets.map((asset) => (
             <SwiperImage
               key={asset.url}
@@ -302,7 +339,7 @@ const PostItem = ({ item }: { item: PostData }) => {
               text={isLiked ? "Liked" : "Like"}
               onPress={() => {
                 setIsLiked(!isLiked);
-                setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+                setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
               }}
             />
             <ActionButton iconName="comment" text="Comment" />
@@ -321,7 +358,9 @@ const PostContainer = ({ postData }: PostContainerProps) => {
       data={postData}
       renderItem={({ item }) => <PostItem item={item} />}
       keyExtractor={(item) => item._id}
-      ListEmptyComponent={<Text className="text-white text-center">No posts available</Text>}
+      ListEmptyComponent={
+        <Text className="text-white text-center">No posts available</Text>
+      }
       showsVerticalScrollIndicator={false}
     />
   );

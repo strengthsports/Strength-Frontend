@@ -244,7 +244,8 @@ const PostItem = ({ item }: { item: PostData }) => {
           </View>
         </View>
 
-        {/* Image Swiper */}
+        {/* Image Swiper */}        
+        {item.assets && item.assets.length > 0 &&
         <Swiper {...swiperConfig} className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400">
           {item.assets.map((asset) => (
             <SwiperImage
@@ -254,6 +255,7 @@ const PostItem = ({ item }: { item: PostData }) => {
             />
           ))}
         </Swiper>
+        }
 
         {/* Like Animation */}
         <Animated.View

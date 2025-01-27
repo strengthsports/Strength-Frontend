@@ -15,11 +15,13 @@ import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
+import { useLikeContentMutation, useUnLikeContentMutation } from "~/reduxStore/api/likeUnlikeApi";
 
 // Type definitions
 interface ActionButtonProps {
   iconName: keyof typeof FontAwesome.glyphMap;
   text: string;
+  color: string;
   onPress?: () => void;
 }
 
@@ -47,10 +49,10 @@ interface PostContainerProps {
 }
 
 // Memoized components
-const ActionButton = memo<ActionButtonProps>(({ iconName, text, onPress }) => (
+const ActionButton = memo<ActionButtonProps>(({ iconName, text, color='gray', onPress }) => (
   <TouchableOpacity onPress={onPress}>
     <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-      <FontAwesome name={iconName} size={16} color="gray" />
+      <FontAwesome name={iconName} size={16} color={color} />
       <TextScallingFalse className="text-base text-white">
         {text}
       </TextScallingFalse>
@@ -85,8 +87,12 @@ const PostItem = ({ item }: { item: PostData }) => {
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
+
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(item.likesCount);
+  const [likePost, message] = useLikeContentMutation();
+  const [unlikePost] = useUnLikeContentMutation();
+
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -96,10 +102,39 @@ const PostItem = ({ item }: { item: PostData }) => {
     setShowSeeMore(shouldShowSeeMore);
   };
 
+  const handleLikeAction = async () => {
+    const originalIsLiked = isLiked;
+    const originalLikeCount = likeCount;
+    
+    try {
+      // Optimistic update
+      setIsLiked(!isLiked);
+      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+
+      // API call
+      const action = isLiked ? unlikePost : likePost;
+      await action({
+        targetId: item._id,
+        targetType: "Post"
+      }).unwrap();
+      console.log('Message', message);
+      console.log( message?.data?.message);
+
+    } catch (error) {
+      // Rollback on error
+      setIsLiked(originalIsLiked);
+      setLikeCount(originalLikeCount);
+      console.error("Like action failed:", error);
+    }
+  };
+
   const handleDoubleTap = () => {
     if (!isLiked) {
-      setIsLiked(true);
-      setLikeCount(prev => prev + 1);
+      // setIsLiked(true);
+      // setLikeCount(prev => prev + 1);
+
+      handleLikeAction();
+
 
       scaleAnim.setValue(0);
       Animated.sequence([
@@ -279,12 +314,14 @@ const PostItem = ({ item }: { item: PostData }) => {
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row items-center gap-2">
               <FontAwesome
-                name={isLiked ? "thumbs-up" : "thumbs-o-up"}
+                // name={isLiked ? "thumbs-up" : "thumbs-o-up"}
+                name="thumbs-up"
                 size={16}
-                color={isLiked ? "yellow" : "gray"}
+                // color={isLiked ? "yellow" : "gray"}
+                color=  "gray"
               />
               <TextScallingFalse className="text-base text-white">
-                {likeCount} {isLiked ? "Liked" : "Likes"}
+                {likeCount} {likeCount > 1 ? "Likes" : "Like"}
               </TextScallingFalse>
             </View>
             <TextScallingFalse className="text-base text-white">
@@ -302,10 +339,8 @@ const PostItem = ({ item }: { item: PostData }) => {
             <ActionButton
               iconName={isLiked ? "thumbs-up" : "thumbs-o-up"}
               text={isLiked ? "Liked" : "Like"}
-              onPress={() => {
-                setIsLiked(!isLiked);
-                setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-              }}
+              color={isLiked ? "yellow" : "gray"}
+              onPress={handleLikeAction}
             />
             <ActionButton iconName="comment" text="Comment" />
             <ActionButton iconName="paper-plane" text="Share" />

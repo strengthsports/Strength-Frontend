@@ -74,8 +74,12 @@ const LoginScreen = () => {
 
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
+<<<<<<< HEAD
       // router.push("/(app)/(tabs)");
       router.push("/(app)/(main)/teams/InitiateCreateTeam");
+=======
+      router.push("/(app)/(tabs)/home");
+>>>>>>> ebeb1030f06ea7ddd5946acafbabefdbbcd68d1c
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";

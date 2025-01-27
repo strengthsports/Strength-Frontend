@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { TargetUser, ProfileState, UserData } from "@/types/user";
+import { TargetUser, ProfileState, UserData, User } from "@/types/user";
+import { logoutUser } from "./authSlice";
+import { RootState } from "~/reduxStore";
 
 //Following user
 interface FollowUser {
@@ -11,22 +13,31 @@ interface FollowUser {
 // Initial State
 const initialState: ProfileState = {
   user: null,
+  profiles: {},
   loading: false,
   error: null,
 };
 
 export const getUserProfile = createAsyncThunk<
-  any,
+  { user: User; fromCache: boolean },
   TargetUser,
-  { rejectValue: string }
+  { state: RootState; rejectValue: string }
 >(
   "profile/getUserProfile",
-  async (userdata: TargetUser, { rejectWithValue }) => {
+  async (userdata: TargetUser, { getState, rejectWithValue }) => {
     try {
+      const state = getState();
+      const cachedProfiles = state.profile.profiles;
+
+      // Check if the profile is already cached
+      if (cachedProfiles && cachedProfiles[userdata.targetUserId]) {
+        return { user: cachedProfiles[userdata.targetUserId], fromCache: true };
+      }
+
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      console.log("Token : ", token);
-      console.log("User data input :", userdata);
+      // console.log("Token : ", token);
+      // console.log("User data input :", userdata);
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/getProfile`,
@@ -46,7 +57,7 @@ export const getUserProfile = createAsyncThunk<
       if (!response.ok) {
         return rejectWithValue(data.message || "Error getting user");
       }
-      // console.log("Data : ", data);
+      console.log("Data : ", data.data);
       return { user: data.data };
     } catch (error: unknown) {
       const errorMessage =
@@ -60,12 +71,16 @@ export const editUserProfile = createAsyncThunk<
   any,
   any,
   { rejectValue: string }
->("profile/editUserProfile", async (userdata: any, { rejectWithValue }) => {
+>("profile/editUserProfile", async (userdata, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
     console.log("User data input :", userdata);
+
+    userdata.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
@@ -73,7 +88,6 @@ export const editUserProfile = createAsyncThunk<
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
-          // "Content-Type": "multipart/form-data",
         },
         body: userdata,
       }
@@ -85,7 +99,7 @@ export const editUserProfile = createAsyncThunk<
     if (!response.ok) {
       return rejectWithValue(data.message || "Error getting user");
     }
-    // console.log("Data : ", data.data.updatedUser);
+    console.log("Data : ", data.data.updatedUser);
     return data.data.updatedUser;
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
@@ -172,8 +186,16 @@ export const unFollowUser = createAsyncThunk<
 const profileSlice = createSlice({
   name: "profile",
   initialState,
-  reducers: {},
+  reducers: {
+    resetProfile: (state, action) => {
+      state.user = null;
+      state.loading = false;
+      state.error = null;
+      state.profiles = {};
+    },
+  },
   extraReducers: (builder) => {
+    //get user profile
     builder
       .addCase(getUserProfile.pending, (state) => {
         state.loading = true;
@@ -181,16 +203,28 @@ const profileSlice = createSlice({
       })
       .addCase(getUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        // console.log("User data : payload ", action.payload.user);
+
+        const { user, fromCache } = action.payload;
+
+        // Cache the profile if it's freshly fetched
+        if (!fromCache && user) {
+          if (!state.profiles) state.profiles = {}; // Initialize profiles if null
+          state.profiles[user._id] = user;
+        }
+
+        console.log("Profile is cached");
+
+        // Update the currently displayed user profile
+        state.user = user;
       })
       .addCase(getUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
+    // follow an user
     builder
       .addCase(followUser.pending, (state) => {
-        state.loading = true;
+        // state.loading = true;
         state.error = null;
       })
       .addCase(followUser.fulfilled, (state, action) => {
@@ -202,9 +236,10 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
+    // unfollow an user
     builder
       .addCase(unFollowUser.pending, (state) => {
-        state.loading = true;
+        // state.loading = true;
         state.error = null;
       })
       .addCase(unFollowUser.fulfilled, (state, action) => {
@@ -216,9 +251,19 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
+    // Logout
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.user = null;
+      state.error = null;
+      state.loading = false;
+      state.profiles = {};
+    });
+    builder.addCase(logoutUser.rejected, (state, action) => {
+      state.error = action.payload as string;
+    });
   },
 });
 
-export const {} = profileSlice.actions;
+export const { resetProfile } = profileSlice.actions;
 
 export default profileSlice.reducer;

@@ -119,224 +119,6 @@ const Overview = () => {
   return (
     <View style={{ flex: 1 }}>
       {user?.isSportsOverviewSet ? (
-        // <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
-        //   <ScrollView
-        //     horizontal
-        //     showsHorizontalScrollIndicator={false}
-        //     style={{ paddingStart: 15 * scaleFactor, paddingTop: "1%" }}
-        //   >
-        //     <TabsList style={styles.tabsList}>
-        //       {user?.selectedSports?.length > 0 &&
-        //         user?.selectedSports?.map((sport: any) => (
-        //           <TouchableHighlight
-        //             style={styles.touchableHighlight}
-        //             onPress={() => setActiveSubSection(sport.sport.name)} // Update active tab
-        //           >
-        //             <View
-        //               style={[
-        //                 styles.buttonContainer,
-        //                 {
-        //                   borderRadius:
-        //                     activeSubSection === sport.sport.name ? 7 : 9,
-        //                   backgroundColor:
-        //                     activeSubSection === sport.sport.name
-        //                       ? "#12956B"
-        //                       : "black",
-        //                   borderColor:
-        //                     activeSubSection === sport.sport.name
-        //                       ? "#12956B"
-        //                       : "#404040",
-        //                 },
-        //               ]}
-        //             >
-        //               <Image
-        //                 source={{ uri: sport.sport.logo }}
-        //                 style={{
-        //                   width: 20 * scaleFactor,
-        //                   height: 20 * scaleFactor,
-        //                 }}
-        //               />
-        //               <Text style={styles.buttonText}>
-        //                 {sport.sport.name.charAt(0).toUpperCase() +
-        //                   sport.sport.name.slice(1)}
-        //               </Text>
-        //             </View>
-        //           </TouchableHighlight>
-        //         ))}
-        //       <View
-        //         style={{
-        //           paddingRight: 25 * scaleFactor,
-        //           paddingLeft: 6 * scaleFactor,
-        //         }}
-        //       >
-        //         <TouchableOpacity
-        //           activeOpacity={0.5}
-        //           style={{
-        //             borderColor: "#454545",
-        //             borderWidth: 0.3,
-        //             width: 36 * scaleFactor,
-        //             height: 36 * scaleFactor,
-        //             borderRadius: 7,
-        //             alignItems: "center",
-        //             justifyContent: "center",
-        //           }}
-        //         >
-        //           <Feather name="plus" size={20 * scaleFactor} color="white" />
-        //         </TouchableOpacity>
-        //       </View>
-        //     </TabsList>
-        //   </ScrollView>
-        //   {user?.selectedSports?.length > 0 &&
-        //     user?.selectedSports?.map((sport: any) => (
-        //       <TabsContent value={sport.sport.name}>
-        //         {/* Sports Overview */}
-        //         <View style={styles.OuterView}>
-        //           <View style={styles.DetailsContainer}>
-        //             <View
-        //               style={{
-        //                 flexDirection: "row",
-        //                 flexWrap: "wrap",
-        //                 columnGap: "12%",
-        //                 rowGap: "11%",
-        //               }}
-        //             >
-        //               {sport.details &&
-        //                 Object.entries(sport.details).map(
-        //                   ([key, value], index) => (
-        //                     <View key={index}>
-        //                       <TextScallingFalse style={styles.HeadingText}>
-        //                         {key.toUpperCase()}
-        //                       </TextScallingFalse>
-        //                       <TextScallingFalse style={styles.DetailText}>
-        //                         {value}
-        //                       </TextScallingFalse>
-        //                     </View>
-        //                   )
-        //                 )}
-        //             </View>
-        //           </View>
-        //         </View>
-
-        //         {/* team overview */}
-        //         <View style={styles.OuterView}>
-        //           <View style={styles.DetailsContainer}>
-        //             <View style={{ flexDirection: "row" }}>
-        //               <View style={{ backgroundColor: "purple" }}>
-        //                 <TextScallingFalse style={styles.HeadingText}>
-        //                   CURRENT TEAMS
-        //                 </TextScallingFalse>
-        //                 <View
-        //                   style={{
-        //                     flexDirection: "row",
-        //                     columnGap: "3%",
-        //                     paddingTop: "6%",
-        //                   }}
-        //                 >
-        //                   <Image
-        //                     source={{
-        //                       uri: data.currentteamcricket[0].cteamlogo,
-        //                     }}
-        //                     style={{ width: 45, height: 45, borderRadius: 100 }}
-        //                   />
-        //                   <View
-        //                     style={{ backgroundColor: "green", width: 120 }}
-        //                   >
-        //                     <TextScallingFalse
-        //                       style={{
-        //                         color: "white",
-        //                         fontSize: responsiveFontSize(1.76),
-        //                         fontWeight: "bold",
-        //                       }}
-        //                     >
-        //                       Pro Tracker
-        //                     </TextScallingFalse>
-        //                     <TextScallingFalse
-        //                       style={{
-        //                         color: "grey",
-        //                         fontSize: responsiveFontSize(1.41),
-        //                         fontWeight: "300",
-        //                       }}
-        //                     >
-        //                       Brisbane, Queensland, Australia
-        //                     </TextScallingFalse>
-        //                   </View>
-        //                 </View>
-        //               </View>
-
-        //               <View
-        //                 style={{
-        //                   backgroundColor: "orange",
-        //                   width: "50%",
-        //                   alignItems: "center",
-        //                 }}
-        //               >
-        //                 <View
-        //                   style={{
-        //                     width: "100%",
-        //                     justifyContent: "center",
-        //                     alignItems: "center",
-        //                   }}
-        //                 >
-        //                   <TextScallingFalse style={styles.HeadingText}>
-        //                     QUICK INFO
-        //                   </TextScallingFalse>
-        //                 </View>
-        //                 <View style={{ backgroundColor: "brown" }}>
-        //                   <View>
-        //                     <TextScallingFalse
-        //                       style={{
-        //                         color: "white",
-        //                         fontSize: responsiveFontSize(1.41),
-        //                         fontWeight: "500",
-        //                       }}
-        //                     >
-        //                       Position:{" "}
-        //                       <TextScallingFalse
-        //                         style={{ color: "white", fontWeight: "200" }}
-        //                       >
-        //                         [ c ] Batsman
-        //                       </TextScallingFalse>
-        //                     </TextScallingFalse>
-        //                   </View>
-        //                   <View style={{ paddingTop: "2%" }}>
-        //                     <TextScallingFalse
-        //                       style={{
-        //                         color: "white",
-        //                         fontSize: responsiveFontSize(1.29),
-        //                         fontWeight: "400",
-        //                       }}
-        //                     >
-        //                       Oct 2003
-        //                       <TextScallingFalse
-        //                         style={{ color: "white", fontWeight: "300" }}
-        //                       >
-        //                         {" "}
-        //                         - Present - 20yrs
-        //                       </TextScallingFalse>
-        //                     </TextScallingFalse>
-        //                   </View>
-        //                   <View style={{ paddingTop: "2%" }}>
-        //                     <TextScallingFalse
-        //                       style={{
-        //                         color: "white",
-        //                         fontSize: responsiveFontSize(1.29),
-        //                         fontWeight: "400",
-        //                       }}
-        //                     >
-        //                       present:
-        //                       <TextScallingFalse
-        //                         style={{ color: "grey", fontWeight: "300" }}
-        //                       ></TextScallingFalse>
-        //                     </TextScallingFalse>
-        //                   </View>
-        //                 </View>
-        //               </View>
-        //             </View>
-        //           </View>
-        //         </View>
-        //       </TabsContent>
-        //     ))}
-        // </Tabs>
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           {/* Horizontal Tab Scroll */}
           <ScrollView
@@ -611,8 +393,8 @@ const Overview = () => {
             width: containerWidth,
           }}
         >
-          {/* About Heading */}
-          <View className="p-0.5">
+          <View className="p-0.5 relative">
+            {/* About Heading */}
             <Text
               className="text-[#808080] font-bold"
               style={{
@@ -639,42 +421,14 @@ const Overview = () => {
                 {isExpanded ? "see less" : "see more"}
               </Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </View>
 
-      {/* <View style={styles.OuterView}>
-        <View style={styles.DetailsContainer}>
-          <View style={{ padding: 2 }}>
-            <TextScallingFalse
-              style={{
-                color: "grey",
-                fontSize: responsiveFontSize(2.23),
-                fontWeight: "bold",
-              }}
-            >
-              About
-            </TextScallingFalse>
-            <TextScallingFalse
-              style={{
-                fontSize: responsiveFontSize(1.52),
-                color: "white",
-                fontWeight: "300",
-                paddingTop: "3%",
-                lineHeight: 17.5,
-              }}
-              numberOfLines={isExpanded ? undefined : 3}
-            >
-              {user?.about}
-            </TextScallingFalse>
-            <TouchableOpacity onPress={handleToggle}>
-              <TextScallingFalse style={styles.seeMore}>
-                {isExpanded ? "see less" : "see more"}
-              </TextScallingFalse>
+            {/* edit button */}
+            <TouchableOpacity className="absolute top-0 right-0">
+              <Feather name="edit" size={18 * scaleFactor} color="#373737" />
             </TouchableOpacity>
           </View>
         </View>
-      </View> */}
+      </View>
 
       {/* recent posts */}
       <View style={{ paddingTop: "3%", alignItems: "center" }}>

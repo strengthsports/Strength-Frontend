@@ -29,9 +29,10 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: "Home",
+          href: "/(app)/(tabs)/home",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
               name={focused ? "home" : "home-outline"}
@@ -77,7 +78,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          href: "/(app)/profile",
+          href: "/(app)/(tabs)/profile",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
               name={

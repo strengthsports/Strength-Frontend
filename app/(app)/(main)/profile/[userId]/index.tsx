@@ -18,8 +18,6 @@ import { Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
-import { AppDispatch } from "~/reduxStore";
-import { setSelectedSports } from "~/reduxStore/slices/user/profileSlice";
 
 const data = {
   currentteamcricket: [
@@ -110,33 +108,33 @@ const Overview = () => {
 
   const { error, loading, user } = useSelector((state: any) => state?.profile);
 
-  // if (error) {
-  //   return (
-  //     <PageThemeView>
-  //       <ScrollView>
-  //         <View>
-  //           <ThemedText>{error}</ThemedText>
-  //         </View>
-  //       </ScrollView>
-  //     </PageThemeView>
-  //   );
-  // }
-  // if (loading) {
-  //   return (
-  //     <PageThemeView>
-  //       <ScrollView>
-  //         <View>
-  //           <ThemedText>Loading...</ThemedText>
-  //         </View>
-  //       </ScrollView>
-  //     </PageThemeView>
-  //   );
-  // }
-
   const sports = user?.selectedSports ? [...user.selectedSports] : [];
   const [activeSubSection, setActiveSubSection] = useState(
     sports[0]?.sport.name
   );
+
+  if (error) {
+    return (
+      <PageThemeView>
+        <ScrollView>
+          <View>
+            <ThemedText>{error}</ThemedText>
+          </View>
+        </ScrollView>
+      </PageThemeView>
+    );
+  }
+  if (loading) {
+    return (
+      <PageThemeView>
+        <ScrollView>
+          <View>
+            <ThemedText>Loading...</ThemedText>
+          </View>
+        </ScrollView>
+      </PageThemeView>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -491,18 +489,3 @@ const styles = StyleSheet.create({
     fontWeight: 500,
   },
 });
-
-// import { StyleSheet, Text, View } from "react-native";
-// import React from "react";
-
-// const index = () => {
-//   return (
-//     <View>
-//       <Text>index</Text>
-//     </View>
-//   );
-// };
-
-// export default index;
-
-// const styles = StyleSheet.create({});

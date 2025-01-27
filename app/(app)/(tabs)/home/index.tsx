@@ -77,16 +77,20 @@ export default function Home() {
 
   const { data, error, isLoading, refetch } = useGetFeedPostQuery({
     limit: 20,
-    lastTimestamp: '1737657000000' // Pass lastTimestamp for pagination
+    lastTimeStamp: '1737697000000' // Pass lastTimestamp for pagination
   });
-  // useEffect(() => {
-  //   if (data) {
-  //     console.log('Feed Data:', data);
-  //   }
-  //   if (error) {
-  //     console.log('Feed Error:', error);
-  //   }
-  // }, [data, error]);
+  useEffect(() => {
+    if (data) {
+      console.log('All Feed Data:', data);
+      console.log('posts:', data.data.posts);
+      console.log('nth posts:', data.data.posts[3]);
+      console.log('asset:', data.data.posts[3].assets);
+      console.log('URL:', data.data.posts[3].assets[0].url);
+    }
+    if (error) {
+      console.log('Feed Error:', error);
+    }
+  }, [data, error]);
 
   return (
     <SafeAreaView className="pt-16">
@@ -99,21 +103,22 @@ export default function Home() {
       </TouchableOpacity>
 
       {/* Container */}
-      <ScrollView className="w-[screen] pl-3 mt-8" >
-
-      <PostContainer  />
-      <View className="w-80">
-        <PostContainerSmall  />
-
+      <View className="w-screen pl-3 ">
+        {data?.data?.posts && <PostContainer postData={data.data.posts} />}
       </View>
+
+        <ScrollView className="w-[screen] pl-3 mt-8" >
+
+      {/* populate this */}
+
 
       {/* <PostContainer /> */}
       <TextScallingFalse className="p-6  text-xl text-white">
-          Old Container
-        </TextScallingFalse>
+        Old Container
+      </TextScallingFalse>
       <PostSmallCard post={posts} />
-      </ScrollView>
+    </ScrollView>
 
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }

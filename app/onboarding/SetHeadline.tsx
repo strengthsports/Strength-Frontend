@@ -34,7 +34,7 @@ const SetHeadline: React.FC = () => {
   const { profilePic } = useSelector((state: RootState) => state?.onboarding);
 
   const { loading, error, user } = useSelector(
-    (state: RootState) => state?.auth
+    (state: RootState) => state?.auth,
   );
   console.log("Loading", loading);
   console.log("Error", error);
@@ -73,7 +73,7 @@ const SetHeadline: React.FC = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black px-4 mt-8">
+    <SafeAreaView className="flex-1 bg-black py-12">
       <Logo />
       <StatusBar barStyle="light-content" />
       <TouchableWithoutFeedback>
@@ -81,8 +81,8 @@ const SetHeadline: React.FC = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-1 px-3">
-            <View className="flex-1 mt-6">
+          <View className="flex-1 px-3 mt-6">
+            <View className="flex-1">
               <TextScallingFalse className="text-white text-[2.9rem] font-semibold leading-tight">
                 Let's get you{"\n"}started!
               </TextScallingFalse>
@@ -130,7 +130,7 @@ const SetHeadline: React.FC = () => {
             </View>
 
             {/* Footer Section */}
-            <View className="mb-8">
+            <View className="mb-0 py-2">
               <TouchableOpacity
                 className="bg-[#00A67E] h-12 rounded-full justify-center items-center"
                 onPress={handleNextPress}

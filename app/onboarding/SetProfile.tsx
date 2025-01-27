@@ -91,7 +91,7 @@ const ProfilePictureScreen: React.FC = () => {
 
   return (
     <SafeAreaView
-      className={`flex-1 bg-black px-8 mt-8 pt-${
+      className={`flex-1 bg-black px-8 py-12 pt-${
         Platform.OS === "android" ? StatusBar.currentHeight : 0
       }`}
     >

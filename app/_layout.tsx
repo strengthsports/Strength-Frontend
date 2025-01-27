@@ -36,17 +36,6 @@ export default function RootLayout() {
   }
 
   return (
-<<<<<<< HEAD
-    <GestureHandlerRootView>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Provider store={store}>
-          <Slot />
-          <StatusBar backgroundColor="black" />
-          <Toast config={toastConfig} />
-        </Provider>
-      </ThemeProvider>
-    </GestureHandlerRootView>
-=======
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
@@ -56,6 +45,5 @@ export default function RootLayout() {
           </Provider>
       </PersistGate>
     </ThemeProvider>
->>>>>>> ebeb1030f06ea7ddd5946acafbabefdbbcd68d1c
   );
 }

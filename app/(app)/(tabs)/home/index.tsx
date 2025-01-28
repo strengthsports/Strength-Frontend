@@ -1,105 +1,71 @@
 import {
-  SafeAreaView,
   View,
   TouchableOpacity,
+  FlatList,
+  RefreshControl,
   Text,
-  ScrollView,
+  Platform,
 } from "react-native";
-import { useRouter } from "expo-router"; // Import the router for navigation
+import { useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
-import { useEffect, useState } from "react";
-import PostSmallCard from "~/components/Cards/PostSmallCard";
-import { useGetFeedPostQuery } from "~/reduxStore/api/feedPostApi";
+import { memo, useCallback, useMemo, useState } from "react";
+import {
+  feedPostApi,
+  Post,
+  useGetFeedPostQuery,
+} from "~/reduxStore/api/feedPostApi";
 import PostContainer from "~/components/Cards/postContainer";
-import PostContainerSmall from "~/components/Cards/postContainerSmall";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch } from "react-redux";
+import debounce from "lodash.debounce";
 
 export default function Home() {
+  const dispatch = useDispatch();
   const router = useRouter();
 
-  const user = { id: "67667870ba4cfa5c24a3dc0b", type: "User" }; // Example object
-  const serializedUser = encodeURIComponent(JSON.stringify(user)); //
-  const posts = [
-    {
-      id: 1,
-      firstName: "Sebastian",
-      lastName: "Cilb",
-      profilepic:
-        "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-      headline:
-        "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-      caption:
-        "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
-      likes: ["harshal_123", "Miraj_123"],
-      comments: [
-        {
-          id: 1,
-          firstName: "harshl",
-          lastName: "mishra",
-          description: "kjaskjdashdkasjndjansjndjan",
-          comment: "amazing",
-        },
-        {
-          id: 2,
-          firstName: "harshl",
-          lastName: "mishra",
-          description: "kjaskjdashdkasjndjansjndjan",
-          comment: "agg laga deya",
-        },
-      ],
-    },
-    {
-      id: 2,
-      firstName: "Sebastian",
-      lastName: "Cilb",
-      profilepic:
-        "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-      headline:
-        "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-      caption:
-        "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-      likes: ["harshal_123", "Miraj_123"],
-      comments: [
-        {
-          id: 1,
-          firstName: "harshl",
-          lastName: "mishra",
-          description: "kjaskjdashdkasjndjansjndjan",
-          comment: "amazing",
-        },
-        {
-          id: 2,
-          firstName: "harshl",
-          lastName: "mishra",
-          description: "kjaskjdashdkasjndjansjndjan",
-          comment: "agg laga deya",
-        },
-      ],
-    },
-  ];
+  const [refreshing, setRefreshing] = useState(false);
+  const [postLimit, setPostLimit] = useState(1); // Initial limit
 
+  const user = { id: "67667870ba4cfa5c24a3dc0b", type: "User" };
+  const serializedUser = encodeURIComponent(JSON.stringify(user));
+  const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());
   const { data, error, isLoading, refetch } = useGetFeedPostQuery({
-    limit: 20,
-    lastTimeStamp: "1737697000000", // Pass lastTimestamp for pagination
+    limit: 20, // Fixed limit
+    lastTimeStamp: lastTimestamp,
   });
-  useEffect(() => {
-    if (data) {
-      // console.log("All Feed Data:", data);
-      console.log("posts:", data.data.posts);
-      console.log("nth posts:", data.data.posts[3]);
-      // console.log("asset:", data.data.posts[3].assets);
-      // console.log("URL:", data.data.posts[3].assets[0].url);
-    }
-    if (error) {
-      console.log("Feed Error:", error);
-    }
-  }, [data, error]);
 
+  const isAndroid = Platform.OS === "android";
+
+  const handleRefresh = async () => {
+    if (refreshing) return; // Prevent concurrent refreshes
+    setRefreshing(true);
+    try {
+      const newTimestamp = Date.now().toString();
+      setLastTimestamp(newTimestamp); // Refresh with latest timestamp
+
+      // Invalidate the cache for 'Posts' tag
+      dispatch(feedPostApi.util.invalidateTags(["Posts"]));
+
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+  const debouncedRefresh = debounce(handleRefresh, 100); // prevents frequent refresh in the time interval of 1s
+
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => (
+      <View className="w-screen pl-3">
+        <PostContainer item={item} />
+      </View>
+    ),
+    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+  );
+  const memoizedEmptyComponent = memo(() => (
+    <Text className="text-white text-center p-4">No new posts available</Text>
+  ));
   return (
-    <SafeAreaView className="pt-16">
+    <SafeAreaView edges={["top", "bottom"]} className="pt-16 flex-1">
       <TouchableOpacity
         onPress={() => router.push(`../(main)/profile/${serializedUser}`)}
       >
@@ -116,17 +82,28 @@ export default function Home() {
         </TextScallingFalse>
       </TouchableOpacity>
 
-      {/* Container */}
-      <View className="w-screen pl-3 ">
-        {data?.data?.posts && <PostContainer postData={data.data.posts} />}
-      </View>
-
-      <ScrollView className="w-[screen] pl-3 mt-8">
-        <TextScallingFalse className="p-6  text-xl text-white">
-          Old Container
-        </TextScallingFalse>
-        <PostSmallCard post={posts} />
-      </ScrollView>
+      <FlatList
+        data={data?.data?.posts || []}
+        keyExtractor={(item) => item._id}
+        initialNumToRender={5}
+        removeClippedSubviews={isAndroid}
+        windowSize={11}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={debouncedRefresh}
+            colors={["#12956B", "#6E7A81"]} // Customize indicator colors
+            tintColor="#6E7A81" // Color for iOS
+            title="Refreshing Your Feed..." // Optional refresh title - iOS
+            titleColor="#6E7A81"
+            progressBackgroundColor="#181A1B" // Background color of the loader
+          />
+        }
+        renderItem={renderItem}
+        ListEmptyComponent={memoizedEmptyComponent}
+        bounces={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      />
     </SafeAreaView>
   );
 }

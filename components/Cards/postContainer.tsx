@@ -21,54 +21,48 @@ import {
   useLikeContentMutation,
   useUnLikeContentMutation,
 } from "~/reduxStore/api/likeUnlikeApi";
+import { Post } from "~/reduxStore/api/feedPostApi";
 
 // Type definitions
-interface ActionButtonProps {
-  iconName: keyof typeof FontAwesome.glyphMap;
-  text: string;
-  color: string;
-  onPress?: () => void;
-}
-
 interface SwiperImageProps {
   uri: string;
   onDoubleTap: () => void;
 }
 
-interface PostData {
-  _id: string;
-  caption: string;
-  assets: Array<{ url: string }>;
-  postedBy: {
-    _id: string;
-    type: string;
-    profilePic: string;
-    firstName: string;
-    lastName: string;
-    headline: string;
-  };
-  createdAt: string;
-  likesCount: number;
-  commentsCount: number;
-}
+// interface PostData {
+//   _id: string;
+//   caption: string;
+//   assets: Array<{ url: string }>;
+//   postedBy: {
+//     _id: string;
+//     type: string;
+//     profilePic: string;
+//     firstName: string;
+//     lastName: string;
+//     headline: string;
+//   };
+//   createdAt: string;
+//   likesCount: number;
+//   commentsCount: number;
+// }
 
-interface PostContainerProps {
-  postData: PostData[];
-}
+// interface PostContainerProps {
+//   postData: PostData[];
+// }
 
-// Memoized components
-const ActionButton = memo<ActionButtonProps>(
-  ({ iconName, text, color = "gray", onPress }) => (
-    <TouchableOpacity onPress={onPress}>
-      <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-        <FontAwesome name={iconName} size={16} color={color} />
-        <TextScallingFalse className="text-base text-white">
-          {text}
-        </TextScallingFalse>
-      </View>
-    </TouchableOpacity>
-  )
-);
+// // Memoized components
+// const ActionButton = memo<ActionButtonProps>(
+//   ({ iconName, text, color = "gray", onPress }) => (
+//     <TouchableOpacity onPress={onPress}>
+//       <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+//         <FontAwesome name={iconName} size={16} color={color} />
+//         <TextScallingFalse className="text-base text-white">
+//           {text}
+//         </TextScallingFalse>
+//       </View>
+//     </TouchableOpacity>
+//   )
+// );
 
 const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   let lastTap = useRef(0).current;
@@ -92,8 +86,7 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   );
 });
 
-// Individual Post Component
-const PostItem = ({ item }: { item: PostData }) => {
+const PostContainer = ({ item }: { item: Post }) => {
   const router = useRouter();
   const { user } = useSelector((state) => state?.auth);
   const serializedUser = encodeURIComponent(
@@ -188,7 +181,8 @@ const PostItem = ({ item }: { item: PostData }) => {
       zIndex: 30,
     },
   };
-
+console.log(item)
+console.log(item.postedBy)
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
       <View className="flex">
@@ -202,6 +196,7 @@ const PostItem = ({ item }: { item: PostData }) => {
                 : router.push(`../(main)/profile/${serializedUser}`)
             }
           >
+            
             <Image
               className="w-full h-full rounded-full"
               source={{
@@ -219,15 +214,20 @@ const PostItem = ({ item }: { item: PostData }) => {
             />
           </TouchableOpacity>
 
-          <View className="flex flex-col justify-between">
-            <View>
+          <View className="w-64 flex flex-col justify-between">
+            <TouchableOpacity
+            onPress={() =>
+              user._id === item.postedBy._id
+                ? router.push("/(app)/(tabs)/profile")
+                : router.push(`../(main)/profile/${serializedUser}`)
+            }>
               <TextScallingFalse className="text-white text-xl font-bold">
                 {item.postedBy.firstName} {item.postedBy.lastName}
               </TextScallingFalse>
-              <TextScallingFalse className="text-neutral-300 text-sm">
+              <TextScallingFalse className="text-neutral-300 text-sm" numberOfLines={1} ellipsizeMode="tail">
                 {item.postedBy.headline}
               </TextScallingFalse>
-            </View>
+            </TouchableOpacity>
             <View className="flex flex-row items-center">
               <TextScallingFalse className="text-base text-neutral-400">
                 {new Date(item.createdAt).toLocaleDateString()} &bull;{" "}
@@ -346,11 +346,11 @@ const PostItem = ({ item }: { item: PostData }) => {
             opacity: scaleAnim,
           }}
         >
-          <FontAwesome name="thumbs-up" size={50} color="yellow" />
+          <FontAwesome name="thumbs-up" size={50} color="#FABE25" />
         </Animated.View>
 
         {/* Interaction Bar */}
-        <View className="relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[16px] bg-neutral-900">
+        <View className="relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[16px] bg-neutral-900">
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row items-center gap-2">
               <FontAwesome
@@ -376,15 +376,32 @@ const PostItem = ({ item }: { item: PostData }) => {
           />
 
           <View className="w-full px-6 py-5 mb-1 flex flex-row justify-evenly items-center">
-            <ActionButton
-              iconName={isLiked ? "thumbs-up" : "thumbs-o-up"}
-              text={isLiked ? "Liked" : "Like"}
-              color={isLiked ? "yellow" : "gray"}
-              onPress={handleLikeAction}
-            />
-            <ActionButton iconName="comment" text="Comment" />
-            <ActionButton iconName="paper-plane" text="Share" />
+            <TouchableOpacity onPress={handleLikeAction} >
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+                <FontAwesome name={isLiked ? "thumbs-up" : "thumbs-o-up"} size={16} color={isLiked ? "#FABE25" : "gray"} />
+                <TextScallingFalse className={`text-base ${isLiked ? 'text-amber-400' : 'text-white'}`}>
+                {isLiked ? "Liked" : "Like"}
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity >
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+                <FontAwesome name="comment" size={16} color='grey' />
+                <TextScallingFalse className="text-base text-white">
+                Comment
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity >
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+                <FontAwesome name="paper-plane" size={16} color='grey' />
+                <TextScallingFalse className="text-base text-white">
+                Share
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
           </View>
+
         </View>
       </View>
     </View>
@@ -392,18 +409,16 @@ const PostItem = ({ item }: { item: PostData }) => {
 };
 
 // Main Container
-const PostContainer = ({ postData }: PostContainerProps) => {
-  return (
-    <FlatList
-      data={postData}
-      renderItem={({ item }) => <PostItem item={item} />}
-      keyExtractor={(item) => item._id}
-      ListEmptyComponent={
-        <Text className="text-white text-center">No posts available</Text>
-      }
-      showsVerticalScrollIndicator={false}
-    />
-  );
-};
+// const PostContainer = ({ postData }: PostContainerProps) => {
+//   return (
+//     <FlatList
+//       data={postData}
+//       renderItem={({ item }) => <PostItem item={item} />}
+//       keyExtractor={(item) => item._id}
+//       ListEmptyComponent={<Text className="text-white text-center">No posts available</Text>}
+//       showsVerticalScrollIndicator={false}
+//     />
+//   );
+// };
 
 export default PostContainer;

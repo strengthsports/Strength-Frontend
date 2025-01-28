@@ -8,6 +8,9 @@ interface Post {
   caption: string;
   assets: Array<{ url: string }>;
   postedBy: {
+    _id: string;
+    type: string;
+    profilePic: string;
     firstName: string;
     lastName: string;
     headline: string;
@@ -27,12 +30,6 @@ interface FeedResponse {
   success: boolean;
 }
 
-interface Post {
-    _id: string;
-    content: string;
-    createdAt: string;
-  }
-  
 export const feedPostApi = createApi({
     reducerPath: 'feedPostApi',
     baseQuery: fetchBaseQuery({
@@ -45,6 +42,7 @@ export const feedPostApi = createApi({
             return headers;
           }
         }),
+    tagTypes: ["FeedPost"], // Specify tag types here
     endpoints: (builder) => ({
         getFeedPost: builder.query<FeedResponse, {limit?: number; lastTimeStamp?: string | null}>({
             query:({ limit = 20, lastTimeStamp }) => ({
@@ -54,7 +52,8 @@ export const feedPostApi = createApi({
                     lastTimeStamp
                 }
               }),
-            //   providesTags: ['Feed'],
+              keepUnusedDataFor:300, // how long api response is stored in memory after all components using it unmounts, 5 mins || default - 1 min
+              providesTags: ['FeedPost'],
         })
     })
 })

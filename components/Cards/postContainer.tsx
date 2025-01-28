@@ -16,49 +16,13 @@ import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useLikeContentMutation, useUnLikeContentMutation } from "~/reduxStore/api/likeUnlikeApi";
+import { Post } from "~/reduxStore/api/feedPostApi";
 
 // Type definitions
-interface ActionButtonProps {
-  iconName: keyof typeof FontAwesome.glyphMap;
-  text: string;
-  color?: string;
-  onPress?: () => void;
-}
-
 interface SwiperImageProps {
   uri: string;
   onDoubleTap: () => void;
 }
-
-interface PostData {
-  _id: string;
-  caption: string;
-  assets: Array<{ url: string }>;
-  postedBy: {
-    firstName: string;
-    lastName: string;
-    headline: string;
-  };
-  createdAt: string;
-  likesCount: number;
-  commentsCount: number;
-}
-
-interface PostContainerProps {
-  postData: PostData[];
-}
-
-// Memoized components
-const ActionButton = memo<ActionButtonProps>(({ iconName, text, color='gray', onPress }) => (
-  <TouchableOpacity onPress={onPress}>
-    <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-      <FontAwesome name={iconName} size={16} color={color} />
-      <TextScallingFalse className="text-base text-white">
-        {text}
-      </TextScallingFalse>
-    </View>
-  </TouchableOpacity>
-));
 
 const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   let lastTap = useRef(0).current;
@@ -82,8 +46,7 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   );
 });
 
-// Individual Post Component
-const PostContainer = ({ item }: { item: PostData }) => {
+const PostContainer = ({ item }: { item: Post }) => {
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
@@ -306,7 +269,7 @@ const PostContainer = ({ item }: { item: PostData }) => {
             opacity: scaleAnim,
           }}
         >
-          <FontAwesome name="thumbs-up" size={50} color="yellow" />
+          <FontAwesome name="thumbs-up" size={50} color="#FABE25" />
         </Animated.View>
 
         {/* Interaction Bar */}
@@ -336,15 +299,32 @@ const PostContainer = ({ item }: { item: PostData }) => {
           />
 
           <View className="w-full px-6 py-5 mb-1 flex flex-row justify-evenly items-center">
-            <ActionButton
-              iconName={isLiked ? "thumbs-up" : "thumbs-o-up"}
-              text={isLiked ? "Liked" : "Like"}
-              color={isLiked ? "yellow" : "gray"}
-              onPress={handleLikeAction}
-            />
-            <ActionButton iconName="comment" text="Comment" />
-            <ActionButton iconName="paper-plane" text="Share" />
+            <TouchableOpacity onPress={handleLikeAction} >
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+                <FontAwesome name={isLiked ? "thumbs-up" : "thumbs-o-up"} size={16} color={isLiked ? "#FABE25" : "gray"} />
+                <TextScallingFalse className={`text-base ${isLiked ? 'text-amber-400' : 'text-white'}`}>
+                {isLiked ? "Liked" : "Like"}
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity >
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+                <FontAwesome name="comment" size={16} color='grey' />
+                <TextScallingFalse className="text-base text-white">
+                Comment
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity >
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+                <FontAwesome name="paper-plane" size={16} color='grey' />
+                <TextScallingFalse className="text-base text-white">
+                Share
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
           </View>
+
         </View>
       </View>
     </View>

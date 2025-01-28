@@ -346,8 +346,14 @@ const PostContainer = ({ item }: { item: Post }) => {
                     activeOpacity={1}
                     onPress={() => setIsPostLikersModalVisible(false)}
                     >
+                     <View className="h-full w-full bg-neutral-900 rounded-t-3xl p-4">
+                    <Divider
+                      className="w-16 self-center rounded-full bg-neutral-700 my-1"
+                      width={4}
+                    /> 
                      <LikerModal targetId={item._id} targetType="Post" />
                     {/* <MoreModal firstName={item.postedBy.firstName} /> */}
+                  </View>
                   </TouchableOpacity>
                 </Modal>
               )}

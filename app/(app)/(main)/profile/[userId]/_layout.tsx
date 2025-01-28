@@ -27,7 +27,7 @@ import {
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import { Slot, useLocalSearchParams } from "expo-router";
+import { Slot, useLocalSearchParams, usePathname } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getUserProfile,
@@ -38,7 +38,7 @@ import { AppDispatch } from "~/reduxStore";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { useRouter } from "expo-router";
 
-const ProfileLayout = () => {
+const ProfileLayout = ({ param }: { param: string }) => {
   const params = useLocalSearchParams();
   const userId = useMemo(() => {
     return params.userId ? JSON.parse(decodeURIComponent(params.userId)) : null;
@@ -104,9 +104,9 @@ const ProfileLayout = () => {
   }, [isSettingsModalVisible]);
 
   //set active tab
-  const handleTabPress = (tabName, route) => {
-    setActiveTab(tabName); // Set active tab state
-    router.replace(route); // Navigate to the route
+  const handleTabPress = (tabName: string, route: any) => {
+    setActiveTab(tabName);
+    router.replace(route);
   };
 
   //handle follow
@@ -673,7 +673,15 @@ const styles = StyleSheet.create({
 });
 
 // Tabs component
-const Tabs = ({ activeTab, handleTabPress, params }) => {
+const Tabs = ({
+  activeTab,
+  handleTabPress,
+  params,
+}: {
+  activeTab: any;
+  handleTabPress: any;
+  params: any;
+}) => {
   const tabs = [
     { name: "Overview", path: `/profile/${params}` },
     { name: "Activity", path: `/profile/${params}/activity` },

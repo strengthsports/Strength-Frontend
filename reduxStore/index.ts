@@ -1,6 +1,14 @@
-// store/index.ts
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from "redux-persist";
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./slices/user/authSlice";
 import signupReducer from "./slices/user/signupSlice";
@@ -10,6 +18,8 @@ import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profileApi";
 import { feedPostApi } from "./api/feedPostApi";
 import { likeUnlikeApi } from "./api/likeUnlikeApi";
+// import { socialApi } from "./api/socialApi"; // Import the new socialApi
+import { likerApi } from "./api/likerApi";
 
 // Persist configuration
 const persistConfig = {
@@ -28,6 +38,7 @@ const rootReducer = combineReducers({
   [profileApi.reducerPath]: profileApi.reducer,
   [feedPostApi.reducerPath]: feedPostApi.reducer,
   [likeUnlikeApi.reducerPath]: likeUnlikeApi.reducer,
+  [likerApi.reducerPath]: likerApi.reducer, // Add socialApi reducer
 });
 
 // Create persisted reducer
@@ -42,11 +53,11 @@ const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }).concat(
-      // middlewares for Apis
+      // Middlewares for APIs
       profileApi.middleware,
       feedPostApi.middleware,
-      likeUnlikeApi.middleware 
-
+      likeUnlikeApi.middleware,
+      likerApi.middleware // Add socialApi middleware
     ),
 });
 

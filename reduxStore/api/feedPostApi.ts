@@ -3,11 +3,14 @@ import { number } from "zod";
 import { getToken } from "~/utils/secureStore";
 
 // In your feedPostApi.ts
-export interface Post {
+interface Post {
   _id: string;
   caption: string;
   assets: Array<{ url: string }>;
   postedBy: {
+    _id: string;
+    type: string;
+    profilePic: string;
     firstName: string;
     lastName: string;
     headline: string;

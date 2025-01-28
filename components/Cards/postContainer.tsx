@@ -15,7 +15,12 @@ import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
-import { useLikeContentMutation, useUnLikeContentMutation } from "~/reduxStore/api/likeUnlikeApi";
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
+import {
+  useLikeContentMutation,
+  useUnLikeContentMutation,
+} from "~/reduxStore/api/likeUnlikeApi";
 import { Post } from "~/reduxStore/api/feedPostApi";
 
 // Type definitions
@@ -23,6 +28,41 @@ interface SwiperImageProps {
   uri: string;
   onDoubleTap: () => void;
 }
+
+// interface PostData {
+//   _id: string;
+//   caption: string;
+//   assets: Array<{ url: string }>;
+//   postedBy: {
+//     _id: string;
+//     type: string;
+//     profilePic: string;
+//     firstName: string;
+//     lastName: string;
+//     headline: string;
+//   };
+//   createdAt: string;
+//   likesCount: number;
+//   commentsCount: number;
+// }
+
+// interface PostContainerProps {
+//   postData: PostData[];
+// }
+
+// // Memoized components
+// const ActionButton = memo<ActionButtonProps>(
+//   ({ iconName, text, color = "gray", onPress }) => (
+//     <TouchableOpacity onPress={onPress}>
+//       <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+//         <FontAwesome name={iconName} size={16} color={color} />
+//         <TextScallingFalse className="text-base text-white">
+//           {text}
+//         </TextScallingFalse>
+//       </View>
+//     </TouchableOpacity>
+//   )
+// );
 
 const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   let lastTap = useRef(0).current;
@@ -47,6 +87,11 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
 });
 
 const PostContainer = ({ item }: { item: Post }) => {
+  const router = useRouter();
+  const { user } = useSelector((state) => state?.auth);
+  const serializedUser = encodeURIComponent(
+    JSON.stringify({ id: item.postedBy._id, type: item.postedBy.type })
+  );
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
@@ -61,28 +106,28 @@ const PostContainer = ({ item }: { item: Post }) => {
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
-    const shouldShowSeeMore = lines.length > 2 || (lines as any).some((line:any) => line.truncated);
+    const shouldShowSeeMore =
+      lines.length > 2 || (lines as any).some((line: any) => line.truncated);
     setShowSeeMore(shouldShowSeeMore);
   };
 
   const handleLikeAction = async () => {
     const originalIsLiked = isLiked;
     const originalLikeCount = likeCount;
-    
+
     try {
       // Optimistic update
       setIsLiked(!isLiked);
-      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+      setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
 
       // API call
       const action = isLiked ? unlikePost : likePost;
       await action({
         targetId: item._id,
-        targetType: "Post"
+        targetType: "Post",
       }).unwrap();
-      console.log('Message', message);
-      console.log( message?.data?.message);
-
+      console.log("Message", message);
+      console.log(message?.data?.message);
     } catch (error) {
       // Rollback on error
       setIsLiked(originalIsLiked);
@@ -97,7 +142,6 @@ const PostContainer = ({ item }: { item: Post }) => {
       // setLikeCount(prev => prev + 1);
 
       handleLikeAction();
-
 
       scaleAnim.setValue(0);
       Animated.sequence([
@@ -137,33 +181,53 @@ const PostContainer = ({ item }: { item: Post }) => {
       zIndex: 30,
     },
   };
-
+console.log(item)
+console.log(item.postedBy)
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
       <View className="flex">
         {/* Profile Section */}
         <View className="ml-[5%] flex flex-row gap-2 z-20 pb-0">
-          <Image
+          <TouchableOpacity
             className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
-            source={{ uri: item.assets[0]?.url || "https://placehold.co/400" }}
-            style={{
-              elevation: 8,
-              shadowColor: "black",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.8,
-              shadowRadius: 4,
-            } as ImageStyle}
-          />
+            onPress={() =>
+              user._id === item.postedBy._id
+                ? router.push("/(app)/(tabs)/profile")
+                : router.push(`../(main)/profile/${serializedUser}`)
+            }
+          >
+            
+            <Image
+              className="w-full h-full rounded-full"
+              source={{
+                uri: item.postedBy.profilePic || "https://placehold.co/400",
+              }}
+              style={
+                {
+                  elevation: 8,
+                  shadowColor: "black",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.8,
+                  shadowRadius: 4,
+                } as ImageStyle
+              }
+            />
+          </TouchableOpacity>
 
-          <View className="flex flex-col justify-between">
-            <View>
+          <View className="w-64 flex flex-col justify-between">
+            <TouchableOpacity
+            onPress={() =>
+              user._id === item.postedBy._id
+                ? router.push("/(app)/(tabs)/profile")
+                : router.push(`../(main)/profile/${serializedUser}`)
+            }>
               <TextScallingFalse className="text-white text-xl font-bold">
                 {item.postedBy.firstName} {item.postedBy.lastName}
               </TextScallingFalse>
-              <TextScallingFalse className="text-neutral-300 text-sm">
+              <TextScallingFalse className="text-neutral-300 text-sm" numberOfLines={1} ellipsizeMode="tail">
                 {item.postedBy.headline}
               </TextScallingFalse>
-            </View>
+            </TouchableOpacity>
             <View className="flex flex-row items-center">
               <TextScallingFalse className="text-base text-neutral-400">
                 {new Date(item.createdAt).toLocaleDateString()} &bull;{" "}
@@ -200,7 +264,11 @@ const PostContainer = ({ item }: { item: Post }) => {
                 />
                 <View className="flex-1 justify-evenly">
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <MaterialIcons name="bookmark-border" size={24} color="white" />
+                    <MaterialIcons
+                      name="bookmark-border"
+                      size={24}
+                      color="white"
+                    />
                     <Text className="text-white ml-4">Bookmark</Text>
                   </TouchableOpacity>
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
@@ -208,12 +276,18 @@ const PostContainer = ({ item }: { item: Post }) => {
                     <Text className="text-white ml-4">Share</Text>
                   </TouchableOpacity>
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <MaterialIcons name="report-problem" size={22} color="white" />
+                    <MaterialIcons
+                      name="report-problem"
+                      size={22}
+                      color="white"
+                    />
                     <Text className="text-white ml-4">Report</Text>
                   </TouchableOpacity>
                   <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
                     <FontAwesome name="user-plus" size={19} color="white" />
-                    <Text className="text-white ml-4">Follow {item.postedBy.firstName}</Text>
+                    <Text className="text-white ml-4">
+                      Follow {item.postedBy.firstName}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -242,18 +316,21 @@ const PostContainer = ({ item }: { item: Post }) => {
           </View>
         </View>
 
-        {/* Image Swiper */}        
-        {item.assets && item.assets.length > 0 &&
-        <Swiper {...swiperConfig} className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400">
-          {item.assets.map((asset) => (
-            <SwiperImage
-              key={asset.url}
-              uri={asset.url}
-              onDoubleTap={handleDoubleTap}
-            />
-          ))}
-        </Swiper>
-        }
+        {/* Image Swiper */}
+        {item.assets && item.assets.length > 0 && (
+          <Swiper
+            {...swiperConfig}
+            className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400"
+          >
+            {item.assets.map((asset) => (
+              <SwiperImage
+                key={asset.url}
+                uri={asset.url}
+                onDoubleTap={handleDoubleTap}
+              />
+            ))}
+          </Swiper>
+        )}
 
         {/* Like Animation */}
         <Animated.View
@@ -281,7 +358,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                 name="thumbs-up"
                 size={16}
                 // color={isLiked ? "yellow" : "gray"}
-                color=  "gray"
+                color="gray"
               />
               <TextScallingFalse className="text-base text-white">
                 {likeCount} {likeCount > 1 ? "Likes" : "Like"}

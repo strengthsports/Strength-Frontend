@@ -108,6 +108,14 @@ export default function Home() {
         </TextScallingFalse>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        onPress={() => router.push("/(app)/(main)/teams/InitiateCreateTeam")}
+      >
+        <TextScallingFalse className="p-6 self-center text-2xl text-white">
+          Team
+        </TextScallingFalse>
+      </TouchableOpacity>
+
       {/* Container */}
       <View className="w-screen pl-3 ">
         {data?.data?.posts && <PostContainer postData={data.data.posts} />}

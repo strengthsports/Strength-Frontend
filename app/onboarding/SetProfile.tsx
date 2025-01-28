@@ -47,17 +47,24 @@ const ProfilePictureScreen: React.FC = () => {
 
         // Create a permanent path for the image
         const fileName = `profile_${Date.now()}.jpg`;
-        const newUri = `${FileSystem.documentDirectory}${fileName}`;
+        const newUri = originalUri;
+        const mimeType = result.assets[0].mimeType;
+
+        const fullFileObject = {
+          uri: newUri,
+          type: mimeType || "image/jpeg",
+          fileName,
+        };
 
         try {
           // Copy the image to permanent storage
-          await FileSystem.copyAsync({
-            from: originalUri,
-            to: newUri,
-          });
+          // await FileSystem.copyAsync({
+          //   from: originalUri,
+          //   to: newUri,
+          // });
 
           // Dispatch action to save the profile image in Redux
-          dispatch(setProfilePic(newUri));
+          dispatch(setProfilePic({ newUri, fullFileObject }));
         } catch (copyError) {
           console.error("Error copying image:", copyError);
           alert("Failed to save image. Please try again.");
@@ -114,7 +121,7 @@ const ProfilePictureScreen: React.FC = () => {
         <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
           {profilePic ? (
             <Image
-              source={{ uri: profilePic }}
+              source={{ uri: profilePic?.newUri }}
               className="w-40 h-40 rounded-full"
               resizeMode="cover"
             />

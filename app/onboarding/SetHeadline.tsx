@@ -34,18 +34,18 @@ const SetHeadline: React.FC = () => {
   const { profilePic } = useSelector((state: RootState) => state?.onboarding);
 
   const { loading, error, user } = useSelector(
-    (state: RootState) => state?.auth,
+    (state: RootState) => state?.auth
   );
   console.log("Loading", loading);
   console.log("Error", error);
   console.log("User", user);
 
-  // console.log("profilePicture" + profilePicture);
+  console.log("profilePicture" + profilePic?.newUri);
   // const selectedFile = params?.selectedFile;
   // Use profile image if provided, else use default
   const profileImageSource = profilePic
     ? {
-        uri: profilePic,
+        uri: profilePic.newUri,
       }
     : defaultImage;
 

@@ -21,7 +21,7 @@ import { useLikeContentMutation, useUnLikeContentMutation } from "~/reduxStore/a
 interface ActionButtonProps {
   iconName: keyof typeof FontAwesome.glyphMap;
   text: string;
-  color: string;
+  color?: string;
   onPress?: () => void;
 }
 
@@ -83,7 +83,7 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
 });
 
 // Individual Post Component
-const PostItem = ({ item }: { item: PostData }) => {
+const PostContainer = ({ item }: { item: PostData }) => {
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
@@ -310,7 +310,7 @@ const PostItem = ({ item }: { item: PostData }) => {
         </Animated.View>
 
         {/* Interaction Bar */}
-        <View className="relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[16px] bg-neutral-900">
+        <View className="relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[16px] bg-neutral-900">
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row items-center gap-2">
               <FontAwesome
@@ -352,16 +352,16 @@ const PostItem = ({ item }: { item: PostData }) => {
 };
 
 // Main Container
-const PostContainer = ({ postData }: PostContainerProps) => {
-  return (
-    <FlatList
-      data={postData}
-      renderItem={({ item }) => <PostItem item={item} />}
-      keyExtractor={(item) => item._id}
-      ListEmptyComponent={<Text className="text-white text-center">No posts available</Text>}
-      showsVerticalScrollIndicator={false}
-    />
-  );
-};
+// const PostContainer = ({ postData }: PostContainerProps) => {
+//   return (
+//     <FlatList
+//       data={postData}
+//       renderItem={({ item }) => <PostItem item={item} />}
+//       keyExtractor={(item) => item._id}
+//       ListEmptyComponent={<Text className="text-white text-center">No posts available</Text>}
+//       showsVerticalScrollIndicator={false}
+//     />
+//   );
+// };
 
 export default PostContainer;

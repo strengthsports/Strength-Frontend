@@ -115,7 +115,7 @@ export default function PostContainerSmall() {
         </Swiper>
 
         {/* Bottom Grey Div */}
-        <View className={`relative left-[5%] bottom-0 w-[95%] min-h-12 h-auto rounded-b-[50px]  bg-neutral-900`}>
+        <View className={`relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-b-[50px]  bg-neutral-900`}>
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row justify-between items-center gap-2">
             <FontAwesome name="thumbs-up" size={16} color="yellow" />

@@ -42,9 +42,10 @@ const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }).concat(
+      // middlewares for Apis
       profileApi.middleware,
       feedPostApi.middleware,
-      likeUnlikeApi.middleware // Add middleware for likeUnlikeApi
+      likeUnlikeApi.middleware 
 
     ),
 });

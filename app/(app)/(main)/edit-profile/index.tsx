@@ -20,7 +20,7 @@ import {
   MaterialIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, usePathname } from "expo-router";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import CustomButton from "~/components/CustomButtons";
 import { useDispatch } from "react-redux";
@@ -34,12 +34,15 @@ import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from "react-native";
 import { Text } from "react-native";
+import useGetAddress from "~/hooks/useGetAddress";
+import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 
-const finalUploadData = new FormData();
+let finalUploadData = new FormData();
 
 const EditProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const pathname = usePathname();
   const isAndroid = Platform.OS === "android";
   const params = useLocalSearchParams();
   const { value } = useLocalSearchParams();
@@ -57,6 +60,9 @@ const EditProfile = () => {
   const [heightInMeters, setHeightInMeters] = useState("");
   const [weightInKg, setWeightInKg] = useState("");
   const [weightInLbs, setWeightInLbs] = useState("");
+  const [addressPickup, setAddressPickup] = useState("");
+  const [isLocationError, setLocationError] = useState("");
+  const [isAlertModalSet, setAlertModal] = useState<boolean>(false);
 
   // Profile pic and cover pic modal
   const [picModalVisible, setPicModalVisible] = useState({
@@ -166,7 +172,7 @@ const EditProfile = () => {
   }, [picType, value]);
 
   // Handle done click after changing input value
-  const handleDone = async (field, value) => {
+  const handleDone = async (field: string, value: any) => {
     // Check if the value is empty
     if (
       ["username", "dateOfBirth", "address"].includes(field) &&
@@ -184,7 +190,7 @@ const EditProfile = () => {
           autoHide: true,
         });
       }
-      return; // Exit the function early if the value is empty
+      return;
     }
 
     // Handle specific fields
@@ -200,6 +206,16 @@ const EditProfile = () => {
             : "m"
         }`,
       }));
+      finalUploadData.set(
+        "height",
+        `${heightValue} ${
+          selectedField === "feetInches"
+            ? "ft"
+            : selectedField === "centimeters"
+            ? "cm"
+            : "m"
+        }`
+      );
     } else if (field === "weight") {
       const weightValue = renderFieldValue(selectedField); // Get value in selected unit
       setFormData((prev) => ({
@@ -208,6 +224,10 @@ const EditProfile = () => {
           selectedField === "kilograms" ? "kg" : "lbs"
         }`,
       }));
+      finalUploadData.set(
+        "weight",
+        `${selectedField === "kilograms" ? "kg" : "lbs"}`
+      );
     } else if (field === "username") {
       try {
         const response = await fetch(
@@ -227,6 +247,7 @@ const EditProfile = () => {
         if (response.ok) {
           // Username is valid and available
           setFormData((prev) => ({ ...prev, [field]: value }));
+          finalUploadData.set("username", value);
         } else {
           Keyboard.dismiss();
           if (isAndroid) {
@@ -250,6 +271,7 @@ const EditProfile = () => {
       }
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
+      finalUploadData.set(`${field}`, `${value}`);
     }
 
     closeModal();
@@ -275,8 +297,8 @@ const EditProfile = () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        aspect: [1, 1],
+        quality: 0.8,
       });
 
       if (!result.canceled && result.assets[0]) {
@@ -308,7 +330,7 @@ const EditProfile = () => {
   };
 
   // Unified toggle function for pic modal
-  const togglePicModal = (type) => {
+  const togglePicModal = (type: any) => {
     setPicModalVisible((prev) => ({
       ...prev,
       [type]: !prev[type],
@@ -318,6 +340,22 @@ const EditProfile = () => {
   const toggleSelectedField = (field: string) => {
     setSelectedField(field);
   };
+
+  // Location fetching hook
+  const { loading, error, address, getAddress } = useGetAddress();
+
+  // Sync address with local state and Redux
+  useEffect(() => {
+    if (address) {
+      setAddressPickup(address.formattedAddress);
+    }
+  }, [address]);
+
+  useEffect(() => {
+    if (error) {
+      setLocationError(error);
+    }
+  }, [error]);
 
   // <------ Units related functions --->
   const renderFieldValue = (field: string) => {
@@ -394,34 +432,15 @@ const EditProfile = () => {
   };
   // <------ Units related functions --->
 
+  // Initialize final upload data to empty on path change
+  useEffect(() => {
+    finalUploadData = new FormData();
+  }, [pathname]);
+
   // Handle FormSubmit with error handling
   const handleFormSubmit = async () => {
     try {
       setIsLoading(true);
-      // Append text fields
-      finalUploadData.set("firstName", formData.firstName);
-      finalUploadData.set("lastName", formData.lastName);
-      finalUploadData.set("username", formData.username);
-      finalUploadData.set("headline", formData.headline);
-      finalUploadData.set("dateOfBirth", formData.dateOfBirth);
-      finalUploadData.set("height", formData.height);
-      finalUploadData.set("weight", formData.weight);
-
-      // Append address
-      finalUploadData.set(
-        "address",
-        JSON.stringify({
-          city: formData.address.city,
-          state: formData.address.state,
-          country: formData.address.country,
-          location: {
-            coordinates: [
-              formData.address.location.coordinates[0],
-              formData.address.location.coordinates[1],
-            ],
-          },
-        })
-      );
 
       await dispatch(editUserProfile(finalUploadData)).unwrap();
       router.push("/profile");
@@ -430,12 +449,11 @@ const EditProfile = () => {
       alert(`Update failed: ${error}`);
     } finally {
       setIsLoading(false);
-      for (const key of finalUploadData.keys()) {
-        finalUploadData.delete(key);
-      }
+      finalUploadData = new FormData();
     }
   };
 
+  // Form configurations
   const formConfig = [
     { type: "username", label: "Username*", icon: null },
     { type: "headline", label: "Headline", icon: null },
@@ -494,17 +512,24 @@ const EditProfile = () => {
         >
           {/* Top Header */}
           <View className="h-12 w-full flex-row justify-between items-center px-5">
+            {/* Back button */}
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() =>
+                !Array.from(finalUploadData.entries()).length
+                  ? router.push("/profile")
+                  : setAlertModal(true)
+              }
               className="basis-[10%]"
             >
               <TextScallingFalse className="text-[#808080] text-4xl font-normal">
                 Back
               </TextScallingFalse>
             </TouchableOpacity>
+            {/* Heading */}
             <TextScallingFalse className="flex-grow text-center text-white font-light text-5xl">
               Edit profile
             </TextScallingFalse>
+            {/* Save button */}
             {isLoading ? (
               <View className="basis-[10%]">
                 <ActivityIndicator
@@ -517,8 +542,15 @@ const EditProfile = () => {
               <TouchableOpacity
                 onPress={handleFormSubmit}
                 className="basis-[10%]"
+                disabled={!Array.from(finalUploadData.entries()).length}
               >
-                <TextScallingFalse className="text-[#12956B] text-4xl font-medium">
+                <TextScallingFalse
+                  className={`${
+                    Array.from(finalUploadData.entries()).length
+                      ? "text-[#12956B]"
+                      : "text-[#808080]"
+                  } text-4xl font-medium`}
+                >
                   Save
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -598,9 +630,10 @@ const EditProfile = () => {
               placeholder="enter your first name"
               placeholderTextColor={"grey"}
               className="text-2xl font-light flex-grow text-white pl-0"
-              onChangeText={(text) =>
-                setFormData({ ...formData, firstName: text })
-              }
+              onChangeText={(text) => {
+                setFormData({ ...formData, firstName: text });
+                finalUploadData.set("firstName", formData.firstName);
+              }}
               value={formData.firstName}
             />
           </View>
@@ -613,9 +646,10 @@ const EditProfile = () => {
               placeholder="enter your first name"
               placeholderTextColor={"grey"}
               className="text-2xl font-light flex-grow text-white pl-0"
-              onChangeText={(text) =>
-                setFormData({ ...formData, lastName: text })
-              }
+              onChangeText={(text) => {
+                setFormData({ ...formData, lastName: text });
+                finalUploadData.set("lastName", formData.lastName);
+              }}
               value={formData.lastName}
             />
           </View>
@@ -813,6 +847,39 @@ const EditProfile = () => {
           </View>
         )}
 
+        {/* Alert modal */}
+        <Modal visible={isAlertModalSet} transparent animationType="fade">
+          <View style={styles.AlertModalView}>
+            <View style={styles.AlertModalContainer}>
+              <TextScallingFalse style={styles.AlertModalHeader}>
+                Changes you made will not be saved!
+              </TextScallingFalse>
+              <TextScallingFalse style={styles.ModalContentText}>
+                Are you sure to leave ?
+              </TextScallingFalse>
+              <View style={styles.ModalButtonsView}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setAlertModal(false)}
+                  style={styles.RightButton}
+                >
+                  <TextScallingFalse style={styles.AlertModalButtonsText}>
+                    Cancel
+                  </TextScallingFalse>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push("/profile")}
+                  style={styles.LeftButton}
+                >
+                  <TextScallingFalse style={styles.AlertModalButtonsText}>
+                    Yes
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         {/* Edit Modal */}
         <Modal visible={isModalVisible} transparent onRequestClose={closeModal}>
           <TouchableOpacity
@@ -926,7 +993,9 @@ const EditProfile = () => {
                     <Text className="text-gray-500 text-xl">{label}</Text>
                     <View className="flex-row border-b border-white">
                       <TextInput
-                        value={inputValue}
+                        value={
+                          picType === "address" ? addressPickup : inputValue
+                        }
                         onChangeText={setInputValue}
                         placeholder={placeholder}
                         placeholderTextColor="gray"
@@ -950,30 +1019,37 @@ const EditProfile = () => {
                 {picType === "address" ? (
                   <TouchableOpacity
                     activeOpacity={0.5}
-                    style={{
-                      flexDirection: "row",
-                      width: "50%",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: 30,
-                      gap: "5%",
-                      marginTop: "5%",
-                      borderWidth: 0.3,
-                      borderColor: "white",
-                      borderRadius: 30,
-                      alignSelf: "center",
-                    }}
+                    className="flex-row w-1/2 justify-center items-center h-10 gap-[5%] mt-[5%] border-[0.3px] border-white self-center rounded-xl"
+                    onPress={getAddress}
                   >
-                    <TextScallingFalse
-                      style={{ color: "grey", fontSize: 11, fontWeight: "400" }}
-                    >
-                      Use my current address
-                    </TextScallingFalse>
-                    <FontAwesome5
-                      name="map-marker-alt"
-                      size={13}
-                      color="grey"
-                    />
+                    {loading ? (
+                      <TextScallingFalse
+                        style={{
+                          color: "grey",
+                          fontSize: 11,
+                          fontWeight: "400",
+                        }}
+                      >
+                        Fetching current location...
+                      </TextScallingFalse>
+                    ) : (
+                      <>
+                        <TextScallingFalse
+                          style={{
+                            color: "grey",
+                            fontSize: 11,
+                            fontWeight: "400",
+                          }}
+                        >
+                          Use my current location
+                        </TextScallingFalse>
+                        <FontAwesome5
+                          name="map-marker-alt"
+                          size={13}
+                          color="grey"
+                        />
+                      </>
+                    )}
                   </TouchableOpacity>
                 ) : (
                   ""
@@ -1092,6 +1168,60 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginVertical: 20,
+  },
+  AlertModalView: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    paddingVertical: 250,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  AlertModalContainer: {
+    width: "80%",
+    height: 200,
+    borderRadius: 20,
+    backgroundColor: "white",
+    alignItems: "center",
+  },
+  AlertModalHeader: {
+    color: "black",
+    fontSize: 17,
+    fontWeight: "500",
+    alignSelf: "center",
+    paddingTop: 40,
+  },
+  ModalContentText: {
+    width: "100%",
+    padding: 20,
+    textAlign: "center",
+    color: "black",
+    fontWeight: "400",
+  },
+  ModalButtonsView: {
+    flexDirection: "row",
+    borderTopColor: "grey",
+    borderTopWidth: 0.3,
+    width: "100%",
+  },
+  LeftButton: {
+    borderRightWidth: 0.3,
+    borderRightColor: "grey",
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  RightButton: {
+    borderRightWidth: 0.3,
+    borderRightColor: "grey",
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 60,
+  },
+  AlertModalButtonsText: {
+    color: "grey",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
 

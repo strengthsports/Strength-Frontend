@@ -9,6 +9,7 @@ import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profileApi";
 import { feedPostApi } from "./api/feedPostApi";
+import { likeUnlikeApi } from "./api/likeUnlikeApi";
 
 // Persist configuration
 const persistConfig = {
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [feedPostApi.reducerPath]: feedPostApi.reducer,
+  [likeUnlikeApi.reducerPath]: likeUnlikeApi.reducer,
 });
 
 // Create persisted reducer
@@ -39,7 +41,12 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(profileApi.middleware, feedPostApi.middleware),
+    }).concat(
+      profileApi.middleware,
+      feedPostApi.middleware,
+      likeUnlikeApi.middleware // Add middleware for likeUnlikeApi
+
+    ),
 });
 
 // Create persistor

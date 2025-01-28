@@ -1,4 +1,11 @@
-import { StyleSheet, TouchableOpacity, View, Text, Alert } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import Logo from "@/components/logo";
@@ -7,92 +14,74 @@ import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "~/reduxStore";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
-import * as Location from "expo-location";
-import locationApiResponse from "./test";
-
-// Google API Key
-const GOOGLE_API_KEY = process.env.GOOGLE_API;
+import useGetAddress from "@/hooks/useGetAddress"; // Add this import
+import { Vibration, ToastAndroid, Platform } from "react-native";
+import Toast from "react-native-toast-message";
+import { vibrationPattern } from "~/constants/vibrationPattern";
 
 const signupEnterLocation4 = () => {
   const [addressPickup, setAddressPickup] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  // Request location permission
+  // Use the hook
+  const { loading, error, address, getAddress } = useGetAddress();
+
+  const isAndroid = Platform.OS === "android";
+
+  const feedback = (message: string, type: "error" | "success" = "error") => {
+    if (type === "error") {
+      Vibration.vibrate(vibrationPattern);
+      isAndroid
+        ? ToastAndroid.show(message, ToastAndroid.SHORT)
+        : Toast.show({
+            type,
+            text1: message,
+            visibilityTime: 3000,
+            autoHide: true,
+          });
+    } else {
+      Toast.show({
+        type,
+        text1: message,
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    }
+  };
+  // Sync address with local state and Redux
   useEffect(() => {
-    async function getCurrentLocation() {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      }
+    if (address) {
+      setAddressPickup(address.formattedAddress);
+      dispatch(
+        setAddress({
+          city: address.city,
+          state: address.state,
+          country: address.country,
+          location: {
+            coordinates: address.coordinates,
+          },
+        })
+      );
     }
+  }, [address]);
 
-    getCurrentLocation();
-  }, []);
-  const hardCodedAddress = {
-    location: {
-      coordinates: [" 22.5769", "88.4265"],
-    },
-  };
-  const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
-  const getLocationAndAddress = async () => {
-    try {
-      setLoading(true);
-
-      // Get the current location
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      // Fetch address from Google API
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-      // console.log('Google API Response:', data);
-
-      const city = data.results[0]?.address_components.find((component: any) =>
-        component.types.includes("administrative_area_level_3")
-      );
-      const state = data.results[0]?.address_components.find((component: any) =>
-        component.types.includes("administrative_area_level_1")
-      );
-      const country = data.results[0]?.address_components.find(
-        (component: any) => component.types.includes("country")
-      );
-
-      const addressFormat = `${city?.long_name}, ${state?.long_name}, ${country?.long_name}`;
-      setAddressPickup(addressFormat);
-
-      const addressPayload = {
-        city: city?.long_name,
-        state: state?.long_name,
-        country: country?.long_name,
-        location: {
-          coordinates: [latitude, longitude],
-        },
-      };
-      dispatch(setAddress(addressPayload)); // Ensure useDispatch is properly set up
-      // console.log('Payload:', addressPayload);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong.");
-      console.error(error);
-    } finally {
-      setLoading(false);
+  // Handle error changes
+  useEffect(() => {
+    if (error) {
+      feedback(error);
     }
-  };
+  }, [error]);
 
   const handleNext = () => {
     if (!addressPickup) {
-      Alert.alert(
-        "Validation",
-        "Please enter a location or use the current location."
-      );
+      feedback("Please enter a location or use the current location.", "error");
       return;
     }
+    feedback("Address Successfully Set");
     router.push("/Signup/signupSetPassword5");
   };
 
@@ -132,7 +121,7 @@ const signupEnterLocation4 = () => {
         </View>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={getLocationAndAddress}
+          onPress={getAddress} // handler function from useGetAddress hook
           style={{
             width: 200,
             borderWidth: 0.5,
@@ -146,12 +135,25 @@ const signupEnterLocation4 = () => {
             flexDirection: "row",
           }}
         >
-          <TextScallingFalse
-            style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
-          >
-            {loading ? "Fetching location..." : "Use my current location"}
-          </TextScallingFalse>
-          <MaterialIcons name="location-pin" size={17} color="grey" />
+          {loading ? (
+            <>
+              <TextScallingFalse
+                style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
+              >
+                Fetching location...
+              </TextScallingFalse>
+              <ActivityIndicator size="small" color="grey" />
+            </>
+          ) : (
+            <>
+              <TextScallingFalse
+                style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
+              >
+                Use my current location
+              </TextScallingFalse>
+              <MaterialIcons name="location-pin" size={17} color="grey" />
+            </>
+          )}
         </TouchableOpacity>
         <View style={{ marginTop: 45 }}>
           <SignupButton onPress={handleNext}>

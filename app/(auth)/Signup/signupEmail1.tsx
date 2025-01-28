@@ -105,7 +105,7 @@ const SignupEmail1 = () => {
         const validationError = err.errors[0]?.message || "Invalid input.";
         feedback(validationError, "error");
       } else {
-        feedback(err || "An error occurred. Please try again.", "error");
+        feedback(err || "An error occurred. Please try again.");
       }
     }
   };

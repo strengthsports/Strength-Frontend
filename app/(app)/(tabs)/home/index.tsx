@@ -1,4 +1,10 @@
-import { SafeAreaView, View, TouchableOpacity, Text, ScrollView } from "react-native";
+import {
+  SafeAreaView,
+  View,
+  TouchableOpacity,
+  Text,
+  ScrollView,
+} from "react-native";
 import { useRouter } from "expo-router"; // Import the router for navigation
 import TextScallingFalse from "~/components/CentralText";
 import { useEffect, useState } from "react";
@@ -77,18 +83,18 @@ export default function Home() {
 
   const { data, error, isLoading, refetch } = useGetFeedPostQuery({
     limit: 20,
-    lastTimeStamp: '1737697000000' // Pass lastTimestamp for pagination
+    lastTimeStamp: "1737697000000", // Pass lastTimestamp for pagination
   });
   useEffect(() => {
     if (data) {
-      console.log('All Feed Data:', data);
-      console.log('posts:', data.data.posts);
-      console.log('nth posts:', data.data.posts[3]);
-      console.log('asset:', data.data.posts[3].assets);
-      console.log('URL:', data.data.posts[3].assets[0].url);
+      // console.log("All Feed Data:", data);
+      console.log("posts:", data.data.posts);
+      console.log("nth posts:", data.data.posts[3]);
+      // console.log("asset:", data.data.posts[3].assets);
+      // console.log("URL:", data.data.posts[3].assets[0].url);
     }
     if (error) {
-      console.log('Feed Error:', error);
+      console.log("Feed Error:", error);
     }
   }, [data, error]);
 
@@ -107,18 +113,12 @@ export default function Home() {
         {data?.data?.posts && <PostContainer postData={data.data.posts} />}
       </View>
 
-        <ScrollView className="w-[screen] pl-3 mt-8" >
-
-      {/* populate this */}
-
-
-      {/* <PostContainer /> */}
-      <TextScallingFalse className="p-6  text-xl text-white">
-        Old Container
-      </TextScallingFalse>
-      <PostSmallCard post={posts} />
-    </ScrollView>
-
-    </SafeAreaView >
+      <ScrollView className="w-[screen] pl-3 mt-8">
+        <TextScallingFalse className="p-6  text-xl text-white">
+          Old Container
+        </TextScallingFalse>
+        <PostSmallCard post={posts} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }

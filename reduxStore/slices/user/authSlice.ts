@@ -2,7 +2,7 @@ import { getToken, removeToken, saveToken } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser } from "./onboardingSlice";
-import { editUserProfile, followUser, unFollowUser } from "./profileSlice";
+import { editUserProfile } from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
 // Initial State
@@ -102,6 +102,11 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    setFollowingCount: (state, action) => {
+      action.payload === "follow"
+        ? state.user.followingCount++
+        : (state.user.followingCount = state.user.followingCount - 1);
+    },
     resetAuthState: (state) => {
       state.error = null;
       state.msgBackend = null;
@@ -202,38 +207,8 @@ const authSlice = createSlice({
         state.error =
           action.payload || "Unexpected error occurred during updating user.";
       });
-
-    // Update followers/followings
-    // Following a user
-    builder
-      .addCase(followUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(followUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user.followingCount += 1;
-      })
-      .addCase(followUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
-    // Unfollowing an user
-    builder
-      .addCase(unFollowUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(unFollowUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user.followingCount -= 1;
-      })
-      .addCase(unFollowUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
   },
 });
 
-export const { resetAuthState } = authSlice.actions;
+export const { resetAuthState, setFollowingCount } = authSlice.actions;
 export default authSlice.reducer;

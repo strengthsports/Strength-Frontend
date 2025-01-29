@@ -29,61 +29,59 @@ import {
 } from "react-native-responsive-dimensions";
 import { Slot, useLocalSearchParams, usePathname } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getUserProfile,
-  followUser,
-  unFollowUser,
-} from "~/reduxStore/slices/user/profileSlice";
+import { setUserProfile } from "~/reduxStore/slices/user/profileSlice";
+import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { AppDispatch } from "~/reduxStore";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { useRouter } from "expo-router";
+import {
+  useFollowUserMutation,
+  useGetUserProfileMutation,
+  useUnFollowUserMutation,
+} from "~/reduxStore/api/profileApi";
 
 const ProfileLayout = ({ param }: { param: string }) => {
   const params = useLocalSearchParams();
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const userId = useMemo(() => {
     return params.userId ? JSON.parse(decodeURIComponent(params.userId)) : null;
   }, [params.userId]);
 
-  // console.log("userId:", userId);
-
-  const dispatch = useDispatch<AppDispatch>();
-  const { profiles, error, loading, user } = useSelector(
-    (state: any) => state?.profile
-  );
-  const router = useRouter();
-
-  console.log("User : ", user);
-  console.log("Error : ", error);
-  console.log("Loading : ", loading);
-
   const [activeTab, setActiveTab] = useState("Overview");
-  const [currentFollowingStatus, setCurrentFollowingStatus] = useState(
-    user?.followingStatus
-  );
   const [isSettingsModalVisible, setSettingsModalVisible] = useState({
     status: false,
     message: "",
   });
 
+  // RTK Querys
+  const [getUserProfile, { data: profileData, isLoading, error }] =
+    useGetUserProfileMutation();
+  const [followUser] = useFollowUserMutation();
+  const [unFollowUser] = useUnFollowUserMutation();
+
+  const [followingStatus, setFollowingStatus] = useState(
+    profileData?.followingStatus
+  );
+  const [followerCount, setFollowerCount] = useState(
+    profileData?.followerCount || 0
+  );
+
+  // Fetch user profile when the component mounts
   useEffect(() => {
-    if (userId && (!profiles || !profiles[userId?.id])) {
-      // Dispatch API call only if the profile is not cached
-      console.log("First Dispatch start...");
-      dispatch(
-        getUserProfile({
-          targetUserId: userId?.id,
-          targetUserType: userId?.type,
-        })
-      );
-    } else if (profiles && profiles[userId?.id]) {
-      // If cached, set the user to the cached profile
-      console.log("Second Dispatch...");
-      dispatch({
-        type: "profile/getUserProfile/fulfilled",
-        payload: { user: profiles[userId?.id], fromCache: true },
-      });
-    }
-  }, [dispatch, userId, profiles]);
+    getUserProfile({ targetUserId: userId?.id, targetUserType: userId?.type });
+  }, []);
+
+  // Set user profile
+  useEffect(() => {
+    profileData && setUserProfile(profileData);
+  }, [profileData]);
+
+  // Sync state when profileData updates
+  useEffect(() => {
+    setFollowingStatus(profileData?.followingStatus);
+    setFollowerCount(profileData?.followerCount);
+  }, [profileData]);
 
   //close modal on back button press
   useEffect(() => {
@@ -110,39 +108,58 @@ const ProfileLayout = ({ param }: { param: string }) => {
   };
 
   //handle follow
-  const handleFollow = () => {
+  const handleFollow = async () => {
     if (userId) {
-      dispatch(
-        followUser({
+      try {
+        // Optimistic update for visited user profile
+        setFollowingStatus(true);
+        setFollowerCount((prev) => prev + 1);
+
+        await followUser({
           followingId: userId?.id,
           followingType: userId?.type,
-        })
-      )
-        .unwrap()
-        .catch((err) => console.error("Error following user:", err));
-      setCurrentFollowingStatus((prev: boolean) => !prev);
+        }).unwrap();
+        // For current user profile
+        dispatch(setFollowingCount("follow"));
+        console.log("Followed Successfully!");
+      } catch (err) {
+        setFollowingStatus(false);
+        setFollowerCount((prev) => prev - 1);
+        dispatch(setFollowingCount("unfollow"));
+        console.error("Follow error:", err);
+      }
     }
   };
 
   //handle unfollow
-  const handleUnfollow = () => {
+  const handleUnfollow = async () => {
     setSettingsModalVisible((prev) => ({ ...prev, status: false }));
     if (userId) {
-      dispatch(
-        unFollowUser({
+      try {
+        // Optimistic update for visited user profile
+        setFollowingStatus(false);
+        setFollowerCount((prev) => prev - 1);
+
+        await unFollowUser({
           followingId: userId?.id,
           followingType: userId?.type,
-        })
-      )
-        .unwrap()
-        .catch((err) => console.error("Error unfollowing user:", err));
-      setCurrentFollowingStatus((prev: boolean) => !prev);
+        }).unwrap();
+
+        // For current user profile
+        dispatch(setFollowingCount("unfollow"));
+        console.log("Unfollowed Successfully!");
+      } catch (err) {
+        setFollowingStatus(true);
+        setFollowerCount((prev) => prev + 1);
+        dispatch(setFollowingCount("follow"));
+        console.error("Unfollow error:", err);
+      }
     }
   };
 
   //handle message
   const handleMessage = () => {
-    if (!currentFollowingStatus) {
+    if (!followingStatus) {
       setSettingsModalVisible({ status: true, message: "Message" });
     } else {
       router.push("/");
@@ -156,9 +173,19 @@ const ProfileLayout = ({ param }: { param: string }) => {
     setSettingsModalVisible({ status: true, message: settingsType });
   };
 
+  if (error) {
+    return (
+      <View>
+        <TextScallingFalse className="text-red-500">
+          {error.message}
+        </TextScallingFalse>
+      </View>
+    );
+  }
+
   return (
     <PageThemeView>
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator size="large" color="#12956B" style={styles.loader} />
       ) : (
         <ScrollView
@@ -176,7 +203,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
             }}
           >
             <TextScallingFalse style={{ color: "white", fontSize: 19 }}>
-              @{user?.username}
+              @{profileData?.username}
             </TextScallingFalse>
             <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
               <View style={{ marginTop: 1.5 }}>
@@ -195,7 +222,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
           {/* profile pic and cover image */}
           <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
             <Image
-              source={{ uri: user?.coverPic }}
+              source={{ uri: profileData?.coverPic }}
               style={{ width: "100%", height: "100%" }}
             ></Image>
             <View
@@ -217,7 +244,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 }}
               >
                 <Image
-                  source={{ uri: user?.profilePic }}
+                  source={{ uri: profileData?.profilePic }}
                   style={{
                     width: responsiveWidth(29.6),
                     height: responsiveHeight(14.4),
@@ -252,7 +279,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       fontWeight: "bold",
                     }}
                   >
-                    {user?.firstName} {user?.lastName}
+                    {profileData?.firstName} {profileData?.lastName}
                   </TextScallingFalse>
                 </View>
                 <View style={{ width: "19.70%" }}>
@@ -269,7 +296,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                         fontWeight: "400",
                       }}
                     >
-                      {user?.address?.country || "undefined"}
+                      {profileData?.address?.country || "undefined"}
                     </TextScallingFalse>
                   </View>
                 </View>
@@ -284,7 +311,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                     fontWeight: "400",
                   }}
                 >
-                  {user?.headline}
+                  {profileData?.headline}
                 </TextScallingFalse>
               </View>
 
@@ -300,9 +327,9 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Age: {user?.age}
+                        Age: {profileData?.age}
                         <TextScallingFalse style={{ color: "grey" }}>
-                          ({dateFormatter(user?.dateOfBirth)})
+                          ({dateFormatter(profileData?.dateOfBirth, "text")})
                         </TextScallingFalse>
                       </TextScallingFalse>
                     </View>
@@ -315,7 +342,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Height: {user?.height}
+                        Height: {profileData?.height}
                       </TextScallingFalse>
                     </View>
 
@@ -327,7 +354,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Weight: {user?.weight}
+                        Weight: {profileData?.weight}
                       </TextScallingFalse>
                     </View>
                   </View>
@@ -369,7 +396,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                         width: "63.25%",
                       }}
                     >
-                      {`${user?.address.city}, ${user?.address.state}, ${user?.address.country}`}
+                      {`${profileData?.address.city}, ${profileData?.address.state}, ${profileData?.address.country}`}
                     </TextScallingFalse>
                   </View>
                   <View style={{ flexDirection: "row" }}>
@@ -387,7 +414,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                           fontSize: responsiveFontSize(1.64),
                         }}
                       >
-                        {user?.followerCount} Followers
+                        {followerCount} Followers
                       </TextScallingFalse>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -405,7 +432,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                         }}
                       >
                         {" "}
-                        - {user?.followingCount} Following
+                        - {profileData?.followingCount} Following
                       </TextScallingFalse>
                     </TouchableOpacity>
                   </View>
@@ -424,7 +451,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
             }}
           >
             {/* follow button */}
-            {currentFollowingStatus ? (
+            {followingStatus ? (
               <TouchableOpacity
                 activeOpacity={0.5}
                 className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
@@ -551,7 +578,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       </TextScallingFalse>
                     </View>
                     {/* follow/unfollow */}
-                    {currentFollowingStatus ? (
+                    {followingStatus ? (
                       <TouchableOpacity
                         className="flex-row items-center"
                         onPress={handleUnfollow}
@@ -562,7 +589,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                           color="white"
                         />
                         <TextScallingFalse className="text-white font-semibold text-base">
-                          Unfollow {user?.firstName}
+                          Unfollow {profileData?.firstName}
                         </TextScallingFalse>
                       </TouchableOpacity>
                     ) : (
@@ -576,7 +603,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                           color="white"
                         />
                         <TextScallingFalse className="text-white font-semibold text-base">
-                          Follow {user?.firstName}
+                          Follow {profileData?.firstName}
                         </TextScallingFalse>
                       </TouchableOpacity>
                     )}
@@ -584,11 +611,12 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 ) : isSettingsModalVisible.message === "Unfollow" ? (
                   <View>
                     <TextScallingFalse className="text-white text-xl font-semibold">
-                      Unfollow {user?.firstName}
+                      Unfollow {profileData?.firstName}
                     </TextScallingFalse>
                     <TextScallingFalse className="text-white mt-1 font-light text-sm">
-                      Stop seeing posts from {user?.firstName} on your feed.{" "}
-                      {user?.firstName} won't be notified that you've unfollowed
+                      Stop seeing posts from {profileData?.firstName} on your
+                      feed. {profileData?.firstName} won't be notified that
+                      you've unfollowed
                     </TextScallingFalse>
                     <View className="items-center justify-evenly flex-row mt-5">
                       {/* cancel unfollow */}
@@ -621,7 +649,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 ) : (
                   <View>
                     <TextScallingFalse className="text-white font-semibold text-xl">
-                      Follow {user?.firstName} to Message
+                      Follow {profileData?.firstName} to Message
                     </TextScallingFalse>
                     <TextScallingFalse className="text-white font-normal mt-2">
                       Unlock Messaging Power: Follow Friends and Athletes for a

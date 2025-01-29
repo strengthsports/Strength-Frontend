@@ -4,12 +4,6 @@ import { TargetUser, ProfileState, UserData, User } from "@/types/user";
 import { logoutUser } from "./authSlice";
 import { RootState } from "~/reduxStore";
 
-//Following user
-interface FollowUser {
-  followingId: string;
-  followingType: string;
-}
-
 // Initial State
 const initialState: ProfileState = {
   user: null,
@@ -109,84 +103,21 @@ export const editUserProfile = createAsyncThunk<
   }
 });
 
-export const followUser = createAsyncThunk<
-  any,
-  FollowUser,
-  { rejectValue: string }
->("profile/followUser", async (userdata: FollowUser, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
-    if (!token) throw new Error("Token not found");
-    console.log("Token : ", token);
-    console.log("User data input :", userdata);
-
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/follow`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userdata),
-      }
-    );
-
-    console.log("Response:", response);
-    const data = await response.json();
-
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Error following user");
-    }
-  } catch (error: unknown) {
-    console.log("Actual api error : ", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unexpected error occurred";
-    return rejectWithValue(errorMessage);
-  }
-});
-
-export const unFollowUser = createAsyncThunk<
-  any,
-  FollowUser,
-  { rejectValue: string }
->("profile/unFollowUser", async (userdata: FollowUser, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
-    if (!token) throw new Error("Token not found");
-    console.log("Token : ", token);
-    console.log("User data input :", userdata);
-
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/unfollow`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userdata),
-      }
-    );
-
-    console.log("Response:", response);
-    const data = await response.json();
-
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Error unfollowing user");
-    }
-  } catch (error: unknown) {
-    console.log("Actual api error : ", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unexpected error occurred";
-    return rejectWithValue(errorMessage);
-  }
-});
-
 const profileSlice = createSlice({
   name: "profile",
   initialState,
   reducers: {
+    setUserProfile: (state, action) => {
+      state.user = action.payload;
+    },
+    setFollowingStatus: (state, action) => {
+      state.user.followingStatus = action.payload;
+    },
+    setFollowerCount: (state, action) => {
+      action.payload === "follow"
+        ? state.user.followerCount++
+        : state.user.followerCount--;
+    },
     resetProfile: (state, action) => {
       state.user = null;
       state.loading = false;
@@ -221,36 +152,6 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
-    // follow an user
-    builder
-      .addCase(followUser.pending, (state) => {
-        // state.loading = true;
-        state.error = null;
-      })
-      .addCase(followUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user.followerCount += 1;
-        state.user.followingStatus = true;
-      })
-      .addCase(followUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
-    // unfollow an user
-    builder
-      .addCase(unFollowUser.pending, (state) => {
-        // state.loading = true;
-        state.error = null;
-      })
-      .addCase(unFollowUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user.followerCount -= 1;
-        state.user.followingStatus = false;
-      })
-      .addCase(unFollowUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;
@@ -264,6 +165,11 @@ const profileSlice = createSlice({
   },
 });
 
-export const { resetProfile } = profileSlice.actions;
+export const {
+  resetProfile,
+  setFollowingStatus,
+  setFollowerCount,
+  setUserProfile,
+} = profileSlice.actions;
 
 export default profileSlice.reducer;

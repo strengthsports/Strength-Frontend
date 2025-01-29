@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { TargetUser } from "~/types/user";
+import { FollowUser, TargetUser } from "~/types/user";
 import { getToken } from "~/utils/secureStore";
 
 export const profileApi = createApi({
@@ -16,6 +16,34 @@ export const profileApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    // get user profile
+    getUserProfile: builder.mutation<any, TargetUser>({
+      query: (body) => ({
+        url: "/api/v1/getProfile",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    // follow user
+    followUser: builder.mutation<any, FollowUser>({
+      query: (body) => ({
+        url: "/api/v1/follow",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    // unfollow user
+    unFollowUser: builder.mutation<any, FollowUser>({
+      query: (body) => ({
+        url: "/api/v1/unfollow",
+        method: "DELETE",
+        body,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    // find followers
     findFollowers: builder.mutation<any, Partial<TargetUser>>({
       query: (body) => ({
         url: "/api/v1/findFollowers",
@@ -24,6 +52,7 @@ export const profileApi = createApi({
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
+    // find followings
     findFollowings: builder.mutation<any, Partial<TargetUser>>({
       query: (body) => ({
         url: "/api/v1/findFollowings",
@@ -35,5 +64,10 @@ export const profileApi = createApi({
   }),
 });
 
-export const { useFindFollowersMutation, useFindFollowingsMutation } =
-  profileApi;
+export const {
+  useFindFollowersMutation,
+  useFindFollowingsMutation,
+  useFollowUserMutation,
+  useGetUserProfileMutation,
+  useUnFollowUserMutation,
+} = profileApi;

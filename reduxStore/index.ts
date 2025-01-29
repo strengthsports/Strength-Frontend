@@ -1,6 +1,15 @@
 // store/index.ts
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from "redux-persist";
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./slices/user/authSlice";
 import signupReducer from "./slices/user/signupSlice";
@@ -10,6 +19,8 @@ import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profileApi";
 import { feedPostApi } from "./api/feedPostApi";
 import { likeUnlikeApi } from "./api/likeUnlikeApi";
+import { sportsApi } from "./api/sportsApi";
+import { notificationApi } from "./api/notificationApi";
 
 // Persist configuration
 const persistConfig = {
@@ -28,6 +39,8 @@ const rootReducer = combineReducers({
   [profileApi.reducerPath]: profileApi.reducer,
   [feedPostApi.reducerPath]: feedPostApi.reducer,
   [likeUnlikeApi.reducerPath]: likeUnlikeApi.reducer,
+  [sportsApi.reducerPath]: sportsApi.reducer,
+  [notificationApi.reducerPath]: sportsApi.reducer,
 });
 
 // Create persisted reducer
@@ -45,8 +58,10 @@ const store = configureStore({
       // middlewares for Apis
       profileApi.middleware,
       feedPostApi.middleware,
-      likeUnlikeApi.middleware 
-
+      likeUnlikeApi.middleware,
+      sportsApi.middleware,
+      notificationApi.middleware
+      // Add middleware for sportsApi
     ),
 });
 

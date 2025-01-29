@@ -1,65 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { TargetUser, ProfileState, UserData, User } from "@/types/user";
+import { ProfileState } from "@/types/user";
 import { logoutUser } from "./authSlice";
-import { RootState } from "~/reduxStore";
 
 // Initial State
 const initialState: ProfileState = {
   user: null,
-  profiles: {},
   loading: false,
   error: null,
+  posts: [],
 };
-
-export const getUserProfile = createAsyncThunk<
-  { user: User; fromCache: boolean },
-  TargetUser,
-  { state: RootState; rejectValue: string }
->(
-  "profile/getUserProfile",
-  async (userdata: TargetUser, { getState, rejectWithValue }) => {
-    try {
-      const state = getState();
-      const cachedProfiles = state.profile.profiles;
-
-      // Check if the profile is already cached
-      if (cachedProfiles && cachedProfiles[userdata.targetUserId]) {
-        return { user: cachedProfiles[userdata.targetUserId], fromCache: true };
-      }
-
-      const token = await getToken("accessToken");
-      if (!token) throw new Error("Token not found");
-      // console.log("Token : ", token);
-      // console.log("User data input :", userdata);
-
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/getProfile`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(userdata),
-        }
-      );
-
-      console.log("Response:", response);
-      const data = await response.json();
-
-      if (!response.ok) {
-        return rejectWithValue(data.message || "Error getting user");
-      }
-      console.log("Data : ", data.data);
-      return { user: data.data };
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unexpected error occurred";
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
 
 export const editUserProfile = createAsyncThunk<
   any,
@@ -103,6 +53,42 @@ export const editUserProfile = createAsyncThunk<
   }
 });
 
+export const getOwnPosts = createAsyncThunk<any, any, { rejectValue: string }>(
+  "profile/getOwnPosts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+      console.log("Token : ", token);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/my-posts`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+        }
+      );
+
+      console.log("Response:", response);
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Error getting posts");
+      }
+      console.log("Data : ", data.data.posts);
+      return data.data.posts;
+    } catch (error: unknown) {
+      console.log("Actual api error : ", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const profileSlice = createSlice({
   name: "profile",
   initialState,
@@ -122,44 +108,31 @@ const profileSlice = createSlice({
       state.user = null;
       state.loading = false;
       state.error = null;
-      state.profiles = {};
+      state.posts = [];
     },
   },
   extraReducers: (builder) => {
-    //get user profile
-    builder
-      .addCase(getUserProfile.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getUserProfile.fulfilled, (state, action) => {
-        state.loading = false;
-
-        const { user, fromCache } = action.payload;
-
-        // Cache the profile if it's freshly fetched
-        if (!fromCache && user) {
-          if (!state.profiles) state.profiles = {}; // Initialize profiles if null
-          state.profiles[user._id] = user;
-        }
-
-        console.log("Profile is cached");
-
-        // Update the currently displayed user profile
-        state.user = user;
-      })
-      .addCase(getUserProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;
       state.error = null;
       state.loading = false;
-      state.profiles = {};
     });
     builder.addCase(logoutUser.rejected, (state, action) => {
+      state.error = action.payload as string;
+    });
+    // Get posts
+    builder.addCase(getOwnPosts.pending, (state) => {
+      state.error = null;
+      state.loading = true;
+    });
+    builder.addCase(getOwnPosts.fulfilled, (state, action) => {
+      state.error = null;
+      state.loading = false;
+      state.posts.push(action.payload);
+    });
+    builder.addCase(getOwnPosts.rejected, (state, action) => {
+      state.loading = false;
       state.error = action.payload as string;
     });
   },

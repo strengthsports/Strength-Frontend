@@ -27,7 +27,6 @@ export interface AuthState {
 export interface OnboardingData {
   headline: any;
   assets: any;
-  sports: any;
   followings: any;
 }
 
@@ -53,4 +52,9 @@ export interface UserData {
   height: string | null;
   weight: string | null;
   assets: Array<string> | Array<Blob> | Array<File> | null;
+}
+
+export interface FollowUser {
+  followingId: string;
+  followingType: string;
 }

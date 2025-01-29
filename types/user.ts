@@ -39,7 +39,7 @@ export interface ProfileState {
   user: User | null;
   loading: boolean;
   error: string | null;
-  profiles: { [key: string]: User } | null;
+  posts: Array<any>;
 }
 
 export interface UserData {

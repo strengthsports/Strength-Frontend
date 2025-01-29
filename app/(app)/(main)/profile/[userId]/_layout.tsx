@@ -18,7 +18,6 @@ import TextScallingFalse from "@/components/CentralText";
 import {
   MaterialCommunityIcons,
   Entypo,
-  FontAwesome5,
   MaterialIcons,
   FontAwesome6,
 } from "@expo/vector-icons";
@@ -27,8 +26,8 @@ import {
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import { Slot, useLocalSearchParams, usePathname } from "expo-router";
-import { useDispatch, useSelector } from "react-redux";
+import { Slot, useLocalSearchParams } from "expo-router";
+import { useDispatch } from "react-redux";
 import { setUserProfile } from "~/reduxStore/slices/user/profileSlice";
 import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { AppDispatch } from "~/reduxStore";

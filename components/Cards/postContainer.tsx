@@ -22,47 +22,16 @@ import {
   useUnLikeContentMutation,
 } from "~/reduxStore/api/likeUnlikeApi";
 import { Post } from "~/reduxStore/api/feedPostApi";
+import MoreModal from "../feedPage/moreModal";
+import LikersList from "../feedPage/likerModal";
+import LikerModal from "../feedPage/likerModal";
+import CommentModal from "../feedPage/commentModal";
 
 // Type definitions
 interface SwiperImageProps {
   uri: string;
   onDoubleTap: () => void;
 }
-
-// interface PostData {
-//   _id: string;
-//   caption: string;
-//   assets: Array<{ url: string }>;
-//   postedBy: {
-//     _id: string;
-//     type: string;
-//     profilePic: string;
-//     firstName: string;
-//     lastName: string;
-//     headline: string;
-//   };
-//   createdAt: string;
-//   likesCount: number;
-//   commentsCount: number;
-// }
-
-// interface PostContainerProps {
-//   postData: PostData[];
-// }
-
-// // Memoized components
-// const ActionButton = memo<ActionButtonProps>(
-//   ({ iconName, text, color = "gray", onPress }) => (
-//     <TouchableOpacity onPress={onPress}>
-//       <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-//         <FontAwesome name={iconName} size={16} color={color} />
-//         <TextScallingFalse className="text-base text-white">
-//           {text}
-//         </TextScallingFalse>
-//       </View>
-//     </TouchableOpacity>
-//   )
-// );
 
 const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   let lastTap = useRef(0).current;
@@ -100,9 +69,12 @@ const PostContainer = ({ item }: { item: Post }) => {
   const [likeCount, setLikeCount] = useState(item.likesCount);
   const [likePost, message] = useLikeContentMutation();
   const [unlikePost] = useUnLikeContentMutation();
+  // const [showLikers, setShowLikers] = useState(false);
+  const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
+  const [isPostLikersModalVisible, setIsPostLikersModalVisible] = useState(false);
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
@@ -126,8 +98,8 @@ const PostContainer = ({ item }: { item: Post }) => {
         targetId: item._id,
         targetType: "Post",
       }).unwrap();
-      console.log("Message", message);
-      console.log(message?.data?.message);
+      // console.log("Message", message);
+      // console.log(message?.data?.message);
     } catch (error) {
       // Rollback on error
       setIsLiked(originalIsLiked);
@@ -160,8 +132,6 @@ const PostContainer = ({ item }: { item: Post }) => {
     }
   };
 
-  const closeModal = () => setIsModalVisible(false);
-
   const swiperConfig = {
     autoplay: false,
     showsPagination: true,
@@ -181,8 +151,6 @@ const PostContainer = ({ item }: { item: Post }) => {
       zIndex: 30,
     },
   };
-console.log(item)
-console.log(item.postedBy)
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
       <View className="flex">
@@ -196,7 +164,6 @@ console.log(item.postedBy)
                 : router.push(`../(main)/profile/${serializedUser}`)
             }
           >
-            
             <Image
               className="w-full h-full rounded-full"
               source={{
@@ -216,15 +183,20 @@ console.log(item.postedBy)
 
           <View className="w-64 flex flex-col justify-between">
             <TouchableOpacity
-            onPress={() =>
-              user._id === item.postedBy._id
-                ? router.push("/(app)/(tabs)/profile")
-                : router.push(`../(main)/profile/${serializedUser}`)
-            }>
+              onPress={() =>
+                user._id === item.postedBy._id
+                  ? router.push("/(app)/(tabs)/profile")
+                  : router.push(`../(main)/profile/${serializedUser}`)
+              }
+            >
               <TextScallingFalse className="text-white text-xl font-bold">
                 {item.postedBy.firstName} {item.postedBy.lastName}
               </TextScallingFalse>
-              <TextScallingFalse className="text-neutral-300 text-sm" numberOfLines={1} ellipsizeMode="tail">
+              <TextScallingFalse
+                className="text-neutral-300 text-sm"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {item.postedBy.headline}
               </TextScallingFalse>
             </TouchableOpacity>
@@ -241,56 +213,23 @@ console.log(item.postedBy)
         <View className="relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[72px] rounded-tr-[16px] pb-3 bg-neutral-900">
           <TouchableOpacity
             className="absolute right-4 p-2 z-30"
-            onPress={() => setIsModalVisible(true)}
+            onPress={() => setIsMoreModalVisible(true)}
           >
             <MaterialIcons name="more-horiz" size={18} color="white" />
           </TouchableOpacity>
 
           <Modal
-            visible={isModalVisible}
+            visible={isMoreModalVisible}
             transparent
             animationType="slide"
-            onRequestClose={closeModal}
+            onRequestClose={() => setIsMoreModalVisible(false)}
           >
             <TouchableOpacity
               className="flex-1 justify-end bg-black/50"
               activeOpacity={1}
-              onPress={closeModal}
+              onPress={() => setIsMoreModalVisible(false)}
             >
-              <View className="h-80 w-full bg-neutral-900 rounded-t-3xl p-4">
-                <Divider
-                  className="w-16 self-center rounded-full bg-neutral-700 my-1"
-                  width={4}
-                />
-                <View className="flex-1 justify-evenly">
-                  <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <MaterialIcons
-                      name="bookmark-border"
-                      size={24}
-                      color="white"
-                    />
-                    <Text className="text-white ml-4">Bookmark</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <FontAwesome name="share" size={20} color="white" />
-                    <Text className="text-white ml-4">Share</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <MaterialIcons
-                      name="report-problem"
-                      size={22}
-                      color="white"
-                    />
-                    <Text className="text-white ml-4">Report</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                    <FontAwesome name="user-plus" size={19} color="white" />
-                    <Text className="text-white ml-4">
-                      Follow {item.postedBy.firstName}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <MoreModal firstName={item.postedBy.firstName} />
             </TouchableOpacity>
           </Modal>
 
@@ -352,21 +291,61 @@ console.log(item.postedBy)
         {/* Interaction Bar */}
         <View className="relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[16px] bg-neutral-900">
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
-            <View className="flex flex-row items-center gap-2">
-              <FontAwesome
-                // name={isLiked ? "thumbs-up" : "thumbs-o-up"}
-                name="thumbs-up"
-                size={16}
-                // color={isLiked ? "yellow" : "gray"}
-                color="gray"
-              />
+            {/* like */}
+            <TouchableOpacity
+              className="flex flex-row items-center gap-2"
+              onPress={() => setIsPostLikersModalVisible(true)}
+            >
+              <FontAwesome name="thumbs-up" size={16} color="gray" />
               <TextScallingFalse className="text-base text-white">
                 {likeCount} {likeCount > 1 ? "Likes" : "Like"}
               </TextScallingFalse>
-            </View>
-            <TextScallingFalse className="text-base text-white">
-              {item.commentsCount} Comments
-            </TextScallingFalse>
+              {isPostLikersModalVisible && (
+                <Modal
+                  visible={isPostLikersModalVisible}
+                  transparent
+                  animationType="slide"
+                  onRequestClose={() => setIsPostLikersModalVisible(false)}
+                >
+                  <TouchableOpacity
+                    className="flex-1 justify-end bg-black/50"
+                    activeOpacity={1}
+                    onPress={() => setIsPostLikersModalVisible(false)}
+                  >
+                  </TouchableOpacity>
+                      <LikerModal targetId={item._id} targetType="Post" />
+                </Modal>
+              )}
+            </TouchableOpacity>
+
+            {/* comment */}
+            <TouchableOpacity
+              className="flex flex-row items-center gap-2"
+              onPress={() => setIsCommentModalVisible(true)}
+            >
+              <FontAwesome name="thumbs-up" size={16} color="gray" />
+              <TextScallingFalse className="text-base text-white">
+                {item.commentsCount} Comments
+              </TextScallingFalse>
+              {isCommentModalVisible && (
+                <Modal
+                  visible={isCommentModalVisible}
+                  transparent
+                  animationType="slide"
+                  onRequestClose={() => setIsCommentModalVisible(false)}
+                >
+                  <TouchableOpacity
+                    className="flex-1 justify-end bg-black/50"
+                    activeOpacity={1}
+                    onPress={() => setIsCommentModalVisible(false)}
+                  >
+                      {/* <LikerModal targetId={item._id} targetType="Post" /> */}
+                  </TouchableOpacity>
+                      <CommentModal  />
+                </Modal>
+              )}
+            </TouchableOpacity>
+
           </View>
 
           <Divider
@@ -376,49 +355,43 @@ console.log(item.postedBy)
           />
 
           <View className="w-full px-6 py-5 mb-1 flex flex-row justify-evenly items-center">
-            <TouchableOpacity onPress={handleLikeAction} >
+            <TouchableOpacity onPress={handleLikeAction}>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome name={isLiked ? "thumbs-up" : "thumbs-o-up"} size={16} color={isLiked ? "#FABE25" : "gray"} />
-                <TextScallingFalse className={`text-base ${isLiked ? 'text-amber-400' : 'text-white'}`}>
-                {isLiked ? "Liked" : "Like"}
+                <FontAwesome
+                  name={isLiked ? "thumbs-up" : "thumbs-o-up"}
+                  size={16}
+                  color={isLiked ? "#FABE25" : "gray"}
+                />
+                <TextScallingFalse
+                  className={`text-base ${
+                    isLiked ? "text-amber-400" : "text-white"
+                  }`}
+                >
+                  {isLiked ? "Liked" : "Like"}
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity >
+            <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome name="comment" size={16} color='grey' />
+                <FontAwesome name="comment" size={16} color="grey" />
                 <TextScallingFalse className="text-base text-white">
-                Comment
+                  Comment
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity >
+            <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome name="paper-plane" size={16} color='grey' />
+                <FontAwesome name="paper-plane" size={16} color="grey" />
                 <TextScallingFalse className="text-base text-white">
-                Share
+                  Share
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>
           </View>
-
         </View>
       </View>
     </View>
   );
 };
-
-// Main Container
-// const PostContainer = ({ postData }: PostContainerProps) => {
-//   return (
-//     <FlatList
-//       data={postData}
-//       renderItem={({ item }) => <PostItem item={item} />}
-//       keyExtractor={(item) => item._id}
-//       ListEmptyComponent={<Text className="text-white text-center">No posts available</Text>}
-//       showsVerticalScrollIndicator={false}
-//     />
-//   );
-// };
 
 export default PostContainer;

@@ -44,14 +44,14 @@ export default function Home() {
       setLastTimestamp(newTimestamp); // Refresh with latest timestamp
 
       // Invalidate the cache for 'Posts' tag
-      dispatch(feedPostApi.util.invalidateTags(["Posts"]));
+      dispatch(feedPostApi.util.invalidateTags(['FeedPost']));
 
       await refetch();
     } finally {
       setRefreshing(false);
     }
   };
-  const debouncedRefresh = debounce(handleRefresh, 100); // prevents frequent refresh in the time interval of 1s
+  const debouncedRefresh = debounce(handleRefresh, 1000); // prevents frequent refresh in the time interval of 1s
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (

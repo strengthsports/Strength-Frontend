@@ -15,6 +15,7 @@ import SportsChoice from "./onboarding/sportsChoice1";
 import { useEffect } from "react";
 import { initializeAuth } from "~/reduxStore/slices/user/authSlice";
 import * as SplashScreen from "expo-splash-screen";
+import { getToken } from "~/utils/secureStore";
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -43,6 +44,8 @@ export default function Index() {
   //   // Optional: Add a placeholder while auth is initializing
   //   return null;
   // }
+
+  const token = getToken('accessToken')
 
   if (isLoggedIn) {
     return <Redirect href="/(app)/(tabs)/home" />;

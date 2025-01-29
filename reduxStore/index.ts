@@ -1,4 +1,3 @@
-// store/index.ts
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
   persistStore,
@@ -21,6 +20,8 @@ import { feedPostApi } from "./api/feedPostApi";
 import { likeUnlikeApi } from "./api/likeUnlikeApi";
 import { sportsApi } from "./api/sportsApi";
 import { notificationApi } from "./api/notificationApi";
+// import { socialApi } from "./api/socialApi"; // Import the new socialApi
+import { likerApi } from "./api/likerApi";
 
 // Persist configuration
 const persistConfig = {
@@ -39,6 +40,7 @@ const rootReducer = combineReducers({
   [profileApi.reducerPath]: profileApi.reducer,
   [feedPostApi.reducerPath]: feedPostApi.reducer,
   [likeUnlikeApi.reducerPath]: likeUnlikeApi.reducer,
+  [likerApi.reducerPath]: likerApi.reducer, // Add socialApi reducer
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: sportsApi.reducer,
 });
@@ -55,10 +57,11 @@ const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }).concat(
-      // middlewares for Apis
+      // Middlewares for APIs
       profileApi.middleware,
       feedPostApi.middleware,
       likeUnlikeApi.middleware,
+      likerApi.middleware, // Add socialApi middleware
       sportsApi.middleware,
       notificationApi.middleware
       // Add middleware for sportsApi

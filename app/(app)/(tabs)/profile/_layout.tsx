@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -7,6 +7,7 @@ import {
   Dimensions,
   ScrollView,
   Text,
+  Pressable,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
@@ -26,29 +27,42 @@ const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
   const router = useRouter();
   const pathname = usePathname();
-  console.log("Loading:", loading);
-  console.log("Error:", error);
-  console.log("Profile:", user);
 
   const [activeTab, setActiveTab] = useState("Overview");
 
-  const tabsMap: { [key: string]: string } = {
-    "/profile": "Overview",
-    "/profile/activity": "Activity",
-    "/profile/events": "Events",
-    "/profile/teams": "Teams",
-  };
+  const tabsMap: { [key: string]: string } = useMemo(
+    () => ({
+      "/profile": "Overview",
+      "/profile/activity": "Activity",
+      "/profile/events": "Events",
+      "/profile/teams": "Teams",
+    }),
+    []
+  );
 
   // Sync activeTab with the current route path
   useEffect(() => {
-    const currentTab = tabsMap[pathname] || "Overview";
+    const currentTab = pathname.startsWith("/profile/activity")
+      ? "Activity"
+      : tabsMap[pathname] || "Overview";
     setActiveTab(currentTab);
-  }, [pathname]);
+  }, [pathname, tabsMap]);
 
-  const handleTabPress = (tabName: string, route: any) => {
+  const handleTabPress = (tabName: string, route: string) => {
     setActiveTab(tabName);
-    router.replace(route); // Navigate to the new route
+    router.replace(route);
   };
+
+  if (loading) {
+    <View>
+      <Text className="text-white">Loading...</Text>
+    </View>;
+  }
+  if (error) {
+    <View>
+      <Text className="text-red-500">{error}</Text>
+    </View>;
+  }
 
   return (
     <PageThemeView>
@@ -115,7 +129,6 @@ const ProfileLayout = () => {
             style={{
               width: "95.12%",
               backgroundColor: "#171717",
-              // backgroundColor: "red",
               borderRadius: 33,
               padding: 25,
             }}
@@ -374,7 +387,7 @@ const ProfileLayout = () => {
               alignItems: "center",
             }}
             onPress={() =>
-              router.push({ pathname: "/(app)/(main)/edit-overview" })
+              router.push({ pathname: "/(app)/(main)/edit-overview2" })
             }
           >
             <TextScallingFalse
@@ -431,8 +444,8 @@ const Tabs = ({
   activeTab,
   handleTabPress,
 }: {
-  activeTab: any;
-  handleTabPress: any;
+  activeTab: string; // Use string for better clarity
+  handleTabPress: (tabName: string, tabPath: string) => void;
 }) => {
   const tabs = [
     { name: "Overview", path: `/profile` },
@@ -442,23 +455,32 @@ const Tabs = ({
   ];
 
   return (
-    <View className="flex-row justify-evenly mt-2 border-b-[0.5px] border-gray-600">
+    <View className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600">
       {tabs.map((tab, index) => (
-        <TouchableOpacity
+        <Pressable
           key={index}
           className={`py-2 px-5 ${
-            activeTab === tab.name ? "border-b-[1.5px] border-[#12956B]" : ""
+            // Make "Activity" tab active for all paths starting with `/profile/activity`
+            activeTab === tab.name ||
+            (tab.name === "Activity" &&
+              activeTab.startsWith("/profile/activity"))
+              ? "border-b-[1.5px] border-[#12956B]"
+              : ""
           }`}
           onPress={() => handleTabPress(tab.name, tab.path)}
         >
           <Text
             className={`text-[1.1rem] ${
-              activeTab === tab.name ? "text-[#12956B]" : "text-white"
+              activeTab === tab.name ||
+              (tab.name === "Activity" &&
+                activeTab.startsWith("/profile/activity"))
+                ? "text-[#12956B]"
+                : "text-white"
             }`}
           >
             {tab.name}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       ))}
     </View>
   );

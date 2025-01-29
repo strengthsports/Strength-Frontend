@@ -4,21 +4,25 @@ import {
   FlatList,
   RefreshControl,
   Text,
-  Platform
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import { memo, useCallback, useMemo, useState } from "react";
-import { feedPostApi, Post, useGetFeedPostQuery } from "~/reduxStore/api/feedPostApi";
+import {
+  feedPostApi,
+  Post,
+  useGetFeedPostQuery,
+} from "~/reduxStore/api/feedPostApi";
 import PostContainer from "~/components/Cards/postContainer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
-import debounce from "lodash.debounce"; 
+import debounce from "lodash.debounce";
 
 export default function Home() {
   const dispatch = useDispatch();
   const router = useRouter();
-  
+
   const [refreshing, setRefreshing] = useState(false);
   const [postLimit, setPostLimit] = useState(1); // Initial limit
 
@@ -30,8 +34,8 @@ export default function Home() {
     lastTimeStamp: lastTimestamp,
   });
 
-  const isAndroid = Platform.OS === 'android'
-  
+  const isAndroid = Platform.OS === "android";
+
   const handleRefresh = async () => {
     if (refreshing) return; // Prevent concurrent refreshes
     setRefreshing(true);
@@ -70,26 +74,31 @@ export default function Home() {
         </TextScallingFalse>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        onPress={() => router.push("/(app)/(main)/teams/InitiateCreateTeam")}
+      >
+        <TextScallingFalse className="p-6 self-center text-2xl text-white">
+          Team
+        </TextScallingFalse>
+      </TouchableOpacity>
+
       <FlatList
         data={data?.data?.posts || []}
         keyExtractor={(item) => item._id}
         initialNumToRender={5}
         removeClippedSubviews={isAndroid}
         windowSize={11}
-        
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={debouncedRefresh}
-            colors={["#12956B", "#6E7A81" ]} // Customize indicator colors
+            colors={["#12956B", "#6E7A81"]} // Customize indicator colors
             tintColor="#6E7A81" // Color for iOS
             title="Refreshing Your Feed..." // Optional refresh title - iOS
             titleColor="#6E7A81"
             progressBackgroundColor="#181A1B" // Background color of the loader
-
           />
         }
-
         renderItem={renderItem}
         ListEmptyComponent={memoizedEmptyComponent}
         bounces={false}

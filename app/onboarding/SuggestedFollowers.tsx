@@ -85,12 +85,13 @@ const SuggestedSupportScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
-  const { fetchedUsers, headline, profilePic, loading, error } = useSelector(
-    (state: RootState) => state.onboarding,
-  );
+  const { fetchedUsers, headline, profilePic, selectedSports, loading, error } =
+    useSelector((state: RootState) => state.onboarding);
 
   React.useEffect(() => {
-    dispatch(fetchUserSuggestions());
+    console.log(selectedSports);
+    dispatch(fetchUserSuggestions(selectedSports));
+    console.log("Dispatch completed...");
   }, [dispatch]);
 
   const handleClose = (id: string) => {
@@ -108,19 +109,26 @@ const SuggestedSupportScreen: React.FC = () => {
   const handleContinue = async () => {
     // console.log("Selected Players:", selectedPlayers);
     // console.log("Selected File:", selectedFile);
-    // console.log("Selected Sports:", selectedSports);
+    console.log("Selected Sports:", selectedSports);
     // console.log("Profile Image:", profileImage);
     // console.log("Headline:", headline);
 
     const onboardingData = {
       headline: headline,
-      assets: [profilePic],
-      sports: [{}],
+      assets: profilePic?.fullFileObject,
       followings: selectedPlayers,
     };
 
     try {
       // Dispatch the onboardingUser action and wait for the result using unwrap
+
+      console.log("Data to be submitted : ", onboardingData);
+
+      const finalOnboardingData = new FormData();
+      finalOnboardingData.append("headline", onboardingData.headline);
+      finalOnboardingData.append("assets", onboardingData.assets);
+      finalOnboardingData.append("followings", onboardingData.followings);
+
       const response = await dispatch(onboardingUser(onboardingData)).unwrap();
 
       // Alert the successful response
@@ -128,7 +136,7 @@ const SuggestedSupportScreen: React.FC = () => {
         type: "success",
         text1: "Successfully Updated Profile",
       });
-      router.push("/(app)/(tabs)");
+      router.push("/(app)/(tabs)/home");
     } catch (error: unknown) {
       console.log(error);
       if (error && typeof error === "object" && "message" in error) {
@@ -146,16 +154,9 @@ const SuggestedSupportScreen: React.FC = () => {
   };
 
   const handleSkip = async () => {
-    // console.log("Selected Players:", selectedPlayers);
-    // console.log("Selected File:", selectedFile);
-    // console.log("Selected Sports:", selectedSports);
-    // console.log("Profile Image:", profileImage);
-    // console.log("Headline:", headline);
-
     const onboardingData = {
       headline: headline,
       assets: [profilePic],
-      sports: [{}],
       followings: selectedPlayers,
     };
 
@@ -168,7 +169,7 @@ const SuggestedSupportScreen: React.FC = () => {
         type: "success",
         text1: "Successfully Updated Profile",
       });
-      router.push("/(app)/(tabs)");
+      router.push("/(app)/(tabs)/home");
     } catch (error: unknown) {
       if (error && typeof error === "object" && "message" in error) {
         Toast.show({
@@ -185,7 +186,10 @@ const SuggestedSupportScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black"}} className="py-12">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "black" }}
+      className="py-12"
+    >
       <Logo />
       <StatusBar barStyle="light-content" />
 

@@ -365,7 +365,7 @@ const SignupEmail1 = () => {
               Already on Strength?
             </TextScallingFalse>
             <TouchableOpacity
-              onPress={() => router.push("./[modal]")}
+              onPress={() => router.push("/(auth)/login")}
               activeOpacity={0.5}
             >
               <TextScallingFalse style={{ color: "#12956B" }}>

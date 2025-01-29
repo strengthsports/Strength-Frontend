@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -10,30 +10,45 @@ import {
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
-import nocover from "@/assets/images/cover.jpg";
-import nopic from "@/assets/images/pro.jpg";
 import flag from "@/assets/images/IN.png";
 import TextScallingFalse from "@/components/CentralText";
 import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import {
   responsiveHeight,
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import ProfileTabsNavigator from "~/components/ProfileTabsNavigator";
-import { Slot, useLocalSearchParams, useRouter } from "expo-router";
-import { useDispatch, useSelector } from "react-redux";
-import { getUserProfile } from "~/reduxStore/slices/user/profileSlice";
-import { AppDispatch } from "~/reduxStore";
+import { Slot, usePathname, useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 import { dateFormatter } from "~/utils/dateFormatter";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
   const router = useRouter();
+  const pathname = usePathname();
   console.log("Loading:", loading);
   console.log("Error:", error);
   console.log("Profile:", user);
+
+  const [activeTab, setActiveTab] = useState("Overview");
+
+  const tabsMap: { [key: string]: string } = {
+    "/profile": "Overview",
+    "/profile/activity": "Activity",
+    "/profile/events": "Events",
+    "/profile/teams": "Teams",
+  };
+
+  // Sync activeTab with the current route path
+  useEffect(() => {
+    const currentTab = tabsMap[pathname] || "Overview";
+    setActiveTab(currentTab);
+  }, [pathname]);
+
+  const handleTabPress = (tabName: string, route: any) => {
+    setActiveTab(tabName);
+    router.replace(route); // Navigate to the new route
+  };
 
   return (
     <PageThemeView>
@@ -404,10 +419,48 @@ const ProfileLayout = () => {
             alignSelf: "center",
           }}
         ></View>
-        <ProfileTabsNavigator />
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <Slot />
       </ScrollView>
     </PageThemeView>
+  );
+};
+
+// Profile navigator tabs
+const Tabs = ({
+  activeTab,
+  handleTabPress,
+}: {
+  activeTab: any;
+  handleTabPress: any;
+}) => {
+  const tabs = [
+    { name: "Overview", path: `/profile` },
+    { name: "Activity", path: `/profile/activity` },
+    { name: "Events", path: `/profile/events` },
+    { name: "Teams", path: `/profile/teams` },
+  ];
+
+  return (
+    <View className="flex-row justify-evenly mt-2 border-b-[0.5px] border-gray-600">
+      {tabs.map((tab, index) => (
+        <TouchableOpacity
+          key={index}
+          className={`py-2 px-5 ${
+            activeTab === tab.name ? "border-b-[1.5px] border-[#12956B]" : ""
+          }`}
+          onPress={() => handleTabPress(tab.name, tab.path)}
+        >
+          <Text
+            className={`text-[1.1rem] ${
+              activeTab === tab.name ? "text-[#12956B]" : "text-white"
+            }`}
+          >
+            {tab.name}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
   );
 };
 

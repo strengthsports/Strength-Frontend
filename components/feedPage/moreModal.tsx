@@ -5,7 +5,9 @@ import { Divider } from 'react-native-elements'
 
 const MoreModal = memo(({firstName} : {firstName : string}) => {
     return(
-    <View className="h-80 w-full bg-neutral-900 rounded-t-3xl p-4">
+    <View className="h-80 w-[104%] bg-neutral-900 self-center rounded-t-[40px] p-4 border-t border-x  border-neutral-700 p-4">
+    {/* <View className="h-3/4 w-[104%] self-center bg-neutral-900 rounded-t-[40px] p-4 border-t border-x  border-neutral-700		 "> */}
+      
     <Divider
       className="w-16 self-center rounded-full bg-neutral-700 my-1"
       width={4}

@@ -57,6 +57,8 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
     className="w-16 self-center rounded-full bg-neutral-700 my-1"
     width={4}
   />
+        <Text className="text-white self-center text-2xl my-4">Likes</Text>
+  
     {isLoading && <ActivityIndicator color="#12956B" className="mt-4" />}
     {/* {!data && <Text className="text-white text-center mt-4">No Likes</Text>} */}
     {error && <Text className="text-red-500 text-center mt-4"> Error fetching likers</Text>}

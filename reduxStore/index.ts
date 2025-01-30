@@ -22,6 +22,7 @@ import { sportsApi } from "./api/sportsApi";
 import { notificationApi } from "./api/notificationApi";
 // import { socialApi } from "./api/socialApi"; // Import the new socialApi
 import { likerApi } from "./api/likerApi";
+import { postCommentApi } from "./api/postCommentApi";
 
 // Persist configuration
 const persistConfig = {
@@ -43,6 +44,7 @@ const rootReducer = combineReducers({
   [likerApi.reducerPath]: likerApi.reducer, // Add socialApi reducer
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: sportsApi.reducer,
+  [postCommentApi.reducerPath]: postCommentApi.reducer,
 });
 
 // Create persisted reducer
@@ -63,7 +65,8 @@ const store = configureStore({
       likeUnlikeApi.middleware,
       likerApi.middleware, // Add socialApi middleware
       sportsApi.middleware,
-      notificationApi.middleware
+      notificationApi.middleware,
+      postCommentApi.middleware
       // Add middleware for sportsApi
     ),
 });

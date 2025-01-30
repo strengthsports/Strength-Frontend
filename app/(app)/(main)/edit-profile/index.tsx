@@ -519,7 +519,7 @@ const EditProfile = () => {
                   ? router.push("/profile")
                   : setAlertModal(true)
               }
-              className="basis-[10%]"
+              className="basis-[20%]"
             >
               <TextScallingFalse className="text-[#808080] text-4xl font-normal">
                 Back
@@ -531,7 +531,7 @@ const EditProfile = () => {
             </TextScallingFalse>
             {/* Save button */}
             {isLoading ? (
-              <View className="basis-[10%]">
+              <View className="basis-[20%] items-end">
                 <ActivityIndicator
                   size="small"
                   color="#12956B"
@@ -541,7 +541,7 @@ const EditProfile = () => {
             ) : (
               <TouchableOpacity
                 onPress={handleFormSubmit}
-                className="basis-[10%]"
+                className="basis-[20%] items-end"
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
@@ -632,7 +632,7 @@ const EditProfile = () => {
               className="text-2xl font-light flex-grow text-white pl-0"
               onChangeText={(text) => {
                 setFormData({ ...formData, firstName: text });
-                finalUploadData.set("firstName", formData.firstName);
+                finalUploadData.set("firstName", text);
               }}
               value={formData.firstName}
             />
@@ -648,7 +648,7 @@ const EditProfile = () => {
               className="text-2xl font-light flex-grow text-white pl-0"
               onChangeText={(text) => {
                 setFormData({ ...formData, lastName: text });
-                finalUploadData.set("lastName", formData.lastName);
+                finalUploadData.set("lastName", text);
               }}
               value={formData.lastName}
             />

@@ -18,6 +18,7 @@ import cricket from "@/assets/images/Sports Icons/okcricket.png";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import logo2 from "@/assets/images/logo2.png";
+import { useRouter } from "expo-router";
 
 const data = {
   currentteamcricket: [
@@ -98,8 +99,10 @@ const posts = [
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const sports = user?.selectedSports ? [...user.selectedSports] : [];
+  // console.log(sports);
 
   // Dynamic scaling for responsiveness
   const containerWidth = width > 768 ? "50%" : "96%";
@@ -116,131 +119,117 @@ const Overview = () => {
     setIsExpanded(!isExpanded);
   };
 
+  // console.log(user.selectedSports);
+
   return (
     <View style={{ flex: 1 }}>
-      {user?.isSportsOverviewSet ? (
+      {user?.selectedSports?.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
-          {/* Horizontal Tab Scroll */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={200}
-            snapToAlignment="start"
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
           >
             <TabsList className="flex-row gap-x-2 w-[100%]">
-              {user?.selectedSports?.length > 0 &&
-                user.selectedSports.map((sport: any) => (
-                  <TouchableOpacity
-                    key={sport.sport.name}
-                    onPress={() => setActiveSubSection(sport.sport.name)}
-                    className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
-                      activeSubSection === sport.sport.name
-                        ? "bg-[#12956B]"
-                        : "bg-black border-gray-600"
-                    } border`}
-                    style={{
-                      borderRadius:
-                        activeSubSection === sport.sport.name ? 7 : 9,
-                    }}
-                  >
-                    <Image
-                      source={{ uri: sport.sport.logo }}
-                      style={{
-                        width: 20 * scaleFactor,
-                        height: 20 * scaleFactor,
-                      }}
-                      resizeMode="contain"
-                    />
-                    <TextScallingFalse
-                      className={`text-sm font-medium ${
-                        activeSubSection === sport.sport.name
-                          ? "text-white"
-                          : "text-gray-400"
-                      }`}
-                      style={styles.buttonText}
-                    >
-                      {sport.sport.name.charAt(0).toUpperCase() +
-                        sport.sport.name.slice(1)}
-                    </TextScallingFalse>
-                  </TouchableOpacity>
-                ))}
-
-              {/* Add Tab Button */}
-              <View>
+              {user?.selectedSports?.map((sport: any) => (
                 <TouchableOpacity
-                  activeOpacity={0.5}
-                  className="border border-gray-700 rounded-lg flex items-center justify-center"
+                  key={sport.sport._id}
+                  onPress={() => setActiveSubSection(sport.sport.name)}
+                  className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
+                    activeSubSection === sport.sport.name
+                      ? "bg-[#12956B]"
+                      : "bg-black border-gray-600"
+                  } border`}
                   style={{
-                    width: 36 * scaleFactor,
-                    height: 36 * scaleFactor,
+                    borderRadius: activeSubSection === sport.sport.name ? 7 : 9,
                   }}
                 >
-                  <Feather name="plus" size={20 * scaleFactor} color="white" />
+                  <Image
+                    source={{ uri: sport.sport.logo }}
+                    style={{
+                      width: 20 * scaleFactor,
+                      height: 20 * scaleFactor,
+                    }}
+                    resizeMode="contain"
+                  />
+                  <TextScallingFalse
+                    className={`text-sm font-medium ${
+                      activeSubSection === sport.sport.name
+                        ? "text-white"
+                        : "text-gray-400"
+                    }`}
+                    style={styles.buttonText}
+                  >
+                    {sport.sport.name.charAt(0).toUpperCase() +
+                      sport.sport.name.slice(1)}
+                  </TextScallingFalse>
                 </TouchableOpacity>
-              </View>
+              ))}
             </TabsList>
           </ScrollView>
 
           {/* Tab Contents */}
-          {user?.selectedSports?.length > 0 &&
-            user.selectedSports.map((sport: any) => (
-              <TabsContent key={sport.sport.name} value={sport.sport.name}>
-                {/* Sports Overview */}
-                <View
-                  className={`w-full flex-1 items-center ${
-                    sport.details && "p-2"
-                  }`}
-                >
-                  {sport.details && (
-                    <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl">
-                      <View className="flex-row justify-start flex-wrap gap-y-4">
-                        {Object.entries(sport.details).map(
-                          ([key, value], idx) => (
-                            <View
-                              key={idx}
-                              className={`${
-                                idx < 3 ? "basis-[33%]" : "w-full"
-                              }`} // Basis for first 3 items and full width for others
-                            >
-                              <Text
-                                className="text-white font-bold"
-                                style={styles.HeadingText}
-                              >
-                                {key.toUpperCase()}
-                              </Text>
-                              <Text
-                                className="text-white font-light pt-1"
-                                style={styles.DetailText}
-                              >
-                                {value}
-                              </Text>
-                            </View>
-                          )
-                        )}
-                      </View>
-                    </View>
-                  )}
-                </View>
-
-                {/* Team Overview */}
-                <View className="w-full flex-1 items-center p-2">
+          {user?.selectedSports?.map((sport: any) => (
+            <TabsContent key={sport.sport._id} value={sport.sport.name}>
+              {/* Sports Overview */}
+              <View className="w-full flex-1 items-center p-2">
+                {sport.details && (
                   <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl">
-                    <View className="flex-row">
-                      {/* Left Section: Current Teams */}
-                      <View className="flex-1">
-                        <TextScallingFalse
-                          className="text-white font-bold"
-                          style={styles.HeadingText}
-                        >
-                          CURRENT TEAMS
-                        </TextScallingFalse>
-                        <View className="flex-row gap-x-3 pt-4">
+                    <View className="flex-row justify-start flex-wrap gap-y-4">
+                      {Object.entries(sport.details).map(
+                        ([key, value], idx) => (
+                          <View
+                            key={idx}
+                            className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
+                          >
+                            <Text
+                              className="text-white font-bold"
+                              style={styles.HeadingText}
+                            >
+                              {key.toUpperCase()}
+                            </Text>
+                            <Text
+                              className="text-white font-light pt-1"
+                              style={styles.DetailText}
+                            >
+                              {value as string}
+                            </Text>
+                          </View>
+                        )
+                      )}
+                    </View>
+                  </View>
+                )}
+
+                {sport.teams?.length > 0 && (
+                  <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl mt-2">
+                    {/* Two-Column Header */}
+                    <View className="flex-row justify-between items-center mb-3">
+                      <TextScallingFalse
+                        className="text-white font-bold"
+                        style={styles.HeadingText}
+                      >
+                        CURRENT TEAMS
+                      </TextScallingFalse>
+                      <TextScallingFalse
+                        className="text-white font-bold"
+                        style={styles.HeadingText}
+                      >
+                        QUICK INFO
+                      </TextScallingFalse>
+                    </View>
+
+                    {/* Teams Mapping */}
+                    {sport.teams.map((team: any, index: any) => (
+                      <View
+                        key={team._id || index}
+                        className="flex-row justify-between items-center py-3 border-b border-gray-800"
+                      >
+                        {/* Left Column - Team Info */}
+                        <View className="flex-row items-center gap-x-3 w-[50%]">
+                          {/* Team Logo */}
                           <Image
-                            source={{
-                              uri: data.currentteamcricket[0].cteamlogo,
-                            }}
+                            source={{ uri: team.team.logo?.url }}
                             style={{
                               width: 45 * scaleFactor,
                               height: 45 * scaleFactor,
@@ -255,133 +244,55 @@ const Overview = () => {
                                 fontWeight: "bold",
                               }}
                             >
-                              Pro Tracker
+                              {team.team.name}
                             </TextScallingFalse>
                             <TextScallingFalse
                               className="text-gray-400"
                               style={{ fontSize: 13 * scaleFactor }}
                             >
-                              Brisbane, Queensland, Australia
+                              {team.location || "Location Not Available"}
                             </TextScallingFalse>
                           </View>
                         </View>
-                      </View>
 
-                      {/* Right Section: Quick Info */}
-                      <View className="flex-1 items-center">
-                        <TextScallingFalse
-                          className="text-white font-bold"
-                          style={styles.HeadingText}
-                        >
-                          QUICK INFO
-                        </TextScallingFalse>
-                        <View className="pt-4">
+                        {/* Right Column - Quick Info */}
+                        <View className="w-[50%] flex items-end">
                           <TextScallingFalse
                             className="text-white font-medium"
                             style={{ fontSize: 13 * scaleFactor }}
                           >
                             Position:{" "}
                             <TextScallingFalse className="font-light">
-                              [c] Batsman
+                              {team.position || "Not Specified"}
                             </TextScallingFalse>
                           </TextScallingFalse>
+
                           <TextScallingFalse
                             className="text-white font-light pt-2"
                             style={{ fontSize: 13 * scaleFactor }}
                           >
-                            Oct 2003 - Present - 20yrs
+                            {team.creationDate
+                              ? `${new Date(
+                                  team.creationDate
+                                ).getFullYear()} - Present`
+                              : "Joining Date Not Available"}
                           </TextScallingFalse>
+
                           <TextScallingFalse
                             className="text-gray-400 pt-2"
                             style={{ fontSize: 13 * scaleFactor }}
                           >
-                            present:
+                            Present:
                           </TextScallingFalse>
                         </View>
                       </View>
-                    </View>
+                    ))}
                   </View>
-                </View>
-              </TabsContent>
-            ))}
-        </Tabs>
-      ) : (
-        <View className="w-full">
-          {/* Carousel Section */}
-          <View className="w-full items-center justify-center my-2">
-            <ScrollView
-              pagingEnabled
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="flex-row"
-            >
-              <View className="border border-gray-500 rounded-lg bg-white/10 items-center justify-center p-5">
-                {/* Close Icon */}
-                <TouchableOpacity
-                  className="absolute top-2 right-2 bg-black/50 rounded"
-                  style={{
-                    width: 30 * scaleFactor,
-                    height: 30 * scaleFactor,
-                  }}
-                >
-                  <AntDesign
-                    name="close"
-                    size={14 * scaleFactor}
-                    color="white"
-                  />
-                </TouchableOpacity>
-
-                {/* Logo */}
-                <View
-                  className="rounded-full bg-black"
-                  style={{
-                    width: 30 * scaleFactor,
-                    height: 30 * scaleFactor,
-                    marginBottom: 10 * scaleFactor,
-                  }}
-                >
-                  <Image
-                    source={logo2}
-                    className="w-full h-full rounded-full"
-                  />
-                </View>
-
-                {/* Welcome Message */}
-                <Text
-                  className="text-white font-bold text-md text-center"
-                  style={{ marginBottom: 5 * scaleFactor }}
-                  allowFontScaling={false}
-                >
-                  Welcome to Strength!
-                </Text>
-
-                {/* Description */}
-                <Text
-                  className="text-gray-500 text-xs text-center px-4"
-                  allowFontScaling={false}
-                >
-                  To craft an impactful athletic narrative, enhance your page -
-                </Text>
-
-                {/* Update Button */}
-                <TouchableOpacity
-                  className="bg-[#12956B] mt-2 rounded-full justify-center items-center"
-                  style={{
-                    width: screenWidth * 0.8,
-                    height: 30 * scaleFactor,
-                  }}
-                >
-                  <Text
-                    className="text-white text-sm font-medium"
-                    allowFontScaling={false}
-                  >
-                    Update Overview
-                  </Text>
-                </TouchableOpacity>
+                )}
               </View>
-            </ScrollView>
-          </View>
-        </View>
+            </TabsContent>
+          ))}
+        </Tabs>
       )}
 
       {/* about */}

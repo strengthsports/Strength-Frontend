@@ -73,6 +73,7 @@ const PostContainer = ({ item }: { item: Post }) => {
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
   const [isPostLikersModalVisible, setIsPostLikersModalVisible] = useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [isCommentCountModalVisible, setIsCommentCountModalVisible] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -313,35 +314,33 @@ const PostContainer = ({ item }: { item: Post }) => {
                     onPress={() => setIsPostLikersModalVisible(false)}
                   >
                   </TouchableOpacity>
-                      <LikerModal targetId={item._id} targetType="Post" />
+                  <LikerModal targetId={item._id} targetType="Post" />
                 </Modal>
               )}
             </TouchableOpacity>
 
-            {/* comment */}
+            {/* comment count */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
-              onPress={() => setIsCommentModalVisible(true)}
+              onPress={() => setIsCommentCountModalVisible(true)}
             >
-              <FontAwesome name="thumbs-up" size={16} color="gray" />
               <TextScallingFalse className="text-base text-white">
                 {item.commentsCount} Comments
               </TextScallingFalse>
-              {isCommentModalVisible && (
+              {isCommentCountModalVisible && (
                 <Modal
-                  visible={isCommentModalVisible}
+                  visible={isCommentCountModalVisible}
                   transparent
                   animationType="slide"
-                  onRequestClose={() => setIsCommentModalVisible(false)}
+                  onRequestClose={() => setIsCommentCountModalVisible(false)}
                 >
                   <TouchableOpacity
                     className="flex-1 justify-end bg-black/50"
                     activeOpacity={1}
-                    onPress={() => setIsCommentModalVisible(false)}
+                    onPress={() => setIsCommentCountModalVisible(false)}
                   >
-                      {/* <LikerModal targetId={item._id} targetType="Post" /> */}
                   </TouchableOpacity>
-                      <CommentModal  />
+                  <CommentModal targetId={item._id} />
                 </Modal>
               )}
             </TouchableOpacity>
@@ -363,21 +362,42 @@ const PostContainer = ({ item }: { item: Post }) => {
                   color={isLiked ? "#FABE25" : "gray"}
                 />
                 <TextScallingFalse
-                  className={`text-base ${
-                    isLiked ? "text-amber-400" : "text-white"
-                  }`}
+                  className={`text-base ${isLiked ? "text-amber-400" : "text-white"
+                    }`}
                 >
                   {isLiked ? "Liked" : "Like"}
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity>
+            {/* comment now */}
+            <TouchableOpacity
+              className="flex flex-row items-center gap-2"
+              onPress={() => setIsCommentModalVisible(true)}
+            >
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
                 <FontAwesome name="comment" size={16} color="grey" />
                 <TextScallingFalse className="text-base text-white">
                   Comment
                 </TextScallingFalse>
               </View>
+              {isCommentModalVisible && (
+                <Modal
+                  visible={isCommentModalVisible}
+                  transparent
+                  animationType="slide"
+                  onRequestClose={() => setIsCommentModalVisible(false)}
+                >
+                  <TouchableOpacity
+                    className="flex-1 justify-end bg-black/50"
+                    activeOpacity={1}
+                    onPress={() => setIsCommentModalVisible(false)}
+                  >
+                    {/* <LikerModal targetId={item._id} targetType="Post" /> */}
+                  </TouchableOpacity>
+                  <CommentModal targetId={item._id} autoFocusKeyboard={isCommentModalVisible} />
+                </Modal>
+              )}
+
             </TouchableOpacity>
             <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">

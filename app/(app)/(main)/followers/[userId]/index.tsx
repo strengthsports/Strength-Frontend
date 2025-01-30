@@ -24,16 +24,19 @@ import { useSelector } from "react-redux";
 const FollowersPage = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user } = useSelector((state) => state?.auth);
+  const { user } = useSelector((state: any) => state?.auth || {});
 
   const type = useMemo(() => {
-    return params.pageType
-      ? params.pageType.charAt(0).toUpperCase() + params.pageType.slice(1)
-      : "";
+    if (typeof params.pageType === "string") {
+      return params.pageType.charAt(0).toUpperCase() + params.pageType.slice(1);
+    }
+    return "";
   }, [params.pageType]);
 
   const userId = useMemo(() => {
-    return params.userId ? JSON.parse(decodeURIComponent(params.userId)) : null;
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params.userId as string))
+      : null;
   }, [params.userId]);
   console.log(userId, type);
   const [
@@ -69,7 +72,7 @@ const FollowersPage = () => {
     }
   }, [userId, params.pageType]);
 
-  const renderFollowerItem = ({ item }) => {
+  const renderFollowerItem = ({ item }: { item: any }) => {
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item._id, type: item.type })
     );
@@ -88,13 +91,13 @@ const FollowersPage = () => {
             <Image
               source={{ uri: item.profilePic }}
               className="w-full h-full"
-              contentFit="cover"
+              resizeMode="cover"
             />
           ) : (
             <Image
               source={nopic}
               className="w-full h-full rounded-full"
-              contentFit="cover"
+              resizeMode="cover"
             />
           )}
         </View>

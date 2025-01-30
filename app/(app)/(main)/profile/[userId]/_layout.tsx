@@ -11,10 +11,8 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import PageThemeView from "~/components/PageThemeView";
-import PostButton from "~/components/PostButton";
-import flag from "@/assets/images/IN.png";
-import TextScallingFalse from "@/components/CentralText";
+import { Slot, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   MaterialCommunityIcons,
   Entypo,
@@ -26,19 +24,32 @@ import {
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import { Slot, useLocalSearchParams } from "expo-router";
-import { useDispatch } from "react-redux";
-import { setUserProfile } from "~/reduxStore/slices/user/profileSlice";
-import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
-import { AppDispatch } from "~/reduxStore";
+
+// Components import
+import PageThemeView from "~/components/PageThemeView";
+import PostButton from "~/components/PostButton";
+import TextScallingFalse from "@/components/CentralText";
+
+// Utilities import
 import { dateFormatter } from "~/utils/dateFormatter";
-import { useRouter } from "expo-router";
+
+// Redux imports
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 import {
   useFollowUserMutation,
-  useGetUserProfileMutation,
   useUnFollowUserMutation,
-} from "~/reduxStore/api/profileApi";
+} from "~/reduxStore/api/profile/profileApi.follow";
+import { useLazyGetUserProfileQuery } from "~/reduxStore/api/profile/profileApi.profile";
 
+// Assets import
+import flag from "@/assets/images/IN.png";
+import {
+  useBlockUserMutation,
+  useUnblockUserMutation,
+} from "~/reduxStore/api/profile/profileApi.block";
+
+// Main function
 const ProfileLayout = ({ param }: { param: string }) => {
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -57,33 +68,21 @@ const ProfileLayout = ({ param }: { param: string }) => {
 
   // RTK Querys
   const [getUserProfile, { data: profileData, isLoading, error }] =
-    useGetUserProfileMutation();
+    useLazyGetUserProfileQuery();
   const [followUser] = useFollowUserMutation();
   const [unFollowUser] = useUnFollowUserMutation();
-
-  const [followingStatus, setFollowingStatus] = useState(
-    profileData?.followingStatus
-  );
-  const [followerCount, setFollowerCount] = useState<number>(
-    profileData?.followerCount || 0
-  );
+  const [blockUser] = useBlockUserMutation();
+  const [unblockUser] = useUnblockUserMutation();
 
   // Fetch user profile when the component mounts
   useEffect(() => {
-    getUserProfile({ targetUserId: userId?.id, targetUserType: userId?.type });
-  }, []);
-
-  // Set user profile
-  useEffect(() => {
-    profileData && dispatch(setUserProfile(profileData));
-    console.log("User data : ", profileData);
-  }, [profileData]);
-
-  // Sync state when profileData updates
-  useEffect(() => {
-    setFollowingStatus(profileData?.followingStatus);
-    setFollowerCount(profileData?.followerCount);
-  }, [profileData]);
+    if (userId) {
+      getUserProfile({
+        targetUserId: userId?.id,
+        targetUserType: userId?.type,
+      });
+    }
+  }, [userId, getUserProfile]);
 
   //close modal on back button press
   useEffect(() => {
@@ -113,21 +112,13 @@ const ProfileLayout = ({ param }: { param: string }) => {
   const handleFollow = async () => {
     if (userId) {
       try {
-        // Optimistic update for visited user profile
-        setFollowingStatus(true);
-        setFollowerCount((prev) => prev + 1);
-
+        // Perform the follow action via mutation
         await followUser({
           followingId: userId?.id,
           followingType: userId?.type,
         }).unwrap();
-        // For current user profile
-        dispatch(setFollowingCount("follow"));
         console.log("Followed Successfully!");
       } catch (err) {
-        setFollowingStatus(false);
-        setFollowerCount((prev) => prev - 1);
-        dispatch(setFollowingCount("unfollow"));
         console.error("Follow error:", err);
       }
     }
@@ -138,22 +129,12 @@ const ProfileLayout = ({ param }: { param: string }) => {
     setSettingsModalVisible((prev) => ({ ...prev, status: false }));
     if (userId) {
       try {
-        // Optimistic update for visited user profile
-        setFollowingStatus(false);
-        setFollowerCount((prev) => prev - 1);
-
         await unFollowUser({
           followingId: userId?.id,
           followingType: userId?.type,
         }).unwrap();
-
-        // For current user profile
-        dispatch(setFollowingCount("unfollow"));
         console.log("Unfollowed Successfully!");
       } catch (err) {
-        setFollowingStatus(true);
-        setFollowerCount((prev) => prev + 1);
-        dispatch(setFollowingCount("follow"));
         console.error("Unfollow error:", err);
       }
     }
@@ -161,7 +142,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
 
   //handle message
   const handleMessage = () => {
-    if (!followingStatus) {
+    if (!profileData?.followingStatus) {
       setSettingsModalVisible({ status: true, message: "Message" });
     } else {
       router.push("/");
@@ -175,6 +156,41 @@ const ProfileLayout = ({ param }: { param: string }) => {
     setSettingsModalVisible({ status: true, message: settingsType });
   };
 
+  //handle block
+  const handleBlock = async () => {
+    if (userId) {
+      try {
+        // Perform the block action via mutation
+        await blockUser({
+          blockingId: userId?.id,
+          blockingType: userId?.type,
+        }).unwrap();
+        console.log("Blocked Successfully!");
+      } catch (err) {
+        console.error("Blocking error:", err);
+      }
+    }
+  };
+
+  //handle unblock
+  const handleUnblock = async () => {
+    if (userId) {
+      try {
+        // Perform the block action via mutation
+        await unblockUser({
+          blockedId: userId?.id,
+          blockedType: userId?.type,
+        }).unwrap();
+        console.log("Unblocked Successfully!");
+      } catch (err) {
+        console.error("Unblocking error:", err);
+      }
+    }
+  };
+
+  //handle report profile
+
+  // Error component
   if (error) {
     return (
       <View>
@@ -220,7 +236,6 @@ const ProfileLayout = ({ param }: { param: string }) => {
               </TouchableOpacity>
             </View>
           </View>
-
           {/* profile pic and cover image */}
           <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
             <Image
@@ -259,7 +274,11 @@ const ProfileLayout = ({ param }: { param: string }) => {
 
           {/* user info */}
           <View
-            style={{ width: "100%", alignItems: "center", paddingTop: "2%" }}
+            style={{
+              width: "100%",
+              alignItems: "center",
+              paddingTop: "2%",
+            }}
           >
             <View
               style={{
@@ -271,7 +290,11 @@ const ProfileLayout = ({ param }: { param: string }) => {
             >
               {/* first name, last name, country */}
               <View
-                style={{ position: "relative", top: -9, flexDirection: "row" }}
+                style={{
+                  position: "relative",
+                  top: -9,
+                  flexDirection: "row",
+                }}
               >
                 <View style={{ width: "47.1%" }}>
                   <TextScallingFalse
@@ -284,260 +307,275 @@ const ProfileLayout = ({ param }: { param: string }) => {
                     {profileData?.firstName} {profileData?.lastName}
                   </TextScallingFalse>
                 </View>
-                <View style={{ width: "19.70%" }}>
-                  <View style={{ height: 7 }} />
-                  <View style={{ flexDirection: "row", gap: 3 }}>
-                    <Image
-                      source={flag}
-                      style={{ width: "23.88%", height: "90%" }}
-                    />
+                {!profileData?.blockingStatus && (
+                  <View style={{ width: "19.70%" }}>
+                    <View style={{ height: 7 }} />
+                    <View style={{ flexDirection: "row", gap: 3 }}>
+                      <Image
+                        source={flag}
+                        style={{ width: "23.88%", height: "90%" }}
+                      />
+                      <TextScallingFalse
+                        style={{
+                          color: "white",
+                          fontSize: responsiveFontSize(1.41),
+                          fontWeight: "400",
+                        }}
+                      >
+                        {profileData?.address?.country || "undefined"}
+                      </TextScallingFalse>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {!profileData?.blockingStatus && (
+                <>
+                  {/* headline */}
+                  <View
+                    style={{ width: "67.64%", position: "relative", top: -9 }}
+                  >
                     <TextScallingFalse
                       style={{
                         color: "white",
-                        fontSize: responsiveFontSize(1.41),
+                        fontSize: responsiveFontSize(1.3),
                         fontWeight: "400",
                       }}
                     >
-                      {profileData?.address?.country || "undefined"}
+                      {profileData?.headline}
                     </TextScallingFalse>
                   </View>
-                </View>
-              </View>
 
-              {/* headline */}
-              <View style={{ width: "67.64%", position: "relative", top: -9 }}>
-                <TextScallingFalse
-                  style={{
-                    color: "white",
-                    fontSize: responsiveFontSize(1.3),
-                    fontWeight: "400",
-                  }}
-                >
-                  {profileData?.headline}
-                </TextScallingFalse>
-              </View>
+                  <View style={{ paddingTop: "3.6%" }}>
+                    {/* age, height, weight, teams */}
+                    <View style={{ position: "relative", left: -3 }}>
+                      <View style={{ flexDirection: "row", gap: "3.65%" }}>
+                        <View style={{ flexDirection: "row" }}>
+                          <Entypo
+                            name="dot-single"
+                            size={responsiveDotSize}
+                            color="white"
+                          />
+                          <TextScallingFalse style={styles.ProfileKeyPoints}>
+                            {" "}
+                            Age: {profileData?.age}
+                            <TextScallingFalse style={{ color: "grey" }}>
+                              ({dateFormatter(profileData?.dateOfBirth, "text")}
+                              )
+                            </TextScallingFalse>
+                          </TextScallingFalse>
+                        </View>
 
-              <View style={{ paddingTop: "3.6%" }}>
-                {/* age, height, weight, teams */}
-                <View style={{ position: "relative", left: -3 }}>
-                  <View style={{ flexDirection: "row", gap: "3.65%" }}>
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Age: {profileData?.age}
-                        <TextScallingFalse style={{ color: "grey" }}>
-                          ({dateFormatter(profileData?.dateOfBirth, "text")})
-                        </TextScallingFalse>
-                      </TextScallingFalse>
+                        <View style={{ flexDirection: "row" }}>
+                          <Entypo
+                            name="dot-single"
+                            size={responsiveDotSize}
+                            color="white"
+                          />
+                          <TextScallingFalse style={styles.ProfileKeyPoints}>
+                            {" "}
+                            Height: {profileData?.height}
+                          </TextScallingFalse>
+                        </View>
+
+                        <View style={{ flexDirection: "row" }}>
+                          <Entypo
+                            name="dot-single"
+                            size={responsiveDotSize}
+                            color="white"
+                          />
+                          <TextScallingFalse style={styles.ProfileKeyPoints}>
+                            {" "}
+                            Weight: {profileData?.weight}
+                          </TextScallingFalse>
+                        </View>
+                      </View>
+
+                      <View style={{ paddingTop: "3%" }}>
+                        <View style={{ flexDirection: "row" }}>
+                          <Entypo
+                            name="dot-single"
+                            size={responsiveDotSize}
+                            color="white"
+                          />
+                          <TextScallingFalse style={styles.ProfileKeyPoints}>
+                            {" "}
+                            Teams:{" "}
+                            <TextScallingFalse style={{ color: "grey" }}>
+                              {" "}
+                              Pro Trackers
+                            </TextScallingFalse>
+                          </TextScallingFalse>
+                        </View>
+                      </View>
                     </View>
 
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Height: {profileData?.height}
-                      </TextScallingFalse>
-                    </View>
-
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Weight: {profileData?.weight}
-                      </TextScallingFalse>
-                    </View>
-                  </View>
-
-                  <View style={{ paddingTop: "3%" }}>
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Teams:{" "}
-                        <TextScallingFalse style={{ color: "grey" }}>
-                          {" "}
-                          Pro Trackers
-                        </TextScallingFalse>
-                      </TextScallingFalse>
-                    </View>
-                  </View>
-                </View>
-
-                {/* address and followings */}
-                <View
-                  style={{
-                    paddingHorizontal: 7,
-                    gap: 3,
-                    paddingTop: "3.5%",
-                    position: "relative",
-                    bottom: "-10%",
-                  }}
-                >
-                  <View>
-                    <TextScallingFalse
+                    {/* address and followings */}
+                    <View
                       style={{
-                        color: "grey",
-                        fontSize: responsiveFontSize(1.35),
-                        width: "63.25%",
+                        paddingHorizontal: 7,
+                        gap: 3,
+                        paddingTop: "3.5%",
+                        position: "relative",
+                        bottom: "-10%",
                       }}
                     >
-                      {`${profileData?.address.city}, ${profileData?.address.state}, ${profileData?.address.country}`}
-                    </TextScallingFalse>
+                      <View>
+                        <TextScallingFalse
+                          style={{
+                            color: "grey",
+                            fontSize: responsiveFontSize(1.35),
+                            width: "63.25%",
+                          }}
+                        >
+                          {`${profileData?.address.city}, ${profileData?.address.state}, ${profileData?.address.country}`}
+                        </TextScallingFalse>
+                      </View>
+                      <View style={{ flexDirection: "row" }}>
+                        <TouchableOpacity
+                          activeOpacity={0.5}
+                          onPress={() =>
+                            router.push(
+                              `../followers/${params?.userId}?pageType=followers`
+                            )
+                          }
+                        >
+                          <TextScallingFalse
+                            style={{
+                              color: "#12956B",
+                              fontSize: responsiveFontSize(1.64),
+                            }}
+                          >
+                            {profileData?.followerCount} Followers
+                          </TextScallingFalse>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.5}
+                          onPress={() =>
+                            router.push(
+                              `../followers/${params?.userId}?pageType=followings`
+                            )
+                          }
+                        >
+                          <TextScallingFalse
+                            style={{
+                              color: "#12956B",
+                              fontSize: responsiveFontSize(1.64),
+                            }}
+                          >
+                            {" "}
+                            - {profileData?.followingCount} Following
+                          </TextScallingFalse>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
-                  <View style={{ flexDirection: "row" }}>
-                    <TouchableOpacity
-                      activeOpacity={0.5}
-                      onPress={() =>
-                        router.push(
-                          `../followers/${params?.userId}?pageType=followers`
-                        )
-                      }
-                    >
-                      <TextScallingFalse
-                        style={{
-                          color: "#12956B",
-                          fontSize: responsiveFontSize(1.64),
-                        }}
-                      >
-                        {followerCount} Followers
-                      </TextScallingFalse>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      activeOpacity={0.5}
-                      onPress={() =>
-                        router.push(
-                          `../followers/${params?.userId}?pageType=followings`
-                        )
-                      }
-                    >
-                      <TextScallingFalse
-                        style={{
-                          color: "#12956B",
-                          fontSize: responsiveFontSize(1.64),
-                        }}
-                      >
-                        {" "}
-                        - {profileData?.followingCount} Following
-                      </TextScallingFalse>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
+                </>
+              )}
             </View>
           </View>
-          {/* follow, message, three dots */}
-          <View
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              flexDirection: "row",
-              gap: 10,
-              paddingTop: "2.5%",
-            }}
-          >
-            {/* follow button */}
-            {followingStatus ? (
-              <TouchableOpacity
-                activeOpacity={0.5}
-                className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
-                onPress={() => handleOpenSettingsModal("Unfollow")}
-              >
-                <TextScallingFalse
-                  style={{
-                    color: "white",
-                    fontSize: responsiveFontSize(1.7),
-                    fontWeight: "500",
-                  }}
-                >
-                  <Entypo
-                    style={{ marginLeft: -4 * scaleFactor }}
-                    name="check"
-                    size={17.5 * scaleFactor}
-                    color="white"
-                  />
-                  Following
-                </TextScallingFalse>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                activeOpacity={0.5}
-                className="basis-1/3 rounded-[0.70rem] bg-[#12956B] justify-center items-center"
-                onPress={handleFollow}
-              >
-                <TextScallingFalse
-                  style={{
-                    color: "white",
-                    fontSize: responsiveFontSize(1.7),
-                    fontWeight: "500",
-                  }}
-                >
-                  Follow
-                </TextScallingFalse>
-              </TouchableOpacity>
-            )}
 
-            {/* message button */}
-            <TouchableOpacity
-              activeOpacity={0.5}
-              className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
-              onPress={handleMessage}
-            >
-              <TextScallingFalse
+          {!profileData?.blockingStatus && (
+            <>
+              {/* follow, message, three dots */}
+              <View
                 style={{
-                  color: "white",
-                  fontSize: responsiveFontSize(1.7),
-                  fontWeight: "400",
+                  width: "100%",
+                  justifyContent: "center",
+                  flexDirection: "row",
+                  gap: 10,
+                  paddingTop: "2.5%",
                 }}
               >
-                Message
-              </TextScallingFalse>
-            </TouchableOpacity>
+                {/* follow button */}
+                {profileData?.followingStatus ? (
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
+                    onPress={() => handleOpenSettingsModal("Unfollow")}
+                  >
+                    <TextScallingFalse
+                      style={{
+                        color: "white",
+                        fontSize: responsiveFontSize(1.7),
+                        fontWeight: "500",
+                      }}
+                    >
+                      <Entypo
+                        style={{ marginLeft: -4 * scaleFactor }}
+                        name="check"
+                        size={17.5 * scaleFactor}
+                        color="white"
+                      />
+                      Following
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    className="basis-1/3 rounded-[0.70rem] bg-[#12956B] justify-center items-center"
+                    onPress={handleFollow}
+                  >
+                    <TextScallingFalse
+                      style={{
+                        color: "white",
+                        fontSize: responsiveFontSize(1.7),
+                        fontWeight: "500",
+                      }}
+                    >
+                      Follow
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                )}
 
-            {/* three dots settings */}
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={{
-                width: responsiveWidth(7.92),
-                height: responsiveHeight(3.82),
-                borderRadius: 100,
-                justifyContent: "center",
-                alignItems: "center",
-                borderWidth: 1,
-                borderColor: "#12956B",
-              }}
-              onPress={() => handleOpenSettingsModal("")}
-            >
-              <MaterialCommunityIcons
-                name="dots-horizontal"
-                size={18}
-                color="white"
+                {/* message button */}
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
+                  onPress={handleMessage}
+                >
+                  <TextScallingFalse
+                    style={{
+                      color: "white",
+                      fontSize: responsiveFontSize(1.7),
+                      fontWeight: "400",
+                    }}
+                  >
+                    Message
+                  </TextScallingFalse>
+                </TouchableOpacity>
+
+                {/* three dots settings */}
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  style={{
+                    width: responsiveWidth(7.92),
+                    height: responsiveHeight(3.82),
+                    borderRadius: 100,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: "#12956B",
+                  }}
+                  onPress={() => handleOpenSettingsModal("")}
+                >
+                  <MaterialCommunityIcons
+                    name="dots-horizontal"
+                    size={18}
+                    color="white"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Tab buttons */}
+              <Tabs
+                activeTab={activeTab}
+                handleTabPress={handleTabPress}
+                params={params}
               />
-            </TouchableOpacity>
-          </View>
-          {/* Tab buttons */}
-          <Tabs
-            activeTab={activeTab}
-            handleTabPress={handleTabPress}
-            params={params}
-          />
-          <Slot />
+              <Slot />
+            </>
+          )}
           {/* Settings modal */}
           <Modal
             visible={isSettingsModalVisible.status}
@@ -556,41 +594,37 @@ const ProfileLayout = ({ param }: { param: string }) => {
             >
               <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto p-5 pt-7">
                 {isSettingsModalVisible.message === "" ? (
-                  <View>
+                  <View className="flex gap-y-3">
                     {/* block */}
-                    <View className="items-center flex-row">
-                      <MaterialIcons
-                        name="block"
-                        size={20 * scaleFactor}
-                        color="white"
-                      />
-                      <TextScallingFalse className="text-white font-semibold text-base">
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      onPress={handleBlock}
+                      className="items-center flex-row gap-x-3"
+                    >
+                      <MaterialIcons name="block" size={22} color="white" />
+                      <TextScallingFalse className="text-white font-normal text-3xl">
                         Block this profile
                       </TextScallingFalse>
-                    </View>
+                    </TouchableOpacity>
                     {/* report */}
-                    <View className="items-center flex-row">
+                    <View className="items-center flex-row gap-x-3">
                       <MaterialIcons
                         name="report-problem"
-                        size={20 * scaleFactor}
+                        size={22}
                         color="white"
                       />
-                      <TextScallingFalse className="text-white font-semibold text-base">
+                      <TextScallingFalse className="text-white font-normal text-3xl">
                         Report this profile
                       </TextScallingFalse>
                     </View>
                     {/* follow/unfollow */}
-                    {followingStatus ? (
+                    {profileData?.followingStatus ? (
                       <TouchableOpacity
-                        className="flex-row items-center"
+                        className="flex-row items-center gap-x-3"
                         onPress={handleUnfollow}
                       >
-                        <Entypo
-                          name="cross"
-                          size={28 * scaleFactor}
-                          color="white"
-                        />
-                        <TextScallingFalse className="text-white font-semibold text-base">
+                        <Entypo name="cross" size={22} color="white" />
+                        <TextScallingFalse className="text-white font-normal text-3xl">
                           Unfollow {profileData?.firstName}
                         </TextScallingFalse>
                       </TouchableOpacity>

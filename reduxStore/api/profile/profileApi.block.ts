@@ -1,5 +1,5 @@
 import { profileApi } from "./profileApi";
-import { BlockUser } from "~/types/user";
+import { BlockUser, UnblockUser } from "~/types/user";
 
 export const blockApi = profileApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,8 +10,11 @@ export const blockApi = profileApi.injectEndpoints({
         body,
       }),
       transformResponse: (response: { data: any }) => response.data,
+      invalidatesTags: (result, error, { blockingId }) => [
+        { type: "UserProfile", id: blockingId },
+      ],
     }),
-    unblockUser: builder.mutation<any, BlockUser>({
+    unblockUser: builder.mutation<any, UnblockUser>({
       query: (body) => ({
         url: "/api/v1/unblock",
         method: "DELETE",

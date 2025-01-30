@@ -44,7 +44,9 @@ const ProfileLayout = ({ param }: { param: string }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const userId = useMemo(() => {
-    return params.userId ? JSON.parse(decodeURIComponent(params.userId)) : null;
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params.userId as string))
+      : null;
   }, [params.userId]);
 
   const [activeTab, setActiveTab] = useState("Overview");
@@ -62,7 +64,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
   const [followingStatus, setFollowingStatus] = useState(
     profileData?.followingStatus
   );
-  const [followerCount, setFollowerCount] = useState(
+  const [followerCount, setFollowerCount] = useState<number>(
     profileData?.followerCount || 0
   );
 
@@ -73,7 +75,8 @@ const ProfileLayout = ({ param }: { param: string }) => {
 
   // Set user profile
   useEffect(() => {
-    profileData && setUserProfile(profileData);
+    profileData && dispatch(setUserProfile(profileData));
+    console.log("User data : ", profileData);
   }, [profileData]);
 
   // Sync state when profileData updates
@@ -176,7 +179,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
     return (
       <View>
         <TextScallingFalse className="text-red-500">
-          {error.message}
+          {error as string}
         </TextScallingFalse>
       </View>
     );

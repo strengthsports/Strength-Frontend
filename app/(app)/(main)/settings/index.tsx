@@ -179,7 +179,10 @@ const index = () => {
         </View>
         <View style={styles.OptionButtonView}>
           <MaterialIcons name="block" size={31} color="white" />
-          <TouchableOpacity activeOpacity={0.7}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push("/(app)/(main)/blocked-users")}
+          >
             <TextScallingFalse style={styles.OptionText}>
               Blocked Users
             </TextScallingFalse>

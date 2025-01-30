@@ -109,6 +109,6 @@ export const profileApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["UserProfile", "Followers", "Followings"],
+  tagTypes: ["UserProfile", "Followers", "Followings", "BlockedUserList"],
   endpoints: () => ({}),
 });

@@ -12,6 +12,7 @@ export const blockApi = profileApi.injectEndpoints({
       transformResponse: (response: { data: any }) => response.data,
       invalidatesTags: (result, error, { blockingId }) => [
         { type: "UserProfile", id: blockingId },
+        { type: "BlockedUserList" },
       ],
     }),
     unblockUser: builder.mutation<any, UnblockUser>({
@@ -21,8 +22,25 @@ export const blockApi = profileApi.injectEndpoints({
         body,
       }),
       transformResponse: (response: { data: any }) => response.data,
+      invalidatesTags: (result, error, { blockedId }) => [
+        { type: "UserProfile", id: blockedId },
+        { type: "BlockedUserList" },
+      ],
+    }),
+    getBlockedUsers: builder.query<any, void>({
+      query: () => ({
+        url: "/api/v1/blocked-users", // Fixed return syntax
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+      keepUnusedDataFor: 100,
+      providesTags: (result) =>
+        result ? [{ type: "BlockedUserList" }] : [{ type: "BlockedUserList" }],
     }),
   }),
 });
 
-export const { useBlockUserMutation, useUnblockUserMutation } = blockApi;
+export const {
+  useBlockUserMutation,
+  useUnblockUserMutation,
+  useGetBlockedUsersQuery,
+} = blockApi;

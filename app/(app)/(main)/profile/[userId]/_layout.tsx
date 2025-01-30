@@ -165,6 +165,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
           blockingId: userId?.id,
           blockingType: userId?.type,
         }).unwrap();
+        setSettingsModalVisible({ status: false, message: "SettingsClose" });
         console.log("Blocked Successfully!");
       } catch (err) {
         console.error("Blocking error:", err);
@@ -576,6 +577,16 @@ const ProfileLayout = ({ param }: { param: string }) => {
               <Slot />
             </>
           )}
+
+          {/* Blocked message */}
+          {profileData?.blockingStatus && (
+            <View className="w-full flex-row justify-center items-center mt-10">
+              <TextScallingFalse className="text-[#808080] text-5xl font-bold">
+                You have blocked this user
+              </TextScallingFalse>
+            </View>
+          )}
+
           {/* Settings modal */}
           <Modal
             visible={isSettingsModalVisible.status}

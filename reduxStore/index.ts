@@ -20,7 +20,6 @@ import { feedPostApi } from "./api/feedPostApi";
 import { likeUnlikeApi } from "./api/likeUnlikeApi";
 import { sportsApi } from "./api/sportsApi";
 import { notificationApi } from "./api/notificationApi";
-// import { socialApi } from "./api/socialApi"; // Import the new socialApi
 import { likerApi } from "./api/likerApi";
 import { postCommentApi } from "./api/postCommentApi";
 
@@ -43,7 +42,7 @@ const rootReducer = combineReducers({
   [likeUnlikeApi.reducerPath]: likeUnlikeApi.reducer,
   [likerApi.reducerPath]: likerApi.reducer, // Add socialApi reducer
   [sportsApi.reducerPath]: sportsApi.reducer,
-  [notificationApi.reducerPath]: sportsApi.reducer,
+  [notificationApi.reducerPath]: notificationApi.reducer,
   [postCommentApi.reducerPath]: postCommentApi.reducer,
 });
 

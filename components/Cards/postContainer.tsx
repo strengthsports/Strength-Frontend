@@ -314,7 +314,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                     onPress={() => setIsPostLikersModalVisible(false)}
                   >
                   </TouchableOpacity>
-                      <LikerModal targetId={item._id} targetType="Post" />
+                  <LikerModal targetId={item._id} targetType="Post" />
                 </Modal>
               )}
             </TouchableOpacity>
@@ -340,7 +340,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                     onPress={() => setIsCommentCountModalVisible(false)}
                   >
                   </TouchableOpacity>
-                      <CommentModal targetId={item._id}/>
+                  <CommentModal targetId={item._id} />
                 </Modal>
               )}
             </TouchableOpacity>
@@ -362,26 +362,25 @@ const PostContainer = ({ item }: { item: Post }) => {
                   color={isLiked ? "#FABE25" : "gray"}
                 />
                 <TextScallingFalse
-                  className={`text-base ${
-                    isLiked ? "text-amber-400" : "text-white"
-                  }`}
+                  className={`text-base ${isLiked ? "text-amber-400" : "text-white"
+                    }`}
                 >
                   {isLiked ? "Liked" : "Like"}
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>
-                  {/* comment now */}
+            {/* comment now */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
               onPress={() => setIsCommentModalVisible(true)}
             >
-            <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
+              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
                 <FontAwesome name="comment" size={16} color="grey" />
                 <TextScallingFalse className="text-base text-white">
                   Comment
                 </TextScallingFalse>
-                </View>
-                {isCommentModalVisible && (
+              </View>
+              {isCommentModalVisible && (
                 <Modal
                   visible={isCommentModalVisible}
                   transparent
@@ -393,11 +392,11 @@ const PostContainer = ({ item }: { item: Post }) => {
                     activeOpacity={1}
                     onPress={() => setIsCommentModalVisible(false)}
                   >
-                      {/* <LikerModal targetId={item._id} targetType="Post" /> */}
+                    {/* <LikerModal targetId={item._id} targetType="Post" /> */}
                   </TouchableOpacity>
-                      <CommentModal targetId={item._id} autoFocusKeyboard={isCommentModalVisible}  />
+                  <CommentModal targetId={item._id} autoFocusKeyboard={isCommentModalVisible} />
                 </Modal>
-                            )}
+              )}
 
             </TouchableOpacity>
             <TouchableOpacity>

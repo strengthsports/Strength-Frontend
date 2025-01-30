@@ -52,18 +52,16 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   });
 
   return (
-<View className="h-3/4 w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x  border-neutral-700		 ">
-  <Divider
-    className="w-16 self-center rounded-full bg-neutral-700 my-1"
-    width={4}
-  />
-        <Text className="text-white self-center text-2xl my-4">Likes</Text>
-  
-    {isLoading && <ActivityIndicator color="#12956B" className="mt-4" />}
-    {/* {!data && <Text className="text-white text-center mt-4">No Likes</Text>} */}
-    {error && <Text className="text-red-500 text-center mt-4"> Error fetching likers</Text>}
+    <View className="h-3/4 w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x  border-neutral-700		 ">
+      <Divider
+        className="w-16 self-center rounded-full bg-neutral-700 my-1"
+        width={4}
+      />
+      <Text className="text-white self-center text-2xl my-4">Likes</Text>
 
-    {!isLoading && !error && data?.data?.length > 0 ? (
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#12956B" />
+      ) : data?.data?.length > 0 ? (
         <FlatList
           data={data?.data}
           keyExtractor={(item) => item.liker._id}
@@ -73,11 +71,9 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
           initialNumToRender={18}
         />
       ) : (
-        !isLoading && !error && (
-          <Text className="text-white text-center mt-4">No Likes</Text>
-        )
+        <Text className="text-white text-center">No Likes found.</Text>
       )}
-</View>
+    </View>
   );
 });
 

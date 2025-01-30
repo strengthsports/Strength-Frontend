@@ -28,7 +28,14 @@ export const postCommentApi = createApi({
         body,
       }),
     }),
+    fetchComments: builder.query({
+      query: (body) => ({
+        url: 'api/v1/fetchComments',
+        method: 'POST', // Use POST to send data in the body
+        body, // Send targetId and targetType in the body
+      }),
+    }),
   }),
 });
 
-export const { usePostCommentMutation, useDeleteCommentMutation } = postCommentApi;
+export const { usePostCommentMutation, useDeleteCommentMutation, useFetchCommentsQuery } = postCommentApi;

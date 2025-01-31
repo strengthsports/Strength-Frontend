@@ -20,13 +20,16 @@ import {
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
 import { Slot, usePathname, useRouter } from "expo-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { dateFormatter } from "~/utils/dateFormatter";
+import { AppDispatch } from "~/reduxStore";
+import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
   const router = useRouter();
   const pathname = usePathname();
+  const dispatch = useDispatch<AppDispatch>();
 
   const [activeTab, setActiveTab] = useState("Overview");
 
@@ -50,7 +53,7 @@ const ProfileLayout = () => {
 
   const handleTabPress = (tabName: string, route: string) => {
     setActiveTab(tabName);
-    router.replace(route);
+    router.replace(route as any);
   };
 
   if (loading) {

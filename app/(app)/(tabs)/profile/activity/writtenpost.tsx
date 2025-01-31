@@ -35,7 +35,7 @@ const WrittenPostScreen = () => {
   ));
 
   return (
-    <View>
+    <View className="flex-1">
       <FlatList
         data={textPosts || []}
         keyExtractor={(item) => item._id}

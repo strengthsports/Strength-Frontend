@@ -1,6 +1,8 @@
 import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Modal,
   Pressable,
@@ -10,23 +12,31 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import RightArrow from "~/components/Arrows/RightArrow";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
 import TopBar from "~/components/TopBar";
+import { AppDispatch } from "~/reduxStore";
 import { useGetSportsQuery } from "~/reduxStore/api/sportsApi";
+import {
+  editUserSportsOverview,
+  fetchMyProfile,
+} from "~/reduxStore/slices/user/profileSlice";
 
 interface SelectedSport {
   sportsId: string;
   sportsName: string;
   keyDetails: object;
+  logo: string;
   [key: string]: any;
 }
 
 function EditOverview() {
   const { loading, error, user } = useSelector((state) => state?.auth);
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -70,10 +80,13 @@ function EditOverview() {
   const handleOpenEditModal = (
     sportsId: string,
     sportsName: string,
-    keyDetails: object
+    keyDetails: object,
+    logo: string
   ) => {
     setEditModalOpen((prev) => !prev);
-    setSelectedSport({ sportsId, sportsName, keyDetails: keyDetails || {} });
+    setSelectedSport(
+      { sportsId, sportsName, keyDetails: keyDetails, logo } || {}
+    );
   };
   const handleCloseEditModal = () => {
     setEditModalOpen((prev) => !prev);
@@ -138,23 +151,53 @@ function EditOverview() {
   };
 
   // Handle submit sports overview details
-  const handleSubmitOverviewData = () => {
-    //
+  const handleSubmitOverviewData = async () => {
+    const data = finalSelectedSports.map((sp) => {
+      return {
+        details: sp.keyDetails,
+        sportsId: sp.sportsId,
+      };
+    });
+    const sports = { sports: [...data] };
+    console.log(sports);
+    await dispatch(editUserSportsOverview(sports));
+    await dispatch(
+      fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
+    );
+    router.push("/(app)/(tabs)/profile");
   };
 
   useEffect(() => {
-    console.log("\n\nFinal sports Data : ", finalSelectedSports);
+    const data = finalSelectedSports.map((sp) => {
+      return {
+        details: sp.keyDetails,
+        sportsId: sp.sportsId,
+      };
+    });
+    console.log("\n\nFinal sports Data : ", data);
   }, [finalSelectedSports]);
+
+  if (error) {
+    <View className="flex-row justify-center">
+      <TextScallingFalse className="text-red-500">
+        {error.message || "Error fetching sports !"}
+      </TextScallingFalse>
+    </View>;
+  }
 
   return (
     <SafeAreaView>
       <PageThemeView>
         <TopBar heading="Edit Overview" backRoute="/(app)/(tabs)/profile">
-          <TouchableOpacity onPress={handleSubmitOverviewData}>
-            <TextScallingFalse className="text-[#12956B] text-4xl text-right">
-              Done
-            </TextScallingFalse>
-          </TouchableOpacity>
+          {loading ? (
+            <ActivityIndicator size="small" color="#12956B" />
+          ) : (
+            <TouchableOpacity onPress={handleSubmitOverviewData}>
+              <TextScallingFalse className="text-[#12956B] text-4xl text-right">
+                Done
+              </TextScallingFalse>
+            </TouchableOpacity>
+          )}
         </TopBar>
         {/* Headings */}
         <View style={{ width: "100%", padding: 17 }}>
@@ -180,7 +223,7 @@ function EditOverview() {
           >
             Sports Overview
           </TextScallingFalse>
-          <View className="w-full justify-start gap-x-2.5 flex-row items-center">
+          <View className="w-full justify-start gap-x-2.5 gap-y-2 flex-row items-center flex-wrap">
             {finalSelectedSports && finalSelectedSports.length > 0 ? (
               finalSelectedSports.map((sport, index) => (
                 <TouchableOpacity
@@ -191,7 +234,8 @@ function EditOverview() {
                     handleOpenEditModal(
                       sport.sportsId,
                       sport.sportsName,
-                      sport.keyDetails
+                      sport.keyDetails,
+                      sport.logo
                     )
                   }
                 >
@@ -289,22 +333,14 @@ function EditOverview() {
                   selectedSport && handleOpenKeyDetailsForm(selectedSport)
                 }
                 activeOpacity={0.7}
-                // style={styles.EditTopicSportsView}
               >
                 <TextScallingFalse className="text-white">
                   Key Details
                 </TextScallingFalse>
                 <RightArrow />
               </TouchableOpacity>
-              <TouchableOpacity
-                // onPress={() => setAlertModalVisible3(true)}
-                activeOpacity={0.7}
-                // style={styles.EditTopicSportsView}
-              >
-                <TextScallingFalse
-                  // style={[styles.menuText, { color: "grey" }]}
-                  className="text-white"
-                >
+              <TouchableOpacity activeOpacity={0.7}>
+                <TextScallingFalse className="text-white">
                   Teams
                 </TextScallingFalse>
                 <RightArrow />
@@ -482,47 +518,56 @@ function EditOverview() {
               </View>
             </View>
             {/* Sports options */}
-            <View className="w-full flex-row flex-wrap justify-center items-center gap-2 p-5">
-              {filteredSports?.map((sport) => (
-                <TouchableOpacity
-                  onPress={() =>
-                    handleOpenEditModal(
-                      sport._id,
-                      sport.name,
-                      sport.defaultProperties
-                    )
-                  }
-                  activeOpacity={0.7}
-                  key={sport._id}
-                  style={{
-                    width: 115,
-                    height: 37,
-                    borderWidth: 0.3,
-                    borderColor: "#404040",
-                    borderRadius: 7,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flexDirection: "row",
-                    gap: 10,
-                    backgroundColor: finalSelectedSports.some(
-                      (s) => s.sportsName === sport.name
-                    )
-                      ? "#12956B"
-                      : "transparent",
-                  }}
-                >
-                  <Image
-                    source={{ uri: sport.logo }}
-                    style={{ width: 17, height: 17 }}
-                  />
-                  <TextScallingFalse
-                    style={{ color: "white", fontSize: 12, fontWeight: "500" }}
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#12956B" />
+            ) : (
+              <View className="w-full flex-row flex-wrap justify-center items-center gap-2 p-5">
+                {filteredSports?.map((sport) => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      handleOpenEditModal(
+                        sport._id,
+                        sport.name,
+                        sport.defaultProperties,
+                        sport.logo
+                      )
+                    }
+                    activeOpacity={0.7}
+                    key={sport._id}
+                    style={{
+                      width: 115,
+                      height: 37,
+                      borderWidth: 0.3,
+                      borderColor: "#404040",
+                      borderRadius: 7,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexDirection: "row",
+                      gap: 10,
+                      backgroundColor: finalSelectedSports.some(
+                        (s) => s.sportsName === sport.name
+                      )
+                        ? "#12956B"
+                        : "transparent",
+                    }}
                   >
-                    {sport.name}
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    <Image
+                      source={{ uri: sport.logo }}
+                      style={{ width: 17, height: 17 }}
+                    />
+                    <TextScallingFalse
+                      style={{
+                        color: "white",
+                        fontSize: 12,
+                        fontWeight: "500",
+                      }}
+                    >
+                      {sport.name}
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </PageThemeView>
         </Modal>
       </PageThemeView>

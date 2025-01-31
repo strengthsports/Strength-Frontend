@@ -119,8 +119,6 @@ const Overview = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // console.log(user.selectedSports);
-
   return (
     <View style={{ flex: 1 }}>
       {user?.selectedSports?.length > 0 && (
@@ -165,6 +163,14 @@ const Overview = () => {
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
+              {/* Add Tab Button */}
+              <TouchableOpacity
+                className="border border-gray-700 rounded-lg flex items-center justify-center"
+                style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
+                onPress={() => router.push("/(app)/(main)/edit-overview2")}
+              >
+                <Feather name="plus" size={20 * scaleFactor} color="white" />
+              </TouchableOpacity>
             </TabsList>
           </ScrollView>
 

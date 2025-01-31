@@ -2,7 +2,11 @@ import { getToken, removeToken, saveToken } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser } from "./onboardingSlice";
-import { editUserProfile } from "./profileSlice";
+import {
+  editUserProfile,
+  editUserSportsOverview,
+  fetchMyProfile,
+} from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
 // Initial State
@@ -207,6 +211,35 @@ const authSlice = createSlice({
         state.error =
           action.payload || "Unexpected error occurred during updating user.";
       });
+
+    // Fetch my profile
+    builder.addCase(fetchMyProfile.pending, (state, action) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchMyProfile.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.user = action.payload;
+    });
+    builder.addCase(fetchMyProfile.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+    // Edit sports overview
+    builder.addCase(editUserSportsOverview.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(editUserSportsOverview.fulfilled, (state, action) => {
+      // Set loading to true, error to null initially
+      state.loading = false;
+      state.error = null;
+    });
+    builder.addCase(editUserSportsOverview.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 

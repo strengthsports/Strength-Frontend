@@ -14,7 +14,7 @@ const Posts = () => {
   const isAndroid = Platform.OS === "android";
 
   useEffect(() => {
-    if (!posts) {
+    if (!posts || posts.length === 0) {
       dispatch(getOwnPosts(null));
     }
   }, [dispatch, posts]);

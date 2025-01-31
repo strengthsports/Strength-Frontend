@@ -26,7 +26,7 @@ const ImagesScreen = () => {
     ?.filter((url: any) => url); // Remove empty values
 
   return (
-    <View className="h-full flex-row justify-center">
+    <View className="h-full">
       <FlatList
         data={imageUrls}
         keyExtractor={(item, index) => `${item}-${index}`}

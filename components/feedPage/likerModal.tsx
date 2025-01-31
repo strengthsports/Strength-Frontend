@@ -41,9 +41,7 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   if (error) {
     console.log("api response", error)
 
-    // return <Text className="text-red-500 text-center mt-4"> Error fetching likers</Text>
   }
-  // if (!data?.data?.length) return <Text className="text-white text-center mt-4">No Likes</Text>;
 
   const getItemLayout = (_: any, index: number) => ({
     length: ITEM_HEIGHT,
@@ -68,8 +66,10 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
           renderItem={({ item }) => <LikerCard liker={item.liker} />}
           contentContainerStyle={{ padding: 10 }}
           getItemLayout={getItemLayout}
-          initialNumToRender={18}
-          ListEmptyComponent={<Text className="text-white text-center">No Likes found!</Text>}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          ListEmptyComponent={<Text className="text-white text-center">No Likes Found!</Text>}
         />
       )}
     </View>

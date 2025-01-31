@@ -15,7 +15,7 @@ import signupReducer from "./slices/user/signupSlice";
 import onboardingReducer from "./slices/user/onboardingSlice";
 import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import profileReducer from "./slices/user/profileSlice";
-import { profileApi } from "./api/profileApi";
+import { profileApi } from "./api/profile/profileApi";
 import { feedPostApi } from "./api/feedPostApi";
 import { likeUnlikeApi } from "./api/likeUnlikeApi";
 import { sportsApi } from "./api/sportsApi";

@@ -14,9 +14,9 @@ import {
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
 import {
-  useFindFollowersMutation,
-  useFindFollowingsMutation,
-} from "~/reduxStore/api/profileApi";
+  useLazyFindFollowersQuery,
+  useLazyFindFollowingsQuery,
+} from "~/reduxStore/api/profile/profileApi.follow";
 import { TargetUser } from "~/types/user";
 import nopic from "@/assets/images/pro.jpg";
 import { useSelector } from "react-redux";
@@ -24,22 +24,25 @@ import { useSelector } from "react-redux";
 const FollowersPage = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user } = useSelector((state) => state?.auth);
+  const { user } = useSelector((state: any) => state?.auth || {});
 
   const type = useMemo(() => {
-    return params.pageType
-      ? params.pageType.charAt(0).toUpperCase() + params.pageType.slice(1)
-      : "";
+    if (typeof params.pageType === "string") {
+      return params.pageType.charAt(0).toUpperCase() + params.pageType.slice(1);
+    }
+    return "";
   }, [params.pageType]);
 
   const userId = useMemo(() => {
-    return params.userId ? JSON.parse(decodeURIComponent(params.userId)) : null;
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params.userId as string))
+      : null;
   }, [params.userId]);
   console.log(userId, type);
   const [
     findFollowers,
     { data: followers, isLoading: isFollowersLoading, isError: followersError },
-  ] = useFindFollowersMutation();
+  ] = useLazyFindFollowersQuery();
 
   const [
     findFollowings,
@@ -48,7 +51,7 @@ const FollowersPage = () => {
       isLoading: isFollowingsLoading,
       isError: followingsError,
     },
-  ] = useFindFollowingsMutation();
+  ] = useLazyFindFollowingsQuery();
 
   useEffect(() => {
     if (userId) {
@@ -60,16 +63,20 @@ const FollowersPage = () => {
       if (params.pageType === "followers") {
         findFollowers(targetUser)
           .unwrap()
-          .catch((err) => console.error("Error finding followers list:", err));
+          .catch((err: any) =>
+            console.error("Error finding followers list:", err)
+          );
       } else if (params.pageType === "followings") {
         findFollowings(targetUser)
           .unwrap()
-          .catch((err) => console.error("Error finding followings list:", err));
+          .catch((err: any) =>
+            console.error("Error finding followings list:", err)
+          );
       }
     }
   }, [userId, params.pageType]);
 
-  const renderFollowerItem = ({ item }) => {
+  const renderFollowerItem = ({ item }: { item: any }) => {
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item._id, type: item.type })
     );
@@ -88,13 +95,13 @@ const FollowersPage = () => {
             <Image
               source={{ uri: item.profilePic }}
               className="w-full h-full"
-              contentFit="cover"
+              resizeMode="cover"
             />
           ) : (
             <Image
               source={nopic}
               className="w-full h-full rounded-full"
-              contentFit="cover"
+              resizeMode="cover"
             />
           )}
         </View>

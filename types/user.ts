@@ -7,7 +7,7 @@ export interface User {
   address: object | null;
   sportsData: { _id: string; name: string }[];
   fetchedUsers: User[];
-  selectedSports: string[];
+  selectedSports: string[] | any;
   profilePic: string | null;
   coverPic: string | null;
   headline: string;
@@ -40,6 +40,7 @@ export interface ProfileState {
   loading: boolean;
   error: string | null;
   posts: Array<any>;
+  [key: string]: any;
 }
 
 export interface UserData {
@@ -57,4 +58,14 @@ export interface UserData {
 export interface FollowUser {
   followingId: string;
   followingType: string;
+}
+
+export interface BlockUser {
+  blockingId: string;
+  blockingType: string;
+}
+
+export interface UnblockUser {
+  blockedId: string;
+  blockedType: string;
 }

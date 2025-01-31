@@ -45,6 +45,7 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: "Explore",
+          href: "/(app)/(tabs)/explore",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol name="magnify" color={color} />
           ),

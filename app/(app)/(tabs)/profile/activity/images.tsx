@@ -34,7 +34,7 @@ const ImagesScreen = () => {
         renderItem={({ item }) => (
           <Image
             source={{ uri: item }}
-            resizeMode="contain" // Maintains aspect ratio
+            resizeMode="cover"
             style={styles.image}
           />
         )}
@@ -52,6 +52,5 @@ const styles = StyleSheet.create({
     width: width / 2 - 10, // Responsive grid layout (2 columns)
     height: 105, // Fixed height (adjust if needed)
     margin: 5,
-    // borderRadius: 10,
   },
 });

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { ProfileState } from "@/types/user";
+import { ProfileState, TargetUser, User } from "@/types/user";
 import { logoutUser } from "./authSlice";
 
 // Initial State
@@ -11,6 +11,7 @@ const initialState: ProfileState = {
   posts: [],
 };
 
+// Edit user profile details
 export const editUserProfile = createAsyncThunk<
   any,
   any,
@@ -53,7 +54,8 @@ export const editUserProfile = createAsyncThunk<
   }
 });
 
-export const getOwnPosts = createAsyncThunk<any, any, { rejectValue: string }>(
+// Get user's own posts
+export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(
   "profile/getOwnPosts",
   async (_, { rejectWithValue }) => {
     try {
@@ -78,8 +80,50 @@ export const getOwnPosts = createAsyncThunk<any, any, { rejectValue: string }>(
       if (!response.ok) {
         return rejectWithValue(data.message || "Error getting posts");
       }
-      console.log("Data : ", data.data.posts);
-      return data.data.posts;
+      console.log("Data : ", data?.data?.formattedPosts);
+      return data?.data?.formattedPosts;
+    } catch (error: unknown) {
+      console.log("Actual api error : ", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Fetch user's own profile
+export const fetchMyProfile = createAsyncThunk<
+  User,
+  TargetUser,
+  { rejectValue: string }
+>(
+  "profile/fetchMyProfile",
+  async (userData: TargetUser, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+      console.log("Token : ", token);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/getProfile`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        }
+      );
+
+      console.log("Response:", response);
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Error getting profile");
+      }
+      console.log("Data : ", data.data);
+      return data.data;
     } catch (error: unknown) {
       console.log("Actual api error : ", error);
       const errorMessage =
@@ -115,6 +159,7 @@ const profileSlice = createSlice({
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;
+      state.posts = [];
       state.error = null;
       state.loading = false;
     });
@@ -127,9 +172,9 @@ const profileSlice = createSlice({
       state.loading = true;
     });
     builder.addCase(getOwnPosts.fulfilled, (state, action) => {
+      state.posts = action.payload;
       state.error = null;
       state.loading = false;
-      state.posts.push(action.payload);
     });
     builder.addCase(getOwnPosts.rejected, (state, action) => {
       state.loading = false;

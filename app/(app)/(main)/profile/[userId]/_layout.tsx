@@ -11,7 +11,7 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { Slot, useLocalSearchParams } from "expo-router";
+import { Slot, useLocalSearchParams, usePathname } from "expo-router";
 import { useRouter } from "expo-router";
 import {
   MaterialCommunityIcons,
@@ -54,6 +54,9 @@ import { Divider } from "react-native-elements";
 // Main function
 const ProfileLayout = ({ param }: { param: string }) => {
   const params = useLocalSearchParams();
+  console.log("Params in main : ", params);
+  const pathname = usePathname();
+  console.log(pathname);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const userId = useMemo(() => {
@@ -61,6 +64,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
       ? JSON.parse(decodeURIComponent(params.userId as string))
       : null;
   }, [params.userId]);
+  console.log(userId);
 
   const [activeTab, setActiveTab] = useState("Overview");
   const [isSettingsModalVisible, setSettingsModalVisible] = useState({
@@ -581,7 +585,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
               <Tabs
                 activeTab={activeTab}
                 handleTabPress={handleTabPress}
-                params={params}
+                params={params.userId}
               />
               <Slot />
             </>

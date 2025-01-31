@@ -48,6 +48,8 @@ import {
   useBlockUserMutation,
   useUnblockUserMutation,
 } from "~/reduxStore/api/profile/profileApi.block";
+import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
+import { Divider } from "react-native-elements";
 
 // Main function
 const ProfileLayout = ({ param }: { param: string }) => {
@@ -103,10 +105,13 @@ const ProfileLayout = ({ param }: { param: string }) => {
   }, [isSettingsModalVisible]);
 
   //set active tab
-  const handleTabPress = (tabName: string, route: any) => {
-    setActiveTab(tabName);
-    router.replace(route);
-  };
+  const handleTabPress = useMemo(
+    () => (tabName: string, route: any) => {
+      setActiveTab(tabName);
+      router.replace(route);
+    },
+    []
+  );
 
   //handle follow
   const handleFollow = async () => {
@@ -117,8 +122,10 @@ const ProfileLayout = ({ param }: { param: string }) => {
           followingId: userId?.id,
           followingType: userId?.type,
         }).unwrap();
+        dispatch(setFollowingCount("follow"));
         console.log("Followed Successfully!");
       } catch (err) {
+        dispatch(setFollowingCount("unfollow"));
         console.error("Follow error:", err);
       }
     }
@@ -133,8 +140,10 @@ const ProfileLayout = ({ param }: { param: string }) => {
           followingId: userId?.id,
           followingType: userId?.type,
         }).unwrap();
+        dispatch(setFollowingCount("unfollow"));
         console.log("Unfollowed Successfully!");
       } catch (err) {
+        dispatch(setFollowingCount("follow"));
         console.error("Unfollow error:", err);
       }
     }
@@ -603,7 +612,11 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 setSettingsModalVisible((prev) => ({ ...prev, status: false }))
               }
             >
-              <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto p-5 pt-7">
+              <View className="w-full mx-auto bg-[#1D1D1D] rounded-t-3xl p-5 pt-3 border-t-[0.5px] border-x-[0.5px] border-neutral-700">
+                <Divider
+                  className="w-16 self-center rounded-full bg-neutral-700 mb-10"
+                  width={4}
+                />
                 {isSettingsModalVisible.message === "" ? (
                   <View className="flex gap-y-3">
                     {/* block */}
@@ -641,15 +654,11 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity
-                        className="flex-row items-center"
+                        className="flex-row items-center gap-x-3"
                         onPress={handleFollow}
                       >
-                        <FontAwesome6
-                          name="plus"
-                          size={20 * scaleFactor}
-                          color="white"
-                        />
-                        <TextScallingFalse className="text-white font-semibold text-base">
+                        <FontAwesome6 name="plus" size={22} color="white" />
+                        <TextScallingFalse className="text-white font-normal text-3xl">
                           Follow {profileData?.firstName}
                         </TextScallingFalse>
                       </TouchableOpacity>

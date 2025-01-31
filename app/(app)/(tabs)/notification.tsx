@@ -10,6 +10,8 @@ const Notification = () => {
     isError,
   } = useGetNotificationsQuery(null);
 
+  console.log(notifications);
+
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -31,11 +33,11 @@ const Notification = () => {
 
   return (
     <View className="flex-1 p-4 bg-black">
-      <ThemedText className="text-xl font-bold text-white mb-4">
+      <ThemedText className="text-4xl font-bold text-white mb-4">
         Notifications
       </ThemedText>
 
-      {notifications.length === 0 ? (
+      {notifications?.length === 0 ? (
         <View className="justify-center items-center mt-10">
           <ThemedText className="text-gray-400">
             No new notifications

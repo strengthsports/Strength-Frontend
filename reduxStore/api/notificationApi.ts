@@ -22,7 +22,7 @@ export const notificationApi = createApi({
         url: "/api/v1/get-notifications",
       }),
       transformResponse: (response: { data: any }) =>
-        response.data?.notifications,
+        response.data.notifications,
     }),
   }),
 });

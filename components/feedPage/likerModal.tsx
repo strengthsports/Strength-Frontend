@@ -61,7 +61,7 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
 
       {isLoading ? (
         <ActivityIndicator size="large" color="#12956B" />
-      ) : data?.data?.length > 0 ? (
+      ) : (
         <FlatList
           data={data?.data}
           keyExtractor={(item) => item.liker._id}
@@ -69,9 +69,8 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
           contentContainerStyle={{ padding: 10 }}
           getItemLayout={getItemLayout}
           initialNumToRender={18}
+          ListEmptyComponent={<Text className="text-white text-center">No Likes found!</Text>}
         />
-      ) : (
-        <Text className="text-white text-center">No Likes found.</Text>
       )}
     </View>
   );

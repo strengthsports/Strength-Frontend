@@ -1,5 +1,5 @@
+import React, { useState, useEffect } from "react";
 import {
-  Dimensions,
   StyleSheet,
   Text,
   View,
@@ -8,7 +8,10 @@ import {
   Platform,
 } from "react-native";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
-import React, { useRef, useState, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import profilePic from "../../assets/images/nopic.jpg";
+import ProfileDrawer from "~/components/profileDrawer"; // Renamed Sidebar to ProfileDrawer
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -16,19 +19,23 @@ import Animated, {
   withDelay,
   Easing,
 } from "react-native-reanimated";
-import { useFocusEffect } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import profilePic from "../../assets/images/nopic.jpg";
-import Sidebar from "./Sidebar";
 
+// Text animation states
 const textsArray = [
   "What's going on...",
   "What's on your mind...",
   "Share your sports moment...",
 ];
 
-const HeaderFeed = ({onPress}) => {
-  // Shared values for animation
+const HeaderFeed = ({}) => {
+  const [currentText, setCurrentText] = useState(textsArray[0]);
+  const [isProfileDrawerVisible, setProfileDrawerVisible] = useState(false); // Renamed state to match the new name
+
+  // Trigger profile drawer visibility when header is clicked
+  const handleHeaderClick = () => {
+    setProfileDrawerVisible((prevState) => !prevState); // Toggle profile drawer visibility
+  };
+
   const textOpacity = useSharedValue(0);
   const textContainerWidth = useSharedValue("0%");
 
@@ -42,47 +49,40 @@ const HeaderFeed = ({onPress}) => {
   }));
 
   const animatePostContainer = () => {
-    // Trigger animations after the component mounts
     textContainerWidth.value = withDelay(
       1500,
       withTiming("90%", {
         duration: 1500,
         easing: Easing.out(Easing.exp),
-      })
+      }),
     );
     textOpacity.value = withDelay(
       1700,
-      withTiming(1, { duration: 900, easing: Easing.linear })
+      withTiming(1, { duration: 900, easing: Easing.linear }),
     );
   };
 
-  const [currentText, setCurrentText] = useState(textsArray[0]);
-  const textIndexRef = useRef(0);
-
   const changeText = () => {
-    textIndexRef.current = (textIndexRef.current + 1) % textsArray.length;
-    setCurrentText(textsArray[textIndexRef.current]);
+    setCurrentText(
+      textsArray[(textsArray.indexOf(currentText) + 1) % textsArray.length],
+    );
   };
 
   useFocusEffect(
     React.useCallback(() => {
-      // Change text when screen gains focus
       changeText();
-    }, [])
+    }, []),
   );
-
-
-  const [isSidebarVisible, setSidebarVisible] = useState(false);
-
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Avatar - sidebar trigger */}
-      <TouchableOpacity onPress={onPress} style={styles.avatarContainer}>
+      {/* Avatar - Profile Drawer Trigger */}
+      <TouchableOpacity
+        onPress={handleHeaderClick}
+        style={styles.avatarContainer}
+      >
         <Image source={profilePic} style={styles.avatarImage} />
       </TouchableOpacity>
-
-      
       {/* Add Post Section */}
       <TouchableOpacity style={styles.postSection} activeOpacity={0.5}>
         <Animated.View style={styles.addPostContainer}>
@@ -94,7 +94,6 @@ const HeaderFeed = ({onPress}) => {
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>
-
       {/* Message Icon */}
       <TouchableOpacity style={styles.messageIconContainer}>
         <MaterialCommunityIcons
@@ -103,6 +102,11 @@ const HeaderFeed = ({onPress}) => {
           color="white"
         />
       </TouchableOpacity>
+      {/* Profile Drawer */}
+      {isProfileDrawerVisible && (
+        <ProfileDrawer onClose={() => setProfileDrawerVisible(false)} />
+      )}{" "}
+      {/* Renamed component */}
     </SafeAreaView>
   );
 };

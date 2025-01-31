@@ -1,6 +1,13 @@
 import { Slot } from "expo-router";
 import React, { Component, useEffect, useState } from "react";
-import { ScrollView, Platform, ToastAndroid, TouchableOpacity,  Text, StyleSheet} from "react-native";
+import {
+  ScrollView,
+  Platform,
+  ToastAndroid,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+} from "react-native";
 import { Divider } from "react-native-elements";
 import Toast from "react-native-toast-message";
 import { useDispatch } from "react-redux";
@@ -44,11 +51,11 @@ const ProfileLayout = () => {
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
-      <HeaderFeed onPress={handleLogout} />
-      {/* <HeaderFeed onPress={() => setSidebarVisible(true)} /> */}
+        <HeaderFeed />
+        {/* <HeaderFeed onPress={() => setSidebarVisible(true)} /> */}
 
-            {/* <Divider /> */}
-            {/* {isSidebarVisible && (
+        {/* <Divider /> */}
+        {/* {isSidebarVisible && (
       <Sidebar
         isVisible={isSidebarVisible}
         onClose={() => setSidebarVisible(false)}
@@ -61,7 +68,7 @@ const ProfileLayout = () => {
         </TouchableOpacity>
       </Sidebar>
     )} */}
-    
+
         <Slot />
       </ScrollView>
     </PageThemeView>
@@ -71,15 +78,15 @@ const ProfileLayout = () => {
 export default ProfileLayout;
 const styles = StyleSheet.create({
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 12,
     marginVertical: 4,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
     // iOS shadow
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -87,24 +94,24 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   menuItemPressed: {
-    backgroundColor: '#3a3a3a',
+    backgroundColor: "#3a3a3a",
     transform: [{ scale: 0.98 }],
   },
   menuText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginLeft: 16,
     letterSpacing: 0.25,
   },
   divider: {
     height: 1,
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     marginVertical: 8,
     marginHorizontal: 16,
   },
   iconContainer: {
     width: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
 });

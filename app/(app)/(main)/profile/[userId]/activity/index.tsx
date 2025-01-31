@@ -1,4 +1,11 @@
-import { FlatList, Platform, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 import TextScallingFalse from "~/components/CentralText";
@@ -50,8 +57,8 @@ const Posts = () => {
   // Loading
   if (isLoading) {
     return (
-      <View>
-        <TextScallingFalse className="text-white">Loading...</TextScallingFalse>
+      <View className="flex justify-center items-center">
+        <ActivityIndicator color="#12956B" size={22} />
       </View>
     );
   }

@@ -1,8 +1,15 @@
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo } from "react";
-import { Dimensions, Image, StyleSheet } from "react-native";
+import { memo, useEffect, useMemo } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+} from "react-native";
 import { FlatList } from "react-native";
 import { View } from "react-native";
+import TextScallingFalse from "~/components/CentralText";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 
 const UserPostsImages = () => {
@@ -25,8 +32,25 @@ const UserPostsImages = () => {
     });
   }, []);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading posts</div>;
+  const memoizedEmptyComponent = memo(() => (
+    <Text className="text-white text-center p-4">No images available</Text>
+  ));
+
+  if (isLoading)
+    return (
+      <View className="flex justify-center items-center">
+        <ActivityIndicator color="#12956B" size={22} />
+      </View>
+    );
+  if (isError)
+    return (
+      <View className="flex justify-center items-center">
+        <TextScallingFalse className="text-red-500">
+          {" "}
+          Error loading posts
+        </TextScallingFalse>
+      </View>
+    );
 
   // Extract URLs from posts
   const imageUrls = posts
@@ -47,6 +71,7 @@ const UserPostsImages = () => {
             style={styles.image}
           />
         )}
+        ListEmptyComponent={memoizedEmptyComponent}
       />
     </View>
   );

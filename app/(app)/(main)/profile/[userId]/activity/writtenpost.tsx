@@ -1,10 +1,18 @@
-import { StyleSheet, Text, View, FlatList, Platform } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feedPostApi";
 import { useLocalSearchParams } from "expo-router";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
+import TextScallingFalse from "~/components/CentralText";
 
 const WrittenPostScreen = () => {
   const params = useLocalSearchParams();
@@ -45,6 +53,22 @@ const WrittenPostScreen = () => {
       No new written posts available
     </Text>
   ));
+
+  if (isLoading)
+    return (
+      <View className="flex justify-center items-center">
+        <ActivityIndicator color="#12956B" size={22} />
+      </View>
+    );
+  if (isError)
+    return (
+      <View className="flex justify-center items-center">
+        <TextScallingFalse className="text-red-500">
+          {" "}
+          Error loading posts
+        </TextScallingFalse>
+      </View>
+    );
 
   return (
     <View className="flex-1">

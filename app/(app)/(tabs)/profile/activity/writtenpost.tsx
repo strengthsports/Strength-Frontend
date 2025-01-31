@@ -1,19 +1,20 @@
-import { StyleSheet, Text, View, FlatList, Platform } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import React, { memo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feedPostApi";
+import TextScallingFalse from "~/components/CentralText";
 
 const WrittenPostScreen = () => {
   const { posts, error, loading } = useSelector((state: any) => state?.profile);
   const isAndroid = Platform.OS === "android";
-
-  if (loading)
-    return <Text className="text-white text-center">Loading...</Text>;
-  if (error)
-    return (
-      <Text className="text-red-500 text-center">Error loading posts</Text>
-    );
 
   // Filter posts where `assets` is missing or empty
   const textPosts = posts?.filter(
@@ -33,6 +34,22 @@ const WrittenPostScreen = () => {
       No new written posts available
     </Text>
   ));
+
+  if (loading)
+    return (
+      <View className="flex justify-center items-center">
+        <ActivityIndicator color="#12956B" size={22} />
+      </View>
+    );
+  if (error)
+    return (
+      <View className="flex justify-center items-center">
+        <TextScallingFalse className="text-red-500">
+          {" "}
+          Error loading posts
+        </TextScallingFalse>
+      </View>
+    );
 
   return (
     <View className="flex-1">

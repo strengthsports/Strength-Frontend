@@ -1,4 +1,11 @@
-import { FlatList, Platform, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { memo, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
@@ -31,25 +38,22 @@ const Posts = () => {
     <Text className="text-white text-center p-4">No new posts available</Text>
   ));
 
-  // Loading
-  if (loading) {
+  if (loading)
     return (
-      <View>
-        <TextScallingFalse className="text-white">Loading...</TextScallingFalse>
+      <View className="flex justify-center items-center">
+        <ActivityIndicator color="#12956B" size={22} />
       </View>
     );
-  }
 
-  // Error
-  if (error) {
+  if (error)
     return (
-      <View>
+      <View className="flex justify-center items-center">
         <TextScallingFalse className="text-red-500">
-          {error as string}
+          {" "}
+          Error loading posts
         </TextScallingFalse>
       </View>
     );
-  }
   return (
     <View>
       <FlatList

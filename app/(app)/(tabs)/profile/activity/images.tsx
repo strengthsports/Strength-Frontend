@@ -5,25 +5,40 @@ import {
   Image,
   FlatList,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
-import React from "react";
+import React, { memo } from "react";
 import { useSelector } from "react-redux";
+import TextScallingFalse from "~/components/CentralText";
 
 const ImagesScreen = () => {
   const { posts, error, loading } = useSelector((state: any) => state?.profile);
 
-  if (loading)
-    return <Text className="text-white text-center">Loading...</Text>;
-  if (error)
-    return (
-      <Text className="text-red-500 text-center">Error loading images</Text>
-    );
+  const memoizedEmptyComponent = memo(() => (
+    <Text className="text-white text-center p-4">No images available</Text>
+  ));
 
   // Extract URLs from posts
   const imageUrls = posts
     ?.flatMap((post: any) => post.assets) // Flatten assets from all posts
     ?.map((asset: any) => asset.url) // Extract URLs
     ?.filter((url: any) => url); // Remove empty values
+
+  if (loading)
+    return (
+      <View className="flex justify-center items-center">
+        <ActivityIndicator color="#12956B" size={22} />
+      </View>
+    );
+  if (error)
+    return (
+      <View className="flex justify-center items-center">
+        <TextScallingFalse className="text-red-500">
+          {" "}
+          Error loading posts
+        </TextScallingFalse>
+      </View>
+    );
 
   return (
     <View className="h-full">
@@ -38,6 +53,7 @@ const ImagesScreen = () => {
             style={styles.image}
           />
         )}
+        ListEmptyComponent={memoizedEmptyComponent}
       />
     </View>
   );

@@ -375,6 +375,14 @@ function EditOverview() {
                 <RightArrow />
               </TouchableOpacity>
             </View>
+            {/* Delete overview button */}
+            {selectedSport?.keyDetails && (
+              <View className="flex-row justify-center items-center mt-4">
+                <TextScallingFalse className="text-[#808080] text-2xl font-semibold">
+                  Delete Overview
+                </TextScallingFalse>
+              </View>
+            )}
           </PageThemeView>
         </Modal>
 
@@ -553,11 +561,13 @@ function EditOverview() {
             ) : (
               <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-2 p-5">
                 {filteredSports?.map((sport) => {
-                  const keyDetails = sport.defaultProperties.map((dp) => {
-                    return {
-                      [dp.name]: "",
-                    };
-                  });
+                  const keyDetails = sport.defaultProperties.reduce(
+                    (acc, dp) => {
+                      acc[dp.name] = "";
+                      return acc;
+                    },
+                    {}
+                  );
                   return (
                     <TouchableOpacity
                       onPress={() =>

@@ -54,9 +54,6 @@ import { Divider } from "react-native-elements";
 // Main function
 const ProfileLayout = ({ param }: { param: string }) => {
   const params = useLocalSearchParams();
-  console.log("Params in main : ", params);
-  const pathname = usePathname();
-  console.log(pathname);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const userId = useMemo(() => {
@@ -66,12 +63,6 @@ const ProfileLayout = ({ param }: { param: string }) => {
   }, [params.userId]);
   console.log(userId);
 
-  const [activeTab, setActiveTab] = useState("Overview");
-  const [isSettingsModalVisible, setSettingsModalVisible] = useState({
-    status: false,
-    message: "",
-  });
-
   // RTK Querys
   const [getUserProfile, { data: profileData, isLoading, error }] =
     useLazyGetUserProfileQuery();
@@ -79,6 +70,18 @@ const ProfileLayout = ({ param }: { param: string }) => {
   const [unFollowUser] = useUnFollowUserMutation();
   const [blockUser] = useBlockUserMutation();
   const [unblockUser] = useUnblockUserMutation();
+
+  const [activeTab, setActiveTab] = useState("Overview");
+  const [isSettingsModalVisible, setSettingsModalVisible] = useState({
+    status: false,
+    message: "",
+  });
+  const [followingStatus, setFollowingStatus] = useState<boolean>(
+    profileData?.followingStatus
+  );
+  const [followerCount, setFollowerCount] = useState<number>(
+    profileData?.followerCount
+  );
 
   // Fetch user profile when the component mounts
   useEffect(() => {
@@ -121,6 +124,8 @@ const ProfileLayout = ({ param }: { param: string }) => {
   const handleFollow = async () => {
     if (userId) {
       try {
+        setFollowingStatus(true);
+        setFollowerCount((prev) => prev + 1);
         // Perform the follow action via mutation
         await followUser({
           followingId: userId?.id,
@@ -129,6 +134,8 @@ const ProfileLayout = ({ param }: { param: string }) => {
         dispatch(setFollowingCount("follow"));
         console.log("Followed Successfully!");
       } catch (err) {
+        setFollowingStatus(false);
+        setFollowerCount((prev) => prev - 1);
         dispatch(setFollowingCount("unfollow"));
         console.error("Follow error:", err);
       }
@@ -140,6 +147,8 @@ const ProfileLayout = ({ param }: { param: string }) => {
     setSettingsModalVisible((prev) => ({ ...prev, status: false }));
     if (userId) {
       try {
+        setFollowingStatus(false);
+        setFollowerCount((prev) => prev - 1);
         await unFollowUser({
           followingId: userId?.id,
           followingType: userId?.type,
@@ -147,6 +156,8 @@ const ProfileLayout = ({ param }: { param: string }) => {
         dispatch(setFollowingCount("unfollow"));
         console.log("Unfollowed Successfully!");
       } catch (err) {
+        setFollowingStatus(true);
+        setFollowerCount((prev) => prev + 1);
         dispatch(setFollowingCount("follow"));
         console.error("Unfollow error:", err);
       }
@@ -460,7 +471,8 @@ const ProfileLayout = ({ param }: { param: string }) => {
                               fontSize: responsiveFontSize(1.64),
                             }}
                           >
-                            {profileData?.followerCount} Followers
+                            {followerCount || profileData?.followerCount}{" "}
+                            Followers
                           </TextScallingFalse>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -502,7 +514,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 }}
               >
                 {/* follow button */}
-                {profileData?.followingStatus ? (
+                {followingStatus || profileData?.followingStatus ? (
                   <TouchableOpacity
                     activeOpacity={0.5}
                     className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
@@ -646,7 +658,7 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       </TextScallingFalse>
                     </View>
                     {/* follow/unfollow */}
-                    {profileData?.followingStatus ? (
+                    {followingStatus || profileData?.followingStatus ? (
                       <TouchableOpacity
                         className="flex-row items-center gap-x-3"
                         onPress={handleUnfollow}

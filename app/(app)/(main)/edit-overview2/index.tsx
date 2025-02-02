@@ -5,7 +5,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -33,13 +33,13 @@ import {
 interface SelectedSport {
   sportsId: string;
   sportsName: string;
-  keyDetails: object;
+  keyDetails: { [key: string]: any };
   logo: string;
   [key: string]: any;
 }
 
 function EditOverview() {
-  const { loading, error, user } = useSelector((state) => state?.auth);
+  const { loading, error, user } = useSelector((state: any) => state?.auth);
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -51,6 +51,7 @@ function EditOverview() {
     sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [isLocalLoading, setLocalLoading] = useState<boolean>(false);
   const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [isKeyDetailsFormOpen, setKeyDetailsFormOpen] =
     useState<boolean>(false);
@@ -60,8 +61,16 @@ function EditOverview() {
     useState<boolean>(false);
   const [selectedSport, setSelectedSport] = useState<SelectedSport>();
   const [selectedSportKeyDetails, setSelectedSportKeyDetails] = useState<any>();
-  const [keyOptions, setkeyOptions] = useState<Array<string>>();
+  const [keyOptions, setKeyOptions] = useState<Array<string>>();
   const [editingProperty, setEditingProperty] = useState<string | null>(null);
+  const [isAlertModalSet, setAlertModal] = useState<boolean>(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: "Discard changes?",
+    message: "If you go back now, you will lose your changes.",
+    discardAction: () => {},
+    confirmMessage: "Discard Changes",
+    cancelMessage: "Continue editing",
+  });
   // Initial sports data
   const [initialSportsData, setInitialSportsData] = useState<any>();
   // Final selected sports data
@@ -71,123 +80,162 @@ function EditOverview() {
 
   // Set initial sports data on page mount
   useEffect(() => {
-    if (user.selectedSports) {
-      const data = user.selectedSports.map((sls: any) => {
-        return {
-          sportsId: sls.sport._id,
-          sportsName: sls.sport.name,
-          keyDetails: sls.details,
-          logo: sls.sport.logo,
-        };
-      });
+    if (user?.selectedSports) {
+      const data = user.selectedSports.map((sls: any) => ({
+        sportsId: sls.sport._id,
+        sportsName: sls.sport.name,
+        keyDetails: sls.details,
+        logo: sls.sport.logo,
+      }));
       setInitialSportsData(data);
       setFinalSelectedSports(data);
     }
-  }, []);
+  }, [user]);
 
   // Handle edit sports details
-  const handleOpenEditModal = (
-    sportsId: string,
-    sportsName: string,
-    keyDetails: object,
-    logo: string
-  ) => {
+  const handleOpenEditModal = useCallback(
+    (
+      sportsId: string,
+      sportsName: string,
+      keyDetails: object,
+      logo: string
+    ) => {
+      setEditModalOpen((prev) => !prev);
+      console.log("\n\n\nKey details test", keyDetails);
+      setSelectedSport({ sportsId, sportsName, keyDetails, logo });
+    },
+    []
+  );
+
+  const handleCloseEditModal = useCallback(() => {
     setEditModalOpen((prev) => !prev);
-    console.log("\n\n\nKey details test", keyDetails);
-    setSelectedSport(
-      { sportsId, sportsName, keyDetails: keyDetails, logo } || {}
+  }, []);
+
+  const handleOpenKeyDetailsForm = useCallback((sport: SelectedSport) => {
+    setKeyDetailsFormOpen((prev) => !prev);
+    setSelectedSportKeyDetails(sport);
+  }, []);
+
+  const handleCloseKeyDetailsForm = useCallback(() => {
+    setKeyDetailsFormOpen((prev) => !prev);
+    setAlertModal(false);
+  }, []);
+
+  const handleOpenKeyValueDropdown = useCallback(
+    (enumValues: Array<string>, propName: string) => {
+      setKeyValueDropdownOpen((prev) => !prev);
+      setKeyOptions(enumValues);
+      setEditingProperty(propName);
+    },
+    []
+  );
+
+  const handleCloseKeyValueDropdown = useCallback(() => {
+    setKeyValueDropdownOpen((prev) => !prev);
+  }, []);
+
+  const handleKeyValueSelect = useCallback(
+    (selectedValue: string) => {
+      if (!editingProperty || !selectedSport) return;
+      setSelectedSport((prev) => ({
+        ...prev!,
+        keyDetails: { ...prev?.keyDetails, [editingProperty]: selectedValue },
+      }));
+      handleCloseKeyValueDropdown();
+    },
+    [editingProperty, selectedSport, handleCloseKeyValueDropdown]
+  );
+
+  const handleOpenSportsOptionModal = useCallback(() => {
+    setSportsOptionModalOpen((prev) => !prev);
+  }, []);
+
+  const handleCloseSportsOptionModal = useCallback(() => {
+    setSportsOptionModalOpen((prev) => !prev);
+  }, []);
+  const handleOpenAlertModal = useCallback(
+    (
+      title: string,
+      message: string,
+      discardAction: () => void,
+      confirmMessage: string,
+      cancelMessage: string
+    ) => {
+      setAlertConfig({
+        title,
+        message,
+        discardAction,
+        confirmMessage,
+        cancelMessage,
+      });
+      setAlertModal(true);
+    },
+    []
+  );
+
+  // Handle delete a specific sports overview (only remove sport)
+  const handleDeleteSportsOverview = useCallback(() => {
+    setAlertModal(false);
+    setFinalSelectedSports((prev) =>
+      prev.filter((sport) => sport.sportsId !== selectedSport?.sportsId)
     );
-  };
-  const handleCloseEditModal = () => {
-    setEditModalOpen((prev) => !prev);
-  };
-  const handleOpenKeyDetailsForm = (selectedSport: SelectedSport) => {
-    setKeyDetailsFormOpen((prev) => !prev);
-    setSelectedSportKeyDetails(selectedSport);
-  };
-  const handleCloseKeyDetailsForm = () => {
-    setKeyDetailsFormOpen((prev) => !prev);
-  };
-  const handleOpenKeyValueDropdown = (
-    enumValues: Array<string>,
-    propName: string
-  ) => {
-    setKeyValueDropdownOpen((prev) => !prev);
-    setkeyOptions(enumValues);
-    setEditingProperty(propName);
-  };
-  const handleCloseKeyValueDropdown = () => {
-    setKeyValueDropdownOpen((prev) => !prev);
-  };
-  const handleKeyValueSelect = (selectedValue: string) => {
-    if (!editingProperty || !selectedSport) return;
-
-    setSelectedSport((prev) => ({
-      ...prev!,
-      keyDetails: {
-        ...prev?.keyDetails,
-        [editingProperty]: selectedValue,
-      },
-    }));
-
-    handleCloseKeyValueDropdown();
-  };
-  const handleOpenSportsOptionModal = () => {
-    setSportsOptionModalOpen((prev) => !prev);
-  };
-  const handleCloseSportsOptionModal = () => {
-    setSportsOptionModalOpen((prev) => !prev);
-  };
+    setSelectedSport({
+      sportsId: "",
+      sportsName: "",
+      keyDetails: {},
+      logo: "",
+    });
+    setEditModalOpen(false);
+  }, [selectedSport]);
 
   // Handle save final sports key details
-  const handleSaveFinalSportsData = () => {
+  const handleSaveFinalSportsData = useCallback(() => {
     setFinalSelectedSports((prev) => {
       // Check if the sport already exists
       const existingIndex = prev.findIndex(
         (sport) => sport.sportsId === selectedSport?.sportsId
       );
-
       // Create a new array without the existing entry if found
       const filteredArray =
         existingIndex !== -1
           ? prev.filter((_, index) => index !== existingIndex)
           : prev;
-
       console.log("\n\n\nNewly selected array of sports", selectedSport);
-
       // Add the updated selectedSport at the end (or add new if didn't exist)
       return selectedSport ? [...filteredArray, selectedSport] : filteredArray;
     });
-
     setEditModalOpen((prev) => !prev);
-  };
+  }, [selectedSport]);
 
   // Handle submit sports overview details
-  const handleSubmitOverviewData = async () => {
-    // Check if inital data and final data are same or not
+  const handleSubmitOverviewData = useCallback(async () => {
+    // Immediately update local loading state so that the spinner appears
+    setLocalLoading(true);
 
-    console.log("Initial data : ", initialSportsData);
-    console.log("Final data : ", finalSelectedSports);
-
-    if (initialSportsData === finalSelectedSports) {
-      console.log("No changes in data");
-      return;
-    } else {
-      const data = finalSelectedSports.map((sp) => {
-        return {
+    // Let the UI update
+    setTimeout(async () => {
+      if (
+        JSON.stringify(initialSportsData) ===
+        JSON.stringify(finalSelectedSports)
+      ) {
+        setLocalLoading(false);
+        return;
+      } else {
+        const dataToSubmit = finalSelectedSports.map((sp) => ({
           details: sp.keyDetails,
           sportsId: sp.sportsId,
-        };
-      });
-      const sports = { sports: [...data] };
-      console.log(sports);
-      await dispatch(editUserSportsOverview(sports));
-      await dispatch(
-        fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
-      );
-      router.push("/(app)/(tabs)/profile");
-    }
-  };
+        }));
+        const sportsData = { sports: dataToSubmit };
+        console.log(sportsData);
+        await dispatch(editUserSportsOverview(sportsData));
+        await dispatch(
+          fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
+        );
+        router.push("/(app)/(tabs)/profile");
+        setLocalLoading(false);
+      }
+    }, 0);
+  }, [initialSportsData, finalSelectedSports, dispatch, router, user]);
 
   if (error) {
     <View className="flex-row justify-center">
@@ -201,16 +249,20 @@ function EditOverview() {
     <SafeAreaView>
       <PageThemeView>
         <TopBar heading="Edit Overview" backRoute="/(app)/(tabs)/profile">
-          {loading ? (
+          {isLocalLoading ? (
             <ActivityIndicator size="small" color="#12956B" />
           ) : (
             <TouchableOpacity
               onPress={handleSubmitOverviewData}
-              disabled={initialSportsData === finalSelectedSports}
+              disabled={
+                JSON.stringify(initialSportsData) ===
+                JSON.stringify(finalSelectedSports)
+              }
             >
               <TextScallingFalse
                 className={`${
-                  initialSportsData === finalSelectedSports
+                  JSON.stringify(initialSportsData) ===
+                  JSON.stringify(finalSelectedSports)
                     ? "text-[#808080]"
                     : "text-[#12956B]"
                 } text-4xl text-right`}
@@ -344,7 +396,7 @@ function EditOverview() {
                 style={{ paddingRight: 10 }}
               >
                 <TextScallingFalse className="text-white">
-                  Save
+                  Done
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>
@@ -376,13 +428,28 @@ function EditOverview() {
               </TouchableOpacity>
             </View>
             {/* Delete overview button */}
-            {selectedSport?.keyDetails && (
-              <View className="flex-row justify-center items-center mt-4">
-                <TextScallingFalse className="text-[#808080] text-2xl font-semibold">
-                  Delete Overview
-                </TextScallingFalse>
-              </View>
-            )}
+            {selectedSport?.keyDetails &&
+              !Object.values(selectedSport.keyDetails).every(
+                (value) => value === ""
+              ) && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  className="flex-row justify-center items-center mt-4"
+                  onPress={() =>
+                    handleOpenAlertModal(
+                      "Delete Overview",
+                      "Are you sure you want to delete your Cricket overview ?",
+                      handleDeleteSportsOverview,
+                      "Delete",
+                      "No Thanks"
+                    )
+                  }
+                >
+                  <TextScallingFalse className="text-[#808080] text-2xl font-semibold">
+                    Delete Overview
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              )}
           </PageThemeView>
         </Modal>
 
@@ -397,7 +464,24 @@ function EditOverview() {
               <View className="flex-row justify-start items-center gap-x-3">
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  onPress={handleCloseKeyDetailsForm}
+                  onPress={() => {
+                    if (
+                      selectedSport?.keyDetails &&
+                      Object.values(selectedSport.keyDetails).every(
+                        (value) => value === ""
+                      )
+                    ) {
+                      handleCloseKeyDetailsForm();
+                    } else {
+                      handleOpenAlertModal(
+                        "Discard Changes?",
+                        "If you go back, you will lose your changes.",
+                        handleCloseKeyDetailsForm,
+                        "Discard changes",
+                        "Continue editing"
+                      );
+                    }
+                  }}
                 >
                   <AntDesign name="arrowleft" size={24} color="white" />
                 </TouchableOpacity>
@@ -410,7 +494,24 @@ function EditOverview() {
                   handleCloseKeyDetailsForm();
                 }}
               >
-                <MaterialIcons name="done" size={28} color={"#353535"} />
+                <MaterialIcons
+                  name="done"
+                  size={28}
+                  color={
+                    selectedSport?.keyDetails &&
+                    Object.values(selectedSport.keyDetails).every(
+                      (value) => value === ""
+                    )
+                      ? "#353535"
+                      : "green"
+                  }
+                  disabled={
+                    selectedSport?.keyDetails &&
+                    Object.values(selectedSport.keyDetails).every(
+                      (value) => value === ""
+                    )
+                  }
+                />
               </TouchableOpacity>
             </View>
             <View
@@ -562,7 +663,7 @@ function EditOverview() {
               <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-2 p-5">
                 {filteredSports?.map((sport) => {
                   const keyDetails = sport.defaultProperties.reduce(
-                    (acc, dp) => {
+                    (acc: any, dp) => {
                       acc[dp.name] = "";
                       return acc;
                     },
@@ -617,6 +718,42 @@ function EditOverview() {
             )}
           </PageThemeView>
         </Modal>
+
+        {/* Alert modal */}
+        <Modal visible={isAlertModalSet} transparent animationType="fade">
+          <View style={styles.AlertModalView}>
+            <View
+              style={styles.AlertModalContainer}
+              className="h-full flex items-center justify-center gap-y-3 pt-5"
+            >
+              <TextScallingFalse className="text-[20px] font-semibold">
+                {alertConfig.title}
+              </TextScallingFalse>
+              <TextScallingFalse className="text-[16px] text-center">
+                {alertConfig.message}
+              </TextScallingFalse>
+              <View className="w-full">
+                <TouchableOpacity
+                  onPress={alertConfig.discardAction}
+                  className="w-full py-2 items-center border-t border-[#8080808b]"
+                >
+                  <TextScallingFalse className="font-semibold text-4xl text-red-600">
+                    {alertConfig.confirmMessage}
+                  </TextScallingFalse>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setAlertModal(false)}
+                  className="w-full py-2 items-center border-t border-[#8080808b]"
+                >
+                  <TextScallingFalse className="font-semibold text-4xl text-[#808080]">
+                    {alertConfig.cancelMessage}
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </PageThemeView>
     </SafeAreaView>
   );
@@ -658,6 +795,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
+  },
+  AlertModalView: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    paddingVertical: 250,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  AlertModalContainer: {
+    width: "80%",
+    height: 200,
+    borderRadius: 20,
+    backgroundColor: "white",
+    alignItems: "center",
   },
 });
 export default EditOverview;

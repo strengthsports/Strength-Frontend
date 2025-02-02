@@ -52,11 +52,11 @@ const LoginScreen = () => {
     isAndroid
       ? ToastAndroid.show(errorMsg, ToastAndroid.SHORT)
       : Toast.show({
-          type,
-          text1: errorMsg,
-          visibilityTime: 1500,
-          autoHide: true,
-        });
+        type,
+        text1: errorMsg,
+        visibilityTime: 3000,
+        autoHide: true,
+      });
   };
   // const e = 'anirbandutta@gmail.com';
   // const p = 'ANIRBAN@1234';
@@ -152,7 +152,6 @@ const LoginScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-
             <TextScallingFalse
               style={{
                 color: "white",

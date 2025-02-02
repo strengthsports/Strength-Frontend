@@ -22,17 +22,17 @@ export const postCommentApi = createApi({
       }),
     }),
     deleteComment: builder.mutation({
-      query: (body) => ({
+      query: ({commentId, targetId, targetType}) => ({
         url: 'api/v1/deleteComment',
         method: 'DELETE',
-        body,
+        body: {commentId, targetId, targetType},
       }),
     }),
     fetchComments: builder.query({
-      query: (body) => ({
+      query: ({targetId, targetType}) => ({
         url: 'api/v1/fetchComments',
         method: 'POST', // Use POST to send data in the body
-        body, // Send targetId and targetType in the body
+        body: {targetId, targetType},
       }),
     }),
   }),

@@ -131,12 +131,12 @@ const ProfileLayout = ({ param }: { param: string }) => {
           followingId: userId?.id,
           followingType: userId?.type,
         }).unwrap();
-        // dispatch(setFollowingCount("follow"));
+        dispatch(setFollowingCount("follow"));
         console.log("Followed Successfully!");
       } catch (err) {
         setFollowingStatus(false);
         setFollowerCount((prev) => prev - 1);
-        // dispatch(setFollowingCount("unfollow"));
+        dispatch(setFollowingCount("unfollow"));
         console.error("Follow error:", err);
       }
     }
@@ -153,12 +153,12 @@ const ProfileLayout = ({ param }: { param: string }) => {
           followingId: userId?.id,
           followingType: userId?.type,
         }).unwrap();
-        // dispatch(setFollowingCount("unfollow"));
+        dispatch(setFollowingCount("unfollow"));
         console.log("Unfollowed Successfully!");
       } catch (err) {
         setFollowingStatus(true);
         setFollowerCount((prev) => prev + 1);
-        // dispatch(setFollowingCount("follow"));
+        dispatch(setFollowingCount("follow"));
         console.error("Unfollow error:", err);
       }
     }

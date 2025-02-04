@@ -120,7 +120,7 @@ const Overview = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }}>
       {user?.selectedSports?.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
@@ -178,32 +178,35 @@ const Overview = () => {
           {user?.selectedSports?.map((sport: any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
               {/* Sports Overview */}
-              <View className="w-full flex-1 items-center p-2">
+              <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
-                  <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl">
-                    <View className="flex-row justify-start flex-wrap gap-y-4">
-                      {Object.entries(sport.details).map(
-                        ([key, value], idx) => (
-                          <View
-                            key={idx}
-                            className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
-                          >
-                            <Text
-                              className="text-white font-bold"
-                              style={styles.HeadingText}
-                            >
-                              {key.toUpperCase()}
-                            </Text>
-                            <Text
-                              className="text-white font-light pt-1"
-                              style={styles.DetailText}
-                            >
-                              {value as string}
-                            </Text>
-                          </View>
-                        )
-                      )}
-                    </View>
+                  <View className="relative bg-[#121212] w-[96%] px-5 py-4 rounded-xl flex-row justify-start flex-wrap gap-y-4">
+                    {Object.entries(sport.details).map(([key, value], idx) => (
+                      <View
+                        key={idx}
+                        className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
+                      >
+                        <Text
+                          className="text-white font-bold"
+                          style={styles.HeadingText}
+                        >
+                          {key.toUpperCase()}
+                        </Text>
+                        <Text
+                          className="text-white font-light pt-1"
+                          style={styles.DetailText}
+                        >
+                          {value as string}
+                        </Text>
+                      </View>
+                    ))}
+                    <TouchableOpacity className="absolute bottom-4 right-5">
+                      <Feather
+                        name="edit"
+                        size={18 * scaleFactor}
+                        color="#373737"
+                      />
+                    </TouchableOpacity>
                   </View>
                 )}
 
@@ -414,7 +417,7 @@ const Overview = () => {
       <View
         style={{ height: 30, width: "100%", backgroundColor: "transparent" }}
       />
-    </View>
+    </ScrollView>
   );
 };
 

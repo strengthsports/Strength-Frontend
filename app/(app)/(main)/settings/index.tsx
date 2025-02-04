@@ -177,6 +177,7 @@ const index = () => {
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
+        {/* Blocked users */}
         <View style={styles.OptionButtonView}>
           <MaterialIcons name="block" size={31} color="white" />
           <TouchableOpacity
@@ -188,6 +189,7 @@ const index = () => {
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
+        {/* LogOut */}
         <View style={styles.OptionButtonView}>
           <Ionicons name="exit-outline" size={31} color="white" />
           <TouchableOpacity
@@ -236,7 +238,12 @@ const index = () => {
           >
             <View style={styles.AccountSettingsButtonView}>
               <MaterialIcons name="password" size={26} color="white" />
-              <TouchableOpacity onPress={openModal2} activeOpacity={0.7}>
+              <TouchableOpacity
+                onPress={() =>
+                  router.push("/(app)/(main)/settings/change-password")
+                }
+                activeOpacity={0.7}
+              >
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
                   Change Password
                 </TextScallingFalse>

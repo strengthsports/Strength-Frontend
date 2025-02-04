@@ -1,14 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
 
-const events = () => {
+const Events = () => {
   return (
     <View>
       <Text>events</Text>
     </View>
-  )
-}
+  );
+};
 
-export default events
+export default Events;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

@@ -1,14 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
 
-const teams = () => {
+const Teams = () => {
   return (
     <View>
       <Text>teams</Text>
     </View>
-  )
-}
+  );
+};
 
-export default teams
+export default Teams;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

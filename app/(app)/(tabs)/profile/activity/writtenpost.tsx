@@ -12,7 +12,7 @@ import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feedPostApi";
 import TextScallingFalse from "~/components/CentralText";
 
-const WrittenPostScreen = () => {
+const WrittenPost = () => {
   const { posts, error, loading } = useSelector((state: any) => state?.profile);
   const isAndroid = Platform.OS === "android";
 
@@ -68,6 +68,6 @@ const WrittenPostScreen = () => {
   );
 };
 
-export default WrittenPostScreen;
+export default WrittenPost;
 
 const styles = StyleSheet.create({});

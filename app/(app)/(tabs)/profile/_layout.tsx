@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -23,7 +23,11 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { AppDispatch } from "~/reduxStore";
-import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
+import { MotiView } from "moti";
+import Overview from ".";
+import Activity from "./activity/_layout";
+import Events from "./events";
+import Teams from "./teams";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
@@ -33,28 +37,32 @@ const ProfileLayout = () => {
 
   const [activeTab, setActiveTab] = useState("Overview");
 
-  const tabsMap: { [key: string]: string } = useMemo(
-    () => ({
-      "/profile": "Overview",
-      "/profile/activity": "Activity",
-      "/profile/events": "Events",
-      "/profile/teams": "Teams",
-    }),
+  // Define the available tabs.
+  const tabs = useMemo(
+    () => [
+      { name: "Overview" },
+      { name: "Activity" },
+      { name: "Events" },
+      { name: "Teams" },
+    ],
     []
   );
 
-  // Sync activeTab with the current route path
-  useEffect(() => {
-    const currentTab = pathname.startsWith("/profile/activity")
-      ? "Activity"
-      : tabsMap[pathname] || "Overview";
-    setActiveTab(currentTab);
-  }, [pathname, tabsMap]);
-
-  const handleTabPress = (tabName: string, route: string) => {
-    setActiveTab(tabName);
-    router.replace(route as any);
-  };
+  // Memoized function to render the current tab's content.
+  const renderContent = useCallback(() => {
+    switch (activeTab) {
+      case "Overview":
+        return <Overview />;
+      case "Activity":
+        return <Activity />;
+      case "Events":
+        return <Events />;
+      case "Teams":
+        return <Teams />;
+      default:
+        return <Overview />;
+    }
+  }, [activeTab]);
 
   if (loading) {
     <View>
@@ -435,8 +443,33 @@ const ProfileLayout = () => {
             alignSelf: "center",
           }}
         ></View>
-        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-        <Slot />
+        {/* Tabs Header */}
+        <View className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600">
+          {tabs.map((tab) => {
+            // Check if this tab is active.
+            const isActive = activeTab === tab.name;
+            return (
+              <Pressable
+                key={tab.name}
+                className={`py-2 px-5 ${
+                  isActive ? "border-b-2 border-[#12956B]" : ""
+                }`}
+                onPress={() => setActiveTab(tab.name)}
+              >
+                <Text
+                  className={`text-[1.1rem] ${
+                    isActive ? "text-[#12956B]" : "text-white"
+                  }`}
+                >
+                  {tab.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Animated Tab Content */}
+        <MotiView className="flex-1">{renderContent()}</MotiView>
       </ScrollView>
     </PageThemeView>
   );

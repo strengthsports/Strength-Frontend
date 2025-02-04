@@ -1,14 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
 
-const comments = () => {
+const Comments = () => {
   return (
     <View>
       <Text>comments</Text>
     </View>
-  )
-}
+  );
+};
 
-export default comments
+export default Comments;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

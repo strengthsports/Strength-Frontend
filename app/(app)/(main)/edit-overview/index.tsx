@@ -6,8 +6,9 @@ import {
   Modal,
   TextInput,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import {
   AntDesign,
@@ -24,16 +25,17 @@ import {
 import AddSportsModal from "~/components/Modal/AddSportsModal";
 import { FlatList } from "react-native";
 import { Text } from "react-native";
+import { useGetSportsQuery } from "~/reduxStore/api/sportsApi";
+import { defaultFormat } from "moment";
+import { SportsList } from "~/types/sports";
 
 const index = () => {
   const router = useRouter();
-  const [selectedSport, setSelectedSport] = useState<{
-    name2: string;
-    image2: any;
-  } | null>(null);
-  const [selectedSports, setSelectedSports] = useState<
-    { name2: string; image2: any }[]
-  >([]);
+
+  const { data } = useGetSportsQuery(null);
+
+  const [selectedSport, setSelectedSport] = useState<SportsList | null>(null);
+  const [selectedSports, setSelectedSports] = useState<SportsList[]>([]);
   const backarrow = <AntDesign name="arrowleft" size={28} color="white" />;
   const rightArrow = (
     <AntDesign
@@ -51,8 +53,9 @@ const index = () => {
       color="grey"
     />
   );
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [isModalVisible2, setModalVisible2] = useState(false);
+  const [isSportsOptionModalVisible, setSportsOptionModalVisible] =
+    useState(false);
+  const [isSportModalVisible, setSportModalVisible] = useState(false);
   const [isModalVisible3, setModalVisible3] = useState(false);
   const [isAlertModalVisible, setAlertModalVisible] = useState(false);
   const [isAlertModalVisible2, setAlertModalVisible2] = useState(false);
@@ -60,21 +63,31 @@ const index = () => {
   const { width: screenWidth2 } = Dimensions.get("window");
   const scaleFactor = screenWidth2 / 410;
 
-  const closeModal = () => setModalVisible(false);
-  const openModal = (type: React.SetStateAction<string>) => {
-    setModalVisible(true);
+  // Modal functions for Sports selection page
+  const closeSportsOptionModal = () => setSportsOptionModalVisible(false);
+  const openSportsOptionModal = (type: React.SetStateAction<string>) => {
+    setSportsOptionModalVisible(true);
   };
-  const closeModal2 = () => setModalVisible2(false);
-  const openModal2 = (sport: { name2: string; image2: any }) => {
-    setModalVisible2(true);
+
+  // Modal functions for Sport specific menu page
+  const closeSportModal = () => setSportModalVisible(false);
+  const openSportModal = (sport: {
+    _id: string;
+    name: string;
+    logo: string;
+    defaultProperties: any;
+  }) => {
+    setSportModalVisible(true);
     setSelectedSport(sport);
     setSelectedSports((prev) =>
-      prev.some((s) => s.name2 === sport.name2) ? prev : [...prev, sport]
+      prev.some((s) => s.name === sport.name) ? prev : [...prev, sport]
     );
-    setTimeout(closeModal, 1000);
+    setTimeout(closeSportsOptionModal, 1000);
   };
+
+  // Modal
   const closeModal3 = () => setModalVisible3(false);
-  const openModal3 = (sport: { name2: string; image2: any }) => {
+  const openModal3 = (sport: SportsList) => {
     if (sport) {
       setSelectedSport(sport);
       setModalVisible3(true);
@@ -82,11 +95,11 @@ const index = () => {
       console.error("No sport selected to open Modal 3");
     }
     setTimeout(() => {
-      closeModal2();
+      closeSportModal();
     }, 1000);
   };
 
-  const openAlertModal2 = (sport: { name2: string; image2: any }) => {
+  const openAlertModal2 = (sport: SportsList) => {
     if (sport) {
       setSelectedSport(sport);
       setAlertModalVisible2(true);
@@ -96,94 +109,30 @@ const index = () => {
   };
 
   // Unselect the sport and close the modal
-  const unselectSport = (sport: { name2: string }) => {
+  const unselectSport = (sport: SportsList) => {
     setSelectedOptions({});
     setTimeout(() => {
-      closeModal2();
+      closeSportModal();
     }, 500);
-    setSelectedSports((prev) => prev.filter((s) => s.name2 !== sport.name2)); // Remove the sport
+    setSelectedSports((prev) => prev.filter((s) => s.name !== sport.name)); // Remove the sport
   };
-
-  const availableSports = [
-    {
-      name2: "Cricket",
-      image2: require("@/assets/images/Sports Icons/okcricket.png"),
-    },
-    {
-      name2: "Football",
-      image2: require("@/assets/images/Sports Icons/okfootball.png"),
-    },
-    {
-      name2: "Tennis",
-      image2: require("@/assets/images/Sports Icons/oktenis.png"),
-    },
-    {
-      name2: "Basketball",
-      image2: require("@/assets/images/Sports Icons/okbasketball.png"),
-    },
-    {
-      name2: "Badminton",
-      image2: require("@/assets/images/Sports Icons/okbadminton.png"),
-    },
-    {
-      name2: "Hockey",
-      image2: require("@/assets/images/Sports Icons/okhockey.png"),
-    },
-    {
-      name2: "IceHockey",
-      image2: require("@/assets/images/Sports Icons/okicehockey.png"),
-    },
-    {
-      name2: "Cycling",
-      image2: require("@/assets/images/Sports Icons/okcycle.png"),
-    },
-    {
-      name2: "Table Tennis",
-      image2: require("@/assets/images/Sports Icons/oktabletenis.png"),
-    },
-    {
-      name2: "Kabaddi",
-      image2: require("@/assets/images/Sports Icons/okkabaddi.png"),
-    },
-    {
-      name2: "Vollyball",
-      image2: require("@/assets/images/Sports Icons/okvollyball.png"),
-    },
-    {
-      name2: "Race",
-      image2: require("@/assets/images/Sports Icons/okrace.png"),
-    },
-  ];
 
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter sports based on the search query
-  const filteredSports = availableSports.filter((sport) =>
-    sport.name2.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSports = data?.filter((sport) =>
+    sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const sportsKeyDetails = {
-    Cricket: {
-      "Playing Role": ["Batsman", "Bowler", "All-Rounder", "WicketKeeper"],
-      "Batting Role": ["Right-Handed", "Left-Handed"],
-      "Bowling Role": ["Right-Arm", "Left-Arm"],
-      "Fielding Position": ["Infield", "Outfield", "WicketKeeper"],
-    },
-    Football: {
-      "Preferred Foot": ["Right Foot", "Left Foot", "Both Feet"],
-      "Playing Position": ["Forward", "Midfielder", "Defender", "Goalkeeper"],
-      "Team Role": ["Captain", "Vice Captain", "Player"],
-    },
-    Badminton: {
-      "Preferred Hand": ["Right-Handed", "Left-Handed"],
-      "Playing Corner": ["Forehand Corner", "Backhand Corner"],
-      "Cock Type": ["Feather", "Plastic"],
-    },
-  };
   console.log("selectedSports -", selectedSport);
 
   const [showDropdown1, setShowDropdown1] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState("");
+  const [selectedQuestion, setSelectedQuestion] = useState<{
+    question: string;
+    options: Array<string>;
+  }>({
+    question: "",
+    options: [],
+  });
   const [selectedOptions, setSelectedOptions] = useState({});
 
   const insets = useSafeAreaInsets();
@@ -193,17 +142,18 @@ const index = () => {
     setMenuValue(value);
   }
 
-  const toggleDropdown1 = (question) => {
-    setSelectedQuestion(question); // Set the current question
+  const toggleDropdown1 = (question: string, options: Array<string>) => {
+    setSelectedQuestion({ question, options });
     setShowDropdown1(!showDropdown1);
   };
 
-  const handleOptionSelect1 = (option) => {
+  const handleOptionSelect1 = (question: string, option: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
-      [selectedQuestion]: option, // Save the selected option for the current question
+      [question]: option,
     }));
     setShowDropdown1(false);
+    console.log("Selected options : ", selectedOptions);
   };
 
   // Function to check if all questions are answered
@@ -231,33 +181,27 @@ const index = () => {
   return (
     <SafeAreaView>
       <PageThemeView>
-        <View
-          style={{
-            flexDirection: "row",
-            width: "100%",
-            height: 65,
-            justifyContent: "space-between",
-            padding: 20,
-            alignItems: "center",
-          }}
-        >
+        {/* Top Header */}
+        <View className="h-12 w-full flex-row justify-between items-center px-5">
           <TouchableOpacity
-            activeOpacity={0.5}
             onPress={() => router.push("/profile")}
+            className="basis-[15%]"
           >
-            <AntDesign name="arrowleft" size={28} color="white" />
+            <AntDesign name="arrowleft" size={24} color="white" />
           </TouchableOpacity>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 18, fontWeight: "300" }}
-          >
+          <TextScallingFalse className="flex-grow text-center text-white font-light text-5xl">
             Edit Overview
           </TextScallingFalse>
-          <TouchableOpacity>
-            <TextScallingFalse style={styles.doneButton}>
+          <TouchableOpacity
+            // onPress={handleFormSubmit}
+            className="basis-[15%] justify-center items-end"
+          >
+            <TextScallingFalse className="text-[#12956B] text-4xl font-medium">
               Done
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
+        {/* Headings */}
         <View style={{ width: "100%", padding: 17 }}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 21, fontWeight: "bold" }}
@@ -271,6 +215,7 @@ const index = () => {
             profession.
           </TextScallingFalse>
         </View>
+        {/* Sports overview */}
         <View
           style={{ width: "100%", paddingHorizontal: 23, paddingVertical: 15 }}
         >
@@ -290,7 +235,7 @@ const index = () => {
           >
             {selectedSports.map((sport, index) => (
               <View
-                key={sport.name2}
+                key={sport.name}
                 style={{
                   width: 115,
                   height: 35,
@@ -303,19 +248,19 @@ const index = () => {
                 }}
               >
                 <Image
-                  source={sport.image2}
+                  source={{ uri: sport.logo }}
                   style={{ width: 20, height: 20 }}
                 />
                 <TextScallingFalse
                   style={{ color: "white", fontSize: 12, fontWeight: "500" }}
                 >
-                  {sport.name2}
+                  {sport.name}
                 </TextScallingFalse>
               </View>
             ))}
           </View>
           <TouchableOpacity
-            onPress={openModal}
+            onPress={openSportsOptionModal}
             activeOpacity={0.7}
             style={{
               width: 115,
@@ -336,6 +281,7 @@ const index = () => {
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
+        {/* About section */}
         <View style={{ width: "100%", padding: 20 }}>
           <TouchableOpacity activeOpacity={0.8} style={styles.EditTopicsView}>
             <TextScallingFalse
@@ -347,16 +293,20 @@ const index = () => {
           </TouchableOpacity>
         </View>
 
-        {/* sports options page */}
+        {/* Sports selection modal */}
         <Modal
-          visible={isModalVisible}
+          visible={isSportsOptionModalVisible}
           transparent={true}
-          onRequestClose={closeModal}
+          onRequestClose={closeSportsOptionModal}
         >
           <PageThemeView>
+            {/* Top header */}
             <View style={styles.headerView}>
               <View style={styles.flexRowView}>
-                <TouchableOpacity activeOpacity={0.5} onPress={closeModal}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={closeSportsOptionModal}
+                >
                   {backarrow}
                 </TouchableOpacity>
                 <TextScallingFalse style={styles.headerText}>
@@ -364,57 +314,29 @@ const index = () => {
                 </TextScallingFalse>
               </View>
             </View>
+            {/* Headings */}
             <View style={{ width: "100%", padding: 20 }}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 18, fontWeight: "400" }}
               >
                 Select Your Sport..
               </TextScallingFalse>
-              <TextScallingFalse
-                style={{
-                  color: "grey",
-                  fontSize: 12,
-                  fontWeight: "400",
-                  paddingTop: 7,
-                }}
-              >
+              <TextScallingFalse className="text-[#808080] text-lg font-normal pt-2">
                 Choose the sport you want to showcase in your Overview Your
                 sports profile is your story; let's make it legendary!
               </TextScallingFalse>
             </View>
-            <View
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "row",
-              }}
-            >
+            {/* Search bar */}
+            <View className="w-full justify-center items-center flex-row mx-auto">
               <TextInput
                 placeholder="Search for sports"
                 placeholderTextColor={"grey"}
-                style={{
-                  backgroundColor: "#181818",
-                  width: "75%",
-                  color: "white",
-                  height: 45,
-                  paddingStart: 20,
-                  borderTopLeftRadius: 5,
-                  borderBottomLeftRadius: 5,
-                }}
+                className="bg-[#181818] w-3/4 h-12 pl-5 rounded-l-md"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-              ></TextInput>
-              <View
-                style={{
-                  backgroundColor: "#181818",
-                  height: 45.5,
-                  width: 50,
-                  justifyContent: "center",
-                  borderBottomRightRadius: 5,
-                  borderTopRightRadius: 5,
-                }}
-              >
+                cursorColor="#12956B"
+              />
+              <View className="bg-[#181818] h-12 w-12 justify-center rounded-r-md">
                 <Feather
                   name="search"
                   style={{ paddingLeft: 10 }}
@@ -423,22 +345,13 @@ const index = () => {
                 />
               </View>
             </View>
-            <View
-              style={{
-                width: "100%",
-                gap: 7,
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 20,
-                flexDirection: "row",
-                flexWrap: "wrap",
-              }}
-            >
-              {filteredSports.map((sport, index) => (
+            {/* Sports options */}
+            <View className="w-full flex-row flex-wrap justify-center items-center gap-2 p-5">
+              {filteredSports?.map((sport) => (
                 <TouchableOpacity
-                  onPress={() => openModal2(sport)}
+                  onPress={() => openSportModal(sport)}
                   activeOpacity={0.7}
-                  key={sport.name2}
+                  key={sport._id}
                   style={{
                     width: 115,
                     height: 37,
@@ -450,20 +363,20 @@ const index = () => {
                     flexDirection: "row",
                     gap: 10,
                     backgroundColor: selectedSports.some(
-                      (s) => s.name2 === sport.name2
+                      (s) => s.name === sport.name
                     )
                       ? "#12956B"
                       : "transparent",
                   }}
                 >
                   <Image
-                    source={sport.image2}
+                    source={{ uri: sport.logo }}
                     style={{ width: 17, height: 17 }}
                   />
                   <TextScallingFalse
                     style={{ color: "white", fontSize: 12, fontWeight: "500" }}
                   >
-                    {sport.name2}
+                    {sport.name}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
@@ -471,102 +384,27 @@ const index = () => {
           </PageThemeView>
         </Modal>
 
-        {/* <Modal
-          visible={isModalVisible}
-          transparent={true}
-          onRequestClose={closeModal}
-        >
-          <View className="flex-1 bg-black bg-opacity-90">
-            
-            <View className="flex-row items-center justify-between w-full h-16 px-5">
-              <TouchableOpacity
-                onPress={closeModal}
-                className="flex-row items-center"
-              >
-                <Feather name="arrow-left" size={28} color="white" />
-                <Text className="text-white text-5xl font-semibold pl-5">
-                  Add Sports
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-          
-            <View className="px-6">
-              <Text className="text-white text-3xl font-medium">
-                Select Your Sport..
-              </Text>
-              <Text className="text-gray-400 text-xl pt-2">
-                Choose the sport you want to showcase in your Overview. Your
-                sports profile is your story; let's make it legendary!
-              </Text>
-            </View>
-
-            
-            <View className="flex-row items-center justify-center px-5 mt-5">
-              <TextInput
-                placeholder="Search for sports"
-                placeholderTextColor="gray"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                className="bg-[#181818] text-white h-11 px-5 rounded-l-md flex-1"
-              />
-              <View className="bg-[#181818] w-12 h-11 justify-center items-center rounded-r-md">
-                <Feather name="search" size={23} color="grey" />
-              </View>
-            </View>
-
-            
-            <FlatList
-              data={filteredSports}
-              keyExtractor={(item) => item.name2}
-              numColumns={2}
-              columnWrapperStyle={{
-                justifyContent: "space-evenly",
-                paddingHorizontal: 20,
-                marginTop: 10,
-              }}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => openModal2(item)}
-                  activeOpacity={0.7}
-                  className={`w-40 h-9 flex-row items-center justify-evenly rounded-md border-[0.3px] ${
-                    selectedSports.some((s) => s.name2 === item.name2)
-                      ? "bg-[#12956B]"
-                      : "border-gray-600"
-                  }`}
-                >
-                  <Image
-                    source={item.image2}
-                    style={{ width: 17, height: 17 }}
-                  />
-                  <Text className="text-white text-sm font-medium">
-                    {item.name2}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </Modal> */}
-
-        {/*Sport Genaral menu page */}
+        {/* Sport specific menu modal */}
         <Modal
-          visible={isModalVisible2}
+          visible={isSportModalVisible}
           transparent={true}
-          onRequestClose={closeModal2}
+          onRequestClose={closeSportModal}
         >
           <PageThemeView>
+            {/* Top header */}
             <View style={styles.headerView}>
               <View style={styles.flexRowView}>
-                <TouchableOpacity activeOpacity={0.7} onPress={closeModal2}>
+                <TouchableOpacity activeOpacity={0.7} onPress={closeSportModal}>
                   {backarrow}
                 </TouchableOpacity>
                 <TextScallingFalse style={styles.headerText}>
-                  {selectedSport ? selectedSport.name2 : ""}
+                  {selectedSport ? selectedSport.name : ""}
                 </TextScallingFalse>
               </View>
+              {/* Save button */}
               {allQuestionsAnswered() ? (
                 <TouchableOpacity
-                  onPress={closeModal2}
+                  onPress={closeSportModal}
                   style={{ paddingRight: 10 }}
                 >
                   <TextScallingFalse style={styles.doneButton}>
@@ -585,6 +423,7 @@ const index = () => {
                 </TouchableOpacity>
               )}
             </View>
+            {/* Main section */}
             <View style={{ padding: 20, gap: 1 }}>
               <TouchableOpacity
                 onPress={() => selectedSport && openModal3(selectedSport)}
@@ -666,15 +505,15 @@ const index = () => {
                   {backarrow}
                 </TouchableOpacity>
                 <TextScallingFalse style={styles.headerText}>
-                  {selectedSport ? selectedSport.name2 : ""}
+                  {selectedSport ? selectedSport.name : ""}
                 </TextScallingFalse>
               </View>
               {oneQuestionsAnswered() ? (
                 <TouchableOpacity
                   onPress={() => {
-                    setModalVisible2(true);
+                    setSportModalVisible(true);
                     setSelectedSports((prev) =>
-                      prev.some((s) => s.name2 === selectedSport?.name2)
+                      prev.some((s) => s.name === selectedSport?.name)
                         ? prev
                         : [...prev, selectedSport]
                     );
@@ -702,19 +541,27 @@ const index = () => {
             </View>
 
             <View style={{ width: "100%", paddingHorizontal: 20, gap: 1 }}>
-              {Object.entries(sportsKeyDetails[selectedSport?.name2] || {}).map(
-                ([question, options], index) => (
+              {selectedSport?.defaultProperties?.map(
+                (
+                  options: {
+                    name: string;
+                    enumValues: Array<string>;
+                  },
+                  index: any
+                ) => (
                   <View key={index} style={styles.EditTopicSportsView}>
                     <TextScallingFalse style={styles.KeymenuText}>
-                      {question} -
+                      {options.name} -
                     </TextScallingFalse>
                     <TouchableOpacity
-                      onPress={() => toggleDropdown1(question)}
+                      onPress={() =>
+                        toggleDropdown1(options.name, options.enumValues)
+                      }
                       activeOpacity={0.5}
                       style={styles.flexRowView}
                     >
                       <TextScallingFalse style={styles.selectButton}>
-                        {selectedOptions[question] || "Select"}
+                        {"Select"}
                       </TextScallingFalse>
                       {downArrow}
                     </TouchableOpacity>
@@ -737,13 +584,13 @@ const index = () => {
             onPress={() => setShowDropdown1(false)}
           >
             <View style={styles.modalContent}>
-              {(
-                sportsKeyDetails[selectedSport?.name2]?.[selectedQuestion] || []
-              ).map((option, idx) => (
+              {selectedQuestion.options.map((option, index) => (
                 <TouchableOpacity
-                  key={idx}
+                  key={index}
                   style={styles.option}
-                  onPress={() => handleOptionSelect1(option)}
+                  onPress={() =>
+                    handleOptionSelect1(selectedQuestion.question, option)
+                  }
                 >
                   <TextScallingFalse
                     style={styles.optionText}
@@ -782,7 +629,7 @@ const index = () => {
                   <TouchableOpacity
                     onPress={() => {
                       setAlertModalVisible(false);
-                      setModalVisible2(false);
+                      setSportModalVisible(false);
                     }}
                     style={styles.LeftButton}
                   >
@@ -1012,5 +859,8 @@ const styles = StyleSheet.create({
   },
   option: {
     paddingVertical: 10,
+  },
+  loader: {
+    marginVertical: 20,
   },
 });

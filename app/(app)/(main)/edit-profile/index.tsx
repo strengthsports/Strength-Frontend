@@ -850,29 +850,32 @@ const EditProfile = () => {
         {/* Alert modal */}
         <Modal visible={isAlertModalSet} transparent animationType="fade">
           <View style={styles.AlertModalView}>
-            <View style={styles.AlertModalContainer}>
-              <TextScallingFalse style={styles.AlertModalHeader}>
-                Changes you made will not be saved!
+            <View
+              style={styles.AlertModalContainer}
+              className="h-full flex items-center justify-center gap-y-3 pt-5"
+            >
+              <TextScallingFalse className="text-[20px] font-semibold">
+                Discard changes?
               </TextScallingFalse>
-              <TextScallingFalse style={styles.ModalContentText}>
-                Are you sure to leave ?
+              <TextScallingFalse className="text-[16px] text-center">
+                If you go back now, you will lose your changes.
               </TextScallingFalse>
-              <View style={styles.ModalButtonsView}>
+              <View className="w-full">
                 <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => setAlertModal(false)}
-                  style={styles.RightButton}
+                  onPress={() => router.push("/profile")}
+                  className="w-full py-2 items-center border-t border-[#8080808b]"
                 >
-                  <TextScallingFalse style={styles.AlertModalButtonsText}>
-                    Cancel
+                  <TextScallingFalse className="font-semibold text-4xl text-red-600">
+                    Discard changes
                   </TextScallingFalse>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => router.push("/profile")}
-                  style={styles.LeftButton}
+                  activeOpacity={0.7}
+                  onPress={() => setAlertModal(false)}
+                  className="w-full py-2 items-center border-t border-[#8080808b]"
                 >
-                  <TextScallingFalse style={styles.AlertModalButtonsText}>
-                    Yes
+                  <TextScallingFalse className="font-semibold text-4xl text-[#808080]">
+                    Continue editing
                   </TextScallingFalse>
                 </TouchableOpacity>
               </View>
@@ -1219,7 +1222,7 @@ const styles = StyleSheet.create({
     height: 60,
   },
   AlertModalButtonsText: {
-    color: "grey",
+    color: "red",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -1243,25 +1246,27 @@ const FormField = ({
   isLast?: boolean;
   isDate?: boolean;
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    activeOpacity={0.5}
+  <View
     className={`flex-row items-center justify-between px-6 h-14 ${
       !isLast ? "border-b border-[#3030309a]" : ""
     }`}
   >
     <Text className="text-white text-4xl font-medium w-1/3">{label}</Text>
-    <View className="flex-row items-center justify-between w-2/3">
+    <TouchableOpacity
+      activeOpacity={0.5}
+      onPress={onPress}
+      className="flex-row items-center justify-between w-2/3"
+    >
       <Text
         className={`text-2xl font-light ${
           value ? "text-white" : "text-gray-500"
         }`}
       >
-        {isDate ? dateFormatter(value, "date") : value || placeholder}
+        {isDate ? dateFormatter(value as any, "date") : value || placeholder}
       </Text>
       {icon && <View className="">{icon}</View>}
-    </View>
-  </TouchableOpacity>
+    </TouchableOpacity>
+  </View>
 );
 
 // Measurement Input Component

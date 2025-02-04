@@ -16,6 +16,9 @@ import Sidebar from "~/components/feedPage/Sidebar";
 import PageThemeView from "~/components/PageThemeView";
 import { AppDispatch } from "~/reduxStore";
 import { logoutUser } from "~/reduxStore/slices/user/authSlice";
+import CombinedDrawer from "../../(main)/teams/components/combinedDrawer";
+import ProfileDrawer from "~/components/profileDrawer";
+import ProfileSidebar from "~/components/feedPage/profileSidebar";
 
 const ProfileLayout = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,17 +48,37 @@ const ProfileLayout = () => {
           });
     }
   };
-  return (
-    <PageThemeView>
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <HeaderFeed />
-        {/* <HeaderFeed onPress={() => setSidebarVisible(true)} /> */}
 
-        {/* <Divider /> */}
-        {/* {isSidebarVisible && (
+  const menuItems = [
+    {
+      label: "Edit Team",
+      onPress: () => console.log("/teams/edit/editTeam"), // Example function for "Home"
+    },
+    {
+      label: "Members",
+      onPress: () => console.log("/teams/edit/members"), // Example function for "Settings"
+    },
+    {
+      label: "Add members",
+      onPress: () => console.log("Profile clicked!"), // Example function for "Profile"
+    },
+    {
+      label: "Delete Team",
+      onPress: () => console.log("Logout clicked!"), // Example function for "Logout"
+    },
+  ];
+  return (
+    <ProfileSidebar menuItems={menuItems}>
+      <PageThemeView>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* <HeaderFeed /> */}
+          {/* <HeaderFeed onPress={() => setSidebarVisible(true)} /> */}
+
+          {/* <Divider /> */}
+          {/* {isSidebarVisible && (
       <Sidebar
         isVisible={isSidebarVisible}
         onClose={() => setSidebarVisible(false)}
@@ -69,9 +92,10 @@ const ProfileLayout = () => {
       </Sidebar>
     )} */}
 
-        <Slot />
-      </ScrollView>
-    </PageThemeView>
+          <Slot />
+        </ScrollView>
+      </PageThemeView>
+    </ProfileSidebar>
   );
 };
 

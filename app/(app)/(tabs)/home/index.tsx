@@ -44,7 +44,7 @@ export default function Home() {
       setLastTimestamp(newTimestamp); // Refresh with latest timestamp
 
       // Invalidate the cache for 'Posts' tag
-      dispatch(feedPostApi.util.invalidateTags(['FeedPost']));
+      dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
 
       await refetch();
     } finally {
@@ -59,13 +59,13 @@ export default function Home() {
         <PostContainer item={item} />
       </View>
     ),
-    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+    [], // Empty dependency array ensures the function is memoized and doesn't re-create
   );
   const memoizedEmptyComponent = memo(() => (
     <Text className="text-white text-center p-4">No new posts available</Text>
   ));
   return (
-    <SafeAreaView edges={["top", "bottom"]} className="pt-16 flex-1">
+    <SafeAreaView edges={["top", "bottom"]} className="flex-1">
       <TouchableOpacity
         onPress={() => router.push(`../(main)/profile/${serializedUser}`)}
       >

@@ -244,7 +244,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
       )}
 
       {/* Scrollable Content Area */}
-      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {children}
       </ScrollView>
     </View>

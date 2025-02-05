@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -19,10 +19,9 @@ import {
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import { Slot, usePathname, useRouter } from "expo-router";
-import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 import { dateFormatter } from "~/utils/dateFormatter";
-import { AppDispatch } from "~/reduxStore";
 import { MotiView } from "moti";
 import Overview from ".";
 import Activity from "./activity/_layout";
@@ -32,8 +31,6 @@ import Teams from "./teams";
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
   const router = useRouter();
-  const pathname = usePathname();
-  const dispatch = useDispatch<AppDispatch>();
 
   const [activeTab, setActiveTab] = useState("Overview");
 
@@ -472,53 +469,6 @@ const ProfileLayout = () => {
         <MotiView className="flex-1">{renderContent()}</MotiView>
       </ScrollView>
     </PageThemeView>
-  );
-};
-
-// Profile navigator tabs
-const Tabs = ({
-  activeTab,
-  handleTabPress,
-}: {
-  activeTab: string; // Use string for better clarity
-  handleTabPress: (tabName: string, tabPath: string) => void;
-}) => {
-  const tabs = [
-    { name: "Overview", path: `/profile` },
-    { name: "Activity", path: `/profile/activity` },
-    { name: "Events", path: `/profile/events` },
-    { name: "Teams", path: `/profile/teams` },
-  ];
-
-  return (
-    <View className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600">
-      {tabs.map((tab, index) => (
-        <Pressable
-          key={index}
-          className={`py-2 px-5 ${
-            // Make "Activity" tab active for all paths starting with `/profile/activity`
-            activeTab === tab.name ||
-            (tab.name === "Activity" &&
-              activeTab.startsWith("/profile/activity"))
-              ? "border-b-[1.5px] border-[#12956B]"
-              : ""
-          }`}
-          onPress={() => handleTabPress(tab.name, tab.path)}
-        >
-          <Text
-            className={`text-[1.1rem] ${
-              activeTab === tab.name ||
-              (tab.name === "Activity" &&
-                activeTab.startsWith("/profile/activity"))
-                ? "text-[#12956B]"
-                : "text-white"
-            }`}
-          >
-            {tab.name}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
   );
 };
 

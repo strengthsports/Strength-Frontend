@@ -33,6 +33,7 @@ export default function Home() {
     limit: 20, // Fixed limit
     lastTimeStamp: lastTimestamp,
   });
+  console.log("Post Data : ", data);
 
   const isAndroid = Platform.OS === "android";
 
@@ -55,11 +56,11 @@ export default function Home() {
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View className="w-screen pl-3">
+      <View className="w-screen">
         <PostContainer item={item} />
       </View>
     ),
-    [], // Empty dependency array ensures the function is memoized and doesn't re-create
+    [] // Empty dependency array ensures the function is memoized and doesn't re-create
   );
   const memoizedEmptyComponent = memo(() => (
     <Text className="text-white text-center p-4">No new posts available</Text>

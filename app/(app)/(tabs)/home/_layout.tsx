@@ -74,24 +74,6 @@ const ProfileLayout = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* <HeaderFeed /> */}
-          {/* <HeaderFeed onPress={() => setSidebarVisible(true)} /> */}
-
-          {/* <Divider /> */}
-          {/* {isSidebarVisible && (
-      <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setSidebarVisible(false)}
-      >
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuText}>Profile</Text>
-        </TouchableOpacity>
-      </Sidebar>
-    )} */}
-
           <Slot />
         </ScrollView>
       </PageThemeView>

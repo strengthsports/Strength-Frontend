@@ -17,7 +17,7 @@ import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   useLikeContentMutation,
   useUnLikeContentMutation,
@@ -27,6 +27,12 @@ import MoreModal from "../feedPage/moreModal";
 import LikersList from "../feedPage/likerModal";
 import LikerModal from "../feedPage/likerModal";
 import CommentModal from "../feedPage/commentModal";
+import {
+  useFollowUserMutation,
+  useUnFollowUserMutation,
+} from "~/reduxStore/api/profile/profileApi.follow";
+import { AppDispatch } from "~/reduxStore";
+import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 
 // Type definitions
 interface SwiperImageProps {
@@ -58,7 +64,8 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
 
 const PostContainer = ({ item }: { item: Post }) => {
   const router = useRouter();
-  const { user } = useSelector((state) => state?.auth);
+  const { user } = useSelector((state: any) => state?.auth);
+  const dispatch = useDispatch<AppDispatch>();
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: item.postedBy._id, type: item.postedBy.type })
   );
@@ -67,9 +74,14 @@ const PostContainer = ({ item }: { item: Post }) => {
   const [showSeeMore, setShowSeeMore] = useState(false);
 
   const [isLiked, setIsLiked] = useState(false);
+  const [followingStatus, setFollowingStatus] = useState<boolean>(
+    item?.isFollowing
+  );
   const [likeCount, setLikeCount] = useState(item.likesCount);
   const [likePost, message] = useLikeContentMutation();
   const [unlikePost] = useUnLikeContentMutation();
+  const [followUser] = useFollowUserMutation();
+  const [unFollowUser] = useUnFollowUserMutation();
   // const [showLikers, setShowLikers] = useState(false);
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
   const [isPostLikersModalVisible, setIsPostLikersModalVisible] =
@@ -133,6 +145,41 @@ const PostContainer = ({ item }: { item: Post }) => {
           useNativeDriver: true,
         }),
       ]).start();
+    }
+  };
+
+  //handle follow
+  const handleFollow = async () => {
+    try {
+      setFollowingStatus(true);
+      // Perform the follow action via mutation
+      await followUser({
+        followingId: item.postedBy._id,
+        followingType: item.postedBy.type,
+      }).unwrap();
+      dispatch(setFollowingCount("follow"));
+      console.log("Followed Successfully!");
+    } catch (err) {
+      setFollowingStatus(false);
+      dispatch(setFollowingCount("unfollow"));
+      console.error("Follow error:", err);
+    }
+  };
+
+  //handle unfollow
+  const handleUnfollow = async () => {
+    try {
+      setFollowingStatus(false);
+      await unFollowUser({
+        followingId: item.postedBy._id,
+        followingType: item.postedBy.type,
+      }).unwrap();
+      dispatch(setFollowingCount("unfollow"));
+      console.log("Unfollowed Successfully!");
+    } catch (err) {
+      setFollowingStatus(true);
+      dispatch(setFollowingCount("follow"));
+      console.error("Unfollow error:", err);
     }
   };
 
@@ -231,6 +278,20 @@ const PostContainer = ({ item }: { item: Post }) => {
               <MaterialIcons name="public" size={12} color="gray" />
             </View>
           </View>
+
+          {/* Follow button */}
+          <TouchableOpacity
+            className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
+            onPress={
+              item.isFollowing || followingStatus
+                ? handleUnfollow
+                : handleFollow
+            }
+          >
+            <TextScallingFalse className="text-white text-sm">
+              {item.isFollowing || followingStatus ? "Following" : "+ Follow"}
+            </TextScallingFalse>
+          </TouchableOpacity>
         </View>
 
         {/* Caption Section */}
@@ -377,16 +438,16 @@ const PostContainer = ({ item }: { item: Post }) => {
             <TouchableOpacity onPress={handleLikeAction}>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
                 <FontAwesome
-                  name={isLiked ? "thumbs-up" : "thumbs-o-up"}
+                  name={item.isLiked || isLiked ? "thumbs-up" : "thumbs-o-up"}
                   size={16}
-                  color={isLiked ? "#FABE25" : "gray"}
+                  color={item.isLiked || isLiked ? "#FABE25" : "gray"}
                 />
                 <TextScallingFalse
                   className={`text-base ${
-                    isLiked ? "text-amber-400" : "text-white"
+                    item.isLiked || isLiked ? "text-amber-400" : "text-white"
                   }`}
                 >
-                  {isLiked ? "Liked" : "Like"}
+                  {item.isLiked || isLiked ? "Liked" : "Like"}
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>

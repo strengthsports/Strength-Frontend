@@ -18,11 +18,13 @@ export interface Post {
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+  isLiked: boolean;
+  isFollowing: boolean;
 }
 
-interface FeedResponse {
+export interface FeedResponse {
   data: {
-    posts: Post[];
+    formattedPosts: Post[];
     lastTimestamp: string | null;
   };
   message: string;
@@ -31,31 +33,34 @@ interface FeedResponse {
 }
 
 export const feedPostApi = createApi({
-    reducerPath: 'feedPostApi',
-    baseQuery: fetchBaseQuery({
-        baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
-        prepareHeaders: async (headers) => {
-            const token = await getToken("accessToken");
-            if (token) {
-              headers.set('Authorization', `Bearer ${token}`);
-            }
-            return headers;
-          }
-        }),
-    tagTypes: ["FeedPost"], // Specify tag types here
-    endpoints: (builder) => ({
-        getFeedPost: builder.query<FeedResponse, {limit?: number; lastTimeStamp?: string | null}>({
-            query:({ limit = 20, lastTimeStamp }) => ({
-                url: 'api/v1/get-feed',
-                params: {
-                    limit,
-                    lastTimeStamp
-                }
-              }),
-              keepUnusedDataFor:300, // how long api response is stored in memory after all components using it unmounts, 5 mins || default - 1 min
-              providesTags: ['FeedPost'],
-        })
-    })
-})
+  reducerPath: "feedPostApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
+    prepareHeaders: async (headers) => {
+      const token = await getToken("accessToken");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ["FeedPost"], // Specify tag types here
+  endpoints: (builder) => ({
+    getFeedPost: builder.query<
+      FeedResponse,
+      { limit?: number; lastTimeStamp?: string | null }
+    >({
+      query: ({ limit = 20, lastTimeStamp }) => ({
+        url: "api/v1/get-feed",
+        params: {
+          limit,
+          lastTimeStamp,
+        },
+      }),
+      keepUnusedDataFor: 300, // how long api response is stored in memory after all components using it unmounts, 5 mins || default - 1 min
+      providesTags: ["FeedPost"],
+    }),
+  }),
+});
 
 export const { useGetFeedPostQuery } = feedPostApi;

@@ -10,6 +10,7 @@ import {
   Modal,
   NativeSyntheticEvent,
   TextLayoutEventData,
+  Pressable,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -71,9 +72,11 @@ const PostContainer = ({ item }: { item: Post }) => {
   const [unlikePost] = useUnLikeContentMutation();
   // const [showLikers, setShowLikers] = useState(false);
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
-  const [isPostLikersModalVisible, setIsPostLikersModalVisible] = useState(false);
+  const [isPostLikersModalVisible, setIsPostLikersModalVisible] =
+    useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [isCommentCountModalVisible, setIsCommentCountModalVisible] = useState(false);
+  const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
+    useState(false);
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -133,6 +136,24 @@ const PostContainer = ({ item }: { item: Post }) => {
     }
   };
 
+  // Function to render caption with clickable hashtags
+  const renderCaptionWithHashtags = (caption: string) => {
+    return caption.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
+      if (word.startsWith("#")) {
+        return (
+          <Text
+            key={index}
+            onPress={() => router.push("/(app)/(main)/settings")}
+            className="text-xl text-[#12956B]"
+          >
+            {word}
+          </Text>
+        );
+      }
+      return word;
+    });
+  };
+
   const swiperConfig = {
     autoplay: false,
     showsPagination: true,
@@ -158,6 +179,7 @@ const PostContainer = ({ item }: { item: Post }) => {
         {/* Profile Section */}
         <View className="ml-[5%] flex flex-row gap-2 z-20 pb-0">
           <TouchableOpacity
+            activeOpacity={0.5}
             className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
             onPress={() =>
               user._id === item.postedBy._id
@@ -184,6 +206,7 @@ const PostContainer = ({ item }: { item: Post }) => {
 
           <View className="w-64 flex flex-col justify-between">
             <TouchableOpacity
+              activeOpacity={0.8}
               onPress={() =>
                 user._id === item.postedBy._id
                   ? router.push("/(app)/(tabs)/profile")
@@ -241,7 +264,7 @@ const PostContainer = ({ item }: { item: Post }) => {
               ellipsizeMode="tail"
               onTextLayout={handleTextLayout}
             >
-              {item.caption}
+              {renderCaptionWithHashtags(item.caption)}
             </Text>
 
             {showSeeMore && !isExpanded && (
@@ -312,8 +335,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                     className="flex-1 justify-end bg-black/50"
                     activeOpacity={1}
                     onPress={() => setIsPostLikersModalVisible(false)}
-                  >
-                  </TouchableOpacity>
+                  ></TouchableOpacity>
                   <LikerModal targetId={item._id} targetType="Post" />
                 </Modal>
               )}
@@ -338,13 +360,11 @@ const PostContainer = ({ item }: { item: Post }) => {
                     className="flex-1 justify-end bg-black/50"
                     activeOpacity={1}
                     onPress={() => setIsCommentCountModalVisible(false)}
-                  >
-                  </TouchableOpacity>
+                  ></TouchableOpacity>
                   <CommentModal targetId={item._id} />
                 </Modal>
               )}
             </TouchableOpacity>
-
           </View>
 
           <Divider
@@ -362,8 +382,9 @@ const PostContainer = ({ item }: { item: Post }) => {
                   color={isLiked ? "#FABE25" : "gray"}
                 />
                 <TextScallingFalse
-                  className={`text-base ${isLiked ? "text-amber-400" : "text-white"
-                    }`}
+                  className={`text-base ${
+                    isLiked ? "text-amber-400" : "text-white"
+                  }`}
                 >
                   {isLiked ? "Liked" : "Like"}
                 </TextScallingFalse>
@@ -394,10 +415,12 @@ const PostContainer = ({ item }: { item: Post }) => {
                   >
                     {/* <LikerModal targetId={item._id} targetType="Post" /> */}
                   </TouchableOpacity>
-                  <CommentModal targetId={item._id} autoFocusKeyboard={isCommentModalVisible} />
+                  <CommentModal
+                    targetId={item._id}
+                    autoFocusKeyboard={isCommentModalVisible}
+                  />
                 </Modal>
               )}
-
             </TouchableOpacity>
             <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">

@@ -66,7 +66,7 @@ const ActivityLayout = () => {
           paddingStart: 15 * scaleFactor,
           justifyContent: "flex-start",
           alignItems: "center",
-          columnGap: 10,
+          columnGap: 8,
           width: "auto",
         }}
       >

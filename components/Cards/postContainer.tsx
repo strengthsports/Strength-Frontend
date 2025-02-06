@@ -73,11 +73,11 @@ const PostContainer = ({ item }: { item: Post }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
 
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(item?.isLiked);
   const [followingStatus, setFollowingStatus] = useState<boolean>(
     item?.isFollowing
   );
-  const [likeCount, setLikeCount] = useState(item.likesCount);
+  const [likeCount, setLikeCount] = useState(item?.likesCount);
   const [likePost, message] = useLikeContentMutation();
   const [unlikePost] = useUnLikeContentMutation();
   const [followUser] = useFollowUserMutation();
@@ -100,9 +100,6 @@ const PostContainer = ({ item }: { item: Post }) => {
   };
 
   const handleLikeAction = async () => {
-    const originalIsLiked = isLiked;
-    const originalLikeCount = likeCount;
-
     try {
       // Optimistic update
       setIsLiked(!isLiked);
@@ -118,8 +115,8 @@ const PostContainer = ({ item }: { item: Post }) => {
       // console.log(message?.data?.message);
     } catch (error) {
       // Rollback on error
-      setIsLiked(originalIsLiked);
-      setLikeCount(originalLikeCount);
+      setIsLiked(isLiked);
+      setLikeCount(likeCount);
       console.error("Like action failed:", error);
     }
   };
@@ -280,18 +277,20 @@ const PostContainer = ({ item }: { item: Post }) => {
           </View>
 
           {/* Follow button */}
-          <TouchableOpacity
-            className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
-            onPress={
-              item.isFollowing || followingStatus
-                ? handleUnfollow
-                : handleFollow
-            }
-          >
-            <TextScallingFalse className="text-white text-sm">
-              {item.isFollowing || followingStatus ? "Following" : "+ Follow"}
-            </TextScallingFalse>
-          </TouchableOpacity>
+          {user._id !== item.postedBy._id && (
+            <TouchableOpacity
+              className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
+              onPress={
+                item.isFollowing || followingStatus
+                  ? handleUnfollow
+                  : handleFollow
+              }
+            >
+              <TextScallingFalse className="text-white text-sm">
+                {item.isFollowing || followingStatus ? "Following" : "+ Follow"}
+              </TextScallingFalse>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Caption Section */}
@@ -438,16 +437,16 @@ const PostContainer = ({ item }: { item: Post }) => {
             <TouchableOpacity onPress={handleLikeAction}>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
                 <FontAwesome
-                  name={item.isLiked || isLiked ? "thumbs-up" : "thumbs-o-up"}
+                  name={isLiked ? "thumbs-up" : "thumbs-o-up"}
                   size={16}
-                  color={item.isLiked || isLiked ? "#FABE25" : "gray"}
+                  color={isLiked ? "#FABE25" : "gray"}
                 />
                 <TextScallingFalse
                   className={`text-base ${
-                    item.isLiked || isLiked ? "text-amber-400" : "text-white"
+                    isLiked ? "text-amber-400" : "text-white"
                   }`}
                 >
-                  {item.isLiked || isLiked ? "Liked" : "Like"}
+                  {isLiked ? "Liked" : "Like"}
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>

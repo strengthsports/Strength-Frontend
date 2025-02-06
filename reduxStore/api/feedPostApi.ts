@@ -24,7 +24,7 @@ export interface Post {
 
 export interface FeedResponse {
   data: {
-    formattedPosts: Post[];
+    posts: Post[];
     lastTimestamp: string | null;
   };
   message: string;

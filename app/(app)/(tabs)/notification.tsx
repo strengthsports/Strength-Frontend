@@ -2,71 +2,61 @@ import React from "react";
 import { View, Text, FlatList, ActivityIndicator, Image } from "react-native";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 import { ThemedText } from "@/components/ThemedText";
+import LikeCard from "~/components/notifications/LikeCard";
+import NotificationCardLayout from "~/components/notifications/NotificationCardLayout";
+import nopic from "@/assets/images/nopic.jpg";
 
 const Notification = () => {
-  const {
-    data: notifications,
-    isLoading,
-    isError,
-  } = useGetNotificationsQuery(null);
+  // const {
+  //   data: notifications,
+  //   isLoading,
+  //   isError,
+  // } = useGetNotificationsQuery(null);
 
-  console.log(notifications);
+  // console.log(notifications);
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#ffffff" />
-        <ThemedText>Loading Notifications...</ThemedText>
-      </View>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <View className="flex-1 justify-center items-center">
+  //       <ActivityIndicator size="large" color="#ffffff" />
+  //       <ThemedText>Loading Notifications...</ThemedText>
+  //     </View>
+  //   );
+  // }
 
-  if (isError) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ThemedText style={{ color: "red" }}>
-          Failed to load notifications.
-        </ThemedText>
-      </View>
-    );
-  }
+  // if (isError) {
+  //   return (
+  //     <View className="flex-1 justify-center items-center">
+  //       <ThemedText style={{ color: "red" }}>
+  //         Failed to load notifications.
+  //       </ThemedText>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View className="flex-1 p-4 bg-black">
-      <ThemedText className="text-4xl font-bold text-white mb-4">
+      <Text className="text-6xl font-semibold text-white mb-4">
         Notifications
-      </ThemedText>
-
-      {notifications?.length === 0 ? (
-        <View className="justify-center items-center mt-10">
-          <ThemedText className="text-gray-400">
-            No new notifications
-          </ThemedText>
-        </View>
-      ) : (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <View className="flex-row items-center p-3 border-b border-gray-700">
-              {/* Sender Profile Picture */}
-              <Image
-                source={{
-                  uri: item.sender?._id?.profilePic,
-                }}
-                className="w-12 h-12 rounded-full mr-3"
-              />
-              {/* Notification Details */}
-              <View>
-                <ThemedText className="text-white font-medium">
-                  {item.sender?._id?.firstName} {item.sender?._id?.lastName}
-                </ThemedText>
-                <Text className="text-gray-400">{item.message}</Text>
-              </View>
-            </View>
-          )}
-        />
-      )}
+      </Text>
+      {/* Dummy */}
+      <View className="justify-center items-center mt-3 gap-y-2">
+        {[
+          "Like",
+          "Comment",
+          "TeamInvitation",
+          "Follow",
+          "Report",
+          "JoinTeamRequest",
+        ].map((card, index) => (
+          <NotificationCardLayout
+            key={index}
+            date="50 days ago"
+            type={card}
+            user="User1"
+          />
+        ))}
+      </View>
     </View>
   );
 };

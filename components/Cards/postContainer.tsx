@@ -33,6 +33,7 @@ import {
 } from "~/reduxStore/api/profile/profileApi.follow";
 import { AppDispatch } from "~/reduxStore";
 import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
+import { formatTimeAgo } from "~/utils/formatTime";
 
 // Type definitions
 interface SwiperImageProps {
@@ -78,6 +79,7 @@ const PostContainer = ({ item }: { item: Post }) => {
     item?.isFollowing
   );
   const [likeCount, setLikeCount] = useState(item?.likesCount);
+  const [commentCount, setCommentCount] = useState(item?.commentsCount);
   const [likePost, message] = useLikeContentMutation();
   const [unlikePost] = useUnLikeContentMutation();
   const [followUser] = useFollowUserMutation();
@@ -270,7 +272,7 @@ const PostContainer = ({ item }: { item: Post }) => {
             </TouchableOpacity>
             <View className="flex flex-row items-center">
               <TextScallingFalse className="text-base text-neutral-400">
-                {new Date(item.createdAt).toLocaleDateString()} &bull;{" "}
+                {formatTimeAgo(item.createdAt)} &bull;{" "}
               </TextScallingFalse>
               <MaterialIcons name="public" size={12} color="gray" />
             </View>
@@ -280,14 +282,10 @@ const PostContainer = ({ item }: { item: Post }) => {
           {user._id !== item.postedBy._id && (
             <TouchableOpacity
               className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
-              onPress={
-                item.isFollowing || followingStatus
-                  ? handleUnfollow
-                  : handleFollow
-              }
+              onPress={followingStatus ? handleUnfollow : handleFollow}
             >
               <TextScallingFalse className="text-white text-sm">
-                {item.isFollowing || followingStatus ? "Following" : "+ Follow"}
+                {followingStatus ? "Following" : "+ Follow"}
               </TextScallingFalse>
             </TouchableOpacity>
           )}
@@ -407,7 +405,7 @@ const PostContainer = ({ item }: { item: Post }) => {
               onPress={() => setIsCommentCountModalVisible(true)}
             >
               <TextScallingFalse className="text-base text-white">
-                {item.commentsCount} Comments
+                {commentCount} Comments
               </TextScallingFalse>
               {isCommentCountModalVisible && (
                 <Modal
@@ -421,7 +419,10 @@ const PostContainer = ({ item }: { item: Post }) => {
                     activeOpacity={1}
                     onPress={() => setIsCommentCountModalVisible(false)}
                   ></TouchableOpacity>
-                  <CommentModal targetId={item._id} />
+                  <CommentModal
+                    targetId={item._id}
+                    setCommentCount={setCommentCount}
+                  />
                 </Modal>
               )}
             </TouchableOpacity>
@@ -478,6 +479,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                   <CommentModal
                     targetId={item._id}
                     autoFocusKeyboard={isCommentModalVisible}
+                    setCommentCount={setCommentCount}
                   />
                 </Modal>
               )}

@@ -3,16 +3,28 @@ import React from "react";
 import TextScallingFalse from "../CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import nopic from "@/assets/images/nopic.jpg";
+import { formatTimeAgo } from "~/utils/formatTime";
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 
 const NotificationCardLayout = ({
   type,
   date,
-  user,
+  sender,
+  target,
 }: {
   type: string;
-  date: string;
-  user: string;
+  date: Date;
+  sender: any;
+  target: any;
 }) => {
+  const router = useRouter();
+  const userId = useSelector((state: any) => state.auth.user._id);
+
+  const serializedUser = encodeURIComponent(
+    JSON.stringify({ id: sender._id, type: sender.type })
+  );
+
   const renderTextsOnTypes = (type: string) => {
     switch (type) {
       case "Like":
@@ -33,29 +45,37 @@ const NotificationCardLayout = ({
   };
 
   return (
-    <View className="flex-row w-full min-w-[320px] lg:min-w-[400px] max-w-[600px] rounded-lg p-3">
+    <View className="flex-row w-full min-w-[320px] lg:min-w-[400px] max-w-[600px] rounded-lg py-3">
       {/* Profile Image */}
-      <View className="w-12 h-12 rounded-full justify-center items-center flex-shrink-0">
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() =>
+          userId === sender._id
+            ? router.push("/(app)/(tabs)/profile")
+            : router.push(`../(main)/profile/${serializedUser}`)
+        }
+        className="w-12 h-12 rounded-full justify-center items-center flex-shrink-0"
+      >
         <Image
-          source={nopic}
+          source={{ uri: sender.profilePic }}
           className="w-10 h-10 rounded-full"
           style={{
             maxWidth: 50,
             maxHeight: 50,
           }}
         />
-      </View>
+      </TouchableOpacity>
 
       {/* Notification Content */}
       <View className="flex-1 pl-3 justify-center">
         {/* Top Section: Notification Text + Options */}
         <View className="flex-row justify-between items-center">
           <TextScallingFalse className="text-white text-lg flex-1">
-            {user}{" "}
+            {sender.firstName} {sender.lastName}{" "}
             <TextScallingFalse className="font-bold">
               {renderTextsOnTypes(type)}
             </TextScallingFalse>{" "}
-            {date}
+            {formatTimeAgo(date)}
           </TextScallingFalse>
           {type !== "Follow" ? (
             <MaterialCommunityIcons
@@ -76,19 +96,25 @@ const NotificationCardLayout = ({
         {["Like", "Comment", "JoinTeamRequest", "TeamInvitation"].includes(
           type
         ) && (
-          <View className="flex-row mt-1.5 items-center bg-[#121212] rounded-md overflow-hidden w-full">
+          <TouchableOpacity
+            activeOpacity={0.3}
+            onPress={() => router.push("/")}
+            className="flex-row mt-1.5 items-center bg-[#121212] rounded-md overflow-hidden w-full"
+          >
             {/* Post Image (Now Responsive on Web & Mobile) */}
-            <Image
-              source={nopic}
-              resizeMode="cover"
-              className="rounded-md flex-shrink-0"
-              style={{
-                width: 50,
-                height: 50,
-                maxWidth: 64,
-                maxHeight: 64,
-              }}
-            />
+            {target.assets?.length > 0 && (
+              <Image
+                source={{ uri: target.assets[0].url }}
+                resizeMode="cover"
+                className="rounded-l-md flex-shrink-0"
+                style={{
+                  width: 50,
+                  height: 50,
+                  maxWidth: 64,
+                  maxHeight: 64,
+                }}
+              />
+            )}
 
             {/* Text Container (Adjustable Width) */}
             <View className="flex-1 ml-3 p-3">
@@ -97,11 +123,10 @@ const NotificationCardLayout = ({
                 numberOfLines={2}
                 ellipsizeMode="tail"
               >
-                "Hello, this is a sample post text that can easily be up to
-                fifteen words long without breaking UI."
+                "{target.caption}"
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       </View>
     </View>

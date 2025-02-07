@@ -122,45 +122,41 @@ const ProfileLayout = ({ param }: { param: string }) => {
 
   //handle follow
   const handleFollow = async () => {
-    if (userId) {
-      try {
-        setFollowingStatus(true);
-        setFollowerCount((prev) => prev + 1);
-        // Perform the follow action via mutation
-        await followUser({
-          followingId: userId?.id,
-          followingType: userId?.type,
-        }).unwrap();
-        dispatch(setFollowingCount("follow"));
-        console.log("Followed Successfully!");
-      } catch (err) {
-        setFollowingStatus(false);
-        setFollowerCount((prev) => prev - 1);
-        dispatch(setFollowingCount("unfollow"));
-        console.error("Follow error:", err);
-      }
+    try {
+      setFollowingStatus(true);
+      setFollowerCount((prev) => prev + 1);
+      // Perform the follow action via mutation
+      await followUser({
+        followingId: userId?.id,
+        followingType: userId?.type,
+      }).unwrap();
+      dispatch(setFollowingCount("follow"));
+      console.log("Followed Successfully!");
+    } catch (err) {
+      setFollowingStatus(false);
+      setFollowerCount((prev) => prev - 1);
+      dispatch(setFollowingCount("unfollow"));
+      console.error("Follow error:", err);
     }
   };
 
   //handle unfollow
   const handleUnfollow = async () => {
     setSettingsModalVisible((prev) => ({ ...prev, status: false }));
-    if (userId) {
-      try {
-        setFollowingStatus(false);
-        setFollowerCount((prev) => prev - 1);
-        await unFollowUser({
-          followingId: userId?.id,
-          followingType: userId?.type,
-        }).unwrap();
-        dispatch(setFollowingCount("unfollow"));
-        console.log("Unfollowed Successfully!");
-      } catch (err) {
-        setFollowingStatus(true);
-        setFollowerCount((prev) => prev + 1);
-        dispatch(setFollowingCount("follow"));
-        console.error("Unfollow error:", err);
-      }
+    try {
+      setFollowingStatus(false);
+      setFollowerCount((prev) => prev - 1);
+      await unFollowUser({
+        followingId: userId?.id,
+        followingType: userId?.type,
+      }).unwrap();
+      dispatch(setFollowingCount("unfollow"));
+      console.log("Unfollowed Successfully!");
+    } catch (err) {
+      setFollowingStatus(true);
+      setFollowerCount((prev) => prev + 1);
+      dispatch(setFollowingCount("follow"));
+      console.error("Unfollow error:", err);
     }
   };
 

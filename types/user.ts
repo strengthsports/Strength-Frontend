@@ -69,3 +69,15 @@ export interface UnblockUser {
   blockedId: string;
   blockedType: string;
 }
+
+export interface SuggestionUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  headline: string;
+  type: string;
+  profilePic: string;
+  coverPic: string;
+  followerCount: number;
+}

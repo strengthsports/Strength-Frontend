@@ -118,6 +118,11 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             justifyContent: "space-between",
             paddingHorizontal: 6,
           }}
+          onPress={() => router.push({
+            pathname: "/(app)/(main)/addPost",
+            options: { animation: 'slide_from_bottom' }, // Specify the animation
+
+          })}
         >
           <Text
             style={{

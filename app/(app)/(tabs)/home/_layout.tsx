@@ -19,6 +19,7 @@ import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import CombinedDrawer from "../../(main)/teams/components/combinedDrawer";
 import ProfileDrawer from "~/components/profileDrawer";
 import ProfileSidebar from "~/components/feedPage/profileSidebar";
+import { View } from "moti";
 
 const ProfileLayout = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -70,12 +71,9 @@ const ProfileLayout = () => {
   return (
     <ProfileSidebar menuItems={menuItems}>
       <PageThemeView>
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={{ flex: 1 }}>
           <Slot />
-        </ScrollView>
+        </View>
       </PageThemeView>
     </ProfileSidebar>
   );

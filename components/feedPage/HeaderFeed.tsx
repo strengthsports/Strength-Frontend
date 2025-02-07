@@ -90,7 +90,7 @@ const HeaderFeed = ({}) => {
             <Text style={styles.text}>{currentText}</Text>
           </Animated.View>
           <Animated.View style={styles.featherContainer}>
-            <Feather name="plus" size={15} color="grey" />
+            <MaterialCommunityIcons name="plus-box-multiple" size={15} color="grey" />
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>

@@ -15,14 +15,17 @@ export const notificationApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ["Notifications"],
   endpoints: (builder) => ({
     // fetch notifications
     getNotifications: builder.query<any, null>({
       query: () => ({
         url: "/api/v1/get-notifications",
       }),
-      transformResponse: (response: { data: any }) =>
-        response.data.notifications,
+      providesTags: ["Notifications"],
+      // invalidatesTags: (result, error, { userId }) => [
+      //   { type: "Notifications", id: userId },
+      // ],
     }),
   }),
 });

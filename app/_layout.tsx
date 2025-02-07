@@ -40,7 +40,8 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
-            <Slot />
+            {/* <Slot /> */}
+            <Stack screenOptions={{ headerShown: false, animation: "fade" }} />
             <StatusBar backgroundColor="black" />
             <Toast config={toastConfig} />
           </Provider>

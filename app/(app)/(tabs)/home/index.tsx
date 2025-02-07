@@ -26,8 +26,6 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [postLimit, setPostLimit] = useState(1); // Initial limit
 
-  const user = { id: "67667870ba4cfa5c24a3dc0b", type: "User" };
-  const serializedUser = encodeURIComponent(JSON.stringify(user));
   const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());
   const { data, error, isLoading, refetch } = useGetFeedPostQuery({
     limit: 20, // Fixed limit
@@ -67,24 +65,8 @@ export default function Home() {
   ));
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
-      <TouchableOpacity
-        onPress={() => router.push(`../(main)/profile/${serializedUser}`)}
-      >
-        <TextScallingFalse className="p-6 self-center text-2xl text-white">
-          Chats
-        </TextScallingFalse>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => router.push("/(app)/(main)/teams/InitiateCreateTeam")}
-      >
-        <TextScallingFalse className="p-6 self-center text-2xl text-white">
-          Team
-        </TextScallingFalse>
-      </TouchableOpacity>
-
       <FlatList
-        data={data?.data?.posts || []}
+        data={data?.posts || []}
         keyExtractor={(item) => item._id}
         initialNumToRender={5}
         removeClippedSubviews={isAndroid}

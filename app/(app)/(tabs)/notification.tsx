@@ -1,62 +1,92 @@
 import React from "react";
-import { View, Text, FlatList, ActivityIndicator, Image } from "react-native";
+import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
-import { ThemedText } from "@/components/ThemedText";
-import LikeCard from "~/components/notifications/LikeCard";
 import NotificationCardLayout from "~/components/notifications/NotificationCardLayout";
-import nopic from "@/assets/images/nopic.jpg";
+import moment from "moment";
 
 const Notification = () => {
-  // const {
-  //   data: notifications,
-  //   isLoading,
-  //   isError,
-  // } = useGetNotificationsQuery(null);
+  const { data, isLoading, isError } = useGetNotificationsQuery(null);
 
-  // console.log(notifications);
+  // Function to group notifications by time periods
+  const groupNotificationsByTime = (notifications: any[]) => {
+    const grouped: { title: string; data: any[] }[] = [
+      { title: "Today", data: [] },
+      { title: "Yesterday", data: [] },
+      { title: "1 Week Ago", data: [] },
+      { title: "2 Weeks Ago", data: [] },
+    ];
 
-  // if (isLoading) {
-  //   return (
-  //     <View className="flex-1 justify-center items-center">
-  //       <ActivityIndicator size="large" color="#ffffff" />
-  //       <ThemedText>Loading Notifications...</ThemedText>
-  //     </View>
-  //   );
-  // }
+    const now = moment();
 
-  // if (isError) {
-  //   return (
-  //     <View className="flex-1 justify-center items-center">
-  //       <ThemedText style={{ color: "red" }}>
-  //         Failed to load notifications.
-  //       </ThemedText>
-  //     </View>
-  //   );
-  // }
+    notifications.forEach((notification) => {
+      const createdAt = moment(notification.createdAt);
+      const daysDiff = now.diff(createdAt, "days");
+
+      if (daysDiff === 0) {
+        grouped[0].data.push(notification);
+      } else if (daysDiff === 1) {
+        grouped[1].data.push(notification);
+      } else if (daysDiff <= 7) {
+        grouped[2].data.push(notification);
+      } else if (daysDiff <= 14) {
+        grouped[3].data.push(notification);
+      }
+    });
+
+    // Remove empty sections
+    return grouped.filter((section) => section.data.length > 0);
+  };
+
+  const groupedNotifications = data?.formattedNotifications
+    ? groupNotificationsByTime(data.formattedNotifications)
+    : [];
 
   return (
-    <View className="flex-1 p-4 bg-black">
-      <Text className="text-6xl font-semibold text-white mb-4">
+    <View className="flex-1 p-6 bg-black">
+      <Text className="text-6xl font-normal text-white mb-4">
         Notifications
       </Text>
-      {/* Dummy */}
-      <View className="justify-center items-center mt-3 gap-y-2">
-        {[
-          "Like",
-          "Comment",
-          "TeamInvitation",
-          "Follow",
-          "Report",
-          "JoinTeamRequest",
-        ].map((card, index) => (
-          <NotificationCardLayout
-            key={index}
-            date="50 days ago"
-            type={card}
-            user="User1"
-          />
-        ))}
-      </View>
+
+      {isLoading && (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text className="text-white">Loading Notifications...</Text>
+        </View>
+      )}
+
+      {isError && (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500">Failed to load notifications.</Text>
+        </View>
+      )}
+
+      {groupedNotifications.length > 0 ? (
+        <SectionList
+          sections={groupedNotifications}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <NotificationCardLayout
+              key={item._id}
+              date={item.createdAt}
+              type={item.type}
+              sender={item.sender}
+              target={item.target}
+            />
+          )}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text className="text-3xl font-bold text-[#808080] my-2">
+              {title}
+            </Text>
+          )}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      ) : (
+        !isLoading && (
+          <Text className="text-[#808080] text-center text-3xl">
+            No notifications found
+          </Text>
+        )
+      )}
     </View>
   );
 };

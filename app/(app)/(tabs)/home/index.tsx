@@ -6,7 +6,7 @@ import {
   Text,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import { memo, useCallback, useMemo, useState } from "react";
 import {
@@ -31,7 +31,7 @@ export default function Home() {
     limit: 20, // Fixed limit
     lastTimeStamp: lastTimestamp,
   });
-  console.log("Post Data : ", data);
+  // console.log("Post Data : ", data);
 
   const isAndroid = Platform.OS === "android";
 
@@ -44,7 +44,7 @@ export default function Home() {
 
       // Invalidate the cache for 'Posts' tag
       dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
-
+      console.log("Refetching feed data from handle refetch...");
       await refetch();
     } finally {
       setRefreshing(false);
@@ -63,6 +63,14 @@ export default function Home() {
   const memoizedEmptyComponent = memo(() => (
     <Text className="text-white text-center p-4">No new posts available</Text>
   ));
+  useFocusEffect(
+    useCallback(() => {
+      // Ensure feed is always fresh on navigation
+      dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
+      console.log("Refetching feed data...");
+      refetch();
+    }, [refetch])
+  );
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
       <FlatList

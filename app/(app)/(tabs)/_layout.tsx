@@ -52,12 +52,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="clips"
+        name="community"
         options={{
-          title: "Clips",
+          title: "Community",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
-              name={focused ? "play-circle" : "play-circle-outline"}
+              name={focused ? "account-group" : "account-group-outline"}
               color={color}
             />
           ),

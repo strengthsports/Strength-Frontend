@@ -65,10 +65,15 @@ export default function Home() {
   ));
   useFocusEffect(
     useCallback(() => {
-      // Ensure feed is always fresh on navigation
-      dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
-      console.log("Refetching feed data...");
-      refetch();
+      setRefreshing(true);
+      try{
+        // Ensure feed is always fresh on navigation
+        dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
+        console.log("Refetching feed data...");
+        refetch();
+      } finally {
+        setRefreshing(false);
+      }
     }, [refetch])
   );
   return (

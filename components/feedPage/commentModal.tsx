@@ -277,7 +277,7 @@ const CommentModal = memo(
           className="w-16 self-center rounded-full bg-neutral-700 my-1"
           width={4}
         />
-        <TextScallingFalse className="text-white self-center text-2xl my-4">
+        <TextScallingFalse className="text-white self-center text-4xl my-4">
           Comments
         </TextScallingFalse>
         <View className="mb-32">

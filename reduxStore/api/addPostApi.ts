@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getToken } from "~/utils/secureStore";
 
-export interface AddPostRequest { //not used in this file
+export interface AddPostRequest { //not used in this file but in UI
     assets: string[];
     caption: string;
   }
@@ -19,7 +19,7 @@ export const addPostApi = createApi({
   endpoints: (builder) => ({
     addPost: builder.mutation({
         query:({ assets, caption }) => ({
-            url: 'api/v1/addPost',
+            url: 'api/v1/createPost',
             method: 'POST',
             body: { assets, caption },
         }),

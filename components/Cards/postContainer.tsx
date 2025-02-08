@@ -34,6 +34,7 @@ import {
 import { AppDispatch } from "~/reduxStore";
 import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { formatTimeAgo } from "~/utils/formatTime";
+import { swiperConfig } from "~/utils/swiperConfig";
 
 // Type definitions
 interface SwiperImageProps {
@@ -200,25 +201,7 @@ const PostContainer = ({ item }: { item: Post }) => {
     });
   };
 
-  const swiperConfig = {
-    autoplay: false,
-    showsPagination: true,
-    loop: false,
-    paginationStyle: { bottom: -22, zIndex: 20 },
-    dotStyle: {
-      backgroundColor: "grey",
-      width: 4,
-      height: 4,
-      // marginHorizontal: 20,
-    },
-    activeDotStyle: {
-      backgroundColor: "white",
-      width: 5,
-      height: 5,
-      // marginLeft: 20,
-      zIndex: 30,
-    },
-  };
+
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
       <View className="flex">

@@ -55,7 +55,7 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
         className="w-16 self-center rounded-full bg-neutral-700 my-1"
         width={4}
       />
-      <Text className="text-white self-center text-2xl my-4">Likes</Text>
+      <Text className="text-white self-center text-4xl my-4">Likes</Text>
 
       {isLoading ? (
         <ActivityIndicator size="large" color="#12956B" />

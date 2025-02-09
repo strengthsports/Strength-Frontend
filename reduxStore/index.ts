@@ -14,6 +14,7 @@ import authReducer from "./slices/user/authSlice";
 import signupReducer from "./slices/user/signupSlice";
 import onboardingReducer from "./slices/user/onboardingSlice";
 import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
+import exploreReducer from "./slices/explore/exploreSlice";
 import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { feedPostApi } from "./api/feedPostApi";
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
   signup: signupReducer,
   onboarding: onboardingReducer,
   forgotPassword: forgotPasswordReducer,
+  explore: exploreReducer,
   profile: profileReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [feedPostApi.reducerPath]: feedPostApi.reducer,

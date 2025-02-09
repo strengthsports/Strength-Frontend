@@ -1,80 +1,50 @@
 import React, { useState } from "react";
-import { Text, View, ScrollView, StyleSheet } from "react-native";
+import { Text, View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Tab, TabView } from "react-native-elements";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  MaterialCommunityIcons,
+  Feather,
+  Entypo,
+  Ionicons,
+} from "@expo/vector-icons";
+import TextScallingFalse from "~/components/CentralText";
 
 const Explore = () => {
   return (
-    <>
-      <ScrollView style={styles.container}>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text>
-    <ScrollView className="h-36">
-      <View className="h-12 w-48 m-6 bg-slate-700">
-        <Text className="text-white">Explore</Text>
-      </View>
-    </ScrollView>
+      <SafeAreaView style={styles.container}>
+        <ScrollView>
+          {/* <SearchBar /> */}
+          {/* <View style={styles.centeredScrollView}>
+            <ExploreHeader
+              selectedCategory={selectedCategory}
+              onCategoryClick={handleCategoryClick}
+            />
+          </View> */}
+            {/* <ScrollView vertical showsHorizontalScrollIndicator={false} style={styles.contentSection}>
+            {selectedCategory === 'All' && <AllCategoryTab liveCricketMatches={liveCricketMatches} nextCricMatch={nextCricMatch} cricketMatchLoading={cricketMatchLoading} footballMatches={footballMatches} nextFootballMatch={nextFootballMatch}f ootballMatchLoading={footballMatchLoading} /> }
+            {selectedCategory === "News" && <OtherComingSoonTabs text="News" />}
+            {selectedCategory === "Matches" && (
+              <OtherComingSoonTabs text="Matches" />
+            )}
+            {selectedCategory === "Transfers" && (
+              <OtherComingSoonTabs text="Transfers" />
+            )}
+            {selectedCategory === "Leagues" && (
+              <OtherComingSoonTabs text="Leagues" />
+            )}
+            {selectedCategory === "Ranking" && (
+              <OtherComingSoonTabs text="Ranking" />
+            )}
+            {selectedCategory === "Articles" && (
+              <OtherComingSoonTabs text="Articles" />
+            )}
+          </ScrollView> */}
+        </ScrollView>
+      </SafeAreaView>
 
-    <ScrollView className="h-36">
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-      <Text className="text-white">Ver scroll</Text>
-    </ScrollView>
-    <Text className="text-white">Yo</Text>
-    <View className="h-12 w-48 m-6 bg-slate-700">
-      <Text className="text-white">Explore</Text>
-    </View>
-    <Text className="text-white">Explore</Text>
-    <View className="h-12 w-48 m-6 bg-slate-700">
-      <Text className="text-white">Explore</Text>
-    </View>
-    <Text className="text-white">Yo</Text>
-    <View className="h-12 w-48 m-6 bg-slate-700">
-      <Text className="text-white">Explore</Text>
-    </View>
-    <Text className="text-white">Explore</Text>
-    {/* <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Explore</Text>
-    <Text className="text-white">Explore</Text> */}
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-    <Text className="text-white">Yo</Text>
-      </ScrollView>
-    </>
+
   );
 };
 

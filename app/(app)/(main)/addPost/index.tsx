@@ -7,7 +7,6 @@ import {
   View,
   ScrollView,
   Image,
-  FlatList,
 } from 'react-native';
 import TextScallingFalse from '~/components/CentralText';
 import { useRouter } from 'expo-router';
@@ -27,20 +26,39 @@ export default function AddPost() {
   const [pickedImageUris, setPickedImageUris] = useState<string[]>([]); // Array to store multiple image URIs
   const [addPost, { isLoading }] = useAddPostMutation();
 
-  // console.log('Picked Image URIs:', pickedImageUris);
   const handlePostSubmit = async () => {
-    if (!postText.trim()) return;
+    if (!postText.trim() && pickedImageUris.length === 0) return;
+  
     try {
-      const payload = {
-        assets: pickedImageUris.map(uri => ({ uri })), // Adjust payload if needed
-        caption: postText.trim()
-      };
-      await addPost(payload).unwrap();
+      const formData = new FormData();
+  
+      // Append the caption
+      formData.append("caption", postText.trim());
+  
+      // Append each image file
+      pickedImageUris.forEach((uri, index) => {
+        const file = {
+          uri,
+          name: `image_${index}.jpg`, // Generate a unique name
+          type: "image/jpeg", // Adjust the type based on the actual file type
+        };
+        formData.append("assets", file);
+      });
+  
+      // Log the FormData object
+   
+        console.log('formData',formData._parts);
+   
+  
+      // Use the RTK Query mutation to send the request
+      await addPost(formData).unwrap();
+  
+      // Reset the form and navigate
       setPostText('');
       setPickedImageUris([]);
       router.push('/(app)/(tabs)/home');
     } catch (error) {
-      console.error('Failed to add post. Please try again.');
+      console.error('Failed to add post:', error);
       alert('Failed to add post. Please try again.');
     }
   };
@@ -56,15 +74,13 @@ export default function AddPost() {
       allowsEditing: true,
       aspect: ratio,
       quality: 0.8,
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Corrected media type
       allowsMultipleSelection: true, // Enable multiple image selection
     });
 
     if (!result.canceled && result.assets.length > 0) {
       const uris = result.assets.map((asset) => asset.uri);
-      console.log('Picked :', result);
-      console.log('Picked Image URIs:', uris);
-      // Extract URIs from selected assets
+      console.log('Picked Image :', result);
       setPickedImageUris(uris); // Update state with the new URIs
       setIsImageRatioModalVisible(false);
     }
@@ -75,8 +91,8 @@ export default function AddPost() {
       <View className='flex flex-row items-center justify-between p-4'>
         <AddPostHeader />
         <TouchableOpacity
-          className={`px-5 py-1 rounded-full ${postText.trim() ? 'bg-theme' : 'bg-neutral-600'}`}
-          disabled={!postText.trim() || isLoading}
+          className={`px-5 py-1 rounded-full ${postText.trim() || pickedImageUris.length > 0 ? 'bg-theme' : 'bg-neutral-600'}`}
+          // disabled={(!postText.trim() && pickedImageUris.length === 0) || isLoading}
           onPress={handlePostSubmit}
         >
           {isLoading ? (

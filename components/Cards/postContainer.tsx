@@ -185,7 +185,7 @@ const PostContainer = ({ item }: { item: Post }) => {
 
   // Function to render caption with clickable hashtags
   const renderCaptionWithHashtags = (caption: string) => {
-    return caption.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
+    return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
       if (word.startsWith("#")) {
         return (
           <Text

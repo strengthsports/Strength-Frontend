@@ -5,27 +5,29 @@ export interface AddPostRequest { //not used in this file but in UI
     assets: string[];
     caption: string;
   }
-export const addPostApi = createApi({
-  reducerPath: "addPostApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
-    prepareHeaders: async (headers) => {
-      const token = await getToken("accessToken");
-      if (token) headers.set("Authorization", `Bearer ${token}`);
-      return headers;
-    },
-  }),
-  tagTypes: ["addPost"],
-  endpoints: (builder) => ({
-    addPost: builder.mutation({
-        query:({ assets, caption }) => ({
-            url: 'api/v1/createPost',
-            method: 'POST',
-            body: { assets, caption },
+  export const addPostApi = createApi({
+    reducerPath: "addPostApi",
+    baseQuery: fetchBaseQuery({
+      baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
+      prepareHeaders: async (headers) => {
+        const token = await getToken("accessToken");
+        if (token) headers.set("Authorization", `Bearer ${token}`);
+        return headers;
+      },
+    }),
+    tagTypes: ["addPost"],
+    endpoints: (builder) => ({
+      addPost: builder.mutation({
+        query: (formData) => ({
+          url: 'api/v1/createPost',
+          method: 'POST',
+          body: formData,
+          // Set the headers for multipart/form-data
+
         }),
         invalidatesTags: ["addPost"], // Invalidate cache for posts after adding a new one
-    })
-  }),
-});
-
-export const { useAddPostMutation } = addPostApi;
+      }),
+    }),
+  });
+  
+  export const { useAddPostMutation } = addPostApi;

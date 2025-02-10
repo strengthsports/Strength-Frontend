@@ -5,6 +5,7 @@ import {
   RefreshControl,
   Text,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
@@ -18,6 +19,7 @@ import PostContainer from "~/components/Cards/postContainer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import debounce from "lodash.debounce";
+import { Colors } from "~/constants/Colors";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -27,7 +29,7 @@ export default function Home() {
   const [postLimit, setPostLimit] = useState(1); // Initial limit
 
   const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());
-  const { data, error, isLoading, refetch } = useGetFeedPostQuery({
+  const { data, error, isLoading : isFetching, refetch } = useGetFeedPostQuery({
     limit: 20, // Fixed limit
     lastTimeStamp: lastTimestamp,
   });
@@ -66,7 +68,7 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       setRefreshing(true);
-      try{
+      try {
         // Ensure feed is always fresh on navigation
         dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
         console.log("Refetching feed data...");
@@ -78,28 +80,31 @@ export default function Home() {
   );
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
-      <FlatList
-        data={data?.posts || []}
-        keyExtractor={(item) => item._id}
-        initialNumToRender={5}
-        removeClippedSubviews={isAndroid}
-        windowSize={11}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={debouncedRefresh}
-            colors={["#12956B", "#6E7A81"]} // Customize indicator colors
-            tintColor="#6E7A81" // Color for iOS
-            title="Refreshing Your Feed..." // Optional refresh title - iOS
-            titleColor="#6E7A81"
-            progressBackgroundColor="#181A1B" // Background color of the loader
-          />
-        }
-        renderItem={renderItem}
-        ListEmptyComponent={memoizedEmptyComponent}
-        bounces={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      />
+      {isFetching ? (
+        <ActivityIndicator size="large" color={Colors.themeColor} />
+      ) : (
+        <FlatList
+          data={data?.posts || []}
+          keyExtractor={(item) => item._id}
+          initialNumToRender={5}
+          removeClippedSubviews={isAndroid}
+          windowSize={11}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={debouncedRefresh}
+              colors={["#12956B", "#6E7A81"]} // Customize indicator colors
+              tintColor="#6E7A81" // Color for iOS
+              title="Refreshing Your Feed..." // Optional refresh title - iOS
+              titleColor="#6E7A81"
+              progressBackgroundColor="#181A1B" // Background color of the loader
+            />
+          }
+          renderItem={renderItem}
+          ListEmptyComponent={memoizedEmptyComponent}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />)}
     </SafeAreaView>
   );
 }

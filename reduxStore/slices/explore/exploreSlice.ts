@@ -4,14 +4,18 @@ import { createSlice } from '@reduxjs/toolkit';
 const exploreSlice = createSlice({
   name: 'explore',
   initialState: {
-    selectedCategory: 'All', // Default selected category
+    selectedExploreCategory: 'All', // Default selected category
+    selectedExploreSportsCategory: 'Trending', // Default selected category
   },
   reducers: {
-    setSelectedCategory: (state, action) => {
-      state.selectedCategory = action.payload;
+    setSelectedExploreCategory: (state, action) => {
+      state.selectedExploreCategory = action.payload;
+    },
+    setSelectedExploreSportsCategory: (state, action) => {
+      state.selectedExploreSportsCategory = action.payload;
     },
   },
 });
 
-export const { setSelectedCategory } = exploreSlice.actions;
+export const { setSelectedExploreCategory, setSelectedExploreSportsCategory } = exploreSlice.actions;
 export default exploreSlice.reducer;

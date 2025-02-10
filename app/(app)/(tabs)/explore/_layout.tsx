@@ -2,22 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import ExploreCategoryHeader from '~/components/explorePage/exploreCategoryHeader';
+import {ExploreCategoryHeader} from '~/components/explorePage/exploreHeader'; 
 import SearchBar from '~/components/explorePage/searchbar';
 import { RootState } from '~/reduxStore';
-import AllCategoryTrending from './AllCategory/AllCategoryTrending';
+import TrendingAll from './allCategory';
+import TrendingNews from './newsCategory/TrendingNews';
 
 // Define the Category components
-const AllCategory = () => (
-  <View>
-    <Text style={{color:'white'}}>All Category</Text>
-  </View>
-);
-const NewsCategory = () => (
-  <View>
-    <Text style={styles.text}>News Category</Text>
-  </View>
-);
+
+// const NewsCategory = () => (
+//   <View>
+//     <Text style={styles.text}>News Category</Text>
+//   </View>
+// );
 const MatchesCategory = () => (
   <View>
     <Text style={styles.text}>Matches Category</Text>
@@ -45,7 +42,7 @@ const ArticlesCategory = () => (
 );
 const DefaultCategory = () => (
   <View>
-    <Text style={styles.text}>Default Category</Text>
+    <Text style={styles.text}>Defauslt Category</Text>
   </View>
 );
 
@@ -62,8 +59,8 @@ type CategoryKeys =
 
 // Create a component map
 const componentMap: Record<CategoryKeys, () => JSX.Element> = {
-  All: AllCategoryTrending,
-  News: NewsCategory,
+  All: TrendingAll,
+  News: TrendingNews,
   Matches: MatchesCategory,
   Transfers: TransfersCategory,
   Leagues: LeaguesCategory,
@@ -72,12 +69,11 @@ const componentMap: Record<CategoryKeys, () => JSX.Element> = {
   Default: DefaultCategory,
 };
 
-export default function ExplorePage() {
+export default function ExploreMainLayout() {
   const selectedCategory = useSelector(
-    (state: RootState) => state.explore.selectedCategory
+    (state: RootState) => state.explore.selectedExploreCategory
   );
 
-  // Safely access the component from the map
   const CategoryComponent = componentMap[selectedCategory as CategoryKeys] || componentMap.Default;
 
   return (

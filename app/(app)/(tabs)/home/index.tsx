@@ -62,9 +62,11 @@ export default function Home() {
     ),
     [] // Empty dependency array ensures the function is memoized and doesn't re-create
   );
-  const memoizedEmptyComponent = memo(() => (
+  const memoizedEmptyComponent = memo(() =>{
+    console.error(error)
+    return  (
     <Text className="text-white text-center p-4">No new posts available</Text>
-  ));
+  )});
   useFocusEffect(
     useCallback(() => {
       setRefreshing(true);

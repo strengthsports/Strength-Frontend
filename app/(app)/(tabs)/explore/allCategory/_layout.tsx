@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
+import { ExploreAllSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 import { RootState } from '~/reduxStore';
 import TrendingAll from './TrendingAll';
 import CricketAll from './CricketAll';
@@ -60,7 +60,7 @@ const ExploreAllLayout = () => {
 
   return (
     <View className="bg-black px">
-      <ExploreSportsCategoryHeader />
+      <ExploreAllSportsCategoryHeader />
       <CategoryComponent />
     </View>
     );

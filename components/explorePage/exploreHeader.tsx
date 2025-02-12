@@ -64,7 +64,7 @@ const exploreSportsCategories = [
   "More \u2193",
 ];
 
-export const ExploreSportsCategoryHeader = () => {
+export const ExploreAllSportsCategoryHeader = () => {
   const dispatch = useDispatch();
   const selectedExploreSportsCategory = useSelector((state: RootState) => state.explore.selectedExploreSportsCategory);
 
@@ -83,7 +83,7 @@ export const ExploreSportsCategoryHeader = () => {
         {exploreSportsCategories.map((sportsCategory, index) => (
           <TouchableOpacity key={index} onPress={() => handleSportsCategoryClick(sportsCategory)}>
             <Text
-              className={`text-xl font-bold mx-6 py-2 ${
+              className={`text-xl font-bold mx-5 my-2 ${
                 sportsCategory === selectedExploreSportsCategory ? "text-white" : "text-neutral-400"
               }`}
             >
@@ -97,7 +97,7 @@ export const ExploreSportsCategoryHeader = () => {
       </ScrollView>
 
       {/* Divider */}
-      <View className="h-[1px] bg-neutral-500 " />
+      <View className="h-[0.6px] bg-neutral-600 " />
 
       {/* Sportscategory Content */}
 

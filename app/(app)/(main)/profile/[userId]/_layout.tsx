@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { createContext, useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -50,6 +50,19 @@ import {
 } from "~/reduxStore/api/profile/profileApi.block";
 import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { Divider } from "react-native-elements";
+
+// Define the context type
+interface ProfileContextType {
+  profileData: any;
+  isLoading: boolean;
+  error: any;
+}
+
+export const ProfileContext = createContext<ProfileContextType>({
+  profileData: null,
+  isLoading: false,
+  error: null,
+});
 
 // Main function
 const ProfileLayout = ({ param }: { param: string }) => {
@@ -595,7 +608,11 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 handleTabPress={handleTabPress}
                 params={params.userId}
               />
-              <Slot />
+              <ProfileContext.Provider
+                value={{ profileData, isLoading, error }}
+              >
+                <Slot />
+              </ProfileContext.Provider>
             </>
           )}
 

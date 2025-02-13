@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { User, OnboardingData } from "@/types/user";
+import { User } from "@/types/user";
 
 interface OnboardingState {
   sportsData: { _id: string; name: string }[];
@@ -8,7 +8,7 @@ interface OnboardingState {
   selectedSports: string[];
   profilePic: {
     newUri: string | null;
-    fullFileObject: object | null;
+    fileObject: object | null;
   } | null;
   headline: string;
   username: string;
@@ -62,53 +62,53 @@ export const fetchSportsData = createAsyncThunk(
 );
 
 //async thunk for getting user suggestions
-export const fetchUserSuggestions = createAsyncThunk(
-  "profile/fetchUserSuggestions",
-  async (sportsData, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      if (!token) throw new Error("Token not found");
-      console.log("sports : ", sportsData);
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(sportsData),
-        }
-      );
-
-      console.log("Response : ", response);
-
-      const data = await response.json();
-      if (!response.ok) {
-        return rejectWithValue(
-          data.message || "Error fetching user suggestions"
-        );
+export const fetchUserSuggestions = createAsyncThunk<
+  any,
+  Array<string>,
+  { rejectValue: string }
+>("profile/fetchUserSuggestions", async (sportsData, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+    console.log("sports : ", sportsData);
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(sportsData),
       }
-      return data.data;
-    } catch (error: unknown) {
-      // Type assertion to Error
-      console.log(error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unexpected error occurred";
-      return rejectWithValue(errorMessage);
+    );
+
+    console.log("Response : ", response);
+
+    const data = await response.json();
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Error fetching user suggestions");
     }
+    return data.data;
+  } catch (error: unknown) {
+    // Type assertion to Error
+    console.log(error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
   }
-);
+});
 
 // Final onboarding
 export const onboardingUser = createAsyncThunk<
-  any, // The return type of the payload (data from the API)
-  FormData, // The argument passed to the action (i.e., data)
-  { rejectValue: string } // The type for the error message
+  any,
+  FormData,
+  { rejectValue: string }
 >("profile/onboardingUser", async (data: FormData, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
+    console.log("Onboard data : ", data);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`,
@@ -116,19 +116,17 @@ export const onboardingUser = createAsyncThunk<
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          // "Content-Type": "application/json",
         },
         body: data,
       }
     );
 
-    console.log("Response : ", response);
-
     const data1 = await response.json();
     if (!response.ok) {
-      return rejectWithValue(data1.message || "Error onboarding user");
+      return rejectWithValue(data1?.message || "Error onboarding user");
     }
-    return data1.data;
+
+    return data1;
   } catch (error: unknown) {
     console.log("Onboarding error : ", error);
     const errorMessage =
@@ -188,6 +186,13 @@ const onboardlingSlice = createSlice({
     clearAddress(state) {
       state.address = null;
     },
+    resetOnboardingData(state) {
+      state.sportsData = [];
+      state.fetchedUsers = [];
+      state.selectedSports = [];
+      state.profilePic = null;
+      state.headline = "";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -230,6 +235,7 @@ export const {
   setUsername,
   clearAddress,
   clearUsername,
+  resetOnboardingData,
 } = onboardlingSlice.actions;
 
 export default onboardlingSlice.reducer;

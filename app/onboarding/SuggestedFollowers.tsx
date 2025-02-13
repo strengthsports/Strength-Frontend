@@ -6,9 +6,10 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router, useLocalSearchParams, Redirect } from "expo-router";
+import { router } from "expo-router";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
 import { useSelector } from "react-redux";
@@ -77,18 +78,13 @@ const SupportCard: React.FC<SupportCardProps> = ({
 
 const SuggestedSupportScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams();
-  // const selectedFile = params?.selectedFile;
-  // var profileImage = useSelector(
-  //   (state: RootState) => state.onboarding.profileImage
-  // );
   const dispatch = useDispatch<AppDispatch>();
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
   const { fetchedUsers, headline, profilePic, selectedSports, loading, error } =
     useSelector((state: RootState) => state.onboarding);
 
-  React.useEffect(() => {
+  useEffect(() => {
     console.log(selectedSports);
     dispatch(fetchUserSuggestions(selectedSports));
     console.log("Dispatch completed...");
@@ -107,34 +103,40 @@ const SuggestedSupportScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    // console.log("Selected Players:", selectedPlayers);
-    // console.log("Selected File:", selectedFile);
-    console.log("Selected Sports:", selectedSports);
-    // console.log("Profile Image:", profileImage);
-    // console.log("Headline:", headline);
+    // console.log("Selected Sports:", selectedSports);
 
     const onboardingData = {
       headline: headline,
-      assets: profilePic?.fullFileObject,
+      profilePic: profilePic?.fileObject,
       followings: selectedPlayers,
     };
 
     try {
-      // Dispatch the onboardingUser action and wait for the result using unwrap
-
-      console.log("Data to be submitted : ", onboardingData);
-
+      // console.log("Data to be submitted : ", onboardingData);
       const finalOnboardingData = new FormData();
       finalOnboardingData.append("headline", onboardingData.headline);
-      finalOnboardingData.append("assets", onboardingData.assets);
-      finalOnboardingData.append("followings", onboardingData.followings);
+      finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
+      finalOnboardingData.append(
+        "followings",
+        JSON.stringify(onboardingData.followings)
+      );
 
-      const response = await dispatch(onboardingUser(onboardingData)).unwrap();
+      // Log FormData values (for debugging)
+      // finalOnboardingData.forEach((value, key) => {
+      //   console.log(`${key}: ${value}`);
+      // });
+
+      const response = await dispatch(
+        onboardingUser(finalOnboardingData)
+      ).unwrap();
+
+      // console.log(response);
 
       // Alert the successful response
       Toast.show({
         type: "success",
         text1: "Successfully Updated Profile",
+        visibilityTime: 1500,
       });
       router.push("/(app)/(tabs)/home");
     } catch (error: unknown) {
@@ -156,13 +158,23 @@ const SuggestedSupportScreen: React.FC = () => {
   const handleSkip = async () => {
     const onboardingData = {
       headline: headline,
-      assets: [profilePic],
+      profilePic: profilePic?.fileObject,
       followings: selectedPlayers,
     };
 
     try {
-      // Dispatch the onboardingUser action and wait for the result using unwrap
-      const response = await dispatch(onboardingUser(onboardingData)).unwrap();
+      // console.log("Data to be submitted : ", onboardingData);
+      const finalOnboardingData = new FormData();
+      finalOnboardingData.append("headline", onboardingData.headline);
+      finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
+      finalOnboardingData.append(
+        "followings",
+        JSON.stringify(onboardingData.followings)
+      );
+
+      await dispatch(onboardingUser(finalOnboardingData)).unwrap();
+
+      // console.log(response);
 
       // Alert the successful response
       Toast.show({
@@ -171,6 +183,7 @@ const SuggestedSupportScreen: React.FC = () => {
       });
       router.push("/(app)/(tabs)/home");
     } catch (error: unknown) {
+      console.log(error);
       if (error && typeof error === "object" && "message" in error) {
         Toast.show({
           type: "error",
@@ -218,17 +231,21 @@ const SuggestedSupportScreen: React.FC = () => {
           }}
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-row flex-wrap justify-center">
-            {fetchedUsers.map((user) => (
-              <SupportCard
-                key={user._id}
-                user={user}
-                isSelected={selectedPlayers.includes(user._id)}
-                onClose={handleClose}
-                onSupport={handleSupport}
-              />
-            ))}
-          </View>
+          {loading ? (
+            <ActivityIndicator size={24} color="#12956B" />
+          ) : (
+            <View className="flex-row flex-wrap justify-center">
+              {fetchedUsers.map((user) => (
+                <SupportCard
+                  key={user._id}
+                  user={user}
+                  isSelected={selectedPlayers.includes(user._id)}
+                  onClose={handleClose}
+                  onSupport={handleSupport}
+                />
+              ))}
+            </View>
+          )}
         </ScrollView>
 
         <TouchableOpacity

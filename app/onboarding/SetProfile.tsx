@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   TouchableOpacity,
@@ -10,7 +10,6 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useSelector, useDispatch } from "react-redux";
-import * as FileSystem from "expo-file-system";
 import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 import { RootState } from "@/reduxStore";
@@ -22,16 +21,14 @@ import {
 const ProfilePictureScreen: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { profilePic, selectedSports } = useSelector(
-    (state: RootState) => state.onboarding
-  );
+  const { profilePic } = useSelector((state: RootState) => state.onboarding);
 
   const pickImage = async (): Promise<void> => {
     try {
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (permissionResult.status !== "granted") {
-        alert("Sorry, we need camera roll permissions to make this work!");
+      if (!permissionResult.granted) {
+        alert("Permission to access the camera roll is required!");
         return;
       }
 
@@ -39,32 +36,26 @@ const ProfilePictureScreen: React.FC = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 1,
+        quality: 0.8,
       });
 
-      if (!result.canceled && result.assets?.[0]?.uri) {
-        const originalUri = result.assets[0].uri;
+      if (!result.canceled && result.assets[0]) {
+        const file = result.assets[0];
+        const fileName = file.uri.split("/").pop();
+        const mimeType = file.mimeType || "image/jpeg";
 
-        // Create a permanent path for the image
-        const fileName = `profile_${Date.now()}.jpg`;
-        const newUri = originalUri;
-        const mimeType = result.assets[0].mimeType;
-
-        const fullFileObject = {
-          uri: newUri,
-          type: mimeType || "image/jpeg",
-          fileName,
+        // React Native requires this format for file uploads
+        const fileObject = {
+          uri: file.uri,
+          name: fileName,
+          type: mimeType,
         };
 
-        try {
-          // Copy the image to permanent storage
-          // await FileSystem.copyAsync({
-          //   from: originalUri,
-          //   to: newUri,
-          // });
+        const newUri = file.uri;
 
+        try {
           // Dispatch action to save the profile image in Redux
-          dispatch(setProfilePic({ newUri, fullFileObject }));
+          dispatch(setProfilePic({ newUri, fileObject }));
         } catch (copyError) {
           console.error("Error copying image:", copyError);
           alert("Failed to save image. Please try again.");
@@ -121,7 +112,7 @@ const ProfilePictureScreen: React.FC = () => {
         <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
           {profilePic ? (
             <Image
-              source={{ uri: profilePic?.newUri }}
+              source={{ uri: profilePic?.newUri as string }}
               className="w-40 h-40 rounded-full"
               resizeMode="cover"
             />

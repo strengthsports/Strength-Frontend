@@ -4,8 +4,9 @@ import {
   FontAwesome5,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
+import { Text } from "react-native";
 import {
   ActivityIndicator,
   Image,
@@ -16,7 +17,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Divider } from "react-native-elements";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import RightArrow from "~/components/Arrows/RightArrow";
@@ -28,6 +28,7 @@ import { useGetSportsQuery } from "~/reduxStore/api/sportsApi";
 import {
   editUserSportsOverview,
   fetchMyProfile,
+  editUserAbout,
 } from "~/reduxStore/slices/user/profileSlice";
 
 interface SelectedSport {
@@ -43,6 +44,7 @@ function EditOverview() {
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const { about } = useLocalSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -77,6 +79,16 @@ function EditOverview() {
   const [finalSelectedSports, setFinalSelectedSports] = useState<
     Array<SelectedSport>
   >([]);
+  // About modal
+  const [initialAbout, setAbout] = useState(user?.about);
+  const [isAboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
+
+  // Check if about edit request has came
+  useEffect(() => {
+    if (about) {
+      setAboutModalOpen((prev) => !prev);
+    }
+  }, []);
 
   // Set initial sports data on page mount
   useEffect(() => {
@@ -153,6 +165,7 @@ function EditOverview() {
   const handleCloseSportsOptionModal = useCallback(() => {
     setSportsOptionModalOpen((prev) => !prev);
   }, []);
+
   const handleOpenAlertModal = useCallback(
     (
       title: string,
@@ -172,6 +185,15 @@ function EditOverview() {
     },
     []
   );
+
+  const handleOpenAboutModal = useCallback(() => {
+    setAboutModalOpen((prev) => !prev);
+  }, []);
+
+  const handleCloseAboutModal = useCallback(() => {
+    setAbout(initialAbout);
+    setAboutModalOpen((prev) => !prev);
+  }, []);
 
   // Handle delete a specific sports overview (only remove sport)
   const handleDeleteSportsOverview = useCallback(() => {
@@ -207,10 +229,23 @@ function EditOverview() {
     setEditModalOpen((prev) => !prev);
   }, [selectedSport]);
 
+  // Handle save about
+  const handleSaveAbout = useCallback(() => {
+    // setAbout(initialAbout);
+    console.log(initialAbout);
+    setAboutModalOpen(false);
+  }, [initialAbout]);
+
   // Handle submit sports overview details
   const handleSubmitOverviewData = useCallback(async () => {
+    console.log("Data submitting...");
     // Immediately update local loading state so that the spinner appears
     setLocalLoading(true);
+
+    console.log(initialAbout);
+    if (initialAbout !== user?.about) {
+      await dispatch(editUserAbout(initialAbout));
+    }
 
     // Let the UI update
     setTimeout(async () => {
@@ -219,7 +254,7 @@ function EditOverview() {
         JSON.stringify(finalSelectedSports)
       ) {
         setLocalLoading(false);
-        return;
+        router.push("/(app)/(tabs)/profile");
       } else {
         const dataToSubmit = finalSelectedSports.map((sp) => ({
           details: sp.keyDetails,
@@ -235,7 +270,14 @@ function EditOverview() {
         setLocalLoading(false);
       }
     }, 0);
-  }, [initialSportsData, finalSelectedSports, dispatch, router, user]);
+  }, [
+    initialSportsData,
+    initialAbout,
+    finalSelectedSports,
+    dispatch,
+    router,
+    user,
+  ]);
 
   if (error) {
     <View className="flex-row justify-center">
@@ -256,13 +298,15 @@ function EditOverview() {
               onPress={handleSubmitOverviewData}
               disabled={
                 JSON.stringify(initialSportsData) ===
-                JSON.stringify(finalSelectedSports)
+                  JSON.stringify(finalSelectedSports) &&
+                initialAbout === user?.about
               }
             >
               <TextScallingFalse
                 className={`${
                   JSON.stringify(initialSportsData) ===
-                  JSON.stringify(finalSelectedSports)
+                    JSON.stringify(finalSelectedSports) &&
+                  initialAbout === user?.about
                     ? "text-[#808080]"
                     : "text-[#12956B]"
                 } text-4xl text-right`}
@@ -359,6 +403,7 @@ function EditOverview() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+            onPress={handleOpenAboutModal}
           >
             <TextScallingFalse
               style={{ color: "white", fontSize: 16, fontWeight: "500" }}
@@ -753,6 +798,60 @@ function EditOverview() {
               </View>
             </View>
           </View>
+        </Modal>
+
+        {/* About Modal */}
+        <Modal
+          visible={isAboutModalOpen}
+          transparent
+          onRequestClose={handleCloseAboutModal}
+        >
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={handleCloseAboutModal}
+          >
+            <View className="bg-black h-full">
+              {/* Modal Header */}
+              <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
+                <View className="flex-row items-center">
+                  <TouchableOpacity onPress={handleCloseAboutModal}>
+                    <AntDesign name="arrowleft" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={handleSaveAbout}>
+                  <MaterialIcons
+                    name="done"
+                    size={28}
+                    color={initialAbout === user?.about ? "grey" : "#12956B"}
+                  />
+                </TouchableOpacity>
+              </View>
+              {/* Modal Content */}
+              <View className="p-5">
+                <Text className="text-white font-bold text-5xl">
+                  Edit About
+                </Text>
+                <Text className="text-gray-500 text-base mb-5 mt-1.5">
+                  Use this space to showcase who you are as a professional
+                  athlete. You can share your sports background, achievements,
+                  and the essence of your athletic journey.
+                </Text>
+                <View className="border border-white h-72 rounded-sm justify-start">
+                  <TextInput
+                    value={initialAbout}
+                    onChangeText={setAbout}
+                    placeholder="Write about yourself..."
+                    placeholderTextColor="gray"
+                    multiline
+                    numberOfLines={15}
+                    className="text-white text-xl flex-1 p-3"
+                    style={{ textAlignVertical: "top" }}
+                  />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
         </Modal>
       </PageThemeView>
     </SafeAreaView>

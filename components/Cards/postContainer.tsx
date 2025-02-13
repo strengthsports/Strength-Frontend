@@ -69,7 +69,7 @@ const PostContainer = ({ item }: { item: Post }) => {
   const { user } = useSelector((state: any) => state?.auth);
   const dispatch = useDispatch<AppDispatch>();
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: item.postedBy._id, type: item.postedBy.type })
+    JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
   );
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
@@ -111,7 +111,7 @@ const PostContainer = ({ item }: { item: Post }) => {
       // API call
       const action = isLiked ? unlikePost : likePost;
       await action({
-        targetId: item._id,
+        targetId: item?._id,
         targetType: "Post",
       }).unwrap();
       // console.log("Message", message);
@@ -154,8 +154,8 @@ const PostContainer = ({ item }: { item: Post }) => {
       setFollowingStatus(true);
       // Perform the follow action via mutation
       await followUser({
-        followingId: item.postedBy._id,
-        followingType: item.postedBy.type,
+        followingId: item.postedBy?._id,
+        followingType: item.postedBy?.type,
       }).unwrap();
       dispatch(setFollowingCount("follow"));
       console.log("Followed Successfully!");
@@ -171,8 +171,8 @@ const PostContainer = ({ item }: { item: Post }) => {
     try {
       setFollowingStatus(false);
       await unFollowUser({
-        followingId: item.postedBy._id,
-        followingType: item.postedBy.type,
+        followingId: item.postedBy?._id,
+        followingType: item.postedBy?.type,
       }).unwrap();
       dispatch(setFollowingCount("unfollow"));
       console.log("Unfollowed Successfully!");
@@ -201,7 +201,6 @@ const PostContainer = ({ item }: { item: Post }) => {
     });
   };
 
-
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
       <View className="flex">
@@ -211,7 +210,7 @@ const PostContainer = ({ item }: { item: Post }) => {
             activeOpacity={0.5}
             className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
             onPress={() =>
-              user._id === item.postedBy._id
+              user?._id === item.postedBy?._id
                 ? router.push("/(app)/(tabs)/profile")
                 : router.push(`../(main)/profile/${serializedUser}`)
             }
@@ -237,20 +236,20 @@ const PostContainer = ({ item }: { item: Post }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() =>
-                user._id === item.postedBy._id
+                user?._id === item.postedBy?._id
                   ? router.push("/(app)/(tabs)/profile")
                   : router.push(`../(main)/profile/${serializedUser}`)
               }
             >
               <TextScallingFalse className="text-white text-xl font-bold">
-                {item.postedBy.firstName} {item.postedBy.lastName}
+                {item.postedBy?.firstName} {item.postedBy?.lastName}
               </TextScallingFalse>
               <TextScallingFalse
                 className="text-neutral-300 text-sm"
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {item.postedBy.headline}
+                {item.postedBy?.headline}
               </TextScallingFalse>
             </TouchableOpacity>
             <View className="flex flex-row items-center">
@@ -262,7 +261,7 @@ const PostContainer = ({ item }: { item: Post }) => {
           </View>
 
           {/* Follow button */}
-          {user._id !== item.postedBy._id && (
+          {user?._id !== item.postedBy?._id && (
             <TouchableOpacity
               className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
               onPress={followingStatus ? handleUnfollow : handleFollow}
@@ -294,7 +293,7 @@ const PostContainer = ({ item }: { item: Post }) => {
               activeOpacity={1}
               onPress={() => setIsMoreModalVisible(false)}
             >
-              <MoreModal firstName={item.postedBy.firstName} />
+              <MoreModal firstName={item.postedBy?.firstName} />
             </TouchableOpacity>
           </Modal>
 
@@ -377,7 +376,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                     activeOpacity={1}
                     onPress={() => setIsPostLikersModalVisible(false)}
                   ></TouchableOpacity>
-                  <LikerModal targetId={item._id} targetType="Post" />
+                  <LikerModal targetId={item?._id} targetType="Post" />
                 </Modal>
               )}
             </TouchableOpacity>
@@ -403,7 +402,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                     onPress={() => setIsCommentCountModalVisible(false)}
                   ></TouchableOpacity>
                   <CommentModal
-                    targetId={item._id}
+                    targetId={item?._id}
                     setCommentCount={setCommentCount}
                   />
                 </Modal>
@@ -460,7 +459,7 @@ const PostContainer = ({ item }: { item: Post }) => {
                     {/* <LikerModal targetId={item._id} targetType="Post" /> */}
                   </TouchableOpacity>
                   <CommentModal
-                    targetId={item._id}
+                    targetId={item?._id}
                     autoFocusKeyboard={isCommentModalVisible}
                     setCommentCount={setCommentCount}
                   />

@@ -46,8 +46,8 @@ const SuggestionCard = ({ user }: { user: SuggestionUser }) => {
               {user.firstName} {user.lastName}
             </TextScallingFalse>
             <TextScallingFalse className="text-gray-400 text-sm text-center">
-              {user.headline && user.headline.length >= 65
-                ? user.headline.substring(0, 64).concat("...")
+              {user.headline && user.headline.length >= 50
+                ? user.headline.substring(0, 49).concat("...")
                 : user.headline}
             </TextScallingFalse>
           </View>

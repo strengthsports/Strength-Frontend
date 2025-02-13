@@ -107,7 +107,7 @@ const Community = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#161616ed] pt-4 px-4">
+    <View className="flex-1 bg-[#050505] pt-4 px-4">
       {/* Search Bar */}
       <View className="flex-row items-center bg-[#1E1E1E] px-3 py-[0.5px] rounded-full mb-3">
         <Ionicons name="search" size={20} color="gray" className="ml-2" />

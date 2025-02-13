@@ -125,7 +125,7 @@ const SignupEnterOtp2 = () => {
               <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
                 We sent the verification code to {email}
                 <TextScallingFalse
-                  onPress={() => router.push("/Signup/signupEmail1")}
+                  onPress={() => router.back()}
                   style={{ fontSize: 13, color: "#12956B" }}
                 >
                   {" "}

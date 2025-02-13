@@ -1,82 +1,92 @@
-import type {
-  MaterialTopTabNavigationEventMap,
-  MaterialTopTabNavigationOptions,
-} from '@react-navigation/material-top-tabs';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import {
-  useTheme,
-  type ParamListBase,
-  type TabNavigationState,
-} from '@react-navigation/native';
-import { withLayoutContext } from 'expo-router';
-import { View } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import ExploreHeader from '~/components/explorePage/categoryHeader';
+import { useSelector } from 'react-redux';
+import {ExploreCategoryHeader} from '~/components/explorePage/exploreHeader'; 
 import SearchBar from '~/components/explorePage/searchbar';
 import { RootState } from '~/reduxStore';
+import TrendingAll from './allCategory';
+import TrendingNews from './newsCategory/TrendingNews';
 
-const { Navigator } = createMaterialTopTabNavigator();
+// Define the Category components
 
-const MaterialTopTabs = withLayoutContext<
-  MaterialTopTabNavigationOptions,
-  typeof Navigator,
-  TabNavigationState<ParamListBase>,
-  MaterialTopTabNavigationEventMap
->(Navigator);
+// const NewsCategory = () => (
+//   <View>
+//     <Text style={styles.text}>News Category</Text>
+//   </View>
+// );
+const MatchesCategory = () => (
+  <View>
+    <Text style={styles.text}>Matches Category</Text>
+  </View>
+);
+const TransfersCategory = () => (
+  <View>
+    <Text style={styles.text}>Transfers Category</Text>
+  </View>
+);
+const LeaguesCategory = () => (
+  <View>
+    <Text style={styles.text}>Leagues Category</Text>
+  </View>
+);
+const RankingCategory = () => (
+  <View>
+    <Text style={styles.text}>Ranking Category</Text>
+  </View>
+);
+const ArticlesCategory = () => (
+  <View>
+    <Text style={styles.text}>Articles Category</Text>
+  </View>
+);
+const DefaultCategory = () => (
+  <View>
+    <Text style={styles.text}>Defauslt Category</Text>
+  </View>
+);
 
-const exploreCategories = [
-  "All",
-  "News",
-  "Matches",
-  "Transfers",
-  "Leagues",
-  "Ranking",
-  "Articles",
-];
+// Define the type for category keys
+type CategoryKeys = 
+  | 'All' 
+  | 'News' 
+  | 'Matches' 
+  | 'Transfers' 
+  | 'Leagues' 
+  | 'Ranking' 
+  | 'Articles' 
+  | 'Default';
 
-export default function MaterialTopTabsLayout() {
-  const dispatch = useDispatch();
-  const selectedCategory = useSelector((state: RootState) => state.explore.selectedCategory);
+// Create a component map
+const componentMap: Record<CategoryKeys, () => JSX.Element> = {
+  All: TrendingAll,
+  News: TrendingNews,
+  Matches: MatchesCategory,
+  Transfers: TransfersCategory,
+  Leagues: LeaguesCategory,
+  Ranking: RankingCategory,
+  Articles: ArticlesCategory,
+  Default: DefaultCategory,
+};
 
-  // const handleCategoryClick = (category) => {
-  //   dispatch(setSelectedCategory(category));
-  // };
-  const { colors } = useTheme();
+export default function ExploreMainLayout() {
+  const selectedCategory = useSelector(
+    (state: RootState) => state.explore.selectedExploreCategory
+  );
+
+  const CategoryComponent = componentMap[selectedCategory as CategoryKeys] || componentMap.Default;
+
   return (
-    <>
-      <SafeAreaView className="">
-        <SearchBar />
-        <ExploreHeader />
-
-
-      </SafeAreaView>
-      <MaterialTopTabs
-        initialRouteName='index'
-        screenOptions={{
-          tabBarActiveTintColor: colors.text,
-          tabBarInactiveTintColor: 'grey',
-          swipeEnabled: false,
-          tabBarLabelStyle: {
-            fontSize: 14,
-            textTransform: 'capitalize',
-            fontWeight: 'bold',
-          },
-          tabBarIndicatorStyle: {
-            backgroundColor: colors.text,
-          },
-          tabBarScrollEnabled: true,
-          tabBarItemStyle: { width: 'auto', minWidth: 100 },
-        }}
-      >
-        <MaterialTopTabs.Screen name='index' options={{ title: 'Blue', }} />
-        <MaterialTopTabs.Screen name='red' options={{ title: 'Red', }} />
-        <MaterialTopTabs.Screen name='green' options={{ title: 'Green', }} />
-        <MaterialTopTabs.Screen name='blue' options={{ title: 'blue', }} />
-        <MaterialTopTabs.Screen name='pink' options={{ title: 'pink', }} />
-
-      </MaterialTopTabs>
-
-    </>
+    <SafeAreaView >
+      <SearchBar />
+      <ExploreCategoryHeader />
+        <CategoryComponent />
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  text: {
+    color: 'white',
+  },
+});

@@ -5,13 +5,14 @@ import { useRouter } from "expo-router";
 import { useSelector } from 'react-redux';
 import defaultPic from "../../assets/images/nopic.jpg";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AddPostHeader() {
     const router = useRouter();
     const { user } = useSelector((state: any) => state?.auth);
 
     return (
-        <View className='flex flex-row items-center gap-4'>
+        <SafeAreaView className='flex flex-row items-center gap-4'>
             <TouchableOpacity onPress={() => router.back()}>
                 <MaterialCommunityIcons name="keyboard-backspace" size={24} color="white" />
             </TouchableOpacity>
@@ -21,6 +22,6 @@ export default function AddPostHeader() {
             />
             <TextScallingFalse className='text-white text-3xl' >{user.firstName} {user.lastName}</TextScallingFalse>
             
-        </View>
+        </SafeAreaView>
     )
 }

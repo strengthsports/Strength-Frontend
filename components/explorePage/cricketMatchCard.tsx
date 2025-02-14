@@ -135,7 +135,7 @@ const MatchCard = ({ match, isLive }: MatchCardProps) => {
             )}
 
             {/* Border */}
-            <View className="h-[1px] bg-neutral-700 my-2" />
+            <View className="h-[0.8] bg-neutral-700 my-2" />
 
             {/* Teams Section */}
             <View className="px-4">

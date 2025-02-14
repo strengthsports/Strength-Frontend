@@ -102,7 +102,7 @@ const NotificationCardLayout = ({
             className="flex-row mt-1.5 items-center bg-[#121212] rounded-md overflow-hidden w-full"
           >
             {/* Post Image (Now Responsive on Web & Mobile) */}
-            {target.assets?.length > 0 && (
+            {target?.assets?.length > 0 && (
               <Image
                 source={{ uri: target.assets[0].url }}
                 resizeMode="cover"
@@ -123,7 +123,7 @@ const NotificationCardLayout = ({
                 numberOfLines={2}
                 ellipsizeMode="tail"
               >
-                "{target.caption}"
+                "{target?.caption}"
               </Text>
             </View>
           </TouchableOpacity>

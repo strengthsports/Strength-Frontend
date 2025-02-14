@@ -6,6 +6,7 @@ import moment from "moment";
 
 const Notification = () => {
   const { data, isLoading, isError } = useGetNotificationsQuery(null);
+  console.log("Notifications : ", data);
 
   // Function to group notifications by time periods
   const groupNotificationsByTime = (notifications: any[]) => {
@@ -37,8 +38,8 @@ const Notification = () => {
     return grouped.filter((section) => section.data.length > 0);
   };
 
-  const groupedNotifications = data?.formattedNotifications
-    ? groupNotificationsByTime(data.formattedNotifications)
+  const groupedNotifications = data?.data?.formattedNotifications
+    ? groupNotificationsByTime(data.data.formattedNotifications)
     : [];
 
   return (

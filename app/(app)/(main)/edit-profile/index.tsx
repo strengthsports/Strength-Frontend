@@ -72,10 +72,10 @@ const EditProfile = () => {
 
   // Main form data of profile
   const [formData, setFormData] = useState<UserData>({
-    firstName: params.firstName.toString(),
-    lastName: params.lastName.toString(),
-    username: params.username.toString(),
-    headline: params.headline.toString(),
+    firstName: params.firstName?.toString(),
+    lastName: params.lastName?.toString(),
+    username: params.username?.toString(),
+    headline: params.headline?.toString(),
     dateOfBirth: params.dateOfBirth,
     address: {
       city: params.city,

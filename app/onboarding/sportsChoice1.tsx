@@ -18,6 +18,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSportsData,
+  resetOnboardingData,
   setSelectedSports,
 } from "~/reduxStore/slices/user/onboardingSlice";
 import { RootState } from "@/reduxStore";
@@ -48,6 +49,11 @@ const SportsChoice: React.FC = () => {
   const { sportsData, loading, error } = useSelector(
     (state: RootState) => state.onboarding
   );
+
+  // Remove previous states of onboarding on component mount
+  React.useEffect(() => {
+    dispatch(resetOnboardingData());
+  }, [dispatch]);
 
   // Fetch sports data on component mount
   React.useEffect(() => {

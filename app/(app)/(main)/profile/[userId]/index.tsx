@@ -6,18 +6,16 @@ import {
   ScrollView,
   Dimensions,
   Text,
-  TouchableHighlight,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
-import cricket from "@/assets/images/Sports Icons/okcricket.png";
-import { Feather } from "@expo/vector-icons";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
+import { ProfileContext } from "./_layout";
 
 const data = {
   currentteamcricket: [
@@ -106,10 +104,12 @@ const Overview = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const { error, loading, user } = useSelector((state: any) => state?.profile);
-  console.log("User data on Overview page : ", user);
+  const { profileData, isLoading, error } = useContext(ProfileContext);
+  console.log("User data on Overview page : ", profileData);
 
-  const sports = user?.selectedSports ? [...user.selectedSports] : [];
+  const sports = profileData?.selectedSports
+    ? [...profileData.selectedSports]
+    : [];
   const [activeSubSection, setActiveSubSection] = useState(
     sports[0]?.sport.name
   );
@@ -125,7 +125,7 @@ const Overview = () => {
       </PageThemeView>
     );
   }
-  if (loading) {
+  if (isLoading) {
     return (
       <PageThemeView>
         <ScrollView>
@@ -139,7 +139,7 @@ const Overview = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {user?.selectedSports?.length > 0 && (
+      {profileData?.selectedSports?.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
             horizontal
@@ -148,7 +148,7 @@ const Overview = () => {
             className="mt-2"
           >
             <TabsList className="flex-row gap-x-2 w-[100%]">
-              {user?.selectedSports?.map((sport: any) => (
+              {profileData?.selectedSports?.map((sport: any) => (
                 <TouchableOpacity
                   key={sport.sport._id}
                   onPress={() => setActiveSubSection(sport.sport.name)}
@@ -186,7 +186,7 @@ const Overview = () => {
           </ScrollView>
 
           {/* Tab Contents */}
-          {user?.selectedSports?.map((sport: any) => (
+          {profileData?.selectedSports?.map((sport: any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
               {/* Sports Overview */}
               <View className="w-full flex-1 items-center p-2">
@@ -313,102 +313,107 @@ const Overview = () => {
       )}
 
       {/* about */}
-      <View style={styles.OuterView}>
-        <View style={styles.DetailsContainer}>
-          <View style={{ padding: 2 }}>
-            <TextScallingFalse
-              style={{
-                color: "grey",
-                fontSize: responsiveFontSize(2.23),
-                fontWeight: "bold",
-              }}
-            >
-              About
-            </TextScallingFalse>
-            <TextScallingFalse
-              style={{
-                fontSize: responsiveFontSize(1.52),
-                color: "white",
-                fontWeight: "300",
-                paddingTop: "3%",
-                lineHeight: 17.5,
-              }}
-              numberOfLines={isExpanded ? undefined : 3}
-            >
-              {user?.about}
-            </TextScallingFalse>
-            <TouchableOpacity onPress={handleToggle}>
-              <TextScallingFalse style={styles.seeMore}>
-                {isExpanded ? "see less" : "see more"}
+      {profileData?.about && (
+        <View style={styles.OuterView}>
+          <View style={styles.DetailsContainer}>
+            <View style={{ padding: 2 }}>
+              <TextScallingFalse
+                style={{
+                  color: "grey",
+                  fontSize: responsiveFontSize(2.23),
+                  fontWeight: "bold",
+                }}
+              >
+                About
               </TextScallingFalse>
-            </TouchableOpacity>
+              <TextScallingFalse
+                style={{
+                  fontSize: responsiveFontSize(1.52),
+                  color: "white",
+                  fontWeight: "300",
+                  paddingTop: "3%",
+                  lineHeight: 17.5,
+                }}
+                numberOfLines={isExpanded ? undefined : 3}
+              >
+                {profileData?.about}
+              </TextScallingFalse>
+              <TouchableOpacity onPress={handleToggle}>
+                <TextScallingFalse style={styles.seeMore}>
+                  {profileData?.about.length > 140 &&
+                    (isExpanded ? "see less" : "see more")}
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* recent posts */}
-      <View style={{ paddingTop: "3%", alignItems: "center" }}>
-        <View
-          style={{
-            borderWidth: 0.3,
-            width: "97.56%",
-            height: 582 * scaleFactor,
-            borderRadius: 20,
-            borderLeftColor: "#494949",
-            borderBottomColor: "#494949",
-            borderTopColor: "#494949",
-          }}
-        >
+      {posts && posts.length > 0 && (
+        <View style={{ paddingTop: "3%", alignItems: "center" }}>
           <View
             style={{
-              width: "100%",
-              height: "8.5%",
-              justifyContent: "flex-end",
-              paddingHorizontal: 22,
-            }}
-          >
-            <TextScallingFalse
-              style={{
-                color: "grey",
-                fontSize: responsiveFontSize(2.23),
-                fontWeight: "bold",
-              }}
-            >
-              RECENT POSTS
-            </TextScallingFalse>
-          </View>
-          <ScrollView horizontal style={{ paddingStart: 20 }}>
-            <View style={{ flexDirection: "row", gap: 20 }}>
-              {posts.map((post: any) => (
-                <PostSmallCard key={post.id} post={post} />
-              ))}
-              <View style={{ width: 10 }} />
-            </View>
-          </ScrollView>
-          <View
-            style={{
-              width: "100%",
-              height: "15%",
-              justifyContent: "center",
-              alignItems: "center",
+              borderWidth: 0.3,
+              width: "97.56%",
+              height: 582 * scaleFactor,
+              borderRadius: 20,
+              borderLeftColor: "#494949",
+              borderBottomColor: "#494949",
+              borderTopColor: "#494949",
             }}
           >
             <View
-              style={{ height: 0.5, width: "90%", backgroundColor: "grey" }}
-            />
-            <TouchableOpacity
-              activeOpacity={0.3}
-              style={{ paddingTop: "3.5%" }}
+              style={{
+                width: "100%",
+                height: "8.5%",
+                justifyContent: "flex-end",
+                paddingHorizontal: 22,
+              }}
             >
               <TextScallingFalse
-                style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
+                style={{
+                  color: "grey",
+                  fontSize: responsiveFontSize(2.23),
+                  fontWeight: "bold",
+                }}
               >
-                See all posts..
+                RECENT POSTS
               </TextScallingFalse>
-            </TouchableOpacity>
+            </View>
+            <ScrollView horizontal style={{ paddingStart: 20 }}>
+              <View style={{ flexDirection: "row", gap: 20 }}>
+                {posts.map((post: any) => (
+                  <PostSmallCard key={post.id} post={post} />
+                ))}
+                <View style={{ width: 10 }} />
+              </View>
+            </ScrollView>
+            <View
+              style={{
+                width: "100%",
+                height: "15%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{ height: 0.5, width: "90%", backgroundColor: "grey" }}
+              />
+              <TouchableOpacity
+                activeOpacity={0.3}
+                style={{ paddingTop: "3.5%" }}
+              >
+                <TextScallingFalse
+                  style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
+                >
+                  See all posts..
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       <View
         style={{ height: 30, width: "100%", backgroundColor: "transparent" }}

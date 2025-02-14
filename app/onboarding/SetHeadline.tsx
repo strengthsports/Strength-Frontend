@@ -1,18 +1,15 @@
 import React, { useState } from "react";
 import {
-  Text,
   View,
   Image,
   SafeAreaView,
   StatusBar,
   TextInput,
   TouchableOpacity,
-  Dimensions,
   ScrollView,
   TouchableWithoutFeedback,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
 import Logo from "@/components/logo";
 import TextScallingFalse from "@/components/CentralText";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,29 +17,24 @@ import { RootState } from "@/reduxStore";
 import { setHeadline } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
 
-// const { height } = Dimensions.get("window");
-// const firstName = "Utsav";
-// const secondName = "Tiwari";
 const defaultImage = require("../../assets/images/onboarding/nopic.jpg");
 
 const SetHeadline: React.FC = () => {
   const [currentHeadline, setCurrentHeadline] = useState("");
   const router = useRouter();
   const dispatch = useDispatch();
-  const params = useLocalSearchParams();
 
   const { profilePic } = useSelector((state: RootState) => state?.onboarding);
 
   const { loading, error, user } = useSelector(
     (state: RootState) => state?.auth
   );
-  console.log("Loading", loading);
-  console.log("Error", error);
-  console.log("User", user);
+  // console.log("Loading", loading);
+  // console.log("Error", error);
+  // console.log("User", user);
 
-  console.log("profilePicture" + profilePic?.newUri);
-  // const selectedFile = params?.selectedFile;
-  // Use profile image if provided, else use default
+  // console.log("profilePicture" + profilePic?.newUri);
+
   const profileImageSource = profilePic
     ? {
         uri: profilePic.newUri,

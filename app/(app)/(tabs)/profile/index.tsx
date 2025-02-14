@@ -9,16 +9,23 @@ import {
   TouchableHighlight,
   useWindowDimensions,
 } from "react-native";
-import React, { useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import cricket from "@/assets/images/Sports Icons/okcricket.png";
 import { AntDesign, Feather } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import logo2 from "@/assets/images/logo2.png";
 import { useRouter } from "expo-router";
+import { AppDispatch } from "~/reduxStore";
+import { Platform } from "react-native";
+import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
+import { Post } from "~/reduxStore/api/feedPostApi";
+import PostContainerSmall from "~/components/Cards/postContainerSmall";
+import { FlatList } from "react-native";
+import PostContainer from "~/components/Cards/postContainer";
 
 const data = {
   currentteamcricket: [
@@ -99,6 +106,15 @@ const posts = [
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
+  const {
+    posts,
+    error: recentPostsError,
+    loading: recentPostLoading,
+  } = useSelector((state: any) => state?.profile);
+  // console.log("\n\n\nPosts : ", posts);
+  const dispatch = useDispatch<AppDispatch>();
+  const isAndroid = Platform.OS === "android";
+
   const router = useRouter();
   const { width } = useWindowDimensions();
   const sports = user?.selectedSports ? [...user.selectedSports] : [];
@@ -113,6 +129,24 @@ const Overview = () => {
   const [activeSubSection, setActiveSubSection] = useState(
     sports[0]?.sport?.name
   );
+
+  useEffect(() => {
+    if (!posts || posts.length === 0) {
+      dispatch(getOwnPosts(null));
+    }
+  }, [dispatch, posts]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => (
+      <View className="w-screen pl-3">
+        <PostContainer item={item} />
+      </View>
+    ),
+    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+  );
+  const memoizedEmptyComponent = memo(() => (
+    <Text className="text-white text-center p-4">No new posts available</Text>
+  ));
 
   //toggle see more
   const handleToggle = () => {
@@ -343,7 +377,13 @@ const Overview = () => {
             </TouchableOpacity>
 
             {/* edit button */}
-            <TouchableOpacity className="absolute top-0 right-0">
+            <TouchableOpacity
+              className="absolute top-0 right-0"
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push("/(app)/(main)/edit-overview2?about=true")
+              }
+            >
               <Feather name="edit" size={18 * scaleFactor} color="#373737" />
             </TouchableOpacity>
           </View>
@@ -351,7 +391,7 @@ const Overview = () => {
       </View>
 
       {/* recent posts */}
-      <View style={{ paddingTop: "3%", alignItems: "center" }}>
+      <View style={{ paddingTop: "3%", alignItems: "center" }} className="mb-8">
         <View
           style={{
             borderWidth: 0.3,
@@ -381,14 +421,18 @@ const Overview = () => {
               RECENT POSTS
             </TextScallingFalse>
           </View>
-          <ScrollView horizontal style={{ paddingStart: 20 }}>
-            <View style={{ flexDirection: "row", gap: 20 }}>
-              {posts.map((post: any) => (
-                <PostSmallCard key={post.id} post={post} />
-              ))}
-              <View style={{ width: 10 }} />
-            </View>
-          </ScrollView>
+          <FlatList
+            data={posts || []}
+            keyExtractor={(item) => item._id}
+            initialNumToRender={5}
+            removeClippedSubviews={isAndroid}
+            windowSize={11}
+            renderItem={renderItem}
+            ListEmptyComponent={memoizedEmptyComponent}
+            bounces={false}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            horizontal={true}
+          />
           <View
             style={{
               width: "100%",
@@ -413,10 +457,6 @@ const Overview = () => {
           </View>
         </View>
       </View>
-
-      <View
-        style={{ height: 30, width: "100%", backgroundColor: "transparent" }}
-      />
     </ScrollView>
   );
 };

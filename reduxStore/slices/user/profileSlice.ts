@@ -23,9 +23,9 @@ export const editUserProfile = createAsyncThunk<
     console.log("Token : ", token);
     console.log("User data input :", userdata);
 
-    userdata.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
+    // userdata.forEach((value, key) => {
+    //   console.log(`${key}: ${value}`);
+    // });
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
@@ -165,6 +165,46 @@ export const editUserSportsOverview = createAsyncThunk<
     }
     console.log("Data : ", data.data);
     return data.data;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
+  }
+});
+
+// Edit about
+export const editUserAbout = createAsyncThunk<
+  any,
+  string,
+  { rejectValue: string }
+>("profile/editUserAbout", async (userAbout, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+    console.log("Token : ", token);
+    console.log("User data input :", userAbout);
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateAbout`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ about: userAbout }),
+      }
+    );
+
+    console.log("Response:", response);
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Error editing sports overview");
+    }
+    console.log("Data : ", data);
+    return data.data.about;
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
     const errorMessage =

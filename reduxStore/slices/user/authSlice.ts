@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser } from "./onboardingSlice";
 import {
+  editUserAbout,
   editUserProfile,
   editUserSportsOverview,
   fetchMyProfile,
@@ -226,6 +227,7 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = action.payload as string;
     });
+
     // Edit sports overview
     builder.addCase(editUserSportsOverview.pending, (state) => {
       state.loading = true;
@@ -237,6 +239,21 @@ const authSlice = createSlice({
       state.error = null;
     });
     builder.addCase(editUserSportsOverview.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    //Edit user about
+    builder.addCase(editUserAbout.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(editUserAbout.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = null;
+      state.user.about = action.payload;
+    });
+    builder.addCase(editUserAbout.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

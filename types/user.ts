@@ -48,7 +48,7 @@ export interface UserData {
   lastName: string;
   username: string;
   headline: string | "";
-  dateOfBirth: Date | null;
+  dateOfBirth: Date | any | null;
   address: object;
   height: string | null;
   weight: string | null;
@@ -80,4 +80,10 @@ export interface SuggestionUser {
   profilePic: string;
   coverPic: string;
   followerCount: number;
+}
+
+export interface ReportUser {
+  targetId: string;
+  targetType: string;
+  reason: string;
 }

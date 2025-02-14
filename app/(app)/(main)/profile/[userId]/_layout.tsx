@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { createContext, useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -11,7 +11,7 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { Slot, useLocalSearchParams, usePathname } from "expo-router";
+import { Slot, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import {
   MaterialCommunityIcons,
@@ -50,9 +50,25 @@ import {
 } from "~/reduxStore/api/profile/profileApi.block";
 import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { Divider } from "react-native-elements";
+import { useReport } from "~/hooks/useReport";
+import { FollowUser, ReportUser } from "~/types/user";
+import { useFollow } from "~/hooks/useFollow";
+
+// Define the context type
+interface ProfileContextType {
+  profileData: any;
+  isLoading: boolean;
+  error: any;
+}
+
+export const ProfileContext = createContext<ProfileContextType>({
+  profileData: null,
+  isLoading: false,
+  error: null,
+});
 
 // Main function
-const ProfileLayout = ({ param }: { param: string }) => {
+const ProfileLayout = () => {
   const params = useLocalSearchParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -66,10 +82,12 @@ const ProfileLayout = ({ param }: { param: string }) => {
   // RTK Querys
   const [getUserProfile, { data: profileData, isLoading, error }] =
     useLazyGetUserProfileQuery();
-  const [followUser] = useFollowUserMutation();
-  const [unFollowUser] = useUnFollowUserMutation();
   const [blockUser] = useBlockUserMutation();
   const [unblockUser] = useUnblockUserMutation();
+
+  // Custom hooks
+  const { reportUser, undoReportUser } = useReport();
+  const { followUser, unFollowUser } = useFollow();
 
   const [activeTab, setActiveTab] = useState("Overview");
   const [isSettingsModalVisible, setSettingsModalVisible] = useState({
@@ -81,6 +99,9 @@ const ProfileLayout = ({ param }: { param: string }) => {
   );
   const [followerCount, setFollowerCount] = useState<number>(
     profileData?.followerCount
+  );
+  const [isReported, setIsReported] = useState<boolean>(
+    profileData?.reportingStatus
   );
 
   // Fetch user profile when the component mounts
@@ -125,17 +146,15 @@ const ProfileLayout = ({ param }: { param: string }) => {
     try {
       setFollowingStatus(true);
       setFollowerCount((prev) => prev + 1);
-      // Perform the follow action via mutation
-      await followUser({
-        followingId: userId?.id,
-        followingType: userId?.type,
-      }).unwrap();
-      dispatch(setFollowingCount("follow"));
-      console.log("Followed Successfully!");
+      const followData: FollowUser = {
+        followingId: profileData._id,
+        followingType: profileData.type,
+      };
+
+      await followUser(followData);
     } catch (err) {
       setFollowingStatus(false);
       setFollowerCount((prev) => prev - 1);
-      dispatch(setFollowingCount("unfollow"));
       console.error("Follow error:", err);
     }
   };
@@ -146,16 +165,15 @@ const ProfileLayout = ({ param }: { param: string }) => {
     try {
       setFollowingStatus(false);
       setFollowerCount((prev) => prev - 1);
-      await unFollowUser({
-        followingId: userId?.id,
-        followingType: userId?.type,
-      }).unwrap();
-      dispatch(setFollowingCount("unfollow"));
-      console.log("Unfollowed Successfully!");
+      const unfollowData: FollowUser = {
+        followingId: profileData._id,
+        followingType: profileData.type,
+      };
+
+      await unFollowUser(unfollowData);
     } catch (err) {
       setFollowingStatus(true);
       setFollowerCount((prev) => prev + 1);
-      dispatch(setFollowingCount("follow"));
       console.error("Unfollow error:", err);
     }
   };
@@ -209,7 +227,24 @@ const ProfileLayout = ({ param }: { param: string }) => {
     }
   };
 
-  //handle report profile
+  //handle report
+  const handleReport = async () => {
+    setIsReported((prev) => !prev);
+    const reportData: ReportUser = {
+      targetId: profileData._id,
+      targetType: profileData.type,
+      reason: "Fake account",
+    };
+
+    await reportUser(reportData);
+  };
+
+  //handle undo report
+  const handleUndoReport = async () => {
+    setIsReported((prev) => !prev);
+    const payload = { targetId: profileData._id, targetType: profileData.type };
+    await undoReportUser(payload);
+  };
 
   // Error component
   if (error) {
@@ -595,7 +630,11 @@ const ProfileLayout = ({ param }: { param: string }) => {
                 handleTabPress={handleTabPress}
                 params={params.userId}
               />
-              <Slot />
+              <ProfileContext.Provider
+                value={{ profileData, isLoading, error }}
+              >
+                <Slot />
+              </ProfileContext.Provider>
             </>
           )}
 
@@ -643,16 +682,32 @@ const ProfileLayout = ({ param }: { param: string }) => {
                       </TextScallingFalse>
                     </TouchableOpacity>
                     {/* report */}
-                    <View className="items-center flex-row gap-x-3">
+                    <TouchableOpacity
+                      className="items-center flex-row gap-x-3"
+                      onPress={handleReport}
+                      disabled={isReported || profileData?.reportingStatus}
+                    >
                       <MaterialIcons
                         name="report-problem"
                         size={22}
-                        color="white"
+                        color={
+                          isReported || profileData?.reportingStatus
+                            ? "#6b7280"
+                            : "white"
+                        }
                       />
-                      <TextScallingFalse className="text-white font-normal text-3xl">
-                        Report this profile
+                      <TextScallingFalse
+                        className={`${
+                          isReported || profileData?.reportingStatus
+                            ? "text-gray-500"
+                            : "text-white"
+                        } font-normal text-3xl`}
+                      >
+                        {isReported || profileData?.reportingStatus
+                          ? "Reported this profile"
+                          : "Report this profile"}
                       </TextScallingFalse>
-                    </View>
+                    </TouchableOpacity>
                     {/* follow/unfollow */}
                     {followingStatus || profileData?.followingStatus ? (
                       <TouchableOpacity

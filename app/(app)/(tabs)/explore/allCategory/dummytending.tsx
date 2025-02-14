@@ -1,23 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet, Platform, FlatList, ScrollView, ActivityIndicator } from "react-native";
+import { View, Image, Text, StyleSheet, Platform, FlatList, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Swiper from "react-native-swiper";
 import TextScallingFalse from "~/components/CentralText";
 import { Colors } from "~/constants/Colors";
-import { ExploreImageBanner, hashtagData} from "~/constants/hardCodedFiles";
+import { ExploreImageBanner, hashtagData,  } from "~/constants/hardCodedFiles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { countryCodes } from "~/constants/countryCodes";
 import Hashtag from "~/components/explorePage/hashtag";
 import MatchCard from "~/components/explorePage/cricketMatchCard";
-import { useGetLiveCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
+import DummyCricketData from "~/constants/dummyCricketData";
 
 const TrendingAll = () => {
+  const [liveCricketMatches, setLiveCricketMatches] = useState<any[]>([]);
+  const [nextCricMatch, setNextCricMatch] = useState<any | null>(null);
 
-  const { data: liveCricketMatches, error: liveError, isFetching, refetch } = useGetLiveCricketMatchesQuery({});
-  console.log(liveCricketMatches)
+  const fetchCricketLiveScores = async () => {
+    try {
+      const data = DummyCricketData;
+      console.log(data);
 
-  // const { data: nextMatch, error: nextError, isLoading: nextLoading } = useGetNextCricketMatchQuery();
+      const liveMatchesData = data?.data?.filter((match: any) => match.ms === "live" && match.status !== "Match not started") || [];
 
+      const prioritizedLiveMatches = liveMatchesData.sort((a, b) => {
+        const aPriority = Object.keys(countryCodes).some((country) =>
+          [a.t1, a.t2].some((team) =>
+            team.toLowerCase().includes(country.toLowerCase())
+          )
+        )
+          ? 1
+          : 0;
+
+        const bPriority = Object.keys(countryCodes).some((country) =>
+          [b.t1, b.t2].some((team) =>
+            team.toLowerCase().includes(country.toLowerCase())
+          )
+        )
+          ? 1
+          : 0;
+
+      return bPriority - aPriority; // Higher priority first
+    });
+      console.log(prioritizedLiveMatches);
+      setLiveCricketMatches(prioritizedLiveMatches);
+
+      const nextMatch =
+        data?.data
+          ?.filter((match: any) => match.ms === "fixture")
+          ?.sort((a: any, b: any) => new Date(a.dateTimeGMT).getTime() - new Date(b.dateTimeGMT).getTime())[0] || null;
+
+      setNextCricMatch(nextMatch);
+    } catch (error) {
+      console.error("Error fetching live scores:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCricketLiveScores();
+  }, []);
 
   const renderSwiper = () => (
     <Swiper
@@ -69,35 +109,19 @@ const TrendingAll = () => {
     </View>
   );
 
-  const renderCricketLiveMatches = () => {
-    // if (liveLoading) {
-    //   return <TextScallingFalse className="text-white text-center">Loading matches...</TextScallingFalse>;
-    // }
-  
-  
-    return (
-      <View className="mt-7">
-        <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-          <View className="flex-row items-center ">
-            <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
-            <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
-          </View>
-            <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetch} />
-        </View>
-        {isFetching ? ( <ActivityIndicator size="large" color={Colors.themeColor} /> ) : (
-        <FlatList
-          data={liveCricketMatches}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20 }}
-          renderItem={({ item }) => <MatchCard match={item} isLive={true} />}
-          ListEmptyComponent={<View className="w-screen justify-center mt-10"><TextScallingFalse className="text-white self-center text-center pr-7">No live matches available</TextScallingFalse></View>}
-        />)}
+  const renderCricketLiveMatches = () => (
+    <View className="mt-7">
+      <View className="flex-row items-center pl-7">
+        <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
+        <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
       </View>
-    );
-  };
-  
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+        {liveCricketMatches.map((match) => (
+          <MatchCard key={match.id} match={match} isLive={true} />
+        ))}
+      </ScrollView>
+    </View>
+  );
 
   // Combine all sections into a single FlatList
   const sections = [
@@ -112,7 +136,7 @@ const TrendingAll = () => {
       data={sections}
       keyExtractor={(item, index) => index.toString()}
       renderItem={({ item }) => item.content}
-      contentContainerStyle={{ paddingBottom: 300 }}
+      contentContainerStyle={{ paddingBottom: 400 }}
     />
   );
 };

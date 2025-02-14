@@ -256,7 +256,7 @@ const TrendingAll = () => {
       <FlatList
         data={liveCricketMatches}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 20, margin:10 }}
+        contentContainerStyle={{ padding: 20,  }}
         renderItem={({ item }) => (
         <MatchCard
           key={item.id}
@@ -268,7 +268,7 @@ const TrendingAll = () => {
         )}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
+        // contentContainerStyle={{ paddingHorizontal: 20 }}
         />
       {/* {liveCricketMatches.map((match) => (
 

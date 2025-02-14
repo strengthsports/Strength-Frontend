@@ -2,7 +2,7 @@ import { View } from "moti";
 import { StyleSheet, Text } from "react-native";
 import CountryFlag from "react-native-country-flag";
 
-const NameFlagSubCard = ({ flag, teamName }) => {
+const NameFlagSubCard = ({ flag, teamName }: { flag: string, teamName : string}) => {
   return (
     <View style={styles.badmintonScores}>
       {flag !== "Unknown" ? (

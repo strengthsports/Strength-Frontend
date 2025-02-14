@@ -5,18 +5,12 @@ interface ForgotPasswordState {
   isLoading: boolean;
   error: string | null;
   success: boolean;
-  userId: string | null;  // Added userId to hold the ID from the forgot password response
-}
-
-// Define the type for the success response of each API call
-interface ForgotPasswordResponse {
-  data: {
-    userId: string; // Assuming 'userId' is returned from the forgot password API
-  };
+  resetToken: string;
 }
 
 interface OtpVerificationResponse {
   message: string;
+  resetToken: string;
 }
 
 interface SetNewPasswordResponse {
@@ -28,13 +22,13 @@ const initialState: ForgotPasswordState = {
   isLoading: false,
   error: null,
   success: false,
-  userId: null, // Initially, there is no userId
+  resetToken: "",
 };
 
 // Async thunk for taking email and sending OTP
 export const forgotPassword = createAsyncThunk<
-  ForgotPasswordResponse, // Success response type
-  string,                 // Argument type (email)
+  any, // Success response type
+  string, // Argument type (email)
   { rejectValue: string } // Rejected payload type
 >("forgotPassword/forgotPassword", async (email, { rejectWithValue }) => {
   try {
@@ -62,9 +56,9 @@ export const forgotPassword = createAsyncThunk<
 // Async thunk for OTP verification
 export const verifyOtp = createAsyncThunk<
   OtpVerificationResponse, // Success response type
-  { id: string; otp: string }, // Argument type (id and OTP)
+  { email: string; otp: string }, // Argument type (id and OTP)
   { rejectValue: string } // Rejected payload type
->("forgotPassword/verifyOtp", async ({ id, otp }, { rejectWithValue }) => {
+>("forgotPassword/verifyOtp", async ({ email, otp }, { rejectWithValue }) => {
   try {
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/forgot-password-verifyOtp`,
@@ -73,12 +67,13 @@ export const verifyOtp = createAsyncThunk<
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ _id: id, otp }),
+        body: JSON.stringify({ email, otp }),
       }
     );
     const data = await response.json();
+    console.log(data);
     if (response.ok) {
-      return data;
+      return { resetToken: data.data.resetToken, message: data.message };
     } else {
       return rejectWithValue(data.message || "Failed to verify OTP.");
     }
@@ -90,30 +85,33 @@ export const verifyOtp = createAsyncThunk<
 // Async thunk for setting a new password
 export const setNewPassword = createAsyncThunk<
   SetNewPasswordResponse, // Success response type
-  { email: string; newPassword: string }, // Argument type (email, new password)
+  { resetToken: string; newPassword: string }, // Argument type (email, new password)
   { rejectValue: string } // Rejected payload type
->("forgotPassword/setNewPassword", async ({ email, newPassword }, { rejectWithValue }) => {
-  try {
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/set-newpassword`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, newpassword: newPassword }),
+>(
+  "forgotPassword/setNewPassword",
+  async ({ resetToken, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/set-newpassword`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ resetToken, newPassword }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        return data;
+      } else {
+        return rejectWithValue(data.message || "Failed to set new password.");
       }
-    );
-    const data = await response.json();
-    if (response.ok) {
-      return data;
-    } else {
-      return rejectWithValue(data.message || "Failed to set new password.");
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
-  } catch (error: any) {
-    return rejectWithValue(error.message);
   }
-});
+);
 
 // Slice
 const forgotPasswordSlice = createSlice({
@@ -124,7 +122,7 @@ const forgotPasswordSlice = createSlice({
       state.isLoading = false;
       state.error = null;
       state.success = false;
-      state.userId = null; // Reset the userId
+      state.resetToken = "";
     },
   },
   extraReducers: (builder) => {
@@ -137,7 +135,6 @@ const forgotPasswordSlice = createSlice({
       .addCase(forgotPassword.fulfilled, (state, action) => {
         state.isLoading = false;
         state.success = true;
-        state.userId = action.payload.data.userId; // Save userId
       })
       .addCase(forgotPassword.rejected, (state, action) => {
         state.isLoading = false;
@@ -151,6 +148,7 @@ const forgotPasswordSlice = createSlice({
       .addCase(verifyOtp.fulfilled, (state, action) => {
         state.isLoading = false;
         state.success = true;
+        state.resetToken = action.payload.resetToken;
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.isLoading = false;

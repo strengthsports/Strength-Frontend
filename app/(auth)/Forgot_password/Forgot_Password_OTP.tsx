@@ -25,8 +25,7 @@ const Forgot_Password_OTP = () => {
   const [loading, setLoading] = useState(false); // New state for loading
   const dispatch = useDispatch<AppDispatch>();
 
-  const email = params?.email;
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const email = params?.email as string;
 
   const handleVerificationCode = async () => {
     if (!otp) {
@@ -40,7 +39,7 @@ const Forgot_Password_OTP = () => {
     setLoading(true); // Set loading state to true when button is clicked
 
     try {
-      const resultAction = await dispatch(verifyOtp({ id, otp }));
+      const resultAction = await dispatch(verifyOtp({ email, otp }));
       if (verifyOtp.fulfilled.match(resultAction)) {
         // On success, navigate to set new password page
         router.push({
@@ -124,7 +123,7 @@ const Forgot_Password_OTP = () => {
             </TextScallingFalse>
           </TouchableOpacity>
           <View style={{ marginTop: 50 }}>
-            <SignupButton onPress={handleVerificationCode}>
+            <SignupButton onPress={handleVerificationCode} disabled={false}>
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" /> // Loader when loading is true
               ) : (

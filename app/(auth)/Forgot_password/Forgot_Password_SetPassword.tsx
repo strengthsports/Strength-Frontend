@@ -2,7 +2,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Text,
   ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
@@ -13,14 +12,13 @@ import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
 import TextScallingFalse from "@/components/CentralText";
 import { useLocalSearchParams } from "expo-router";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/reduxStore";
 import { setNewPassword } from "~/reduxStore/slices/user/forgotPasswordSlice";
 import Toast from "react-native-toast-message";
 
 const Forgot_Password_SetPassword = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const dispatch = useDispatch<AppDispatch>();
 
   const [createPassword, setCreatePassword] = useState("");
@@ -28,7 +26,10 @@ const Forgot_Password_SetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false); // New loading state
 
-  const email = Array.isArray(params?.email) ? params.email[0] : params?.email;
+  // const email = Array.isArray(params?.email) ? params.email[0] : params?.email;
+  const resetToken = useSelector(
+    (state: any) => state?.forgotPassword?.resetToken
+  );
 
   const toggleShowPassword = () => {
     setShowPassword((prevState) => !prevState);
@@ -48,7 +49,7 @@ const Forgot_Password_SetPassword = () => {
 
     try {
       const resultAction = await dispatch(
-        setNewPassword({ email, newPassword: createPassword })
+        setNewPassword({ resetToken, newPassword: createPassword })
       );
 
       if (setNewPassword.fulfilled.match(resultAction)) {
@@ -160,7 +161,7 @@ const Forgot_Password_SetPassword = () => {
           {loading ? (
             <ActivityIndicator size="large" color="#12956B" />
           ) : (
-            <SignupButton onPress={handlePassword}>
+            <SignupButton onPress={handlePassword} disabled={false}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 15, fontWeight: "500" }}
               >

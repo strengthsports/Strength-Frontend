@@ -19,7 +19,6 @@ const Forgot_Password_Enter_Email = () => {
 
   const handleNext = async () => {
     if (!email) {
-      // Trigger error toast if email is empty
       Toast.show({
         type: "error",
         text1: "Please enter your email.",
@@ -29,7 +28,7 @@ const Forgot_Password_Enter_Email = () => {
       return;
     }
 
-    setLoading(true); // Set loading state to true when button is clicked
+    setLoading(true);
 
     try {
       const resultAction = await dispatch(forgotPassword(email));
@@ -38,7 +37,7 @@ const Forgot_Password_Enter_Email = () => {
         // On success, navigate to OTP page with email and userId
         router.push({
           pathname: "/Forgot_password/Forgot_Password_OTP",
-          params: { email, id: resultAction.payload.data.userId },
+          params: { email },
         });
         // Show success toast
         Toast.show({
@@ -109,7 +108,7 @@ const Forgot_Password_Enter_Email = () => {
           />
         </View>
         <View style={{ marginTop: 55 }}>
-          <SignupButton onPress={handleNext}>
+          <SignupButton onPress={handleNext} disabled={false}>
             {loading ? (
               <ActivityIndicator size="small" color="#fff" /> // Loader when loading is true
             ) : (

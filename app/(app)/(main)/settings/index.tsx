@@ -7,7 +7,7 @@ import {
   Modal,
   Linking,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import {
   AntDesign,
@@ -17,7 +17,7 @@ import {
   Octicons,
   Entypo,
 } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import TextInputSection from "~/components/TextInputSection";
 import SignupButton from "~/components/SignupButton";
@@ -30,6 +30,7 @@ import Toast from "react-native-toast-message";
 
 const index = () => {
   const router = useRouter();
+  const { accountSettingsModal } = useLocalSearchParams();
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalVisible2, setModalVisible2] = useState(false);
   const [isModalVisible3, setModalVisible3] = useState(false);
@@ -40,7 +41,14 @@ const index = () => {
   const toggleShowPassword = () => setShowPassword((prevState) => !prevState);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state) => state?.auth);
+  const { user } = useSelector((state: any) => state?.auth);
+
+  // Check if modal close request has came
+  useEffect(() => {
+    if (!accountSettingsModal) {
+      setModalVisible((prev) => !prev);
+    }
+  }, []);
 
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";

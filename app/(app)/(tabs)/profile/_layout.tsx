@@ -354,22 +354,6 @@ const ProfileLayout = () => {
             onPress={() =>
               router.push({
                 pathname: "/(app)/(main)/edit-profile",
-                params: {
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                  username: user.username,
-                  headline: user.headline,
-                  dateOfBirth: user.dateOfBirth,
-                  city: user.address.city,
-                  state: user.address.state,
-                  country: user.address.country,
-                  latitude: user.address.location.coordinates[0],
-                  longitude: user.address.location.coordinates[1],
-                  height: user.height,
-                  weight: user.weight,
-                  coverPic: user.coverPic,
-                  profilePic: user.profilePic,
-                },
               })
             }
           >

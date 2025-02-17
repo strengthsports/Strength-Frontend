@@ -38,7 +38,7 @@ export default function AddPost() {
           name: `image_${index}.jpg`,
           type: "image/jpeg",
         };
-        formData.append("assets", file);
+        formData.append(`assets${index+1}`, file);
       });
       console.log('formData', formData._parts);
       await addPost(formData).unwrap();

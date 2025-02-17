@@ -24,10 +24,10 @@ const NextMatchCard = ({ match }: MatchCardProps) => {
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
-  const convertToIST = (gmtDateTime) => {
+  const convertToIST = (gmtDateTime : string | Date) => {
     const gmtDate = new Date(gmtDateTime);
 
-    if (isNaN(gmtDate)) {
+    if (isNaN(gmtDate.getTime())) {
       return "Match time loading...";
     }
 
@@ -69,7 +69,7 @@ const NextMatchCard = ({ match }: MatchCardProps) => {
 
     return `${dateLabel} • ${hours}:${minutes} ${amPm}`;
   };
-  const getCountryCode = (teamName: string) => countryCodes[teamName] || "Unknown";
+  const getCountryCode = (teamName: string) => countryCodes[teamName as keyof typeof countryCodes] || "Unknown";
   return (<>
     {/* <View className="w-full h-full rounded-t-2xl bg-neutral-700" > */}
 

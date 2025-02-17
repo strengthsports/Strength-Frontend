@@ -23,37 +23,25 @@ export default function AddPost() {
   const router = useRouter();
   const [postText, setPostText] = useState('');
   const [isImageRatioModalVisible, setIsImageRatioModalVisible] = useState(false);
-  const [pickedImageUris, setPickedImageUris] = useState<string[]>([]); // Array to store multiple image URIs
+  const [pickedImageUris, setPickedImageUris] = useState<string[]>([]);
   const [addPost, { isLoading }] = useAddPostMutation();
 
   const handlePostSubmit = async () => {
     if (!postText.trim() && pickedImageUris.length === 0) return;
-  
+
     try {
       const formData = new FormData();
-  
-      // Append the caption
       formData.append("caption", postText.trim());
-  
-      // Append each image file
       pickedImageUris.forEach((uri, index) => {
         const file = {
           uri,
-          name: `image_${index}.jpg`, // Generate a unique name
-          type: "image/jpeg", // Adjust the type based on the actual file type
+          name: `image_${index}.jpg`,
+          type: "image/jpeg",
         };
         formData.append("assets", file);
       });
-  
-      // Log the FormData object
-   
-        console.log('formData',formData._parts);
-   
-  
-      // Use the RTK Query mutation to send the request
+      console.log('formData', formData._parts);
       await addPost(formData).unwrap();
-  
-      // Reset the form and navigate
       setPostText('');
       setPickedImageUris([]);
       router.push('/(app)/(tabs)/home');
@@ -74,16 +62,20 @@ export default function AddPost() {
       allowsEditing: true,
       aspect: ratio,
       quality: 0.8,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Corrected media type
-      allowsMultipleSelection: true, // Enable multiple image selection
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
     });
 
     if (!result.canceled && result.assets.length > 0) {
       const uris = result.assets.map((asset) => asset.uri);
-      console.log('Picked Image :', result);
-      setPickedImageUris(uris); // Update state with the new URIs
+      setPickedImageUris(uris);
       setIsImageRatioModalVisible(false);
     }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedUris = pickedImageUris.filter((_, i) => i !== index);
+    setPickedImageUris(updatedUris);
   };
 
   return (
@@ -92,7 +84,6 @@ export default function AddPost() {
         <AddPostHeader />
         <TouchableOpacity
           className={`px-5 py-1 rounded-full ${postText.trim() || pickedImageUris.length > 0 ? 'bg-theme' : 'bg-neutral-600'}`}
-          // disabled={(!postText.trim() && pickedImageUris.length === 0) || isLoading}
           onPress={handlePostSubmit}
         >
           {isLoading ? (
@@ -103,7 +94,6 @@ export default function AddPost() {
         </TouchableOpacity>
       </View>
 
-      {/* Text Area */}
       <ScrollView className='p-6'>
         <TextInput
           autoFocus
@@ -115,30 +105,34 @@ export default function AddPost() {
           className='min-h-24 h-auto align-top text-white text-4xl'
         />
 
-        {/* Display Multiple Images */}
         {pickedImageUris.length > 0 && (
           <Swiper {...swiperConfig} className='aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400'>
             {pickedImageUris.map((uri, index) => (
-              <Image
-                key={index}
-                className='w-full h-full object-cover'
-                source={{ uri }}
-                resizeMode='cover'
-              />
+              <View key={index} className='relative w-full h-full'>
+                <Image
+                  className='w-full h-full object-cover'
+                  source={{ uri }}
+                  resizeMode='cover'
+                />
+                <TouchableOpacity
+                  onPress={() => removeImage(index)}
+                  className='absolute top-2 right-2 bg-black/50 rounded-full p-1'
+                >
+                  <MaterialCommunityIcons name='close' size={20} color='white' />
+                </TouchableOpacity>
+              </View>
             ))}
           </Swiper>
         )}
       </ScrollView>
 
-      {/* Bottom Section */}
-      <View className='flex flex-row justify-between items-center py-2 px-4'>
+      <View className='flex flex-row justify-between items-center p-4'>
         <TouchableOpacity className='flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md'>
           <MaterialCommunityIcons name='earth' size={20} color={Colors.themeColor} />
           <TextScallingFalse className='text-theme text-3xl'>Public</TextScallingFalse>
           <MaterialCommunityIcons name='menu-down' size={24} color={Colors.themeColor} />
         </TouchableOpacity>
         <View className='flex flex-row justify-between gap-2'>
-          {/* Image Ratio Modal */}
           <TouchableOpacity onPress={() => setIsImageRatioModalVisible(true)}>
             <MaterialCommunityIcons name='image-multiple' size={24} color={Colors.themeColor} />
           </TouchableOpacity>
@@ -174,7 +168,7 @@ const ImageRatioModal = ({ pickImage }: ImageRatioModalProps) => (
       Select Aspect Ratio
     </TextScallingFalse>
     <View className='flex flex-row items-center'>
-      <View className='flex gap-4 mx-4'>
+      <View className='flex w-full gap-4 pr-8 mx-4'>
         <Figure width={36} height={36} text='1:1' onPress={() => pickImage([1, 1])} />
         <Figure width={36} height={24} text='3:2' onPress={() => pickImage([3, 2])} />
         <Figure width={36} height={45} text='4:5' onPress={() => pickImage([4, 5])} />

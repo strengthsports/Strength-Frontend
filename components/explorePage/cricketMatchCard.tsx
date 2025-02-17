@@ -46,7 +46,7 @@ const MatchCard = ({ match, isLive }: MatchCardProps) => {
         setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
     };
     
-    const getCountryCode = (teamName: string) => countryCodes[teamName] || "Unknown";
+    const getCountryCode = (teamName: string) => countryCodes[teamName as keyof typeof countryCodes] || "Unknown";
 
     const determineBatsman = ({teamScore, opponentScore, matchStatus, isTeam1} : {teamScore:string, opponentScore:string, matchStatus:string, isTeam1:boolean}) => {
         const teamScoreNum = teamScore ? parseInt(teamScore) : null;
@@ -86,7 +86,6 @@ const MatchCard = ({ match, isLive }: MatchCardProps) => {
         return "transparent"; // Opponent is batting
     };
     return (<>
-        {/* <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 "> */}
             {/* Title Section */}
             <View className="px-4 pt-4 pb-2">
                 <TouchableOpacity
@@ -162,7 +161,6 @@ const MatchCard = ({ match, isLive }: MatchCardProps) => {
             <TextScallingFalse className="absolute bottom-4 left-4 text-neutral-400 text-base mt-2">
                 {match.status}
             </TextScallingFalse>
-        {/* </View> */}
         </>);
 };
 

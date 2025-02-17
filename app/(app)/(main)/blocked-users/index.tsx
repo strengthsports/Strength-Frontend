@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  BackHandler,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
@@ -23,6 +24,21 @@ const BlockedUsersList = () => {
 
   const { data, isLoading, error } = useGetBlockedUsersQuery();
   const [unblockUser] = useUnblockUserMutation();
+
+  useEffect(() => {
+    const onBackPress = () => {
+      router.push("/(app)/(main)/settings?accountSettingsModal=false");
+      // Return true to indicate we've handled the back press
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [router]);
 
   //handle unblock
   const handleUnblock = async (blockedId: string, blockedType: string) => {

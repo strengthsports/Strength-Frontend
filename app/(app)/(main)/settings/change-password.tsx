@@ -1,6 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   TouchableOpacity,
   View,
@@ -17,6 +17,7 @@ import TextInputSection from "~/components/TextInputSection";
 import { useChangePasswordMutation } from "~/reduxStore/api/profile/profileApi.changePassword";
 import Toast from "react-native-toast-message";
 import { ToastAndroid } from "react-native";
+import { BackHandler } from "react-native";
 
 function ChangePassword() {
   const router = useRouter();
@@ -29,6 +30,21 @@ function ChangePassword() {
 
   const [changePassword, { isLoading }] = useChangePasswordMutation();
   const isAndroid = Platform.OS === "android";
+
+  useEffect(() => {
+    const onBackPress = () => {
+      router.push("/(app)/(main)/settings?accountSettingsModal=true");
+      // Return true to indicate we've handled the back press
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [router]);
 
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
     isAndroid
@@ -66,7 +82,7 @@ function ChangePassword() {
 
       // Feedback on success
       feedback(response.message || "Password changed successfully!", "success");
-      router.push("/(app)/(main)/settings?accountSettingsModal=false");
+      router.push("/(app)/(main)/settings?accountSettingsModal=true");
     } catch (err: any) {
       // setErrorMessage(err.data?.message || "Password change failed");
       feedback(err.data?.message || "Password change failed!");
@@ -83,7 +99,9 @@ function ChangePassword() {
         <View style={styles.TopBarView}>
           <TouchableOpacity
             activeOpacity={0.5}
-            onPress={() => router.push("/(app)/(main)/settings")}
+            onPress={() =>
+              router.push("/(app)/(main)/settings?accountSettingsModal=true")
+            }
           >
             <AntDesign name="arrowleft" size={28} color="white" />
           </TouchableOpacity>

@@ -6,6 +6,7 @@ import {
   Image,
   Modal,
   Linking,
+  BackHandler,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
@@ -27,6 +28,7 @@ import { AppDispatch } from "~/reduxStore";
 import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import { ToastAndroid } from "react-native";
 import Toast from "react-native-toast-message";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const index = () => {
   const router = useRouter();
@@ -45,7 +47,7 @@ const index = () => {
 
   // Check if modal close request has came
   useEffect(() => {
-    if (!accountSettingsModal) {
+    if (accountSettingsModal === "true") {
       setModalVisible((prev) => !prev);
     }
   }, []);
@@ -101,7 +103,7 @@ const index = () => {
   };
 
   return (
-    <PageThemeView>
+    <SafeAreaView>
       <View style={styles.TopBarView}>
         <TouchableOpacity
           activeOpacity={0.5}
@@ -609,7 +611,7 @@ const index = () => {
           </View>
         </PageThemeView>
       </Modal>
-    </PageThemeView>
+    </SafeAreaView>
   );
 };
 

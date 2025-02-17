@@ -23,7 +23,7 @@ import {
 import { useRouter, useLocalSearchParams, usePathname } from "expo-router";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import CustomButton from "~/components/CustomButtons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { editUserProfile } from "~/reduxStore/slices/user/profileSlice";
 import { UserData } from "@/types/user";
@@ -41,6 +41,7 @@ let finalUploadData = new FormData();
 
 const EditProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: any) => state?.auth);
   const router = useRouter();
   const pathname = usePathname();
   const isAndroid = Platform.OS === "android";
@@ -60,7 +61,9 @@ const EditProfile = () => {
   const [heightInMeters, setHeightInMeters] = useState("");
   const [weightInKg, setWeightInKg] = useState("");
   const [weightInLbs, setWeightInLbs] = useState("");
-  const [addressPickup, setAddressPickup] = useState("");
+  const [addressPickup, setAddressPickup] = useState(
+    `${user?.address?.city}, ${user?.address?.state}, ${user?.address?.country}`
+  );
   const [isLocationError, setLocationError] = useState("");
   const [isAlertModalSet, setAlertModal] = useState<boolean>(false);
 
@@ -72,22 +75,17 @@ const EditProfile = () => {
 
   // Main form data of profile
   const [formData, setFormData] = useState<UserData>({
-    firstName: params.firstName?.toString(),
-    lastName: params.lastName?.toString(),
-    username: params.username?.toString(),
-    headline: params.headline?.toString(),
-    dateOfBirth: params.dateOfBirth,
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    username: user?.username,
+    headline: user?.headline,
+    dateOfBirth: user?.dateOfBirth,
     address: {
-      city: params.city,
-      state: params.state,
-      country: params.country,
-      location: {
-        coordinates: [params.latitude, params.longitude],
-      },
+      ...user?.address,
     },
-    height: params.height?.toString(),
-    weight: params.weight?.toString(),
-    assets: [params.coverPic?.toString(), params.profilePic?.toString()],
+    height: user?.height,
+    weight: user?.weight,
+    assets: [user?.coverPic?.toString(), user?.profilePic?.toString()],
   });
 
   // Cover Image, Profile Image states
@@ -175,7 +173,7 @@ const EditProfile = () => {
   const handleDone = async (field: string, value: any) => {
     // Check if the value is empty
     if (
-      ["username", "dateOfBirth", "address"].includes(field) &&
+      ["username", "dateOfBirth"].includes(field) &&
       (!value || value.trim() === "")
     ) {
       // Show a popup message for empty fields
@@ -347,7 +345,32 @@ const EditProfile = () => {
   // Sync address with local state and Redux
   useEffect(() => {
     if (address) {
+      console.log("Address to be set : ", address);
       setAddressPickup(address.formattedAddress);
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   address: {
+      //     city: address.city,
+      //     state: address.state,
+      //     country: address.country,
+      //     location: {
+      //       coordinates: address.coordinates,
+      //     },
+      //   },
+      // }));
+      setAddress({
+        city: address.city,
+        state: address.state,
+        country: address.country,
+        location: {
+          coordinates: address.coordinates,
+        },
+      });
+      finalUploadData.set("city", address.city);
+      finalUploadData.set("state", address.state);
+      finalUploadData.set("country", address.country);
+      finalUploadData.set("latitude", address.coordinates[0].toString());
+      finalUploadData.set("longitude", address.coordinates[1].toString());
     }
   }, [address]);
 
@@ -660,7 +683,7 @@ const EditProfile = () => {
               label={label}
               value={
                 type === "address" // Check if the type is "address"
-                  ? `${formData.address.city}, ${formData.address.state}, ${formData.address.country}` // Concatenate address properties
+                  ? `${formData.address?.city}, ${formData.address?.state}, ${formData.address?.country}` // Concatenate address properties
                   : formData[type] || "" // Use the value directly for other fields
               }
               isDate={type === "dateOfBirth" && true}
@@ -999,19 +1022,15 @@ const EditProfile = () => {
                         value={
                           picType === "address" ? addressPickup : inputValue
                         }
-                        onChangeText={setInputValue}
+                        onChangeText={
+                          picType === "address"
+                            ? setAddressPickup
+                            : setInputValue
+                        }
                         placeholder={placeholder}
                         placeholderTextColor="gray"
                         className="text-white text-4xl flex-1 pl-0 pb-0"
                       />
-                      {picType === "dateOfBirth" && (
-                        <TouchableOpacity
-                          onPress={() => setIsDatePickerVisible(true)}
-                          className="inset-y-3"
-                        >
-                          <AntDesign name="calendar" size={22} color="white" />
-                        </TouchableOpacity>
-                      )}
                     </View>
                   </>
                 )}

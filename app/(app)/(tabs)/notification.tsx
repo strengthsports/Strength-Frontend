@@ -38,8 +38,8 @@ const Notification = () => {
     return grouped.filter((section) => section.data.length > 0);
   };
 
-  const groupedNotifications = data?.data?.formattedNotifications
-    ? groupNotificationsByTime(data.data.formattedNotifications)
+  const groupedNotifications = data?.formattedNotifications
+    ? groupNotificationsByTime(data.formattedNotifications)
     : [];
 
   return (

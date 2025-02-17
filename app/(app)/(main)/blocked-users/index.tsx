@@ -1,5 +1,5 @@
 import { AntDesign, Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import { useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
@@ -21,24 +21,11 @@ import {
 
 const BlockedUsersList = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  console.log("pathname", pathname);
 
   const { data, isLoading, error } = useGetBlockedUsersQuery();
   const [unblockUser] = useUnblockUserMutation();
-
-  useEffect(() => {
-    const onBackPress = () => {
-      router.push("/(app)/(main)/settings?accountSettingsModal=false");
-      // Return true to indicate we've handled the back press
-      return true;
-    };
-
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
-
-    return () => subscription.remove();
-  }, [router]);
 
   //handle unblock
   const handleUnblock = async (blockedId: string, blockedType: string) => {

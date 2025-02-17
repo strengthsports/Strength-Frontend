@@ -18,9 +18,11 @@ import { useChangePasswordMutation } from "~/reduxStore/api/profile/profileApi.c
 import Toast from "react-native-toast-message";
 import { ToastAndroid } from "react-native";
 import { BackHandler } from "react-native";
+import { usePathname } from "expo-router";
 
 function ChangePassword() {
   const router = useRouter();
+  const pathname = usePathname();
   const userEmail = useSelector((state: any) => state.auth.user?.email);
 
   const [oldPassword, setOldPassword] = useState("");
@@ -30,21 +32,6 @@ function ChangePassword() {
 
   const [changePassword, { isLoading }] = useChangePasswordMutation();
   const isAndroid = Platform.OS === "android";
-
-  useEffect(() => {
-    const onBackPress = () => {
-      router.push("/(app)/(main)/settings?accountSettingsModal=true");
-      // Return true to indicate we've handled the back press
-      return true;
-    };
-
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
-
-    return () => subscription.remove();
-  }, [router]);
 
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
     isAndroid

@@ -18,11 +18,6 @@ import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  useLikeContentMutation,
-  useUnLikeContentMutation,
-} from "~/reduxStore/api/likeUnlikeApi";
-import { Post } from "~/reduxStore/api/feedPostApi";
 import MoreModal from "../feedPage/moreModal";
 import LikersList from "../feedPage/likerModal";
 import LikerModal from "../feedPage/likerModal";
@@ -35,6 +30,8 @@ import { AppDispatch } from "~/reduxStore";
 import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { formatTimeAgo } from "~/utils/formatTime";
 import { swiperConfig } from "~/utils/swiperConfig";
+import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+import { useLikeContentMutation, useUnLikeContentMutation } from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
 
 // Type definitions
 interface SwiperImageProps {

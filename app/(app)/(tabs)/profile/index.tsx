@@ -22,10 +22,10 @@ import { useRouter } from "expo-router";
 import { AppDispatch } from "~/reduxStore";
 import { Platform } from "react-native";
 import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
-import { Post } from "~/reduxStore/api/feedPostApi";
 import PostContainerSmall from "~/components/Cards/postContainerSmall";
 import { FlatList } from "react-native";
 import PostContainer from "~/components/Cards/postContainer";
+import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
 const data = {
   currentteamcricket: [

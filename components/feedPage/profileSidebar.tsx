@@ -99,7 +99,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
         {/* Avatar Profile Picture */}
         <TouchableOpacity onPress={toggleSidebar}>
           <Image
-            source={user.profilePic ? { uri: user.profilePic } : defaultPic}
+            source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
             style={{ width: 36, height: 36, borderRadius: 18 }}
           />
         </TouchableOpacity>
@@ -182,15 +182,15 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             {/* Profile Section */}
             <View className="flex-row items-center space-x-4 mb-6 px-6">
               <Image
-                source={user.profilePic ? { uri: user.profilePic } : defaultPic}
+                source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
                 className="w-16 h-16 rounded-full"
                 resizeMode="cover"
               />
               <View className="pl-4">
                 <Text className="text-white text-xl font-semibold">
-                  {user.firstName} {user.lastName}
+                  {user?.firstName} {user?.lastName}
                 </Text>
-                <Text className="text-gray-400 text-lg">@{user.username}</Text>
+                <Text className="text-gray-400 text-lg">@{user?.username}</Text>
               </View>
             </View>
 

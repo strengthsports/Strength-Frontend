@@ -1,18 +1,7 @@
 // api/commentApi.js
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { getToken } from "~/utils/secureStore";
+import { feedApi } from '../services/feedApi';
 
-export const postCommentApi = createApi({
-  reducerPath: 'postCommentApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
-    prepareHeaders: async (headers)=>{
-        const token = await getToken("accessToken")
-        if(token)
-            headers.set("Authorization", `Bearer ${token}`)
-        return headers
-    }
-    }),
+export const handleCommentApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     postComment: builder.mutation({
       query: (body) => ({
@@ -38,4 +27,4 @@ export const postCommentApi = createApi({
   }),
 });
 
-export const { usePostCommentMutation, useDeleteCommentMutation, useFetchCommentsQuery } = postCommentApi;
+export const { usePostCommentMutation, useDeleteCommentMutation, useFetchCommentsQuery } = handleCommentApi;

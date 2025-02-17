@@ -17,15 +17,13 @@ import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import exploreReducer from "./slices/explore/exploreSlice";
 import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profile/profileApi";
-import { feedPostApi } from "./api/feedPostApi";
-import { likeUnlikeApi } from "./api/likeUnlikeApi";
 import { sportsApi } from "./api/sportsApi";
 import { notificationApi } from "./api/notificationApi";
-import { likerApi } from "./api/likerApi";
-import { postCommentApi } from "./api/postCommentApi";
 import { communityApi } from "./api/community/communityApi";
-import { addPostApi } from "./api/addPostApi";
 import { cricketApi } from "./api/explore/cricketApi";
+
+// Single feedApi
+import { feedApi } from "./api/feed/services/feedApi";
 
 // Persist configuration
 const persistConfig = {
@@ -43,15 +41,11 @@ const rootReducer = combineReducers({
   explore: exploreReducer,
   profile: profileReducer,
   [profileApi.reducerPath]: profileApi.reducer,
-  [feedPostApi.reducerPath]: feedPostApi.reducer,
-  [likeUnlikeApi.reducerPath]: likeUnlikeApi.reducer,
-  [likerApi.reducerPath]: likerApi.reducer, // Add socialApi reducer
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,
-  [postCommentApi.reducerPath]: postCommentApi.reducer,
   [communityApi.reducerPath]: communityApi.reducer,
-  [addPostApi.reducerPath]: addPostApi.reducer,
   [cricketApi.reducerPath]: cricketApi.reducer,
+  [feedApi.reducerPath]: feedApi.reducer, // Use feedApi as the single reducer for all feed-related features
 });
 
 // Create persisted reducer
@@ -67,16 +61,11 @@ const store = configureStore({
       },
     }).concat(
       profileApi.middleware,
-      feedPostApi.middleware,
-      likeUnlikeApi.middleware,
-      likerApi.middleware, // Add socialApi middleware
       sportsApi.middleware,
       notificationApi.middleware,
-      postCommentApi.middleware,
       communityApi.middleware,
-      addPostApi.middleware,
       cricketApi.middleware,
-      // Add middleware for sportsApi
+      feedApi.middleware // Single middleware for all feed features
     ),
 });
 

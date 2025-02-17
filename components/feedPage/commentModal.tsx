@@ -16,15 +16,11 @@ import {
 } from "react-native";
 import { Divider } from "react-native-elements";
 import { MaterialIcons } from "@expo/vector-icons";
-import {
-  useDeleteCommentMutation,
-  useFetchCommentsQuery,
-  usePostCommentMutation,
-} from "~/reduxStore/api/postCommentApi";
 import { Colors } from "~/constants/Colors";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import TextScallingFalse from "../CentralText";
+import { useDeleteCommentMutation, useFetchCommentsQuery, usePostCommentMutation } from "~/reduxStore/api/feed/features/feedApi.comment";
 
 interface ReportModalProps {
   commentId: string;

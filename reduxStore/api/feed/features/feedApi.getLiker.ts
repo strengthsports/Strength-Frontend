@@ -1,5 +1,4 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getToken } from "~/utils/secureStore";
+import { feedApi } from "../services/feedApi";
 
 export interface Liker {
   _id: string;
@@ -15,18 +14,7 @@ interface FetchLikersResponse {
   }[];
 }
 
-export const likerApi = createApi({
-  reducerPath: "likerApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
-    prepareHeaders: async (headers) => {
-      const token = await getToken("accessToken") // Adjust based on your auth state
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+export const likerApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     fetchLikers: builder.query<FetchLikersResponse, { targetId: string; targetType: string }>({
       query: ({ targetId, targetType }) => ({

@@ -1,7 +1,7 @@
 import React, { memo, useEffect } from "react";
 import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
 import { Divider } from "react-native-elements";
-import { useFetchLikersQuery } from "~/reduxStore/api/likerApi";
+import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
 
 interface LikersListProps {
   targetId: string;

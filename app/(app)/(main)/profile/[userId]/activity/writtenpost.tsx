@@ -9,10 +9,10 @@ import {
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feedPostApi";
 import { useLocalSearchParams } from "expo-router";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 import TextScallingFalse from "~/components/CentralText";
+import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
 const WrittenPostScreen = () => {
   const params = useLocalSearchParams();

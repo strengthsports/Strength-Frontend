@@ -1,21 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getToken } from "~/utils/secureStore";
+import { feedApi } from "../services/feedApi";
 
 export interface AddPostRequest { //not used in this file but in UI
     assets: string[];
     caption: string;
   }
-  export const addPostApi = createApi({
-    reducerPath: "addPostApi",
-    baseQuery: fetchBaseQuery({
-      baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
-      prepareHeaders: async (headers) => {
-        const token = await getToken("accessToken");
-        if (token) headers.set("Authorization", `Bearer ${token}`);
-        return headers;
-      },
-    }),
-    tagTypes: ["addPost"],
+  export const addPostApi = feedApi.injectEndpoints({
     endpoints: (builder) => ({
       addPost: builder.mutation({
         query: (formData) => ({

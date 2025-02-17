@@ -9,7 +9,7 @@ import {
 import React, { memo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feedPostApi";
+import { Post } from "~/reduxStore/api/feed/feedPostApi";
 import TextScallingFalse from "~/components/CentralText";
 
 const WrittenPost = () => {

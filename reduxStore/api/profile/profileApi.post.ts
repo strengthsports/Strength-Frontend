@@ -1,4 +1,3 @@
-import { FeedResponse } from "../feedPostApi";
 import { profileApi } from "./profileApi";
 import { TargetUser, User } from "~/types/user";
 

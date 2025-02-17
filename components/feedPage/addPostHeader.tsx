@@ -17,10 +17,10 @@ export default function AddPostHeader() {
                 <MaterialCommunityIcons name="keyboard-backspace" size={24} color="white" />
             </TouchableOpacity>
             <Image
-                source={user.profilePic ? { uri: user.profilePic } : defaultPic}
+                source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
                 style={{ width: 40, height: 40, borderRadius: 20 }}
             />
-            <TextScallingFalse className='text-white text-3xl' >{user.firstName} {user.lastName}</TextScallingFalse>
+            <TextScallingFalse className='text-white text-3xl' >{user?.firstName} {user?.lastName}</TextScallingFalse>
             
         </SafeAreaView>
     )

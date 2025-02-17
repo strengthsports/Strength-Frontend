@@ -1,8 +1,5 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { number } from "zod";
-import { getToken } from "~/utils/secureStore";
+import { feedApi } from "../services/feedApi";
 
-// In your feedPostApi.ts
 export interface Post {
   _id: string;
   caption: string;
@@ -32,19 +29,7 @@ export interface FeedResponse {
   success: boolean;
 }
 
-export const feedPostApi = createApi({
-  reducerPath: "feedPostApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
-    prepareHeaders: async (headers) => {
-      const token = await getToken("accessToken");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ["FeedPost"], // Specify tag types here
+export const feedPostApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     getFeedPost: builder.query<
       FeedResponse,
@@ -52,12 +37,9 @@ export const feedPostApi = createApi({
     >({
       query: ({ limit = 20, lastTimeStamp }) => ({
         url: "api/v1/get-feed",
-        params: {
-          limit,
-          lastTimeStamp,
-        },
+        params: { limit, lastTimeStamp },
       }),
-      keepUnusedDataFor: 300, // how long api response is stored in memory after all components using it unmounts, 5 mins || default - 1 min
+      keepUnusedDataFor: 300, // Cache response for 5 minutes
       providesTags: ["FeedPost"],
     }),
   }),

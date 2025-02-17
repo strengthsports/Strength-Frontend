@@ -12,6 +12,7 @@ import TextScallingFalse from "~/components/CentralText";
 import PostContainer from "~/components/Cards/postContainer";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
+import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
 const Posts = () => {
   const router = useRouter();
@@ -42,7 +43,7 @@ const Posts = () => {
   console.log("\n\n\nPosts : ", posts);
 
   const renderItem = useCallback(
-    ({ item }) => (
+    ({ item }: { item: Post }) => (
       <View className="w-screen pl-3">
         <PostContainer item={item} />
       </View>

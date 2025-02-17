@@ -12,7 +12,7 @@ import TextScallingFalse from "~/components/CentralText";
 import { AppDispatch } from "~/reduxStore";
 import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
 import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feedPostApi";
+import { Post } from "~/reduxStore/api/feed/feedPostApi";
 
 const Posts = () => {
   const { posts, error, loading } = useSelector((state: any) => state?.profile);

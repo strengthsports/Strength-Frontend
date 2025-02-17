@@ -10,16 +10,12 @@ import {
 import { useFocusEffect, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import { memo, useCallback, useMemo, useState } from "react";
-import {
-  feedPostApi,
-  Post,
-  useGetFeedPostQuery,
-} from "~/reduxStore/api/feedPostApi";
 import PostContainer from "~/components/Cards/postContainer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import debounce from "lodash.debounce";
 import { Colors } from "~/constants/Colors";
+import { feedPostApi, Post, useGetFeedPostQuery } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
 export default function Home() {
   const dispatch = useDispatch();

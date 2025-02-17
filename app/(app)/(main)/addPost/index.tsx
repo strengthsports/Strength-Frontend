@@ -14,10 +14,10 @@ import AddPostHeader from '~/components/feedPage/addPostHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '~/constants/Colors';
 import { Divider } from 'react-native-elements';
-import { useAddPostMutation } from '~/reduxStore/api/addPostApi';
 import * as ImagePicker from 'expo-image-picker';
 import Swiper from 'react-native-swiper';
 import { swiperConfig } from '~/utils/swiperConfig';
+import { useAddPostMutation } from '~/reduxStore/api/feed/features/feedApi.addPost';
 
 export default function AddPost() {
   const router = useRouter();

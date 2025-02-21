@@ -213,6 +213,43 @@ export const editUserAbout = createAsyncThunk<
   }
 });
 
+// Remove Profile/Cover pic
+export const removePic = createAsyncThunk<any, string, { rejectValue: string }>(
+  "profile/removePic",
+  async (picType, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/remove-${picType}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      console.log("Data after removing pic api call : ", data);
+
+      if (!response.ok) {
+        console.log("Error removing pic :", response.json());
+        return rejectWithValue(data.message || "Error removing pic");
+      }
+
+      return picType;
+    } catch (error: unknown) {
+      console.log("Actual api error : ", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const profileSlice = createSlice({
   name: "profile",
   initialState,

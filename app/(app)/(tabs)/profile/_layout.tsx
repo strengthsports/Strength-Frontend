@@ -8,6 +8,7 @@ import {
   ScrollView,
   Text,
   Pressable,
+  Modal,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
@@ -20,19 +21,35 @@ import {
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
 import { useRouter } from "expo-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { MotiView } from "moti";
 import Overview from ".";
 import Activity from "./activity/_layout";
 import Events from "./events";
 import Teams from "./teams";
+import PicModal from "~/components/profilePage/PicModal";
+import nopic from "@/assets/images/nopic.jpg";
+import nocoverpic from "@/assets/images/nocover.png";
+import { AppDispatch } from "~/reduxStore";
+import { removePic } from "~/reduxStore/slices/user/profileSlice";
+
+interface PicModalType {
+  status: Boolean | any;
+  message: string;
+}
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("Overview");
+  const [isPicEditModalVisible, setPicEditModalVisible] =
+    useState<PicModalType>({
+      status: false,
+      message: "",
+    });
 
   // Define the available tabs.
   const tabs = useMemo(
@@ -60,6 +77,11 @@ const ProfileLayout = () => {
         return <Overview />;
     }
   }, [activeTab]);
+
+  // Handle remove cover/profile pic
+  const handleRemovePic = async (picType: string) => {
+    await dispatch(removePic(picType));
+  };
 
   if (loading) {
     <View>
@@ -102,10 +124,18 @@ const ProfileLayout = () => {
           className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-yellow-300 relative"
           style={{ alignItems: "flex-end", height: 135 * scaleFactor }}
         >
-          <Image
-            source={{ uri: user?.coverPic }}
-            style={{ width: "100%", height: "100%" }}
-          />
+          <TouchableOpacity
+            className="w-full h-full"
+            activeOpacity={0.9}
+            onPress={() =>
+              setPicEditModalVisible({ message: "coverPic", status: true })
+            }
+          >
+            <Image
+              source={user?.coverPic ? { uri: user?.coverPic } : nocoverpic}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </TouchableOpacity>
           <View className="absolute h-full z-50 flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]">
             <View
               style={{
@@ -118,15 +148,25 @@ const ProfileLayout = () => {
               }}
               className="lg:w-14 lg:h-14"
             >
-              <Image
-                source={{ uri: user?.profilePic }}
-                style={{
-                  width: responsiveWidth(29.6),
-                  height: responsiveHeight(14.4),
-                  borderRadius: 100,
-                }}
-                className="lg:w-14 lg:h-14"
-              />
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() =>
+                  setPicEditModalVisible({
+                    message: "profilePic",
+                    status: true,
+                  })
+                }
+              >
+                <Image
+                  source={user?.profilePic ? { uri: user?.profilePic } : nopic}
+                  style={{
+                    width: responsiveWidth(29.6),
+                    height: responsiveHeight(14.4),
+                    borderRadius: 100,
+                  }}
+                  className="lg:w-14 lg:h-14"
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -451,6 +491,57 @@ const ProfileLayout = () => {
 
         {/* Animated Tab Content */}
         <MotiView className="flex-1">{renderContent()}</MotiView>
+
+        {/* Profile/Cover Pic modal */}
+        <Modal
+          visible={isPicEditModalVisible.status}
+          animationType="slide"
+          onRequestClose={() =>
+            setPicEditModalVisible((prev) => ({ ...prev, status: false }))
+          }
+          transparent={true}
+        >
+          <TouchableOpacity
+            className="flex-1 justify-center items-center bg-black"
+            activeOpacity={1}
+          >
+            <View className="w-full h-full justify-between items-center mx-auto">
+              {isPicEditModalVisible.message === "profilePic" ? (
+                <PicModal
+                  type={isPicEditModalVisible.message}
+                  heading="Profile Picture"
+                  imgUrl={user?.profilePic || null}
+                  handleBack={() =>
+                    setPicEditModalVisible({
+                      message: "profilePic",
+                      status: false,
+                    })
+                  }
+                  handleRemovePic={() =>
+                    handleRemovePic(isPicEditModalVisible.message)
+                  }
+                />
+              ) : isPicEditModalVisible.message === "coverPic" ? (
+                <PicModal
+                  type={isPicEditModalVisible.message}
+                  heading="Cover Picture"
+                  imgUrl={user?.coverPic || null}
+                  handleBack={() =>
+                    setPicEditModalVisible({
+                      message: "coverPic",
+                      status: false,
+                    })
+                  }
+                  handleRemovePic={() =>
+                    handleRemovePic(isPicEditModalVisible.message)
+                  }
+                />
+              ) : (
+                <View></View>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </ScrollView>
     </PageThemeView>
   );

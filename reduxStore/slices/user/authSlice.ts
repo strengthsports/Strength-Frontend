@@ -7,6 +7,7 @@ import {
   editUserProfile,
   editUserSportsOverview,
   fetchMyProfile,
+  removePic,
 } from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
@@ -256,6 +257,25 @@ const authSlice = createSlice({
     builder.addCase(editUserAbout.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
+    });
+
+    //Remove profile/cover pic
+    builder.addCase(removePic.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(removePic.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = null;
+      if (action.payload === "profilePic") {
+        state.user.profilePic = null;
+      } else {
+        state.user.coverPic = null;
+      }
+    });
+    builder.addCase(removePic.rejected, (state, action) => {
+      state.loading = false;
+      state.error = "Failed to remove pic";
     });
   },
 });

@@ -6,18 +6,27 @@ import TextScallingFalse from "./CentralText";
 
 function TopBar({
   backRoute,
+  backHandler,
   heading,
   children,
 }: {
-  backRoute: any;
+  backRoute?: any;
+  backHandler?: () => void;
   heading: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const router = useRouter();
+
   return (
     <View className="h-12 w-full flex-row justify-between items-center px-5">
       <TouchableOpacity
-        onPress={() => router.push(backRoute)}
+        onPress={() => {
+          if (backHandler) {
+            backHandler();
+          } else {
+            router.push(backRoute);
+          }
+        }}
         className="basis-[15%]"
       >
         <AntDesign name="arrowleft" size={24} color="white" />

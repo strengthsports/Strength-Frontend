@@ -11,6 +11,8 @@ import MatchCard from "~/components/explorePage/cricketMatchCard";
 // import { useGetLiveCricketMatchesQuery, useGetNextCricketMatchQuery } from "~/reduxStore/api/explore/cricketApi";
 import NextMatchCard from "~/components/explorePage/cricketNextMatchCard";
 import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
+import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
+import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
 
 const TrendingAll = () => {
 
@@ -64,8 +66,9 @@ const TrendingAll = () => {
     </View>
   );
 
-  const { data, isFetching, refetch: refetchLiveCricket } = useGetCricketMatchesQuery({});
-  const  { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } = data || {};
+  const { data: cricketData, isFetching: isCricketFetching, refetch: refetchLiveCricket } = useGetCricketMatchesQuery({});
+  const  { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } = cricketData || {};
+  
   const renderCricketLiveMatches = () => {
     return (
       <View className="mt-7">
@@ -84,7 +87,7 @@ const TrendingAll = () => {
           contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => (
             <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
-              {isFetching ? (
+              {isCricketFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
                   <ActivityIndicator size="large" color={Colors.themeColor} />
                 </View>
@@ -104,46 +107,7 @@ const TrendingAll = () => {
       </View>
     );
   };
-
-  // const renderFootballLiveMatches = () => {
-  //   return (
-  //     <View className="mt-7">
-  //       <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-  //         <View className="flex-row items-center ">
-  //           <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
-  //           <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
-  //         </View>
-  //         <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchLiveCricket} />
-  //       </View>
-  //       <FlatList
-  //         data={liveCricketMatches}
-  //         keyExtractor={(item) => item.id.toString()}
-  //         horizontal
-  //         showsHorizontalScrollIndicator={false}
-  //         contentContainerStyle={{ paddingHorizontal: 20 }}
-  //         renderItem={({ item }) => (
-  //           <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
-  //             {isFetching ? (
-  //               <View className="h-full flex justify-center self-center items-center">
-  //                 <ActivityIndicator size="large" color={Colors.themeColor} />
-  //               </View>
-  //             ) : (
-  //               <MatchCard match={item} isLive={true} />
-  //             )}
-  //           </View>
-  //         )}
-  //         ListEmptyComponent={
-  //           <View className="w-screen justify-center mt-10">
-  //             <TextScallingFalse className="text-white self-center text-center pr-7">
-  //               No live matches available
-  //             </TextScallingFalse>
-  //           </View>
-  //         }
-  //       />
-  //     </View>
-  //   );
-  // };
-
+  
   const renderCricketNextMatches = () => {
     return (
       <View className="mt-7">
@@ -153,7 +117,7 @@ const TrendingAll = () => {
         {nextCricketMatches ? (
           <View className="px-6">
             <View className="h-56 w-full rounded-2xl bg-neutral-900 mr-5 border border-neutral-600 ">
-              {isFetching ? (
+              {isCricketFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
                   <ActivityIndicator size="large" color={Colors.themeColor} />
                 </View>
@@ -173,13 +137,55 @@ const TrendingAll = () => {
     );
   };
 
+  const { data: footballData, isFetching, refetch: refetchFootball } = useGetFootballMatchesQuery({});
+  const  { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } = footballData || {};
 
+  const renderFootballLiveMatches = () => {
+    return (
+      <View className="mt-7">
+        <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
+          <View className="flex-row items-center ">
+            <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
+            <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
+          </View>
+          <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchLiveCricket} />
+        </View>
+        <FlatList
+          data={liveFootballMatches}
+          keyExtractor={(item) => item.id.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20 }}
+          renderItem={({ item }) => (
+            <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
+              {isFetching ? (
+                <View className="h-full flex justify-center self-center items-center">
+                  <ActivityIndicator size="large" color={Colors.themeColor} />
+                </View>
+              ) : (
+                <FootballNextMatchCard match={item} isLive={true} />
+              )}
+            </View>
+          )}
+          ListEmptyComponent={
+            <View className="w-screen justify-center mt-10">
+              <TextScallingFalse className="text-white self-center text-center pr-7">
+                No live matches available
+              </TextScallingFalse>
+            </View>
+          }
+        />
+      </View>
+    );
+  };
+
+  
   const sections = [
     { type: "swiper", content: renderSwiper() },
     { type: "divider", content: <View className="h-[0.6px] bg-neutral-600" /> },
     { type: "hashtags", content: renderHashtags() },
     { type: "CricketLiveMatches", content: renderCricketLiveMatches() },
-    // { type: "FootballLiveMatches", content: renderFootballLiveMatches() },
+    { type: "FootballLiveMatches", content: renderFootballLiveMatches() },
     { type: "CricketNextMatches", content: renderCricketNextMatches() },
   ];
 

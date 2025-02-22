@@ -77,9 +77,12 @@ export default function ExploreMainLayout() {
   const CategoryComponent = componentMap[selectedCategory as CategoryKeys] || componentMap.Default;
 
   return (
-    <SafeAreaView >
+    <SafeAreaView className='flex-1' >
+      <View className=''>
+
       <SearchBar />
       <ExploreCategoryHeader />
+      </View>
         <CategoryComponent />
     </SafeAreaView>
   );

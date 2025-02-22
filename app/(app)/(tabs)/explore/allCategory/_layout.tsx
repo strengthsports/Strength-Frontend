@@ -59,7 +59,7 @@ const ExploreAllLayout = () => {
   const CategoryComponent = componentMap[selectedCategory as ExploreSportsCategoriesKeys] || componentMap.Default;
 
   return (
-    <View className="bg-black px">
+    <View className="bg-black flex-1">
       <ExploreAllSportsCategoryHeader />
       <CategoryComponent />
     </View>

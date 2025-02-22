@@ -52,14 +52,12 @@ const LoginScreen = () => {
     isAndroid
       ? ToastAndroid.show(errorMsg, ToastAndroid.SHORT)
       : Toast.show({
-        type,
-        text1: errorMsg,
-        visibilityTime: 3000,
-        autoHide: true,
-      });
+          type,
+          text1: errorMsg,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
   };
-  // const e = 'anirbandutta@gmail.com';
-  // const p = 'ANIRBAN@1234';
 
   const handleLogin = async () => {
     try {
@@ -75,10 +73,7 @@ const LoginScreen = () => {
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
 
-      // router.push("/(app)/(main)/teams/InitiateCreateTeam");
-
       router.push("/(app)/(tabs)/home");
-
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";

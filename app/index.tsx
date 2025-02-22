@@ -1,17 +1,9 @@
-import {
-  SafeAreaView,
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-} from "react-native";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect } from "expo-router";
 import LoginScreen from "./(auth)/login";
 import "../global.css";
 import { verifyInstallation } from "nativewind";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
-import SportsChoice from "./onboarding/sportsChoice1";
 import { useEffect } from "react";
 import { initializeAuth } from "~/reduxStore/slices/user/authSlice";
 import * as SplashScreen from "expo-splash-screen";
@@ -22,7 +14,6 @@ SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   verifyInstallation();
-  const router = useRouter();
 
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn, status } = useSelector((state: RootState) => state.auth);
@@ -44,8 +35,6 @@ export default function Index() {
   //   // Optional: Add a placeholder while auth is initializing
   //   return null;
   // }
-
-  const token = getToken('accessToken')
 
   if (isLoggedIn) {
     return <Redirect href="/(app)/(tabs)/home" />;

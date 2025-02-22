@@ -1,3 +1,6 @@
+import { enableMapSet } from "immer";
+enableMapSet();
+
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
   persistStore,
@@ -58,6 +61,7 @@ const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        ignoredPaths: ["auth.user.followings"],
       },
     }).concat(
       profileApi.middleware,

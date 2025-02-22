@@ -9,13 +9,18 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import PostContainer from "~/components/Cards/postContainer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import debounce from "lodash.debounce";
 import { Colors } from "~/constants/Colors";
-import { feedPostApi, Post, useGetFeedPostQuery } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+import {
+  feedPostApi,
+  Post,
+  useGetFeedPostQuery,
+} from "~/reduxStore/api/feed/features/feedApi.getFeed";
+import { pushFollowings } from "~/reduxStore/slices/user/authSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -25,13 +30,29 @@ export default function Home() {
   const [postLimit, setPostLimit] = useState(1); // Initial limit
 
   const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());
-  const { data, error, isLoading : isFetching, refetch } = useGetFeedPostQuery({
+  const {
+    data,
+    error,
+    isLoading: isFetching,
+    refetch,
+  } = useGetFeedPostQuery({
     limit: 20, // Fixed limit
     lastTimeStamp: lastTimestamp,
   });
-  // console.log("Post Data : ", data);
+  console.log("Post Data : ", data);
 
   const isAndroid = Platform.OS === "android";
+
+  // Set following statuses
+  useEffect(() => {
+    if (data?.data?.posts && Array.isArray(data.data.posts)) {
+      data.data.posts.forEach((post: any) => {
+        if (post?.isFollowing) {
+          dispatch(pushFollowings(post.postedBy._id));
+        }
+      });
+    }
+  }, [data, dispatch]);
 
   const handleRefresh = async () => {
     if (refreshing) return; // Prevent concurrent refreshes
@@ -58,11 +79,13 @@ export default function Home() {
     ),
     [] // Empty dependency array ensures the function is memoized and doesn't re-create
   );
-  const memoizedEmptyComponent = memo(() =>{
-    console.error(error)
-    return  (
-    <Text className="text-white text-center p-4">No new posts available</Text>
-  )});
+  const memoizedEmptyComponent = memo(() => {
+    console.error(error);
+    return (
+      <Text className="text-white text-center p-4">No new posts available</Text>
+    );
+  });
+
   useFocusEffect(
     useCallback(() => {
       setRefreshing(true);
@@ -76,13 +99,14 @@ export default function Home() {
       }
     }, [refetch])
   );
+
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
       {isFetching ? (
         <ActivityIndicator size="large" color={Colors.themeColor} />
       ) : (
         <FlatList
-          data={data?.posts || []}
+          data={data?.data?.posts || []}
           keyExtractor={(item) => item._id}
           initialNumToRender={5}
           removeClippedSubviews={isAndroid}
@@ -102,7 +126,8 @@ export default function Home() {
           ListEmptyComponent={memoizedEmptyComponent}
           bounces={false}
           contentContainerStyle={{ paddingBottom: 40 }}
-        />)}
+        />
+      )}
     </SafeAreaView>
   );
 }

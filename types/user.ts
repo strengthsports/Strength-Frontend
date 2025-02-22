@@ -11,6 +11,7 @@ export interface User {
   profilePic: string | null;
   coverPic: string | null;
   headline: string;
+  followings: Set<string>;
   [key: string]: any;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, memo } from "react";
+import React, { useState, useRef, memo, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,32 +6,29 @@ import {
   Animated,
   TouchableOpacity,
   ImageStyle,
-  FlatList,
   Modal,
   NativeSyntheticEvent,
   TextLayoutEventData,
-  Pressable,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import MoreModal from "../feedPage/moreModal";
-import LikersList from "../feedPage/likerModal";
 import LikerModal from "../feedPage/likerModal";
 import CommentModal from "../feedPage/commentModal";
-import {
-  useFollowUserMutation,
-  useUnFollowUserMutation,
-} from "~/reduxStore/api/profile/profileApi.follow";
-import { AppDispatch } from "~/reduxStore";
-import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
-import { useLikeContentMutation, useUnLikeContentMutation } from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
+import {
+  useLikeContentMutation,
+  useUnLikeContentMutation,
+} from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
+import { FollowUser } from "~/types/user";
+import { useFollow } from "~/hooks/useFollow";
 
 // Type definitions
 interface SwiperImageProps {
@@ -63,26 +60,22 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
 
 const PostContainer = ({ item }: { item: Post }) => {
   const router = useRouter();
-  const { user } = useSelector((state: any) => state?.auth);
-  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state?.auth);
+  const isFollowingGlobal = user?.followings?.has(item.postedBy?._id) ?? false;
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
   );
+  const { followUser, unFollowUser } = useFollow();
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
-
+  const [followingStatus, setFollowingStatus] =
+    useState<boolean>(isFollowingGlobal);
   const [isLiked, setIsLiked] = useState(item?.isLiked);
-  const [followingStatus, setFollowingStatus] = useState<boolean>(
-    item?.isFollowing
-  );
   const [likeCount, setLikeCount] = useState(item?.likesCount);
   const [commentCount, setCommentCount] = useState(item?.commentsCount);
   const [likePost, message] = useLikeContentMutation();
   const [unlikePost] = useUnLikeContentMutation();
-  const [followUser] = useFollowUserMutation();
-  const [unFollowUser] = useUnFollowUserMutation();
-  // const [showLikers, setShowLikers] = useState(false);
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
   const [isPostLikersModalVisible, setIsPostLikersModalVisible] =
     useState(false);
@@ -91,6 +84,11 @@ const PostContainer = ({ item }: { item: Post }) => {
     useState(false);
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  // Sync local state with global state changes
+  useEffect(() => {
+    setFollowingStatus(isFollowingGlobal);
+  }, [isFollowingGlobal]);
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
@@ -149,16 +147,14 @@ const PostContainer = ({ item }: { item: Post }) => {
   const handleFollow = async () => {
     try {
       setFollowingStatus(true);
-      // Perform the follow action via mutation
-      await followUser({
+      const followData: FollowUser = {
         followingId: item.postedBy?._id,
         followingType: item.postedBy?.type,
-      }).unwrap();
-      dispatch(setFollowingCount("follow"));
-      console.log("Followed Successfully!");
+      };
+
+      await followUser(followData);
     } catch (err) {
       setFollowingStatus(false);
-      dispatch(setFollowingCount("unfollow"));
       console.error("Follow error:", err);
     }
   };
@@ -167,15 +163,14 @@ const PostContainer = ({ item }: { item: Post }) => {
   const handleUnfollow = async () => {
     try {
       setFollowingStatus(false);
-      await unFollowUser({
+      const unfollowData: FollowUser = {
         followingId: item.postedBy?._id,
         followingType: item.postedBy?.type,
-      }).unwrap();
-      dispatch(setFollowingCount("unfollow"));
-      console.log("Unfollowed Successfully!");
+      };
+
+      await unFollowUser(unfollowData);
     } catch (err) {
       setFollowingStatus(true);
-      dispatch(setFollowingCount("follow"));
       console.error("Unfollow error:", err);
     }
   };
@@ -290,7 +285,11 @@ const PostContainer = ({ item }: { item: Post }) => {
               activeOpacity={1}
               onPress={() => setIsMoreModalVisible(false)}
             >
-              <MoreModal firstName={item.postedBy?.firstName} />
+              <MoreModal
+                firstName={item.postedBy?.firstName}
+                followingStatus={followingStatus}
+                isOwnPost={item.postedBy?._id === user?._id}
+              />
             </TouchableOpacity>
           </Modal>
 

@@ -1,26 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet, Platform, FlatList, ScrollView, ActivityIndicator } from "react-native";
+import React from "react";
+import { View, FlatList, ActivityIndicator, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Swiper from "react-native-swiper";
 import TextScallingFalse from "~/components/CentralText";
 import { Colors } from "~/constants/Colors";
 import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { countryCodes } from "~/constants/countryCodes";
 import Hashtag from "~/components/explorePage/hashtag";
 import MatchCard from "~/components/explorePage/cricketMatchCard";
 import { useGetLiveCricketMatchesQuery, useGetNextCricketMatchQuery } from "~/reduxStore/api/explore/cricketApi";
 import NextMatchCard from "~/components/explorePage/cricketNextMatchCard";
 
 const TrendingAll = () => {
-
-  const { data: liveCricketMatches, error: liveError, isFetching: isFetchingLiveCricket, refetch: refetchLiveCricket } = useGetLiveCricketMatchesQuery({});
-  console.log(liveCricketMatches)
-
-  const { data: nextCricketMatches, error: nextCricketError, isFetching: isFetchingNextCricket, refetch: refetchNextCricket} = useGetNextCricketMatchQuery({});
-
-  // const { data: nextMatch, error: nextError, isLoading: nextLoading } = useGetNextCricketMatchQuery();
-
+  const { data: liveCricketMatches, isFetching: isFetchingLiveCricket, refetch: refetchLiveCricket } = useGetLiveCricketMatchesQuery({});
+  const { data: nextCricketMatches, isFetching: isFetchingNextCricket, refetch: refetchNextCricket } = useGetNextCricketMatchQuery({});
 
   const renderSwiper = () => (
     <Swiper
@@ -82,21 +75,30 @@ const TrendingAll = () => {
           </View>
           <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchLiveCricket} />
         </View>
-        {/* {isFetching ? ( <ActivityIndicator size="large" color={Colors.themeColor} /> ) : ( */}
         <FlatList
           data={liveCricketMatches}
           keyExtractor={(item) => item.id.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20 }}
-          renderItem={({ item }) =>
-           <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
-            {isFetchingLiveCricket ? (<View className="h-full flex justify-center self-center items-center">
-              <ActivityIndicator size="large"  color={Colors.themeColor} />
-              </View>) : (
-              <MatchCard match={item} isLive={true} />)}
-          </View>}
-          ListEmptyComponent={<View className="w-screen justify-center mt-10"><TextScallingFalse className="text-white self-center text-center pr-7">No live matches available</TextScallingFalse></View>}
+          renderItem={({ item }) => (
+            <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
+              {isFetchingLiveCricket ? (
+                <View className="h-full flex justify-center self-center items-center">
+                  <ActivityIndicator size="large" color={Colors.themeColor} />
+                </View>
+              ) : (
+                <MatchCard match={item} isLive={true} />
+              )}
+            </View>
+          )}
+          ListEmptyComponent={
+            <View className="w-screen justify-center mt-10">
+              <TextScallingFalse className="text-white self-center text-center pr-7">
+                No live matches available
+              </TextScallingFalse>
+            </View>
+          }
         />
       </View>
     );
@@ -106,29 +108,32 @@ const TrendingAll = () => {
     return (
       <View className="mt-7">
         <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-            <TextScallingFalse className="text-white text-6xl font-bold">Don't Miss</TextScallingFalse>
+          <TextScallingFalse className="text-white text-6xl font-bold">Don't Miss</TextScallingFalse>
           <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchNextCricket} />
         </View>
-          {/* match card */}
-          {nextCricketMatches ? (
+        {nextCricketMatches ? (
           <View className="px-6">
-            <View className="h-56 w-full rounded-2xl bg-neutral-900  mr-5 border border-neutral-600 ">
-              {isFetchingNextCricket ? (<View className="h-full flex justify-center self-center items-center">
-                <ActivityIndicator size="large"  color={Colors.themeColor} />
-                </View>) : (
-                <NextMatchCard match={nextCricketMatches} />)}
+            <View className="h-56 w-full rounded-2xl bg-neutral-900 mr-5 border border-neutral-600 ">
+              {isFetchingNextCricket ? (
+                <View className="h-full flex justify-center self-center items-center">
+                  <ActivityIndicator size="large" color={Colors.themeColor} />
+                </View>
+              ) : (
+                <NextMatchCard match={nextCricketMatches} />
+              )}
             </View>
-          </View>) : (
-            <View className="w-screen justify-center mt-10"><TextScallingFalse className="text-white self-center text-center pr-7">No Upcoming matches available</TextScallingFalse></View>
-          )}
-  
+          </View>
+        ) : (
+          <View className="w-screen justify-center mt-10">
+            <TextScallingFalse className="text-white self-center text-center pr-7">
+              No Upcoming matches available
+            </TextScallingFalse>
+          </View>
+        )}
       </View>
     );
   };
 
-
-
-  // Combine all sections into a single FlatList
   const sections = [
     { type: "swiper", content: renderSwiper() },
     { type: "divider", content: <View className="h-[0.6px] bg-neutral-600" /> },
@@ -138,12 +143,19 @@ const TrendingAll = () => {
   ];
 
   return (
-    <FlatList
-      data={sections}
-      keyExtractor={(item, index) => index.toString()}
-      renderItem={({ item }) => item.content}
-      contentContainerStyle={{ paddingBottom: 300 }}
-    />
+    <View className="flex-1">
+      <FlatList
+        data={sections}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => item.content}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListHeaderComponent={
+          <View>
+            {/* Add any additional header content here if needed */}
+          </View>
+        }
+      />
+    </View>
   );
 };
 

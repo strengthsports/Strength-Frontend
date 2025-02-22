@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
-import NotificationCardLayout from "~/components/notifications/NotificationCardLayout";
+import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import moment from "moment";
 
 const Notification = () => {

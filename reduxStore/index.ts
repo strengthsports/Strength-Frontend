@@ -24,6 +24,7 @@ import { cricketApi } from "./api/explore/cricketApi";
 
 // Single feedApi
 import { feedApi } from "./api/feed/services/feedApi";
+import { footballApi } from "./api/explore/footballApi";
 
 // Persist configuration
 const persistConfig = {
@@ -45,13 +46,13 @@ const rootReducer = combineReducers({
   [notificationApi.reducerPath]: notificationApi.reducer,
   [communityApi.reducerPath]: communityApi.reducer,
   [cricketApi.reducerPath]: cricketApi.reducer,
+  [footballApi.reducerPath]: footballApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer, // Use feedApi as the single reducer for all feed-related features
 });
 
 // Create persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// Configure store
 const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -65,6 +66,7 @@ const store = configureStore({
       notificationApi.middleware,
       communityApi.middleware,
       cricketApi.middleware,
+      footballApi.middleware,
       feedApi.middleware // Single middleware for all feed features
     ),
 });

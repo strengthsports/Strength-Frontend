@@ -3,6 +3,7 @@ import React, { memo, useState } from "react";
 import { Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { Divider } from "react-native-elements";
 import { useDeletePostMutation } from "~/reduxStore/api/feed/features/feedApi.DeletePost";
+import { showFeedback } from "~/utils/feedbackToast";
 
 const MoreModal = memo(
   ({
@@ -25,9 +26,12 @@ const MoreModal = memo(
       try {
         setIsDeleting(true);
         await deletePost(postId).unwrap(); // Trigger the delete mutation
-        onDelete(); // Notify the parent component that the post was deleted
+        onDelete()
+        showFeedback("Post deleted successfully!", "success");
+
       } catch (error) {
         console.error("Failed to delete post:", error);
+        showFeedback("Failed to delete post.");
       } finally {
         setIsDeleting(false);
       }
@@ -48,7 +52,8 @@ const MoreModal = memo(
             <MaterialIcons name="bookmark-border" size={24} color="white" />
             <Text className="text-white ml-4">Bookmark</Text>
           </TouchableOpacity>
-          <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
+          <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg" 
+          onPress={() => showFeedback("Checking Share Post!", "success")}>
             <FontAwesome name="share" size={20} color="white" />
             <Text className="text-white ml-4">Share</Text>
           </TouchableOpacity>

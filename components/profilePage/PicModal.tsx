@@ -74,7 +74,7 @@ const PicModal = ({
           )}
         </View>
       ) : type === "coverPic" ? (
-        <View className="relative">
+        <View className="relative w-full">
           <Image
             source={imgUrl !== null ? { uri: imgUrl } : isPic}
             className="w-full h-36"

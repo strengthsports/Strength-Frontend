@@ -105,7 +105,7 @@ const Overview = () => {
   };
 
   const { profileData, isLoading, error } = useContext(ProfileContext);
-  console.log("User data on Overview page : ", profileData);
+  // console.log("User data on Overview page : ", profileData);
 
   const sports = profileData?.selectedSports
     ? [...profileData.selectedSports]

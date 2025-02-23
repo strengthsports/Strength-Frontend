@@ -113,6 +113,15 @@ const authSlice = createSlice({
         ? state.user.followingCount++
         : (state.user.followingCount = state.user.followingCount - 1);
     },
+    pushFollowings: (state, action) => {
+      console.log("Adding id : ", action.payload);
+      state.user?.followings?.add(action.payload);
+      console.log("Followings : ", state.user);
+    },
+    pullFollowings: (state, action) => {
+      console.log("Followings : ", state.user?.followings);
+      state.user?.followings?.delete(action.payload);
+    },
     resetAuthState: (state) => {
       state.error = null;
       state.msgBackend = null;
@@ -123,6 +132,7 @@ const authSlice = createSlice({
     //login State
     builder.addCase(initializeAuth.fulfilled, (state, action) => {
       state.isLoggedIn = action.payload.isLoggedIn;
+      state.user.followings = new Set<string>([]);
     });
     // Login
     builder.addCase(loginUser.pending, (state) => {
@@ -280,5 +290,10 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetAuthState, setFollowingCount } = authSlice.actions;
+export const {
+  resetAuthState,
+  setFollowingCount,
+  pushFollowings,
+  pullFollowings,
+} = authSlice.actions;
 export default authSlice.reducer;

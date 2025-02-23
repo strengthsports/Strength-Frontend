@@ -5,7 +5,11 @@ import {
   useFollowUserMutation,
   useUnFollowUserMutation,
 } from "~/reduxStore/api/profile/profileApi.follow";
-import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
+import {
+  setFollowingCount,
+  pushFollowings,
+  pullFollowings,
+} from "~/reduxStore/slices/user/authSlice";
 import { FollowUser } from "~/types/user";
 
 export const useFollow = () => {
@@ -19,9 +23,11 @@ export const useFollow = () => {
     async (followData: FollowUser) => {
       try {
         dispatch(setFollowingCount("follow"));
+        dispatch(pushFollowings(followData.followingId));
         await followUserMutation(followData).unwrap();
       } catch (error) {
         dispatch(setFollowingCount("unfollow"));
+        dispatch(pullFollowings(followData.followingId));
         console.error("Failed to follow user:", error);
       }
     },
@@ -33,9 +39,11 @@ export const useFollow = () => {
     async (unfollowData: FollowUser) => {
       try {
         dispatch(setFollowingCount("unfollow"));
+        dispatch(pullFollowings(unfollowData.followingId));
         await unFollowUserMutation(unfollowData).unwrap();
       } catch (error) {
         dispatch(setFollowingCount("follow"));
+        dispatch(pushFollowings(unfollowData.followingId));
         console.error("Failed to unfollow user:", error);
       }
     },

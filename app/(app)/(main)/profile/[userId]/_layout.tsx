@@ -34,12 +34,6 @@ import TextScallingFalse from "@/components/CentralText";
 import { dateFormatter } from "~/utils/dateFormatter";
 
 // Redux imports
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "~/reduxStore";
-import {
-  useFollowUserMutation,
-  useUnFollowUserMutation,
-} from "~/reduxStore/api/profile/profileApi.follow";
 import { useLazyGetUserProfileQuery } from "~/reduxStore/api/profile/profileApi.profile";
 
 // Assets import
@@ -48,11 +42,13 @@ import {
   useBlockUserMutation,
   useUnblockUserMutation,
 } from "~/reduxStore/api/profile/profileApi.block";
-import { setFollowingCount } from "~/reduxStore/slices/user/authSlice";
 import { Divider } from "react-native-elements";
 import { useReport } from "~/hooks/useReport";
 import { FollowUser, ReportUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
+import { pushFollowings } from "~/reduxStore/slices/user/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
 
 // Define the context type
 interface ProfileContextType {
@@ -70,15 +66,18 @@ export const ProfileContext = createContext<ProfileContextType>({
 // Main function
 const ProfileLayout = () => {
   const params = useLocalSearchParams();
-  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const userId = useMemo(() => {
     return params.userId
       ? JSON.parse(decodeURIComponent(params.userId as string))
       : null;
   }, [params.userId]);
-  console.log(userId);
-
+  // console.log(userId);
+  const isFollowing = useSelector((state: RootState) =>
+    state.auth.user?.followings?.has(userId.id)
+  );
+  console.log("Id : ", userId, "Following : ", isFollowing);
   // RTK Querys
   const [getUserProfile, { data: profileData, isLoading, error }] =
     useLazyGetUserProfileQuery();
@@ -95,7 +94,7 @@ const ProfileLayout = () => {
     message: "",
   });
   const [followingStatus, setFollowingStatus] = useState<boolean>(
-    profileData?.followingStatus
+    isFollowing as boolean
   );
   const [followerCount, setFollowerCount] = useState<number>(
     profileData?.followerCount
@@ -113,6 +112,15 @@ const ProfileLayout = () => {
       });
     }
   }, [userId, getUserProfile]);
+
+  useEffect(() => {
+    if (profileData) {
+      console.log(profileData.followingStatus);
+      profileData?.followingStatus &&
+        !isFollowing &&
+        dispatch(pushFollowings(userId.id));
+    }
+  }, [profileData, dispatch]);
 
   //close modal on back button press
   useEffect(() => {
@@ -545,7 +553,7 @@ const ProfileLayout = () => {
                 }}
               >
                 {/* follow button */}
-                {followingStatus || profileData?.followingStatus ? (
+                {followingStatus ? (
                   <TouchableOpacity
                     activeOpacity={0.5}
                     className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
@@ -709,7 +717,7 @@ const ProfileLayout = () => {
                       </TextScallingFalse>
                     </TouchableOpacity>
                     {/* follow/unfollow */}
-                    {followingStatus || profileData?.followingStatus ? (
+                    {followingStatus ? (
                       <TouchableOpacity
                         className="flex-row items-center gap-x-3"
                         onPress={handleUnfollow}

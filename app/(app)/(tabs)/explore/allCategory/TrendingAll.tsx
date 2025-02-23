@@ -137,18 +137,18 @@ const TrendingAll = () => {
     );
   };
 
-  const { data: footballData, isFetching, refetch: refetchFootball } = useGetFootballMatchesQuery({});
+  const { data: footballData, isFetching: isFootballFetching, refetch: refetchFootball } = useGetFootballMatchesQuery({});
   const  { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } = footballData || {};
 
   const renderFootballLiveMatches = () => {
     return (
       <View className="mt-7">
-        <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-          <View className="flex-row items-center ">
+        <View className="flex-row items-center justify-end pl-7 pr-10 mb-4">
+          {/* <View className="flex-row items-center ">
             <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
             <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
-          </View>
-          <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchLiveCricket} />
+          </View> */}
+          <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchFootball} />
         </View>
         <FlatList
           data={liveFootballMatches}
@@ -158,7 +158,7 @@ const TrendingAll = () => {
           contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => (
             <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
-              {isFetching ? (
+              {isFootballFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
                   <ActivityIndicator size="large" color={Colors.themeColor} />
                 </View>

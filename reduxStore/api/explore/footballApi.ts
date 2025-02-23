@@ -19,7 +19,8 @@ export const footballApi = createApi({
         const matches = response.matches || [];
 
         // Extract live matches
-        const liveMatches = matches.filter((match: any) => match.status === "IN_PLAY");
+        // const liveMatches = matches.filter((match: any) => match.status === "IN_PLAY");
+        const liveMatches = matches
 
         // Extract the next match (earliest scheduled match)
         const nextMatch = matches

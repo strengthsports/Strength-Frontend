@@ -193,6 +193,11 @@ const PostContainer = ({ item }: { item: Post }) => {
     });
   };
 
+  const handleDeletePost = () => {
+    console.log(`Post ${item._id} deleted successfully.`);
+    setIsMoreModalVisible(false);
+  };
+
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
       <View className="flex">
@@ -289,6 +294,8 @@ const PostContainer = ({ item }: { item: Post }) => {
                 firstName={item.postedBy?.firstName}
                 followingStatus={followingStatus}
                 isOwnPost={item.postedBy?._id === user?._id}
+                postId={item._id}
+                onDelete={handleDeletePost}
               />
             </TouchableOpacity>
           </Modal>

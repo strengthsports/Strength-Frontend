@@ -1,15 +1,13 @@
 import {
   View,
-  TouchableOpacity,
   FlatList,
   RefreshControl,
   Text,
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
-import TextScallingFalse from "~/components/CentralText";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { memo, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import PostContainer from "~/components/Cards/postContainer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
@@ -27,9 +25,8 @@ export default function Home() {
   const router = useRouter();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [postLimit, setPostLimit] = useState(1); // Initial limit
-
   const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());
+
   const {
     data,
     error,
@@ -39,7 +36,8 @@ export default function Home() {
     limit: 20, // Fixed limit
     lastTimeStamp: lastTimestamp,
   });
-  console.log("Post Data : ", data);
+
+  // console.log("Post Data : ", data);
 
   const isAndroid = Platform.OS === "android";
 
@@ -69,65 +67,78 @@ export default function Home() {
       setRefreshing(false);
     }
   };
+
   const debouncedRefresh = debounce(handleRefresh, 1000); // prevents frequent refresh in the time interval of 1s
 
   const renderItem = useCallback(
-    ({ item }: { item: Post }) => (
-      <View className="w-screen">
-        <PostContainer item={item} />
-      </View>
-    ),
-    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+    ({ item }: { item: Post }) => {
+      return (
+        <View className="w-screen">
+          <PostContainer item={item} />
+        </View>
+      );
+    },
+    []
   );
-  const memoizedEmptyComponent = memo(() => {
-    console.error(error);
+  const EmptyComponent = ({ error }: { error: any }) => {
+    if (error) {
+      console.error("Feed Error:", error);
+    }
     return (
       <Text className="text-white text-center p-4">No new posts available</Text>
     );
-  });
+  };
 
-  useFocusEffect(
-    useCallback(() => {
+  const MemoizedEmptyComponent = memo(EmptyComponent);
+
+  // Fetch data only once on initial mount
+  useLayoutEffect(() => {
+    const fetchData = async () => {
       setRefreshing(true);
       try {
-        // Ensure feed is always fresh on navigation
-        dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
-        console.log("Refetching feed data...");
-        refetch();
+        console.log("Fetching feed data on initial mount...");
+        const result = await refetch();
+        console.log("API Response:", result);
       } finally {
         setRefreshing(false);
       }
-    }, [refetch])
-  );
+    };
+
+    fetchData();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  if (isFetching) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color={Colors.themeColor} />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
-      {isFetching ? (
-        <ActivityIndicator size="large" color={Colors.themeColor} />
-      ) : (
-        <FlatList
-          data={data?.data?.posts || []}
-          keyExtractor={(item) => item._id}
-          initialNumToRender={5}
-          removeClippedSubviews={isAndroid}
-          windowSize={11}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={debouncedRefresh}
-              colors={["#12956B", "#6E7A81"]} // Customize indicator colors
-              tintColor="#6E7A81" // Color for iOS
-              title="Refreshing Your Feed..." // Optional refresh title - iOS
-              titleColor="#6E7A81"
-              progressBackgroundColor="#181A1B" // Background color of the loader
-            />
-          }
-          renderItem={renderItem}
-          ListEmptyComponent={memoizedEmptyComponent}
-          bounces={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
-      )}
+      <FlatList
+        data={data?.posts || []}
+        keyExtractor={(item) => item._id}
+        initialNumToRender={5}
+        removeClippedSubviews={isAndroid}
+        windowSize={11}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={debouncedRefresh}
+            colors={["#12956B", "#6E7A81"]} // Customize indicator colors
+            tintColor="#6E7A81" // Color for iOS
+            title="Refreshing Your Feed..." // Optional refresh title - iOS
+            titleColor="#6E7A81"
+            progressBackgroundColor="#181A1B" // Background color of the loader
+          />
+        }
+        renderItem={renderItem}
+        ListEmptyComponent={<MemoizedEmptyComponent error={error} />}
+        bounces={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      />
     </SafeAreaView>
   );
 }

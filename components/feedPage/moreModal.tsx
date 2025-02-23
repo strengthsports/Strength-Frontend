@@ -39,19 +39,15 @@ const MoreModal = memo(
 
     return (
       <View
-        className={`min-h-64 w-[104%] bg-neutral-900 self-center rounded-t-[40px] border-t border-x border-neutral-700 p-4 ${
-          isOwnPost ? "h-64" : "h-80"
+        className={` w-[104%] bg-neutral-900 self-center rounded-t-[40px] border-t border-x border-neutral-700 p-4 ${
+          isOwnPost ? "h-44" : "h-64"
         }`}
       >
-        <Divider
-          className="w-16 self-center rounded-full bg-neutral-700 my-1"
-          width={4}
-        />
+        <View
+          className="w-16 h-1 self-center rounded-full bg-neutral-200 my-1"/>
+
         <View className="flex-1 justify-evenly">
-          <TouchableOpacity className="flex-row items-center py-3 px-2 rounded-lg">
-            <MaterialIcons name="bookmark-border" size={24} color="white" />
-            <Text className="text-white ml-4">Bookmark</Text>
-          </TouchableOpacity>
+
           <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg" 
           onPress={() => showFeedback("Checking Share Post!", "success")}>
             <FontAwesome name="share" size={20} color="white" />

@@ -1,11 +1,14 @@
-import React from "react";
+import React, { memo, useEffect, useState } from "react";
 import { Image, View, TouchableOpacity } from "react-native";
 import TextScallingFalse from "../CentralText";
-import { SuggestionUser } from "~/types/user";
+import { FollowUser, SuggestionUser } from "~/types/user";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import nocoverpic from "@/assets/images/nocover.png";
 import nopic from "@/assets/images/nopic.jpg";
+import { useFollow } from "~/hooks/useFollow";
+import { Entypo } from "@expo/vector-icons";
+import { RootState } from "~/reduxStore";
 
 const SuggestionCard = ({
   user,
@@ -18,11 +21,49 @@ const SuggestionCard = ({
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: user._id, type: user.type })
   );
-  const userFollowings = useSelector(
-    (state: any) => state.auth.user.followings
+  const isFollowing = useSelector((state: RootState) =>
+    state.auth?.user?.followings?.has(user._id)
   );
-  console.log(userFollowings);
-  const isFollowing = userFollowings ? userFollowings.has(user._id) : false;
+  // console.log(userFollowings);
+  const [followingStatus, setFollowingStatus] = useState(isFollowing);
+
+  useEffect(() => {
+    setFollowingStatus(isFollowing);
+  }, [isFollowing]); // Sync when Redux state changes
+  const { followUser, unFollowUser } = useFollow();
+
+  //handle follow
+  const handleFollow = async () => {
+    try {
+      setFollowingStatus(true);
+      const followData: FollowUser = {
+        followingId: user._id,
+        followingType: user.type || "User",
+      };
+
+      await followUser(followData);
+    } catch (err) {
+      setFollowingStatus(false);
+      console.error("Follow error:", err);
+    }
+  };
+
+  //handle unfollow
+  const handleUnfollow = async () => {
+    try {
+      setFollowingStatus(false);
+      const unfollowData: FollowUser = {
+        followingId: user._id,
+        followingType: user.type || "User",
+      };
+
+      await unFollowUser(unfollowData);
+    } catch (err) {
+      setFollowingStatus(true);
+      console.error("Unfollow error:", err);
+    }
+  };
+
   return (
     <View className="bg-black rounded-xl pb-4 m-1 relative border w-[45%] h-[200px] border-[#80808085] overflow-hidden">
       {/* Close Button */}
@@ -72,13 +113,22 @@ const SuggestionCard = ({
 
           {/* Follow Button */}
           <TouchableOpacity
-            className="mt-4 border rounded-xl px-8 py-1.5 bg-[#12956B]"
+            className={`mt-4 border rounded-xl px-8 py-1.5 ${
+              followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
+            } `}
             activeOpacity={0.6}
-            // onPress={() => onSupport(user._id)}
+            onPress={followingStatus ? handleUnfollow : handleFollow}
           >
-            <TextScallingFalse className="text-center text-lg text-white">
-              {isFollowing ? "Unfollow" : "Follow"}
-            </TextScallingFalse>
+            {followingStatus ? (
+              <TextScallingFalse className="text-center text-lg text-white">
+                <Entypo className="mr-4" name="check" size={14} color="white" />
+                Unfollow
+              </TextScallingFalse>
+            ) : (
+              <TextScallingFalse className="text-center text-lg text-white">
+                Follow
+              </TextScallingFalse>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -86,4 +136,4 @@ const SuggestionCard = ({
   );
 };
 
-export default SuggestionCard;
+export default memo(SuggestionCard);

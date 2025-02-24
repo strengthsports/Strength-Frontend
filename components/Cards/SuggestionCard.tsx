@@ -13,9 +13,11 @@ import { RootState } from "~/reduxStore";
 const SuggestionCard = ({
   user,
   removeSuggestion,
+  size,
 }: {
   user: SuggestionUser;
   removeSuggestion: (id: string) => void;
+  size: string;
 }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
@@ -65,7 +67,11 @@ const SuggestionCard = ({
   };
 
   return (
-    <View className="bg-black rounded-xl pb-4 m-1 relative border w-[45%] h-[200px] border-[#80808085] overflow-hidden">
+    <View
+      className={`bg-black rounded-xl pb-4 m-1 relative border ${
+        size === "small" ? "w-[150px] h-[180px]" : "w-[45%] h-[200px]"
+      } border-[#80808085] overflow-hidden`}
+    >
       {/* Close Button */}
       <TouchableOpacity
         activeOpacity={0.5}
@@ -75,7 +81,11 @@ const SuggestionCard = ({
         <TextScallingFalse className="text-white text-lg">×</TextScallingFalse>
       </TouchableOpacity>
 
-      <View className="h-16 rounded-t-xl overflow-hidden">
+      <View
+        className={`${
+          size === "small" ? "h-14" : "h-16"
+        } rounded-t-xl overflow-hidden`}
+      >
         <Image
           source={user.coverPic ? { uri: user.coverPic } : nocoverpic}
           className="w-full h-full"
@@ -87,7 +97,9 @@ const SuggestionCard = ({
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => router.push(`../(main)/profile/${serializedUser}`)}
-        className="absolute left-1/2 -translate-x-1/2 bg-white rounded-full w-20 h-20 items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden"
+        className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
+          size === "small" ? "w-16 h-16" : "w-20 h-20"
+        } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
         style={{ marginTop: "10%" }}
       >
         <Image
@@ -101,10 +113,18 @@ const SuggestionCard = ({
         <View className="flex-grow pt-10 px-1.5 items-center justify-between">
           {/* Name and headline */}
           <View className="w-4/5">
-            <TextScallingFalse className="text-white text-2xl font-semibold text-center">
+            <TextScallingFalse
+              className={`text-white ${
+                size === "small" ? "text-xl" : "text-2xl"
+              } font-semibold text-center`}
+            >
               {user.firstName} {user.lastName}
             </TextScallingFalse>
-            <TextScallingFalse className="text-gray-400 text-sm text-center">
+            <TextScallingFalse
+              className={`text-gray-400 ${
+                size === "small" ? "text-xs" : "text-sm"
+              } text-center`}
+            >
               {user.headline && user.headline.length >= 50
                 ? user.headline.substring(0, 49).concat("...")
                 : user.headline}

@@ -107,7 +107,11 @@ const Community = () => {
           data={dataToRender}
           keyExtractor={(user) => user._id}
           renderItem={({ item }) => (
-            <SuggestionCard user={item} removeSuggestion={removeSuggestion} />
+            <SuggestionCard
+              size="regular"
+              user={item}
+              removeSuggestion={removeSuggestion}
+            />
           )}
           numColumns={2}
           columnWrapperStyle={{

@@ -23,6 +23,7 @@ import TextScallingFalse from "~/components/CentralText";
 import TextInputSection from "~/components/TextInputSection";
 import SignupButton from "~/components/SignupButton";
 import logo from "@/assets/images/logo2.png";
+import nopic from "@/assets/images/nopic.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { logoutUser } from "~/reduxStore/slices/user/authSlice";
@@ -128,7 +129,7 @@ const index = () => {
         }}
       >
         <Image
-          source={{ uri: user?.profilePic }}
+          source={user?.profilePic ? { uri: user?.profilePic } : nopic}
           style={{
             backgroundColor: "orange",
             width: 84,

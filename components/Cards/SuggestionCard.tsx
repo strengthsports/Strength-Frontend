@@ -3,22 +3,40 @@ import { Image, View, TouchableOpacity } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { SuggestionUser } from "~/types/user";
 import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
+import nocoverpic from "@/assets/images/nocover.png";
+import nopic from "@/assets/images/nopic.jpg";
 
-const SuggestionCard = ({ user }: { user: SuggestionUser }) => {
+const SuggestionCard = ({
+  user,
+  removeSuggestion,
+}: {
+  user: SuggestionUser;
+  removeSuggestion: (id: string) => void;
+}) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: user._id, type: user.type })
   );
+  const userFollowings = useSelector(
+    (state: any) => state.auth.user.followings
+  );
+  console.log(userFollowings);
+  const isFollowing = userFollowings ? userFollowings.has(user._id) : false;
   return (
     <View className="bg-black rounded-xl pb-4 m-1 relative border w-[45%] h-[200px] border-[#80808085] overflow-hidden">
       {/* Close Button */}
-      <TouchableOpacity className="absolute right-2 top-2 z-30 bg-black rounded-full w-6 h-6 items-center justify-center opacity-60">
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => removeSuggestion(user._id)}
+        className="absolute right-2 top-2 z-30 bg-black rounded-full w-6 h-6 items-center justify-center opacity-60"
+      >
         <TextScallingFalse className="text-white text-lg">×</TextScallingFalse>
       </TouchableOpacity>
 
       <View className="h-16 rounded-t-xl overflow-hidden">
         <Image
-          source={{ uri: user.coverPic }}
+          source={user.coverPic ? { uri: user.coverPic } : nocoverpic}
           className="w-full h-full"
           resizeMode="cover"
         />
@@ -32,7 +50,7 @@ const SuggestionCard = ({ user }: { user: SuggestionUser }) => {
         style={{ marginTop: "10%" }}
       >
         <Image
-          source={{ uri: user.profilePic }}
+          source={user.profilePic ? { uri: user.profilePic } : nopic}
           className="w-full h-full"
           resizeMode="cover"
         />
@@ -59,7 +77,7 @@ const SuggestionCard = ({ user }: { user: SuggestionUser }) => {
             // onPress={() => onSupport(user._id)}
           >
             <TextScallingFalse className="text-center text-lg text-white">
-              Follow
+              {isFollowing ? "Unfollow" : "Follow"}
             </TextScallingFalse>
           </TouchableOpacity>
         </View>

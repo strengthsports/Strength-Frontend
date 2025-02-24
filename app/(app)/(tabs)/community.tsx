@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import SuggestionCard from "@/components/Cards/SuggestionCard";
+import { Divider } from "react-native-elements";
 import {
   useGetPopularUsersQuery,
   useGetUsersBasedOnActivityQuery,
   useGetUsersOfSimilarSportsQuery,
   useLazyGetUsersOfSpecificCityQuery,
 } from "~/reduxStore/api/community/communityApi";
-import { Divider } from "react-native-elements";
 
 const Community = () => {
   // Fetch different types of suggestions
@@ -33,59 +33,85 @@ const Community = () => {
   }, [trigger]);
 
   // Define sections grouped by suggestion type
-  const sections = [
-    {
-      title: "people you may know in similar sports",
-      data: similarSportsUsers || [],
-    },
-    {
-      title: "suggested people based on your activity",
-      data: usersBasedOnActivity || [],
-    },
-    {
-      title: "people you may know in greater kolkata",
-      data: citywiseUsers || [],
-    },
-    {
-      title: "popular on Strength",
-      data: popularUsers || [],
-    },
-  ];
-
-  // Filter out sections that have no data
-  const filteredSections = sections.filter(
-    (section: any) => section.data && section.data.length > 0
+  const sections = useMemo(
+    () => [
+      {
+        title: "people you may know in similar sports",
+        data: similarSportsUsers || [],
+      },
+      {
+        title: "suggested people based on your activity",
+        data: usersBasedOnActivity || [],
+      },
+      {
+        title: "people you may know in greater kolkata",
+        data: citywiseUsers || [],
+      },
+      {
+        title: "popular on Strength",
+        data: popularUsers || [],
+      },
+    ],
+    [similarSportsUsers, usersBasedOnActivity, citywiseUsers, popularUsers]
   );
 
-  // State to track which sections are expanded (to show all cards)
+  // Filter out sections with no data
+  const filteredSections = useMemo(
+    () => sections.filter((section) => section.data?.length > 0),
+    [sections]
+  );
+
+  // Maintain local state for sections based on API data
+  const [sectionsState, setSectionsState] = useState(filteredSections);
+
+  // Track removed user IDs
+  const [removedUserIds, setRemovedUserIds] = useState<Set<string>>(new Set());
+
+  // When fetched sections change, update local state
+  useEffect(() => {
+    setSectionsState(filteredSections);
+  }, [filteredSections]);
+
+  // State to track expanded sections
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({});
 
-  // Render each section as a grid with two columns. If more than 6 items, show only the first 6 items with a "Show All" button.
+  // Add user ID to removed list
+  const removeSuggestion = (userId: string) => {
+    setRemovedUserIds((prev) => new Set([...prev, userId]));
+  };
+
+  // Render each section with removed users filtered out
   const renderSection = ({
     item,
   }: {
     item: { title: string; data: any[] };
   }) => {
+    // Filter out removed users
+    const filteredData = item.data.filter(
+      (user) => !removedUserIds.has(user._id)
+    );
+    if (filteredData.length === 0) return null;
+
     const isExpanded = expandedSections[item.title] || false;
-    const showButton = item.data.length > 6 && !isExpanded;
-    const dataToRender = showButton ? item.data.slice(0, 6) : item.data;
+    const showButton = filteredData.length > 6 && !isExpanded;
+    const dataToRender = showButton ? filteredData.slice(0, 6) : filteredData;
 
     return (
       <View className="mt-4 pb-6 border-b-[4px] border-[#1E1E1E]">
         <Text className="text-white text-3xl font-normal mb-2 capitalize">
           {item.title}
         </Text>
-        {/* Render grid of cards using FlatList with numColumns */}
         <FlatList
           data={dataToRender}
           keyExtractor={(user) => user._id}
-          renderItem={({ item }) => <SuggestionCard user={item} />}
+          renderItem={({ item }) => (
+            <SuggestionCard user={item} removeSuggestion={removeSuggestion} />
+          )}
           numColumns={2}
           columnWrapperStyle={{
             justifyContent: "center",
-            marginHorizontal: "auto",
             gap: 8,
             marginTop: 8,
           }}
@@ -97,9 +123,9 @@ const Community = () => {
             onPress={() =>
               setExpandedSections((prev) => ({ ...prev, [item.title]: true }))
             }
-            className="mt-4 self-center"
+            className="mt-4 self-center rounded-full"
           >
-            <Text className="text-white text-xl font-semibold">Show All</Text>
+            <Text className="text-white text-2xl font-semibold">Show All</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -126,12 +152,11 @@ const Community = () => {
       loadingPopularUsers ||
       loadingUsersBasedOnActivity ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#ffffff" />
-          <Text className="text-white">Loading Suggestions...</Text>
+          <ActivityIndicator size="large" color="#12956B" />
         </View>
       ) : (
         <FlatList
-          data={filteredSections}
+          data={sectionsState}
           keyExtractor={(section) => section.title}
           renderItem={renderSection}
           showsVerticalScrollIndicator={false}

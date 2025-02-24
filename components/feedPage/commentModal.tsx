@@ -20,7 +20,12 @@ import { Colors } from "~/constants/Colors";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import TextScallingFalse from "../CentralText";
-import { useDeleteCommentMutation, useFetchCommentsQuery, usePostCommentMutation } from "~/reduxStore/api/feed/features/feedApi.comment";
+import {
+  useDeleteCommentMutation,
+  useFetchCommentsQuery,
+  usePostCommentMutation,
+} from "~/reduxStore/api/feed/features/feedApi.comment";
+import nopic from "@/assets/images/nopic.jpg";
 
 interface ReportModalProps {
   commentId: string;
@@ -123,11 +128,13 @@ const CommenterCard = memo(
         <TouchableOpacity className="w-14 h-14 absolute left-4 top-0 z-10 aspect-square rounded-full bg-slate-400">
           <Image
             className="w-full h-full rounded-full"
-            source={{
-              uri:
-                comment?.postedBy?.profilePic ||
-                "https://via.placeholder.com/150", // Fallback image
-            }}
+            source={
+              comment?.postedBy?.profilePic
+                ? {
+                    uri: comment.postedBy.profilePic,
+                  }
+                : nopic
+            }
           />
         </TouchableOpacity>
         <View className="relative w-full bg-neutral-900 rounded-xl py-2 px-10">

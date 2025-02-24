@@ -18,7 +18,7 @@ import {
   useLazyFindFollowingsQuery,
 } from "~/reduxStore/api/profile/profileApi.follow";
 import { TargetUser } from "~/types/user";
-import nopic from "@/assets/images/pro.jpg";
+import nopic from "@/assets/images/nopic.jpg";
 import { useSelector } from "react-redux";
 
 const FollowersPage = () => {

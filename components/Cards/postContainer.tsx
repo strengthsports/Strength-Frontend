@@ -29,6 +29,7 @@ import {
 } from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
+import nopic from "@/assets/images/nopic.jpg";
 
 // Type definitions
 interface SwiperImageProps {
@@ -214,9 +215,13 @@ const PostContainer = ({ item }: { item: Post }) => {
           >
             <Image
               className="w-full h-full rounded-full"
-              source={{
-                uri: item.postedBy.profilePic || "https://placehold.co/400",
-              }}
+              source={
+                item.postedBy.profilePic
+                  ? {
+                      uri: item.postedBy.profilePic,
+                    }
+                  : nopic
+              }
               style={
                 {
                   elevation: 8,

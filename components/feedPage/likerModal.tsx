@@ -2,6 +2,7 @@ import React, { memo, useEffect } from "react";
 import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
 import { Divider } from "react-native-elements";
 import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
+import nopic from "@/assets/images/nopic.jpg";
 
 interface LikersListProps {
   targetId: string;
@@ -10,23 +11,28 @@ interface LikersListProps {
 
 const ITEM_HEIGHT = 60; // Fixed height of each item in pixels
 
-const LikerCard = ({ liker }: { liker: any }) => (<>
-
-  <View className="flex-row items-center p-2 my-1 h-[60px]">
-    <Image
-      source={{ uri: liker.profilePic }}
-      className="w-12 h-12 rounded-full mr-4"
-    />
-    <View className="flex-1">
-      <Text className="text-white font-semibold text-base">
-        {liker.firstName} {liker.lastName}
-      </Text>
-      <Text className="text-neutral-400 text-sm mt-1 w-5/6" ellipsizeMode="tail" numberOfLines={1}>
-        {liker.headline}
-      </Text>
+const LikerCard = ({ liker }: { liker: any }) => (
+  <>
+    <View className="flex-row items-center p-2 my-1 h-[60px]">
+      <Image
+        source={liker.profilePic ? { uri: liker.profilePic } : nopic}
+        className="w-12 h-12 rounded-full mr-4"
+      />
+      <View className="flex-1">
+        <Text className="text-white font-semibold text-base">
+          {liker.firstName} {liker.lastName}
+        </Text>
+        <Text
+          className="text-neutral-400 text-sm mt-1 w-5/6"
+          ellipsizeMode="tail"
+          numberOfLines={1}
+        >
+          {liker.headline}
+        </Text>
+      </View>
     </View>
-  </View>
-  </>);
+  </>
+);
 
 const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   const { data, error, isLoading, refetch } = useFetchLikersQuery({
@@ -39,8 +45,7 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   }, [refetch]);
 
   if (error) {
-    console.log("api response", error)
-
+    console.log("api response", error);
   }
 
   const getItemLayout = (_: any, index: number) => ({
@@ -69,7 +74,9 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           windowSize={5}
-          ListEmptyComponent={<Text className="text-white text-center">No Likes Found!</Text>}
+          ListEmptyComponent={
+            <Text className="text-white text-center">No Likes Found!</Text>
+          }
         />
       )}
     </View>

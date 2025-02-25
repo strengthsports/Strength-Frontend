@@ -19,6 +19,7 @@ import {
   useGetFeedPostQuery,
 } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import { pushFollowings } from "~/reduxStore/slices/user/authSlice";
+import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -70,16 +71,13 @@ export default function Home() {
 
   const debouncedRefresh = debounce(handleRefresh, 1000); // prevents frequent refresh in the time interval of 1s
 
-  const renderItem = useCallback(
-    ({ item }: { item: Post }) => {
-      return (
-        <View className="w-screen">
-          <PostContainer item={item} />
-        </View>
-      );
-    },
-    []
-  );
+  const renderItem = useCallback(({ item }: { item: Post }) => {
+    return (
+      <View className="w-screen">
+        <PostContainer item={item} />
+      </View>
+    );
+  }, []);
   const EmptyComponent = ({ error }: { error: any }) => {
     if (error) {
       console.error("Feed Error:", error);
@@ -118,7 +116,7 @@ export default function Home() {
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
       <FlatList
-        data={data?.posts || []}
+        data={data?.data?.posts || []}
         keyExtractor={(item) => item._id}
         initialNumToRender={5}
         removeClippedSubviews={isAndroid}
@@ -139,6 +137,7 @@ export default function Home() {
         bounces={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       />
+      <DiscoverPeopleList />
     </SafeAreaView>
   );
 }

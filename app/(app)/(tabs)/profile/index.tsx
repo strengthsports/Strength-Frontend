@@ -201,7 +201,7 @@ const Overview = () => {
               <TouchableOpacity
                 className="border border-gray-700 rounded-lg flex items-center justify-center"
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
-                onPress={() => router.push("/(app)/(main)/edit-overview2")}
+                onPress={() => router.push("/(app)/(main)/edit-overview")}
               >
                 <Feather name="plus" size={20 * scaleFactor} color="white" />
               </TouchableOpacity>
@@ -381,7 +381,7 @@ const Overview = () => {
               className="absolute top-0 right-0"
               activeOpacity={0.7}
               onPress={() =>
-                router.push("/(app)/(main)/edit-overview2?about=true")
+                router.push("/(app)/(main)/edit-overview?about=true")
               }
             >
               <Feather name="edit" size={18 * scaleFactor} color="#373737" />

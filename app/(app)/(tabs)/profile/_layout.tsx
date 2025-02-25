@@ -33,11 +33,7 @@ import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
 import { AppDispatch } from "~/reduxStore";
 import { removePic } from "~/reduxStore/slices/user/profileSlice";
-
-interface PicModalType {
-  status: Boolean | any;
-  message: string;
-}
+import { PicModalType } from "~/types/others";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.auth);
@@ -419,7 +415,7 @@ const ProfileLayout = () => {
               alignItems: "center",
             }}
             onPress={() =>
-              router.push({ pathname: "/(app)/(main)/edit-overview2" })
+              router.push({ pathname: "/(app)/(main)/edit-overview" })
             }
           >
             <TextScallingFalse

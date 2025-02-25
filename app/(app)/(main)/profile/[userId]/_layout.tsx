@@ -8,9 +8,10 @@ import {
   ScrollView,
   Text,
   BackHandler,
-  Modal,
+  Modal as RNModal,
   ActivityIndicator,
 } from "react-native";
+import Modal from "react-native-modal";
 import { Slot, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import {
@@ -38,6 +39,8 @@ import { useLazyGetUserProfileQuery } from "~/reduxStore/api/profile/profileApi.
 
 // Assets import
 import flag from "@/assets/images/IN.png";
+import nocoverpic from "@/assets/images/nocover.png";
+import nopic from "@/assets/images/nopic.jpg";
 import {
   useBlockUserMutation,
   useUnblockUserMutation,
@@ -49,6 +52,8 @@ import { useFollow } from "~/hooks/useFollow";
 import { pushFollowings } from "~/reduxStore/slices/user/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
+import PicModal from "~/components/profilePage/PicModal";
+import { PicModalType } from "~/types/others";
 
 // Define the context type
 interface ProfileContextType {
@@ -90,6 +95,10 @@ const ProfileLayout = () => {
 
   const [activeTab, setActiveTab] = useState("Overview");
   const [isSettingsModalVisible, setSettingsModalVisible] = useState({
+    status: false,
+    message: "",
+  });
+  const [isPicModalVisible, setPicModalVisible] = useState<PicModalType>({
     status: false,
     message: "",
   });
@@ -302,10 +311,23 @@ const ProfileLayout = () => {
           </View>
           {/* profile pic and cover image */}
           <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
-            <Image
-              source={{ uri: profileData?.coverPic }}
-              style={{ width: "100%", height: "100%" }}
-            ></Image>
+            <TouchableOpacity
+              className="w-full h-full"
+              activeOpacity={0.9}
+              onPress={() =>
+                setPicModalVisible({ message: "coverPic", status: true })
+              }
+              disabled={!profileData?.coverPic}
+            >
+              <Image
+                source={
+                  profileData?.coverPic
+                    ? { uri: profileData?.coverPic }
+                    : nocoverpic
+                }
+                style={{ width: "100%", height: "100%" }}
+              />
+            </TouchableOpacity>
             <View
               style={{
                 paddingHorizontal: "4.87%",
@@ -324,14 +346,30 @@ const ProfileLayout = () => {
                   alignItems: "center",
                 }}
               >
-                <Image
-                  source={{ uri: profileData?.profilePic }}
-                  style={{
-                    width: responsiveWidth(29.6),
-                    height: responsiveHeight(14.4),
-                    borderRadius: 100,
-                  }}
-                ></Image>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() =>
+                    setPicModalVisible({
+                      message: "profilePic",
+                      status: true,
+                    })
+                  }
+                  disabled={!profileData?.profilePic}
+                >
+                  <Image
+                    source={
+                      profileData?.profilePic
+                        ? { uri: profileData?.profilePic }
+                        : nopic
+                    }
+                    style={{
+                      width: responsiveWidth(29.6),
+                      height: responsiveHeight(14.4),
+                      borderRadius: 100,
+                    }}
+                    className="lg:w-14 lg:h-14"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -656,7 +694,7 @@ const ProfileLayout = () => {
           )}
 
           {/* Settings modal */}
-          <Modal
+          <RNModal
             visible={isSettingsModalVisible.status}
             animationType="slide"
             onRequestClose={() =>
@@ -803,9 +841,58 @@ const ProfileLayout = () => {
                 )}
               </View>
             </TouchableOpacity>
-          </Modal>
+          </RNModal>
         </ScrollView>
       )}
+
+      {/* Profile/Cover Pic modal */}
+      <Modal
+        isVisible={isPicModalVisible.status}
+        onBackButtonPress={() =>
+          setPicModalVisible((prev) => ({ ...prev, status: false }))
+        }
+        coverScreen={true}
+        animationIn="slideInRight"
+        animationOut="slideOutRight"
+        style={{ margin: 0, padding: 0 }}
+      >
+        <TouchableOpacity
+          className="flex-1 justify-center items-center bg-black"
+          activeOpacity={1}
+        >
+          <View className="w-full h-full justify-start items-center mx-auto">
+            {isPicModalVisible.message === "profilePic" ? (
+              <PicModal
+                type={isPicModalVisible.message}
+                heading=""
+                imgUrl={profileData?.profilePic || null}
+                handleBack={() =>
+                  setPicModalVisible({
+                    message: "profilePic",
+                    status: false,
+                  })
+                }
+                profileType="other"
+              />
+            ) : isPicModalVisible.message === "coverPic" ? (
+              <PicModal
+                type={isPicModalVisible.message}
+                heading=""
+                imgUrl={profileData?.coverPic || null}
+                handleBack={() =>
+                  setPicModalVisible({
+                    message: "coverPic",
+                    status: false,
+                  })
+                }
+                profileType="other"
+              />
+            ) : (
+              <View></View>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </PageThemeView>
   );
 };

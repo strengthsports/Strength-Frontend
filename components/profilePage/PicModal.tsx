@@ -6,7 +6,7 @@ import {
   Animated,
 } from "react-native";
 import { PinchGestureHandler } from "react-native-gesture-handler";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Image } from "react-native";
 import TopBar from "../TopBar";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -14,10 +14,12 @@ import TextScallingFalse from "../CentralText";
 import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
 import AlertModal from "../modals/AlertModal";
-import * as ImagePicker from "expo-image-picker";
+import * as EXImagePicker from "expo-image-picker";
 import { uploadPic } from "~/reduxStore/slices/user/profileSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
+import ImagePicker, { ImageOrVideo } from "react-native-image-crop-picker";
+import * as FileSystem from "expo-file-system";
 
 const picData = new FormData();
 
@@ -59,19 +61,19 @@ const PicModal = ({
   };
 
   // Pick Image (Cover pic, Profile Pic)
-  const pickImage = async (imageType: string) => {
+  const pickImage = async () => {
     try {
       const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+        await EXImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
         alert("Permission to access the camera roll is required!");
         return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      const result = await EXImagePicker.launchImageLibraryAsync({
+        mediaTypes: EXImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: imageType === "coverPic" ? [16, 9] : [1, 1],
+        aspect: type === "coverPic" ? [16, 9] : [1, 1],
         quality: 0.8,
       });
 
@@ -87,16 +89,15 @@ const PicModal = ({
           type: mimeType,
         };
 
-        if (imageType === "coverPic") {
+        if (type === "coverPic") {
           picData.append("coverPic", fileObject as any);
           setPic(file);
         } else {
           picData.append("profilePic", fileObject as any);
           setPic(file);
         }
+        setDoneButtonClickable(true);
       }
-
-      setDoneButtonClickable(true);
     } catch (error) {
       console.error("Error picking image:", error);
       alert("Error picking image");
@@ -104,7 +105,44 @@ const PicModal = ({
   };
 
   // Handle edit pic
-  const handleEditPic = () => {};
+  // const handleEditPic = async () => {
+  //   try {
+  //     // Download the existing image
+  //     const localUri = await FileSystem.downloadAsync(
+  //       imgUrl,
+  //       FileSystem.cacheDirectory + "temp-image.jpg"
+  //     );
+
+  //     // Open editor with the downloaded image
+  //     const editedImage = await ImagePicker.openCropper({
+  //       path: localUri.uri,
+  //       mediaType: "photo", // Add this required property
+  //       width: type === "profilePic" ? 300 : 800,
+  //       height: type === "profilePic" ? 300 : 200,
+  //       cropping: true,
+  //       freeStyleCropEnabled: true,
+  //     });
+
+  //     // React Native requires this format for file uploads
+  //     const fileObject = {
+  //       uri: editedImage.path,
+  //       name: "edited-image.jpg",
+  //       type: "image/jpeg",
+  //     };
+
+  //     if (type === "coverPic") {
+  //       picData.append("coverPic", fileObject as any);
+  //       setPic(fileObject);
+  //     } else {
+  //       picData.append("profilePic", fileObject as any);
+  //       setPic(fileObject);
+  //     }
+
+  //     setDoneButtonClickable(true);
+  //   } catch (error) {
+  //     console.error("Editing error:", error);
+  //   }
+  // };
 
   // Handle add new pic
   const handleAddPic = async () => {
@@ -200,7 +238,7 @@ const PicModal = ({
           <TouchableOpacity
             className="items-center"
             activeOpacity={0.5}
-            onPress={() => pickImage(type)}
+            onPress={pickImage}
           >
             <MaterialCommunityIcons
               name="image-edit-outline"

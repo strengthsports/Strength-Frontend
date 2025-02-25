@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
 import { ProfileState, TargetUser, User } from "@/types/user";
 import { logoutUser } from "./authSlice";
+import { PicData } from "~/types/others";
 
 // Initial State
 const initialState: ProfileState = {
@@ -205,6 +206,49 @@ export const editUserAbout = createAsyncThunk<
     }
     console.log("Data : ", data);
     return data.data.about;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
+  }
+});
+
+// Upload Profile/Cover pic
+export const uploadPic = createAsyncThunk<
+  any,
+  PicData,
+  { rejectValue: string }
+>("profile/uploadPic", async (picData, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+
+    const routeName =
+      picData.type.charAt(0).toUpperCase() +
+      picData.type.slice(1, picData.type.length);
+    const picdata = picData.data;
+    console.log(routeName);
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/update${routeName}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: picdata,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.log("Error updating pic :", response.json());
+      return rejectWithValue(data.message || "Error updating pic");
+    }
+
+    return { type: picData.type, data: data.data[picData.type] };
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
     const errorMessage =

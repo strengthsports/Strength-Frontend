@@ -8,6 +8,7 @@ import {
   editUserSportsOverview,
   fetchMyProfile,
   removePic,
+  uploadPic,
 } from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
@@ -255,10 +256,6 @@ const authSlice = createSlice({
     });
 
     //Edit user about
-    builder.addCase(editUserAbout.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
     builder.addCase(editUserAbout.fulfilled, (state, action) => {
       state.loading = false;
       state.error = null;
@@ -270,10 +267,6 @@ const authSlice = createSlice({
     });
 
     //Remove profile/cover pic
-    builder.addCase(removePic.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
     builder.addCase(removePic.fulfilled, (state, action) => {
       state.loading = false;
       state.error = null;
@@ -283,9 +276,24 @@ const authSlice = createSlice({
         state.user.coverPic = null;
       }
     });
-    builder.addCase(removePic.rejected, (state, action) => {
+    builder.addCase(removePic.rejected, (state) => {
       state.loading = false;
       state.error = "Failed to remove pic";
+    });
+
+    //Update profile/cover pic
+    builder.addCase(uploadPic.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = null;
+      if (action.payload.type === "profilePic") {
+        state.user.profilePic = action.payload.data;
+      } else {
+        state.user.coverPic = action.payload.data;
+      }
+    });
+    builder.addCase(uploadPic.rejected, (state) => {
+      state.loading = false;
+      state.error = "Failed to update pic";
     });
   },
 });

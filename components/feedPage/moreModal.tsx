@@ -9,15 +9,23 @@ const MoreModal = memo(
   ({
     firstName,
     followingStatus,
+    isReported,
     isOwnPost,
     postId,
     onDelete, // Callback to handle post deletion
+    handleFollow,
+    handleUnfollow,
+    handleReport,
   }: {
     firstName: string;
     followingStatus: boolean;
+    isReported: boolean;
     isOwnPost: boolean;
     postId: string; // Pass the postId to delete
     onDelete: () => void; // Callback to notify parent component after deletion
+    handleFollow: () => void;
+    handleUnfollow: () => void;
+    handleReport: () => void;
   }) => {
     const [deletePost, { isLoading }] = useDeletePostMutation(); // Use the delete mutation
     const [isDeleting, setIsDeleting] = useState(false);
@@ -26,9 +34,8 @@ const MoreModal = memo(
       try {
         setIsDeleting(true);
         await deletePost(postId).unwrap(); // Trigger the delete mutation
-        onDelete()
+        onDelete();
         showFeedback("Post deleted successfully!", "success");
-
       } catch (error) {
         console.error("Failed to delete post:", error);
         showFeedback("Failed to delete post.");
@@ -43,23 +50,40 @@ const MoreModal = memo(
           isOwnPost ? "h-44" : "h-64"
         }`}
       >
-        <View
-          className="w-16 h-1 self-center rounded-full bg-neutral-200 my-1"/>
+        <View className="w-16 h-1 self-center rounded-full bg-neutral-200 my-1" />
 
         <View className="flex-1 justify-evenly">
-
-          <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg" 
-          onPress={() => showFeedback("Checking Share Post!", "success")}>
+          <TouchableOpacity
+            className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
+            onPress={() => showFeedback("Checking Share Post!", "success")}
+          >
             <FontAwesome name="share" size={20} color="white" />
             <Text className="text-white ml-4">Share</Text>
           </TouchableOpacity>
           {!isOwnPost && (
             <>
-              <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
-                <MaterialIcons name="report-problem" size={22} color="white" />
-                <Text className="text-white ml-4">Report</Text>
+              <TouchableOpacity
+                className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
+                onPress={() => isReported || handleReport()}
+                disabled={isReported}
+              >
+                <MaterialIcons
+                  name="report-problem"
+                  size={22}
+                  color={isReported ? "#808080" : "white"}
+                />
+                <Text
+                  className={`${
+                    isReported ? "text-[#808080]" : "text-white"
+                  } ml-4`}
+                >
+                  {isReported ? "Reported" : "Report"}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg">
+              <TouchableOpacity
+                className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
+                onPress={followingStatus ? handleUnfollow : handleFollow}
+              >
                 <FontAwesome name="user-plus" size={19} color="white" />
                 <Text className="text-white ml-4">
                   {followingStatus

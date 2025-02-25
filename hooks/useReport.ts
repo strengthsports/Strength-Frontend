@@ -1,14 +1,20 @@
 import { useCallback } from "react";
 import {
+  useReportPostMutation,
+  useUndoReportPostMutation,
+} from "~/reduxStore/api/feed/features/feedApi.reportPost";
+import {
   useReportUserMutation,
   useUndoReportUserMutation,
 } from "~/reduxStore/api/profile/profileApi.report";
+import { ReportPost } from "~/types/post";
 import { ReportUser } from "~/types/user";
 
 export const useReport = () => {
   // Get the mutation functions from RTK Query
   const [reportUserMutation] = useReportUserMutation();
   const [undoReportUserMutation] = useUndoReportUserMutation();
+  const [reportPostMutation] = useReportPostMutation();
 
   // Function to report a user
   const reportUser = useCallback(
@@ -36,5 +42,18 @@ export const useReport = () => {
     [undoReportUserMutation]
   );
 
-  return { reportUser, undoReportUser };
+  // Function to report a post
+  const reportPost = useCallback(
+    async (reportData: ReportPost) => {
+      try {
+        // Call the mutation and wait for its result
+        await reportPostMutation(reportData).unwrap();
+      } catch (error) {
+        console.error("Failed to report", error);
+      }
+    },
+    [reportUserMutation]
+  );
+
+  return { reportUser, undoReportUser, reportPost };
 };

@@ -30,6 +30,8 @@ import {
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import nopic from "@/assets/images/nopic.jpg";
+import { ReportPost } from "~/types/post";
+import { useReport } from "~/hooks/useReport";
 
 // Type definitions
 interface SwiperImageProps {
@@ -67,11 +69,13 @@ const PostContainer = ({ item }: { item: Post }) => {
     JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
   );
   const { followUser, unFollowUser } = useFollow();
+  const { reportPost } = useReport();
   // State for individual post
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [followingStatus, setFollowingStatus] =
     useState<boolean>(isFollowingGlobal);
+  const [isReported, setIsReported] = useState<boolean>(item?.isReported);
   const [isLiked, setIsLiked] = useState(item?.isLiked);
   const [likeCount, setLikeCount] = useState(item?.likesCount);
   const [commentCount, setCommentCount] = useState(item?.commentsCount);
@@ -174,6 +178,18 @@ const PostContainer = ({ item }: { item: Post }) => {
       setFollowingStatus(true);
       console.error("Unfollow error:", err);
     }
+  };
+
+  //handle report
+  const handleReport = async () => {
+    setIsReported((prev) => !prev);
+    const reportData: ReportPost = {
+      targetId: item._id,
+      targetType: "Post",
+      reason: "Hateful Speech",
+    };
+
+    await reportPost(reportData);
   };
 
   // Function to render caption with clickable hashtags
@@ -301,6 +317,10 @@ const PostContainer = ({ item }: { item: Post }) => {
                 isOwnPost={item.postedBy?._id === user?._id}
                 postId={item._id}
                 onDelete={handleDeletePost}
+                handleFollow={handleFollow}
+                handleUnfollow={handleUnfollow}
+                handleReport={handleReport}
+                isReported={isReported}
               />
             </TouchableOpacity>
           </Modal>

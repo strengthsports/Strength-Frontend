@@ -17,6 +17,7 @@ export interface Post {
   commentsCount: number;
   isLiked: boolean;
   isFollowing: boolean;
+  isReported: boolean;
 }
 
 export interface FeedResponse {

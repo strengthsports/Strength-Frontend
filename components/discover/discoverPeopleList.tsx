@@ -41,11 +41,11 @@ const DiscoverPeopleList = () => {
   }, [first10Users]);
 
   return (
-    <View className="flex-1">
-      <TextScallingFalse className="text-white text-3xl ml-3 mb-2">
+    <View className="flex-1 px-2.5">
+      <TextScallingFalse className="text-white text-4xl ml-5 my-2 font-semibold">
         Discover People
       </TextScallingFalse>
-      <Divider width={2} color="#1e1e1e" />
+      {/* <Divider width={2} color="#1e1e1e" /> */}
 
       {loadingPopularUsers ? (
         <View className="flex-1 justify-center items-center">

@@ -13,9 +13,9 @@ import NextMatchCard from "~/components/explorePage/cricketNextMatchCard";
 import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
 import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
+import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 
 const TrendingAll = () => {
-
   const renderSwiper = () => (
     <Swiper
       autoplay={true}
@@ -38,19 +38,31 @@ const TrendingAll = () => {
     >
       {ExploreImageBanner.map((item, index) => (
         <View key={index} className="flex-1">
-          <Image source={{ uri: item.url }} className="w-full h-72" resizeMode="cover" />
+          <Image
+            source={{ uri: item.url }}
+            className="w-full h-72"
+            resizeMode="cover"
+          />
           <LinearGradient
             colors={["transparent", "rgba(0, 0, 0, 0.8)"]}
             className="absolute bottom-0 left-0 right-0 h-40"
           />
           <View className="absolute bottom-9 pl-5">
-            <TextScallingFalse className="text-white text-6xl font-bold">{item.title}</TextScallingFalse>
+            <TextScallingFalse className="text-white text-6xl font-bold">
+              {item.title}
+            </TextScallingFalse>
             <View className="flex-row items-center">
               <TextScallingFalse className="text-[#12956B] text-xl font-bold text-start">
                 {item.game}
               </TextScallingFalse>
-              <TextScallingFalse className="text-white text-xl"> • {item.date}</TextScallingFalse>
-              <TextScallingFalse className="text-white text-xl"> • {item.time}</TextScallingFalse>
+              <TextScallingFalse className="text-white text-xl">
+                {" "}
+                • {item.date}
+              </TextScallingFalse>
+              <TextScallingFalse className="text-white text-xl">
+                {" "}
+                • {item.time}
+              </TextScallingFalse>
             </View>
           </View>
         </View>
@@ -61,23 +73,46 @@ const TrendingAll = () => {
   const renderHashtags = () => (
     <View className="mt-7">
       {hashtagData.map((item, index) => (
-        <Hashtag key={index} index={index + 1} hashtag={item.hashtag} postsCount={item.postsCount} />
+        <Hashtag
+          key={index}
+          index={index + 1}
+          hashtag={item.hashtag}
+          postsCount={item.postsCount}
+        />
       ))}
     </View>
   );
 
-  const { data: cricketData, isFetching: isCricketFetching, refetch: refetchLiveCricket } = useGetCricketMatchesQuery({});
-  const  { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } = cricketData || {};
-  
+  const {
+    data: cricketData,
+    isFetching: isCricketFetching,
+    refetch: refetchLiveCricket,
+  } = useGetCricketMatchesQuery({});
+  const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
+    cricketData || {};
+
   const renderCricketLiveMatches = () => {
     return (
       <View className="mt-7">
         <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
           <View className="flex-row items-center ">
-            <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
-            <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
+            <TextScallingFalse className="text-white text-6xl font-bold">
+              Matches
+            </TextScallingFalse>
+            <MaterialCommunityIcons
+              name="chevron-double-right"
+              size={22}
+              color="white"
+              className="-mb-1"
+            />
           </View>
-          <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchLiveCricket} />
+          <MaterialCommunityIcons
+            name="reload"
+            size={22}
+            color="grey"
+            className="-mb-1"
+            onPress={refetchLiveCricket}
+          />
         </View>
         <FlatList
           data={liveCricketMatches}
@@ -107,12 +142,14 @@ const TrendingAll = () => {
       </View>
     );
   };
-  
+
   const renderCricketNextMatches = () => {
     return (
       <View className="mt-7">
         <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-          <TextScallingFalse className="text-white text-6xl font-bold">Don't Miss</TextScallingFalse>
+          <TextScallingFalse className="text-white text-6xl font-bold">
+            Don't Miss
+          </TextScallingFalse>
         </View>
         {nextCricketMatches ? (
           <View className="px-6">
@@ -137,8 +174,13 @@ const TrendingAll = () => {
     );
   };
 
-  const { data: footballData, isFetching: isFootballFetching, refetch: refetchFootball } = useGetFootballMatchesQuery({});
-  const  { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } = footballData || {};
+  const {
+    data: footballData,
+    isFetching: isFootballFetching,
+    refetch: refetchFootball,
+  } = useGetFootballMatchesQuery({});
+  const { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } =
+    footballData || {};
 
   const renderFootballLiveMatches = () => {
     return (
@@ -148,7 +190,13 @@ const TrendingAll = () => {
             <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
             <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
           </View> */}
-          <MaterialCommunityIcons name="reload" size={22} color="grey" className="-mb-1" onPress={refetchFootball} />
+          <MaterialCommunityIcons
+            name="reload"
+            size={22}
+            color="grey"
+            className="-mb-1"
+            onPress={refetchFootball}
+          />
         </View>
         <FlatList
           data={liveFootballMatches}
@@ -179,11 +227,11 @@ const TrendingAll = () => {
     );
   };
 
-  
   const sections = [
     { type: "swiper", content: renderSwiper() },
     { type: "divider", content: <View className="h-[0.6px] bg-neutral-600" /> },
     { type: "hashtags", content: renderHashtags() },
+    { type: "discoverPeople", content: <DiscoverPeopleList /> },
     { type: "CricketLiveMatches", content: renderCricketLiveMatches() },
     { type: "FootballLiveMatches", content: renderFootballLiveMatches() },
     { type: "CricketNextMatches", content: renderCricketNextMatches() },
@@ -197,9 +245,7 @@ const TrendingAll = () => {
         renderItem={({ item }) => item.content}
         contentContainerStyle={{ paddingBottom: 20 }}
         ListHeaderComponent={
-          <View>
-            {/* Add any additional header content here if needed */}
-          </View>
+          <View>{/* Add any additional header content here if needed */}</View>
         }
       />
     </View>

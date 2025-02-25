@@ -62,6 +62,7 @@ const PicModal = ({
 
   // Pick Image (Cover pic, Profile Pic)
   const pickImage = async () => {
+    picData.delete(type);
     try {
       const permissionResult =
         await EXImagePicker.requestMediaLibraryPermissionsAsync();
@@ -90,10 +91,10 @@ const PicModal = ({
         };
 
         if (type === "coverPic") {
-          picData.append("coverPic", fileObject as any);
+          picData.set("coverPic", fileObject as any);
           setPic(file);
         } else {
-          picData.append("profilePic", fileObject as any);
+          picData.set("profilePic", fileObject as any);
           setPic(file);
         }
         setDoneButtonClickable(true);
@@ -202,7 +203,11 @@ const PicModal = ({
         <View className={`relative ${profileType === "other" && "mt-[50%]"}`}>
           <PinchGestureHandler onGestureEvent={handlePinch}>
             <Animated.Image
-              source={imgUrl !== null ? { uri: imgUrl } : isPic}
+              source={
+                imgUrl !== null && !isDoneButtonClickable
+                  ? { uri: imgUrl }
+                  : isPic
+              }
               className="w-[22rem] h-[22rem] rounded-full"
               style={{
                 transform: [{ scale }], // Apply the scale transform here
@@ -220,7 +225,11 @@ const PicModal = ({
           className={`relative w-full ${profileType === "other" && "mt-[75%]"}`}
         >
           <Image
-            source={imgUrl !== null ? { uri: imgUrl } : isPic}
+            source={
+              imgUrl !== null && !isDoneButtonClickable
+                ? { uri: imgUrl }
+                : isPic
+            }
             className="w-full h-36"
           />
           {isProcessing.scope === "remove" && isProcessing.state === true && (

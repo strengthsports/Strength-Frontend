@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useMemo, useState } from "react";
-import { Divider } from "react-native-elements";
 import TextScallingFalse from "../CentralText";
 import { useGetPopularUsersQuery } from "~/reduxStore/api/community/communityApi";
 import SuggestionCard from "../Cards/SuggestionCard";
@@ -37,7 +36,7 @@ const DiscoverPeopleList = () => {
   }, [popularUsers, removedUserIds]);
 
   const data = useMemo(() => {
-    return [...first10Users, { id: "custom-card", isCustomCard: true }];
+    return [...first10Users, { _id: "custom-card", isCustomCard: true } as any];
   }, [first10Users]);
 
   return (
@@ -54,7 +53,7 @@ const DiscoverPeopleList = () => {
       ) : (
         <FlatList
           data={data}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <View style={styles.itemWrapper}>
               {item.isCustomCard ? (
@@ -65,7 +64,7 @@ const DiscoverPeopleList = () => {
                   >
                     {next3Users.map((user, index) => (
                       <Image
-                        key={user.id}
+                        key={user._id}
                         source={{ uri: user.profilePic }}
                         className="size-12 rounded-full border-4 border-black"
                         style={{

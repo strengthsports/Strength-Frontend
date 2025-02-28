@@ -19,7 +19,7 @@ export const communityApi = createApi({
   endpoints: (builder) => ({
     // Get users of similar sports
     getUsersOfSimilarSports: builder.query<
-      SuggestionUser,
+      SuggestionUser[],
       { limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, lastTimeStamp }) => ({
@@ -33,7 +33,7 @@ export const communityApi = createApi({
     }),
     // Get users based on activity
     getUsersBasedOnActivity: builder.query<
-      SuggestionUser,
+      SuggestionUser[],
       { limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, lastTimeStamp }) => ({
@@ -47,7 +47,7 @@ export const communityApi = createApi({
     }),
     // Get popular users
     getPopularUsers: builder.query<
-      SuggestionUser,
+      SuggestionUser[],
       { limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, lastTimeStamp }) => ({

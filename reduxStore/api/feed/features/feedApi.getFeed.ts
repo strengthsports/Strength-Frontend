@@ -24,6 +24,7 @@ export interface FeedResponse {
   data: {
     posts: Post[];
     lastTimestamp: string | null;
+    nextPage: number;
   };
   message: string;
   statusCode: number;
@@ -34,13 +35,13 @@ export const feedPostApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     getFeedPost: builder.query<
       FeedResponse,
-      { limit?: number; lastTimeStamp?: string | null }
+      { limit?: number; page?: number; lastTimeStamp?: string | null }
     >({
-      query: ({ limit = 20, lastTimeStamp }) => ({
+      query: ({ limit = 10, page = 1, lastTimeStamp }) => ({
         url: "api/v1/get-feed",
-        params: { limit, lastTimeStamp },
+        params: { limit, page, lastTimeStamp },
       }),
-      keepUnusedDataFor: 300, // Cache response for 5 minutes
+      keepUnusedDataFor: 500, // Cache response for 500 seconds
       providesTags: ["FeedPost"],
     }),
   }),

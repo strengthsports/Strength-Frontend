@@ -45,7 +45,6 @@ const EditProfile = () => {
   const router = useRouter();
   const pathname = usePathname();
   const isAndroid = Platform.OS === "android";
-  const params = useLocalSearchParams();
   const { value } = useLocalSearchParams();
   const [isModalVisible, setModalVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -155,8 +154,7 @@ const EditProfile = () => {
     }
   };
 
-  const { label, placeholder, unit1, unit2, unit3, description } =
-    renderModalContent();
+  const { label, placeholder, description } = renderModalContent();
 
   // Set form data on visiting edit profile page
   useEffect(() => {
@@ -588,24 +586,15 @@ const EditProfile = () => {
               activeOpacity={0.9}
               className="bg-black h-full w-full"
             >
-              {coverImage ? (
-                <Image
-                  source={{
-                    uri: coverImage,
-                  }}
-                  style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  }}
-                  style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                  resizeMode="cover"
-                />
-              )}
-
+              <Image
+                source={{
+                  uri:
+                    (coverImage as string) ||
+                    "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                resizeMode="cover"
+              />
               <MaterialCommunityIcons
                 className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
                 name="camera-plus-outline"
@@ -619,21 +608,15 @@ const EditProfile = () => {
               activeOpacity={0.9}
               className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full border-2 border-black"
             >
-              {profileImage ? (
-                <Image
-                  source={{
-                    uri: profileImage,
-                  }}
-                  className="w-full h-full opacity-50 rounded-full bg-cover"
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  }}
-                  className="w-full h-full opacity-50 rounded-full bg-cover"
-                />
-              )}
+              <Image
+                source={{
+                  uri:
+                    (profileImage as string) ||
+                    "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }}
+                className="w-full h-full opacity-50 rounded-full bg-cover"
+              />
+
               <MaterialCommunityIcons
                 className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
                 name="camera-plus-outline"
@@ -711,7 +694,7 @@ const EditProfile = () => {
                   <TextScallingFalse
                     style={{ color: "white", fontSize: 13, fontWeight: "500" }}
                   >
-                    Add Tour Cover Picture
+                    Add your Cover Picture
                   </TextScallingFalse>
                   <View
                     style={{

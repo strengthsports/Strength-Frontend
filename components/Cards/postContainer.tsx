@@ -181,12 +181,12 @@ const PostContainer = ({ item }: { item: Post }) => {
   };
 
   //handle report
-  const handleReport = async () => {
+  const handleReport = async (reason: string) => {
     setIsReported((prev) => !prev);
     const reportData: ReportPost = {
       targetId: item._id,
       targetType: "Post",
-      reason: "Hateful Speech",
+      reason,
     };
 
     await reportPost(reportData);

@@ -106,20 +106,29 @@ const Community = () => {
         <FlatList
           data={dataToRender}
           keyExtractor={(user) => user._id}
-          renderItem={({ item }) => (
-            <SuggestionCard
-              size="regular"
-              user={item}
-              removeSuggestion={removeSuggestion}
-            />
-          )}
+          renderItem={({ item }) =>
+            item.empty ? (
+              <View style={{ flex: 1, margin: 4 }} />
+            ) : (
+              <SuggestionCard
+                user={item}
+                size="regular"
+                removeSuggestion={removeSuggestion}
+              />
+            )
+          }
           numColumns={2}
           columnWrapperStyle={{
-            justifyContent: "center",
+            justifyContent: "space-evenly",
+            width: "auto",
+            marginTop: 16,
             gap: 8,
-            marginTop: 8,
+            // backgroundColor: "yellow",
           }}
-          contentContainerStyle={{ paddingHorizontal: 5 }}
+          contentContainerStyle={{
+            alignItems: "center", // Ensures content stays centered inside the parent
+            paddingHorizontal: 16, // Adds some padding on both sides
+          }}
           showsVerticalScrollIndicator={false}
         />
         {showButton && (

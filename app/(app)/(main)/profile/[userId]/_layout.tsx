@@ -711,11 +711,11 @@ const ProfileLayout = () => {
             >
               <View className="w-full mx-auto bg-[#1D1D1D] rounded-t-3xl p-5 pt-3 border-t-[0.5px] border-x-[0.5px] border-neutral-700">
                 <Divider
-                  className="w-16 self-center rounded-full bg-neutral-700 mb-10"
+                  className="w-16 self-center rounded-full bg-neutral-700 mb-8"
                   width={4}
                 />
                 {isSettingsModalVisible.message === "" ? (
-                  <View className="flex gap-y-3">
+                  <View className="flex gap-y-4">
                     {/* block */}
                     <TouchableOpacity
                       activeOpacity={0.5}
@@ -738,14 +738,14 @@ const ProfileLayout = () => {
                         size={22}
                         color={
                           isReported || profileData?.reportingStatus
-                            ? "#6b7280"
+                            ? "#808080"
                             : "white"
                         }
                       />
                       <TextScallingFalse
                         className={`${
                           isReported || profileData?.reportingStatus
-                            ? "text-gray-500"
+                            ? "text-[#808080]"
                             : "text-white"
                         } font-normal text-3xl`}
                       >

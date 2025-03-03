@@ -1,45 +1,52 @@
 import React from "react";
 import { View, TouchableOpacity, TextInput } from "react-native";
-import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
-import TextScallingFalse from "~/components/CentralText";
+import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-const SearchBar = () => {
-    return (
-        <View className="flex-row items-center justify-between gap-2 mt-2 px-2">
-            {/* Search Bar */}
-            <TouchableOpacity
-                activeOpacity={0.8}
-                className=" flex-row bg-neutral-800 rounded-md px-3 items-center flex-1"
-                onPress={() => ({})}
-            >
-                <MaterialCommunityIcons name="magnify" size={24} color="grey" className="" />
-                <TextInput
-                    placeholder="Search for news, team, matches, etc..."
-                    placeholderTextColor="grey"
-                    className="text-2xl text-neutral-500  "
-                >
-                    Search...
-                </TextInput>
-            </TouchableOpacity>
+const SearchBar = ({ searchText }: { searchText?: string }) => {
+  const router = useRouter();
+  return (
+    <View className="flex-row items-center justify-between gap-2 my-2 px-2">
+      {/* Back Icon */}
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => router.push("/(app)/(tabs)/home")}
+        className="justify-center items-center"
+      >
+        <Feather name="chevron-left" size={30} color="white" />
+      </TouchableOpacity>
+      {/* Search Bar */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        className="flex-row bg-neutral-800 rounded-3xl px-3 items-center flex-1"
+        onPress={() => ({})}
+      >
+        <MaterialCommunityIcons
+          name="magnify"
+          size={24}
+          color="grey"
+          className=""
+        />
+        <TextInput
+          placeholder="Search for news, team, matches, etc..."
+          placeholderTextColor="grey"
+          className="text-2xl text-white"
+        >
+          {searchText}
+        </TextInput>
+      </TouchableOpacity>
 
-            {/* Plus Icon */}
-            <TouchableOpacity
-                activeOpacity={0.5}
-                onPress={() => ({})}
-                className="border-2 border-white rounded-md justify-center items-center ml-3"
-            >
-                <MaterialCommunityIcons name="plus" size={20} color="white" />
-                
-            </TouchableOpacity>
-
-            {/* Message Icon */}
-            <MaterialCommunityIcons
-                name="message-reply-text-outline"
-                size={25}
-                color="grey"
-            />
-        </View>
-    );
+      {/* Plus Icon */}
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => ({})}
+        className="justify-center items-center ml-3"
+      >
+        {/* <MaterialCommunityIcons name="plus" size={20} color="white" /> */}
+        <Feather name="align-right" size={30} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
 };
 
 export default SearchBar;

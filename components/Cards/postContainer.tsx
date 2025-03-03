@@ -61,7 +61,13 @@ const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
   );
 });
 
-const PostContainer = ({ item }: { item: Post }) => {
+const PostContainer = ({
+  item,
+  highlightedHashtag,
+}: {
+  item: Post;
+  highlightedHashtag?: string;
+}) => {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state?.auth);
   const isFollowingGlobal = user?.followings?.has(item.postedBy?._id) ?? false;
@@ -199,8 +205,15 @@ const PostContainer = ({ item }: { item: Post }) => {
         return (
           <Text
             key={index}
-            onPress={() => router.push("/(app)/(main)/settings")}
-            className="text-xl text-[#12956B]"
+            onPress={() =>
+              router.push(
+                `/(app)/(main)/hashtag/${word.substring(1, word.length)}`
+              )
+            }
+            className={`text-xl text-[#12956B] ${
+              highlightedHashtag?.toLowerCase() === word.toLowerCase() &&
+              "font-semibold"
+            }`}
           >
             {word}
           </Text>

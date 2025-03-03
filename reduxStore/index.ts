@@ -18,9 +18,11 @@ import signupReducer from "./slices/user/signupSlice";
 import onboardingReducer from "./slices/user/onboardingSlice";
 import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import exploreReducer from "./slices/explore/exploreSlice";
+import hashtagReducer from "./slices/hashtagPage/hashtagPageSlice";
 import profileReducer from "./slices/user/profileSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { sportsApi } from "./api/sportsApi";
+import { postsApi } from "./api/posts/postsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { cricketApi } from "./api/explore/cricketApi";
@@ -44,13 +46,16 @@ const rootReducer = combineReducers({
   forgotPassword: forgotPasswordReducer,
   explore: exploreReducer,
   profile: profileReducer,
+  hashtagPage: hashtagReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,
   [communityApi.reducerPath]: communityApi.reducer,
   [cricketApi.reducerPath]: cricketApi.reducer,
   [footballApi.reducerPath]: footballApi.reducer,
-  [feedApi.reducerPath]: feedApi.reducer, // Use feedApi as the single reducer for all feed-related features
+  [feedApi.reducerPath]: feedApi.reducer,
+  [postsApi.reducerPath]: postsApi.reducer,
+  // Use feedApi as the single reducer for all feed-related features
 });
 
 // Create persisted reducer
@@ -71,7 +76,9 @@ const store = configureStore({
       communityApi.middleware,
       cricketApi.middleware,
       footballApi.middleware,
-      feedApi.middleware // Single middleware for all feed features
+      feedApi.middleware,
+      postsApi.middleware
+      // Single middleware for all feed features
     ),
 });
 

@@ -1,9 +1,8 @@
-// reduxStore/feed/services/feedApi.ts  | It is base api
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getToken } from "~/utils/secureStore";
 
-export const feedApi = createApi({
-  reducerPath: "api",
+export const postsApi = createApi({
+  reducerPath: "postsApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
     prepareHeaders: async (headers) => {
@@ -12,6 +11,11 @@ export const feedApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["addPost", "FeedPost", "Liker", "Comment"],
+  tagTypes: [
+    "PostsByHashtag",
+    "ImagesByHashtag",
+    "CommentsByHashtag",
+    "PeopleByHashtag",
+  ],
   endpoints: () => ({}), // No endpoints defined here
 });

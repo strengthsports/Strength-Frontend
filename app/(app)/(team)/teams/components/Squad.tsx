@@ -12,7 +12,6 @@ import { useFonts } from "expo-font";
 import AddMembersModal from "../addMembersModal";
 import { useState } from "react";
 
-
 interface PotentialMember {
   id: string;
   name: string;
@@ -199,7 +198,7 @@ const Squad: React.FC = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-black p-1 max-w-screen-lg mx-auto">
+    <ScrollView className="flex-1  max-w-screen-lg px-4">
       {properties.map((property) => (
         <View key={property}>
           <View className="flex flex-row justify-between items-center  px-4 mt-2">

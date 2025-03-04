@@ -31,7 +31,7 @@ const InitiateCreateTeam = () => {
     >
       {/* Back Button */}
       <View style={{ paddingHorizontal: 16 }}>
-        <TouchableOpacity onPress={() => console.log("Back Button Clicked")}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Icon
             name="arrow-back" // Ionicons back arrow icon
             size={30} // Icon size
@@ -67,7 +67,7 @@ const InitiateCreateTeam = () => {
         }}
       >
         {/* Create Team Button */}
-        <SignupButton onPress={() => console.log("Create Team Button Clicked")}>
+        <SignupButton onPress={handleCreateTeam} disabled={false}>
           <ThemedText
             style={{ color: "white", fontSize: 16, fontWeight: "500" }}
           >
@@ -77,7 +77,7 @@ const InitiateCreateTeam = () => {
 
         <View style={{ height: 20 }} />
         {/* Join Team Link */}
-        <TouchableOpacity onPress={handleCreateTeam}>
+        <TouchableOpacity>
           <ThemedText
             style={{ color: "#A0AEC0", textAlign: "center", fontSize: 16 }}
           >

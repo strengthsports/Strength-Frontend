@@ -14,25 +14,25 @@ const SubCategories = () => {
   };
 
   return (
-    <View className="flex-1 mt-[65%] px-2 max-width-[500] mx-auto">
+    <View className="flex-1">
       {/* Tab Buttons */}
-      <View className="flex-row  p-2 px-4 bg-[#191919] rounded-[10px]">
+      <View className="flex-row  p-2 px-4 bg-[#191919]">
         <TouchableOpacity
           className={`px-6 py-2 rounded-[10px] ${
-            selectedTab === "SQUAD" ? "bg-green-600" : "bg-[#191919]"
+            selectedTab === "SQUAD" ? "bg-[#12956B]" : "bg-[#191919]"
           }`}
           onPress={() => setSelectedTab("SQUAD")}
         >
-          <Text className="text-white font-bold">SQUAD</Text>
+          <Text className="text-white  text-3xl font-bold">SQUAD</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           className={`px-6 py-2 rounded-[10px] ${
-            selectedTab === "ABOUT" ? "bg-green-600" : "bg-[#191919]"
+            selectedTab === "ABOUT" ? "bg-[#12956B]" : "bg-[#191919]"
           }`}
           onPress={() => setSelectedTab("ABOUT")}
         >
-          <Text className="text-white font-bold">ABOUT</Text>
+          <Text className="text-white font-bold text-3xl">ABOUT</Text>
         </TouchableOpacity>
       </View>
 

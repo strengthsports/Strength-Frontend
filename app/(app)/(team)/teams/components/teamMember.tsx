@@ -48,10 +48,10 @@ const TeamMember: React.FC<TeamMemberProps> = ({
       )}
 
       {/* Name */}
-      <Text className="text-white text-lg font-semibold mb-1">{name}</Text>
+      <Text className="text-white text-4xl font-semibold mb-1">{name}</Text>
 
       {/* Description */}
-      <Text className="text-gray-400 text-sm text-center">{description}</Text>
+      <Text className="text-gray-400 text-lg text-center">{description}</Text>
 
       {/* Remove Button */}
       {isAdmin && onRemove && (

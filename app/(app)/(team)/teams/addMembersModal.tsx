@@ -30,7 +30,6 @@ interface AddMembersModalProps {
   player: PotentialMember[];
 }
 
-
 const AddMembersModal: React.FC<AddMembersModalProps> = ({
   visible,
   onClose,
@@ -85,8 +84,8 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
             <TouchableOpacity onPress={onClose}>
               <Icon name="arrowleft" size={30} color="white" />
             </TouchableOpacity>
-            <Text className="text-white text-xl font-semibold">
-              Invite members
+            <Text className="text-white text-5xl font-semibold">
+             {buttonName}
             </Text>
             <View className="w-8" />
           </View>

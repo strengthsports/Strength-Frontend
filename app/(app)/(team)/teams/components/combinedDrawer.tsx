@@ -7,6 +7,7 @@ import {
   Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
+import { useRouter } from "expo-router";
 
 interface MenuItem {
   label: string;
@@ -25,6 +26,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(SIDEBAR_WIDTH)).current;
   const rotateAnim = React.useRef(new Animated.Value(0)).current;
+  const router = useRouter();
 
   // Toggle Sidebar visibility
   const toggleSidebar = () => {
@@ -64,7 +66,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
         className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()}>
           <Icon name="arrowleft" size={30} color="white" />
         </TouchableOpacity>
         <TouchableOpacity onPress={toggleSidebar}>
@@ -92,7 +94,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
                 }}
                 className="py-4 pl-5 border-b border-gray-600"
               >
-                <Text className="text-white text-lg">{item.label}</Text>
+                <Text className="text-white text-4xl">{item.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -103,7 +105,6 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          padding: 16,
         }}
       >
         {children}

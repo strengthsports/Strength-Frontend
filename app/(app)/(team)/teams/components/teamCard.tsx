@@ -20,19 +20,16 @@ const TeamCard: React.FC<TeamCardProps> = ({
 }) => {
   return (
     <>
-      <View className="h-[140px] rounded-lg max-width-[500]">
+      <View className="rounded-lg max-width-[500] mb-1 p-3">
         <View className="flex flex-row py-4 w-64 max-w-84">
-          <Image
-            source={{ uri: teamLogo }}
-            className="w-32 h-30 ml-8"
-          />
+          <Image source={{ uri: teamLogo }} className="w-32 h-30 ml-8" />
           <View className="flex flex-row items-center pl-10">
             <Image
               source={require("../../../../../assets/images/teams/Vector 64.png")}
               className="mr-2 h-[108px]"
             />
             <View className="flex flex-col pl-4">
-              <Text className="text-white font-bold  items-center text-2xl">
+              <Text className="text-white font-bold  items-center text-6xl">
                 {teamName}
               </Text>
             </View>
@@ -40,7 +37,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
         </View>
         {/* Team Details */}
         <View className="px-2">
-          <View className="flex flex-row items-center justify-between h-16 bg-[#191919] text-white px-8 mt-1 rounded-[10px]">
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-8 mt-1 rounded-t-[10px]">
             <View className="flex-1">
               <ThemedText className="text-white text-xl font-bold">
                 Category
@@ -56,7 +53,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
             </View>
           </View>
           {/* Captain */}
-          <View className="flex flex-row items-center justify-between h-16 bg-[#191919] rounded-[10px] text-white px-8 mt-1">
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919]  text-white px-8 mt-1">
             <View className="flex-1">
               <ThemedText className="text-white text-xl font-bold">
                 Captain
@@ -71,7 +68,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
           </View>
 
           {/* Vice Captain */}
-          <View className="flex flex-row items-center justify-between h-16 bg-[#191919] text-white px-8 mt-1 rounded-[10px]">
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-8 mt-1">
             <View className="flex-1">
               <ThemedText className="text-white text-xl font-bold">
                 Vice Captain
@@ -86,7 +83,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
           </View>
 
           {/* Location */}
-          <View className="flex flex-row items-center justify-between h-16 bg-[#191919] text-white px-8 mt-1 rounded-[10px]">
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-8 mt-1 rounded-b-[10px]">
             <View className="flex-1">
               <ThemedText className="text-white text-xl font-bold">
                 Location

@@ -5,6 +5,10 @@ import * as ImagePicker from "expo-image-picker";
 import { ThemedText } from "~/components/ThemedText";
 import AddMembersModal from "../addMembersModal";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
+import { useRouter } from "expo-router";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 
 interface PotentialMember {
   id: string;
@@ -19,6 +23,8 @@ const EditTeam = () => {
   const [sport, setSport] = useState("Cricket");
   const [location, setLocation] = useState("India");
   const [description, setDescription] = useState("Description");
+  const [established, setEstablished] = useState("Established Date");
+  const router = useRouter();
 
   const [captain, setCaptain] = useState("Captain Name");
   const [captainDescription, setCaptainDescription] = useState(
@@ -43,16 +49,29 @@ const EditTeam = () => {
   const [showViceCaptainModal, setShowViceCaptainModal] = useState(false);
   const [isTeamNameEditing, setTeamNameEditing] = useState(false); // state for editing mode
   const [isDescriptionEditing, setDescriptionEditing] = useState(false); // state for editing mode
+  const [establishedDate, setEstablishedDate] = useState(new Date());
+  const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || establishedDate;
+    setEstablishedDate(currentDate);
+  };
+
+  <DateTimePicker
+    value={establishedDate}
+    mode="date"
+    display="default"
+    onChange={onDateChange}
+  />;
 
   const handleTeamNameEditClick = () => {
     setTeamNameEditing(!isTeamNameEditing); // Toggle between edit and display mode
   };
 
-  const handleDescriptionEditClick = () => {
-    setDescriptionEditing(!isDescriptionEditing); // Toggle between edit and display mode
-  };
+  // const handleDescriptionEditClick = () => {
+  //   setDescriptionEditing(!isDescriptionEditing); // Toggle between edit and display mode
+  // };
   const handleTeamNameChange = (text: string) => {
-    setTeamName(teamName); // Update team name as the user types
+    setTeamName(text); // Update state with the new team name
   };
 
   const handleDescriptionChange = (text: string) => {
@@ -201,12 +220,12 @@ const EditTeam = () => {
     <View className="flex-1 p-4 bg-black">
       {/* Header */}
       <View className="flex flex-row h-10 px-2 justify-between w-full">
-        <TouchableOpacity onPress={() => console.log("Cancel pressed")}>
-          <Text className="text-white text-xl">Cancel</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text className="text-white text-4xl">Cancel</Text>
         </TouchableOpacity>
-        <Text className="text-white font-bold text-xl">Edit Team</Text>
+        <Text className="text-white font-bold text-4xl">Edit Team</Text>
         <TouchableOpacity onPress={() => handleSave()}>
-          <Text className="text-white  text-xl">Save</Text>
+          <Text className="text-white  text-4xl">Save</Text>
         </TouchableOpacity>
       </View>
       <ScrollView>
@@ -251,7 +270,7 @@ const EditTeam = () => {
             {isTeamNameEditing ? (
               <TextInput
                 value={teamName}
-                onChangeText={handleTeamNameChange}
+                onChangeText={(text) => handleTeamNameChange(text)}
                 className="text-white w-2/3 border border-[#303030] p-4 rounded-lg"
                 autoFocus
               />
@@ -286,6 +305,43 @@ const EditTeam = () => {
               style={{ position: "absolute", right: 8 }}
             />
           </View>
+          {/*Established On*/}
+          {/* Established On */}
+          <View className="flex flex-row items-center justify-between p-4 border-t border-[#202020]">
+            <Text className="text-white font-bold w-1/3">Established On*</Text>
+            <View className="w-2/3">
+              <Text className="text-white ml-4">{established}</Text>
+              <TouchableOpacity
+                onPress={() => setShowDateTimePicker(true)}
+                style={{ position: "absolute", right: 8 }}
+              >
+                <Icon name="calendar" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* DateTimePicker Modal */}
+          {showDateTimePicker && (
+            <DateTimePicker
+              value={new Date()}
+              mode="date"
+              display="spinner"
+              themeVariant="dark"
+              onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
+                const currentDate = selectedDate || new Date();
+
+                // Format the selected date
+                let formattedDate = `${
+                  currentDate.getMonth() + 1
+                }/${currentDate.getFullYear()}`;
+
+                // Set the formatted date and close the picker
+                setEstablished(formattedDate); // Update established with formatted date
+                setShowDateTimePicker(false); // Close the picker
+              }}
+            />
+          )}
+
           {/*Admin, Captain, Vice Captain, Description*/}
           <View className="flex flex-row items-center p-4 border-t border-[#202020]">
             <Text className="text-white font-bold w-1/3 flex items-center">
@@ -376,14 +432,10 @@ const EditTeam = () => {
 
               {/* Change icon based on editing state */}
               <TouchableOpacity
-                onPress={handleDescriptionEditClick}
+                onPress={() => router.push("./editDescription")}
                 className="absolute right-0 top-1/2 transform -translate-y-1/2 px-2"
               >
-                <Icon
-                  name={isDescriptionEditing ? "check" : "edit"} // "check" when editing, "edit" when not
-                  size={20}
-                  color="white"
-                />
+                <Icon name="chevron-thin-right" size={20} color="white" />
               </TouchableOpacity>
             </View>
           </View>

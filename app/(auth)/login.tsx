@@ -24,7 +24,11 @@ import PageThemeView from "@/components/PageThemeView";
 import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
-import { loginUser, resetAuthState } from "~/reduxStore/slices/user/authSlice";
+import {
+  initializeAuth,
+  loginUser,
+  resetAuthState,
+} from "~/reduxStore/slices/user/authSlice";
 import { z } from "zod";
 import loginSchema from "@/schemas/loginSchema";
 
@@ -69,6 +73,7 @@ const LoginScreen = () => {
 
       // Dispatch login action
       const response = await dispatch(loginUser(loginData)).unwrap();
+      await dispatch(initializeAuth());
 
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
@@ -200,7 +205,7 @@ const LoginScreen = () => {
               color={"#12956B"}
             />
           ) : (
-            <SignupButton onPress={handleLogin}>
+            <SignupButton disabled={false} onPress={handleLogin}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
               >

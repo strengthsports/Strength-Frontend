@@ -14,7 +14,6 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import debounce from "lodash.debounce";
@@ -26,11 +25,10 @@ import {
 } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import PostContainer from "~/components/Cards/postContainer";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
-import { pushFollowings } from "~/reduxStore/slices/user/authSlice";
+import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
-  const router = useRouter();
 
   const [refreshing, setRefreshing] = useState(false);
   const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());

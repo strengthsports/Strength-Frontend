@@ -1,15 +1,5 @@
 import { getToken, removeToken, saveToken } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { completeSignup } from "./signupSlice";
-import { onboardingUser } from "./onboardingSlice";
-import {
-  editUserAbout,
-  editUserProfile,
-  editUserSportsOverview,
-  fetchMyProfile,
-  removePic,
-  uploadPic,
-} from "./profileSlice";
 import { User, AuthState } from "@/types/user";
 
 // Initial State
@@ -34,6 +24,8 @@ export const initializeAuth = createAsyncThunk(
     return { isLoggedIn: false };
   }
 );
+
+// Login User
 export const loginUser = createAsyncThunk<
   { user: User; message: string },
   { email: string; password: string },
@@ -69,6 +61,7 @@ export const loginUser = createAsyncThunk<
   }
 });
 
+// Logout User
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
@@ -109,20 +102,6 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setFollowingCount: (state, action) => {
-      action.payload === "follow"
-        ? state.user.followingCount++
-        : (state.user.followingCount = state.user.followingCount - 1);
-    },
-    pushFollowings: (state, action) => {
-      console.log("Adding id : ", action.payload);
-      state.user?.followings?.add(action.payload);
-      console.log("Followings : ", state.user);
-    },
-    pullFollowings: (state, action) => {
-      console.log("Followings : ", state.user?.followings);
-      state.user?.followings?.delete(action.payload);
-    },
     resetAuthState: (state) => {
       state.error = null;
       state.msgBackend = null;
@@ -133,175 +112,19 @@ const authSlice = createSlice({
     //login State
     builder.addCase(initializeAuth.fulfilled, (state, action) => {
       state.isLoggedIn = action.payload.isLoggedIn;
-      state.user.followings = new Set<string>([]);
-    });
-    // Login
-    builder.addCase(loginUser.pending, (state) => {
-      state.error = null;
-      state.msgBackend = null;
-    });
-    builder.addCase(loginUser.fulfilled, (state, action) => {
-      state.isLoggedIn = true;
-      state.user = action.payload.user;
-      state.msgBackend = action.payload.message;
-      state.error = null;
-    });
-    builder.addCase(loginUser.rejected, (state, action) => {
-      state.error = action.payload as string;
-      state.isLoggedIn = false;
-      state.user = null;
     });
 
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.isLoggedIn = false;
-      state.user = null;
       state.error = null;
       state.msgBackend = null;
     });
     builder.addCase(logoutUser.rejected, (state, action) => {
       state.error = action.payload as string;
     });
-
-    // Complete Signup Thunk State Handling
-    builder
-      .addCase(completeSignup.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(completeSignup.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success = true;
-        state.isLoggedIn = true;
-        state.user = action.payload.user;
-        state.msgBackend = action.payload.message;
-        state.error = null;
-      })
-      .addCase(completeSignup.rejected, (state, action) => {
-        state.loading = false;
-        state.success = false;
-        state.isLoggedIn = false;
-        state.user = null;
-        state.error =
-          action.payload || "Unexpected error occurred during complete signup.";
-      });
-
-    // Save onboarding data to current user
-    builder
-      .addCase(onboardingUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(onboardingUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = { ...state.user, ...action.payload };
-        state.msgBackend = action.payload.message;
-        state.error = null;
-      })
-      .addCase(onboardingUser.rejected, (state, action) => {
-        state.loading = false;
-        state.success = false;
-        state.isLoggedIn = false;
-        state.error =
-          action.payload || "Unexpected error occurred during onboarding user.";
-      });
-
-    // Update user data
-    builder
-      .addCase(editUserProfile.pending, (state, action) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(editUserProfile.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = { ...state.user, ...action.payload };
-        state.msgBackend = action.payload.message;
-        state.error = null;
-      })
-      .addCase(editUserProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.success = false;
-        state.error =
-          action.payload || "Unexpected error occurred during updating user.";
-      });
-
-    // Fetch my profile
-    builder.addCase(fetchMyProfile.pending, (state, action) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchMyProfile.fulfilled, (state, action) => {
-      state.loading = false;
-      state.error = null;
-      state.user = action.payload;
-    });
-    builder.addCase(fetchMyProfile.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    // Edit sports overview
-    builder.addCase(editUserSportsOverview.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(editUserSportsOverview.fulfilled, (state, action) => {
-      // Set loading to true, error to null initially
-      state.loading = false;
-      state.error = null;
-    });
-    builder.addCase(editUserSportsOverview.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    //Edit user about
-    builder.addCase(editUserAbout.fulfilled, (state, action) => {
-      state.loading = false;
-      state.error = null;
-      state.user.about = action.payload;
-    });
-    builder.addCase(editUserAbout.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    //Remove profile/cover pic
-    builder.addCase(removePic.fulfilled, (state, action) => {
-      state.loading = false;
-      state.error = null;
-      if (action.payload === "profilePic") {
-        state.user.profilePic = null;
-      } else {
-        state.user.coverPic = null;
-      }
-    });
-    builder.addCase(removePic.rejected, (state) => {
-      state.loading = false;
-      state.error = "Failed to remove pic";
-    });
-
-    //Update profile/cover pic
-    builder.addCase(uploadPic.fulfilled, (state, action) => {
-      state.loading = false;
-      state.error = null;
-      if (action.payload.type === "profilePic") {
-        state.user.profilePic = action.payload.data;
-      } else {
-        state.user.coverPic = action.payload.data;
-      }
-    });
-    builder.addCase(uploadPic.rejected, (state) => {
-      state.loading = false;
-      state.error = "Failed to update pic";
-    });
   },
 });
 
-export const {
-  resetAuthState,
-  setFollowingCount,
-  pushFollowings,
-  pullFollowings,
-} = authSlice.actions;
+export const { resetAuthState } = authSlice.actions;
 export default authSlice.reducer;

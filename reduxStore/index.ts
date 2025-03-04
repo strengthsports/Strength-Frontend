@@ -67,7 +67,7 @@ const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        ignoredPaths: ["auth.user.followings"],
+        ignoredPaths: ["profile.user.followings"],
       },
     }).concat(
       profileApi.middleware,

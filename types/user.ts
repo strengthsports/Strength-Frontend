@@ -11,7 +11,6 @@ export interface User {
   profilePic: string | null;
   coverPic: string | null;
   headline: string;
-  followings: Set<string>;
   [key: string]: any;
 }
 
@@ -40,7 +39,9 @@ export interface ProfileState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  msgBackend: string | null;
   posts: Array<any>;
+  followings: string[];
   [key: string]: any;
 }
 

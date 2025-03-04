@@ -193,7 +193,7 @@ const index = () => {
           <MaterialIcons name="block" size={31} color="white" />
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push("/(app)/(main)/blocked-users")}
+            onPress={() => router.push("/(app)/(settings)/blocked-users")}
           >
             <TextScallingFalse style={styles.OptionText}>
               Blocked Users

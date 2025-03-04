@@ -1,6 +1,6 @@
-import { AntDesign, Entypo, Feather } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -23,11 +23,11 @@ const People = () => {
   const { hashtagId } = useLocalSearchParams();
   const hashtag = hashtagId.toString();
   const router = useRouter();
-  const { user } = useSelector((state: any) => state?.auth || {});
+  const { user } = useSelector((state: any) => state?.profile || {});
   const { data, isLoading, isError } = useGetPeopleByHashtagQuery({ hashtag });
 
   const isFollowing = useSelector((state: RootState) =>
-    state.auth?.user?.followings?.has(user._id)
+    state.profile?.followings?.includes(user._id)
   );
   const [followingStatus, setFollowingStatus] = useState(isFollowing);
 
@@ -79,7 +79,7 @@ const People = () => {
           onPress={() =>
             item._id === user._id
               ? router.push("/(app)/(tabs)/profile")
-              : router.push(`/(app)/(main)/profile/${serializedUser}`)
+              : router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
           className="w-16 h-16 rounded-full overflow-hidden"
         >

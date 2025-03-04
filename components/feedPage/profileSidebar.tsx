@@ -72,8 +72,9 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const closeSidebar = () => {
+  const handleInitiateTeam = () => {
     setIsSidebarOpen(false);
+    router.push("/(app)/(team)/teams/InitiateCreateTeam");
   };
 
   return (
@@ -197,11 +198,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
                   <View className="flex-row mt-4">
                     {/* Create Team Button */}
                     <View className="border border-[#12956B] px-4 py-2 rounded-md flex-row items-center">
-                      <TouchableOpacity
-                        onPress={() =>
-                          router.push("/(app)/(team)/teams/InitiateCreateTeam")
-                        }
-                      >
+                      <TouchableOpacity onPress={handleInitiateTeam}>
                         <Text className="text-[#12956B] text-md font-semibold">
                           Create Team
                         </Text>

@@ -6,106 +6,24 @@ import {
   ScrollView,
   Dimensions,
   Text,
-  TouchableHighlight,
   useWindowDimensions,
 } from "react-native";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
-import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
-import cricket from "@/assets/images/Sports Icons/okcricket.png";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
-import logo2 from "@/assets/images/logo2.png";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "~/reduxStore";
 import { Platform } from "react-native";
 import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
-import PostContainerSmall from "~/components/Cards/postContainerSmall";
 import { FlatList } from "react-native";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
-const data = {
-  currentteamcricket: [
-    {
-      id: 1,
-      cteamname: "Pro Trackers",
-      cteamaddress: "Queensland, Australia",
-      cteamposition: "Sprit-Lead",
-      cteamjoinedon: "2/4/20",
-      cteamlogo:
-        "https://th.bing.com/th/id/R.8e89771a422f8151c53146eb2b950755?rik=x2SbdtUqdN4MrA&riu=http%3a%2f%2f1.bp.blogspot.com%2f-PSo_4af_Y4M%2fU1fY4UHfHOI%2fAAAAAAAANfw%2fMHW_GKUCYLE%2fs1600%2fchelsea-fc-logo-wallpapers%2b02.jpg&ehk=KVIwGdoGS9heIpR7oXnPO0o1K6GL5PhcyN9ugrRzpqA%3d&risl=&pid=ImgRaw&r=0",
-    },
-  ],
-};
-
-const posts = [
-  {
-    id: 1,
-    firstName: "Sebastian",
-    lastName: "Cilb",
-    profilepic:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-    headline:
-      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-    caption:
-      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
-    likes: ["harshal_123", "Miraj_123"],
-    comments: [
-      {
-        id: 1,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "amazing",
-      },
-      {
-        id: 2,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "agg laga deya",
-      },
-    ],
-  },
-  {
-    id: 2,
-    firstName: "Sebastian",
-    lastName: "Cilb",
-    profilepic:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-    headline:
-      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-    caption:
-      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-    likes: ["harshal_123", "Miraj_123"],
-    comments: [
-      {
-        id: 1,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "amazing",
-      },
-      {
-        id: 2,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "agg laga deya",
-      },
-    ],
-  },
-];
-
 const Overview = () => {
-  const { error, loading, user } = useSelector((state: any) => state?.auth);
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
   const {
     posts,
     error: recentPostsError,
@@ -201,7 +119,7 @@ const Overview = () => {
               <TouchableOpacity
                 className="border border-gray-700 rounded-lg flex items-center justify-center"
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
-                onPress={() => router.push("/(app)/(main)/edit-overview")}
+                onPress={() => router.push("/(app)/(profile)/edit-overview")}
               >
                 <Feather name="plus" size={20 * scaleFactor} color="white" />
               </TouchableOpacity>
@@ -381,7 +299,7 @@ const Overview = () => {
               className="absolute top-0 right-0"
               activeOpacity={0.7}
               onPress={() =>
-                router.push("/(app)/(main)/edit-overview?about=true")
+                router.push("/(app)/(profile)/edit-overview?about=true")
               }
             >
               <Feather name="edit" size={18 * scaleFactor} color="#373737" />

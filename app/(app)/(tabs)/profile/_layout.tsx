@@ -36,7 +36,7 @@ import { removePic } from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
 
 const ProfileLayout = () => {
-  const { error, loading, user } = useSelector((state: any) => state?.auth);
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
@@ -328,7 +328,7 @@ const ProfileLayout = () => {
                         JSON.stringify({ userId: user._id, type: user.type })
                       );
                       return router.push(
-                        `/(app)/(main)/followers/${serializedUser}?pageType=followers`
+                        `/(app)/(profile)/followers/${serializedUser}?pageType=followers`
                       );
                     }}
                   >
@@ -348,7 +348,7 @@ const ProfileLayout = () => {
                         JSON.stringify({ userId: user._id, type: user.type })
                       );
                       return router.push(
-                        `/(app)/(main)/followers/${serializedUser}?pageType=followings`
+                        `/(app)/(profile)/followers/${serializedUser}?pageType=followings`
                       );
                     }}
                   >
@@ -389,7 +389,7 @@ const ProfileLayout = () => {
             }}
             onPress={() =>
               router.push({
-                pathname: "/(app)/(main)/edit-profile",
+                pathname: "/(app)/(profile)/edit-profile",
               })
             }
           >
@@ -415,7 +415,7 @@ const ProfileLayout = () => {
               alignItems: "center",
             }}
             onPress={() =>
-              router.push({ pathname: "/(app)/(main)/edit-overview" })
+              router.push({ pathname: "/(app)/(profile)/edit-overview" })
             }
           >
             <TextScallingFalse
@@ -440,7 +440,9 @@ const ProfileLayout = () => {
               borderWidth: 1,
               borderColor: "#12956B",
             }}
-            onPress={() => router.push({ pathname: "/(app)/(main)/settings" })}
+            onPress={() =>
+              router.push({ pathname: "/(app)/(settings)/settings" })
+            }
           >
             <MaterialCommunityIcons
               name="dots-horizontal"

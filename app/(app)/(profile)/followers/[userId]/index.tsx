@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 const FollowersPage = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user } = useSelector((state: any) => state?.auth || {});
+  const { user } = useSelector((state: any) => state?.profile || {});
 
   const type = useMemo(() => {
     if (typeof params.pageType === "string") {
@@ -87,7 +87,7 @@ const FollowersPage = () => {
         onPress={() =>
           item._id === user._id
             ? router.push("/(app)/(tabs)/profile")
-            : router.push(`/(app)/(main)/profile/${serializedUser}`)
+            : router.push(`/(app)/(profile)/profile/${serializedUser}`)
         }
       >
         <View className="w-12 h-12 rounded-full overflow-hidden">

@@ -44,7 +44,7 @@ const index = () => {
   const toggleShowPassword = () => setShowPassword((prevState) => !prevState);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: any) => state?.auth);
+  const { user } = useSelector((state: any) => state?.profile);
 
   // Check if modal close request has came
   useEffect(() => {
@@ -251,7 +251,7 @@ const index = () => {
               <MaterialIcons name="password" size={26} color="white" />
               <TouchableOpacity
                 onPress={() =>
-                  router.push("/(app)/(main)/settings/change-password")
+                  router.push("/(app)/(settings)/settings/change-password")
                 }
                 activeOpacity={0.7}
               >

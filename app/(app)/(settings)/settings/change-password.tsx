@@ -1,6 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   TouchableOpacity,
   View,
@@ -17,12 +17,10 @@ import TextInputSection from "~/components/TextInputSection";
 import { useChangePasswordMutation } from "~/reduxStore/api/profile/profileApi.changePassword";
 import Toast from "react-native-toast-message";
 import { ToastAndroid } from "react-native";
-import { BackHandler } from "react-native";
 import { usePathname } from "expo-router";
 
 function ChangePassword() {
   const router = useRouter();
-  const pathname = usePathname();
   const userEmail = useSelector((state: any) => state.auth.user?.email);
 
   const [oldPassword, setOldPassword] = useState("");
@@ -69,7 +67,7 @@ function ChangePassword() {
 
       // Feedback on success
       feedback(response.message || "Password changed successfully!", "success");
-      router.push("/(app)/(main)/settings?accountSettingsModal=true");
+      router.push("/(app)/(settings)/settings?accountSettingsModal=true");
     } catch (err: any) {
       // setErrorMessage(err.data?.message || "Password change failed");
       feedback(err.data?.message || "Password change failed!");
@@ -87,7 +85,9 @@ function ChangePassword() {
           <TouchableOpacity
             activeOpacity={0.5}
             onPress={() =>
-              router.push("/(app)/(main)/settings?accountSettingsModal=true")
+              router.push(
+                "/(app)/(settings)/settings?accountSettingsModal=true"
+              )
             }
           >
             <AntDesign name="arrowleft" size={28} color="white" />

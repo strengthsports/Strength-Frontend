@@ -40,7 +40,7 @@ interface SelectedSport {
 }
 
 function EditOverview() {
-  const { loading, error, user } = useSelector((state: any) => state?.auth);
+  const { loading, error, user } = useSelector((state: any) => state?.profile);
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();

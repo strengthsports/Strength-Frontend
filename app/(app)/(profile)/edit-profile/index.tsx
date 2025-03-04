@@ -41,7 +41,7 @@ let finalUploadData = new FormData();
 
 const EditProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: any) => state?.auth);
+  const { user } = useSelector((state: any) => state?.profile);
   const router = useRouter();
   const pathname = usePathname();
   const isAndroid = Platform.OS === "android";

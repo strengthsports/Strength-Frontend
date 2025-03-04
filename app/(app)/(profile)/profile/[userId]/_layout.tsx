@@ -49,7 +49,7 @@ import { Divider } from "react-native-elements";
 import { useReport } from "~/hooks/useReport";
 import { FollowUser, ReportUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
-import { pushFollowings } from "~/reduxStore/slices/user/authSlice";
+import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import PicModal from "~/components/profilePage/PicModal";
@@ -80,7 +80,7 @@ const ProfileLayout = () => {
   }, [params.userId]);
   // console.log(userId);
   const isFollowing = useSelector((state: RootState) =>
-    state.auth.user?.followings?.has(userId.id)
+    state.profile?.followings?.includes(userId.id)
   );
   console.log("Id : ", userId, "Following : ", isFollowing);
   // RTK Querys
@@ -709,7 +709,10 @@ const ProfileLayout = () => {
                 setSettingsModalVisible((prev) => ({ ...prev, status: false }))
               }
             >
-              <View className="w-full mx-auto bg-[#1D1D1D] rounded-t-3xl p-5 pt-3 border-t-[0.5px] border-x-[0.5px] border-neutral-700">
+              <View
+                className="w-full mx-auto bg-[#1D1D1D] rounded-t-3xl p-5 pt-3 border-t-[0.5px] border-x-[0.5px] border-neutral-700"
+                onStartShouldSetResponder={() => true}
+              >
                 <Divider
                   className="w-16 self-center rounded-full bg-neutral-700 mb-8"
                   width={4}

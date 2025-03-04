@@ -38,7 +38,7 @@ export const feedPostApi = feedApi.injectEndpoints({
       { limit?: number; page?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, page = 1, lastTimeStamp }) => ({
-        url: "api/v1/get-feed",
+        url: "/get-feed",
         params: { limit, page, lastTimeStamp },
       }),
       keepUnusedDataFor: 500, // Cache response for 500 seconds

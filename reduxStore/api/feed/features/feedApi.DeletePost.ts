@@ -1,14 +1,14 @@
-import { feedApi } from '../services/feedApi'; // Import the base feedApi
+import { feedApi } from "../services/feedApi"; // Import the base feedApi
 
 export const deletePostApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     deletePost: builder.mutation({
       query: (postId) => ({
-        url: '/api/v1/deletePost',
-        method: 'DELETE',
+        url: "/post",
+        method: "DELETE",
         body: { postId },
       }),
-      invalidatesTags: ['FeedPost'],
+      invalidatesTags: ["FeedPost"],
     }),
   }),
 });

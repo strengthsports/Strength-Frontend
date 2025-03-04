@@ -13,7 +13,7 @@ export const postsByHashtagApi = postsApi.injectEndpoints({
       }
     >({
       query: ({ hashtag, sort, limit = 10, page = 1, lastTimeStamp }) => ({
-        url: `/api/v1/get-posts/hashtag/${hashtag}`,
+        url: `/post/hashtag/${hashtag}`,
         params: { sort, limit, page, lastTimeStamp },
       }),
       keepUnusedDataFor: 300, // Cache response for 500 seconds
@@ -29,7 +29,7 @@ export const postsByHashtagApi = postsApi.injectEndpoints({
       }
     >({
       query: ({ hashtag, limit = 10, skip = 0, lastTimeStamp }) => ({
-        url: `/api/v1/get-images/hashtag/${hashtag}`,
+        url: `/hashtag/${hashtag}/images`,
         params: { limit, skip, lastTimeStamp },
       }),
       keepUnusedDataFor: 300, // Cache response for 500 seconds
@@ -45,7 +45,7 @@ export const postsByHashtagApi = postsApi.injectEndpoints({
       }
     >({
       query: ({ hashtag, limit = 10, skip = 0, lastTimeStamp }) => ({
-        url: `/api/v1/get-comments/hashtag/${hashtag}`,
+        url: `/hashtag/${hashtag}/comments`,
         params: { limit, skip, lastTimeStamp },
       }),
       keepUnusedDataFor: 300,
@@ -62,7 +62,7 @@ export const postsByHashtagApi = postsApi.injectEndpoints({
       }
     >({
       query: ({ hashtag, page = 1, limit = 10, skip = 0, lastTimeStamp }) => ({
-        url: `/api/v1/get-people/hashtag/${hashtag}`,
+        url: `/hashtag/${hashtag}/people`,
         params: { page, limit, skip, lastTimeStamp },
       }),
       keepUnusedDataFor: 300,

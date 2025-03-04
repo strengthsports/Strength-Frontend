@@ -69,7 +69,7 @@ export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(
       console.log("Token : ", token);
 
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/my-posts`,
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post`,
         {
           method: "GET",
           headers: {

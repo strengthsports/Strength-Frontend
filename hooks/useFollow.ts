@@ -9,7 +9,7 @@ import {
   setFollowingCount,
   pushFollowings,
   pullFollowings,
-} from "~/reduxStore/slices/user/authSlice";
+} from "~/reduxStore/slices/user/profileSlice";
 import { FollowUser } from "~/types/user";
 
 export const useFollow = () => {

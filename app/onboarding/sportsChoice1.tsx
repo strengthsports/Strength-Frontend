@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   Keyboard,
   Text,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -36,19 +37,26 @@ const { width } = Dimensions.get("window");
 // Default image for sports that don't have a logo
 const defaultImage = require("../../assets/images/onboarding/sportsIcon/okcricket.png");
 
+
 const SportsChoice: React.FC = () => {
   const [localSelectedSports, setLocalSelectedSports] = React.useState<
     Set<string>
   >(new Set());
   const [searchQuery, setSearchQuery] = React.useState("");
   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
+  const [numberOfSports, setNumberOfSports] = React.useState(1);
 
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
   const { sportsData, loading, error } = useSelector(
-    (state: RootState) => state.onboarding
+    (state: RootState) => state.onboarding,
   );
+  const handleSkipClick = () => {
+    router.push({
+      pathname: "/onboarding/SetProfile",
+    });
+  };
 
   // Remove previous states of onboarding on component mount
   React.useEffect(() => {
@@ -66,13 +74,13 @@ const SportsChoice: React.FC = () => {
       "keyboardDidShow",
       () => {
         setKeyboardVisible(true);
-      }
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       "keyboardDidHide",
       () => {
         setKeyboardVisible(false);
-      }
+      },
     );
 
     return () => {
@@ -80,6 +88,12 @@ const SportsChoice: React.FC = () => {
       keyboardDidShowListener.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (localSelectedSports.size > 0) {
+      setNumberOfSports(localSelectedSports.size);
+    }
+  }, [localSelectedSports]);
 
   // Toggle selection of sports
   const toggleSport = (_id: string) => {
@@ -105,10 +119,58 @@ const SportsChoice: React.FC = () => {
     });
   };
 
+  const handleRequestClick = () => {
+    router.push({
+      pathname: "/onboarding/requestSport",
+    });
+  };
+
   // Filter sports data based on search query
-  const filteredSports = sportsData.filter((sport: Sport) =>
-    sport.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort sports data alphabetically based on name
+  const filteredSports = sportsData
+    .filter((sport: Sport) =>
+      sport.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Render each sport item
+  const renderSportItem = ({ item }: { item: Sport }) => {
+    const isSelected = localSelectedSports.has(item._id);
+
+    return (
+      <TouchableOpacity className="m-1" onPress={() => toggleSport(item._id)}>
+        <View
+          className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${
+            isSelected
+              ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
+              : "border border-white/30 bg-black" // Default black background
+          }`}
+        >
+          <Image
+            source={item.logo ? { uri: item.logo } : defaultImage}
+            className="w-[28px] h-[28px] mb-2"
+            style={{ tintColor: isSelected ? "white" : "inherit" }}
+          />
+          <TextScallingFalse
+            className={`text-center text-[13px] leading-[15px] mt-2 ${
+              isSelected ? "text-white font-normal" : "text-white font-normal"
+            }`}
+            numberOfLines={2} // Ensures text wraps within two lines
+            ellipsizeMode="tail" // Adds "..." if text is too long
+            allowFontScaling={false}
+            style={{
+              flexShrink: 1, // Ensures text shrinks if needed
+              width: "100%", // Ensures text doesn't overflow
+              overflow: "hidden", // Prevents text from breaking out
+              textAlign: "center",
+            }}
+          >
+            {item.name}
+          </TextScallingFalse>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
@@ -117,28 +179,15 @@ const SportsChoice: React.FC = () => {
           <Logo />
           <StatusBar barStyle="light-content" />
         </View>
+        <TextScallingFalse className="text-white text-[1.8rem] font-bold mb-1 px-6 mt-3">
+          What's your sport of choice?
+        </TextScallingFalse>
 
-        <ScrollView
-          className="flex-1 px-6 mt-4"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingBottom: keyboardVisible ? 20 : 100,
-          }}
-        >
-          <TextScallingFalse className="text-white text-4xl font-bold mt-8 mb-10 leading-tight">
-            Ready to dive in?{"\n"}Fantastic!
-          </TextScallingFalse>
-
-          <TextScallingFalse className="text-white text-2xl font-bold mb-3">
-            What's your sport of choice?
-          </TextScallingFalse>
-
-          <TextScallingFalse className="text-gray-400 text-lg mb-8">
-            Let us know your athletic passion as you sign up!
-          </TextScallingFalse>
-
-          <View className="flex-row items-center rounded-[2rem] px-5 mb-8 h-14 border border-white">
+        <TextScallingFalse className="text-gray-400 text-[1rem] mb-8 px-6">
+          Let us know your athletic passion as you sign up!
+        </TextScallingFalse>
+        <View className="px-6">
+          <View className="flex-row items-center rounded-[2rem] px-5  mb-8 h-14 border border-white">
             <Icon name="search" size={32} color="#fff" />
             <TextInput
               className="flex-1 text-white h-[50px]"
@@ -148,6 +197,18 @@ const SportsChoice: React.FC = () => {
               onChangeText={setSearchQuery}
             />
           </View>
+        </View>
+        <ScrollView
+          className="flex-1  mt-4"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: keyboardVisible ? 20 : 100,
+          }}
+        >
+          {/* <TextScallingFalse className="text-white text-[2.5rem] font-bold mt-8 mb-10 leading-tight">
+            Ready to dive in?{"\n"}Fantastic!
+          </TextScallingFalse> */}
 
           {loading ? (
             <Text className="text-white">Loading...</Text>
@@ -159,61 +220,39 @@ const SportsChoice: React.FC = () => {
                 flexDirection: "row",
                 flexWrap: "wrap",
                 justifyContent: "center",
-                width: "100%",
                 alignItems: "center",
               }}
             >
-              {filteredSports.map((sport: Sport) => (
-                <TouchableOpacity
-                  key={sport._id}
-                  style={{ margin: 4 }}
-                  onPress={() => toggleSport(sport._id)}
+              {filteredSports.map((item) => (
+                <View
+                  key={item._id}
+                  style={{
+                    margin: 1,
+                  }}
                 >
-                  <View style={{ flexDirection: "row" }}>
-                    <View
-                      style={{
-                        height: 40,
-                        width: width * 0.27,
-                        borderWidth: 0.5,
-                        borderColor: localSelectedSports.has(sport._id)
-                          ? "#12956B"
-                          : "white",
-                        borderRadius: 8,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        flexDirection: "row",
-                        backgroundColor: localSelectedSports.has(sport._id)
-                          ? "#12956B"
-                          : "black",
-                        paddingHorizontal: 10,
-                      }}
-                    >
-                      <Image
-                        source={sport.logo ? { uri: sport.logo } : defaultImage}
-                        style={{
-                          width: width * 0.04,
-                          height: width * 0.04,
-                          marginRight: "6.5%",
-                        }}
-                      />
-                      <TextScallingFalse
-                        style={{
-                          color: "white",
-                          fontSize: width * 0.035,
-                          fontWeight: localSelectedSports.has(sport._id)
-                            ? "600"
-                            : "400",
-                        }}
-                        allowFontScaling={false}
-                      >
-                        {sport.name}
-                      </TextScallingFalse>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                  {renderSportItem({ item })}
+                </View>
               ))}
             </View>
           )}
+
+          <View className="flex-row justify-center items-center mt-6 flex-wrap">
+            <TouchableOpacity className="">
+              <Text className="text-white text-[1.2rem]">
+                Don't see your sport?
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View className="flex-row justify-center items-center flex-wrap">
+            <TouchableOpacity
+              className="ml-2 mt-4"
+              onPress={handleRequestClick}
+            >
+              <Text className="text-[#00A67E] text-[1.1rem] font-semibold">
+                Request Sport
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
 
         {!keyboardVisible && (
@@ -231,18 +270,27 @@ const SportsChoice: React.FC = () => {
             }}
           >
             <View className="flex-row justify-between items-center">
-              <Text className="text-gray-300 text-base">
-                You can always select more than 1
+              <Text className="text-gray-300 text-[1rem]">
+                You can always select more than {numberOfSports}
               </Text>
               <TouchableOpacity
                 activeOpacity={0.5}
                 className={`px-8 py-4 rounded-3xl ${
                   localSelectedSports.size > 0 ? "bg-[#00A67E]" : "bg-[#333]"
                 }`}
-                onPress={handleNextClick}
-                disabled={localSelectedSports.size === 0}
+                onPress={
+                  localSelectedSports.size > 0
+                    ? handleNextClick
+                    : handleSkipClick
+                }
               >
-                <Text className="text-white text-lg font-medium">Next</Text>
+                <Text
+                  className={`text-[1rem] font-medium ${
+                    localSelectedSports.size > 0 ? "text-white" : "text-black"
+                  }`}
+                >
+                  {localSelectedSports.size > 0 ? "Next" : "Skip"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

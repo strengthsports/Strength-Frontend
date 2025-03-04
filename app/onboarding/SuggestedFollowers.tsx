@@ -19,6 +19,8 @@ import { fetchUserSuggestions } from "~/reduxStore/slices/user/onboardingSlice";
 import { AppDispatch } from "@/reduxStore";
 import { onboardingUser } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
+import SuggestionCard from "~/components/Cards/SuggestionCard";
+import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
 
 interface SupportCardProps {
   user: any;
@@ -83,6 +85,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
   const { fetchedUsers, headline, profilePic, selectedSports, loading, error } =
     useSelector((state: RootState) => state.onboarding);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     console.log(selectedSports);
@@ -118,7 +121,7 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
       finalOnboardingData.append(
         "followings",
-        JSON.stringify(onboardingData.followings)
+        JSON.stringify(onboardingData.followings),
       );
 
       // Log FormData values (for debugging)
@@ -127,10 +130,12 @@ const SuggestedSupportScreen: React.FC = () => {
       // });
 
       const response = await dispatch(
-        onboardingUser(finalOnboardingData)
+        onboardingUser(finalOnboardingData),
       ).unwrap();
 
       // console.log(response);
+
+      dispatch(fetchMyProfile(user?._id));
 
       // Alert the successful response
       Toast.show({
@@ -154,7 +159,13 @@ const SuggestedSupportScreen: React.FC = () => {
       }
     }
   };
-
+  const handleSelectedPlayers = (id: string) => {
+    setSelectedPlayers((prev) =>
+      prev.includes(id)
+        ? prev.filter((player) => player !== id)
+        : [...prev, id],
+    );
+  };
   const handleSkip = async () => {
     const onboardingData = {
       headline: headline,
@@ -169,7 +180,7 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
       finalOnboardingData.append(
         "followings",
-        JSON.stringify(onboardingData.followings)
+        JSON.stringify(onboardingData.followings),
       );
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
@@ -211,14 +222,14 @@ const SuggestedSupportScreen: React.FC = () => {
         className="px-4 py-6 flex-1 mt-6"
       >
         <View className="mb-6">
-          <TextScallingFalse className="text-gray-500 text-base">
-            Step 3 of 3
+          <TextScallingFalse className="text-gray-500 text-[1rem]">
+            Step 2 of 2
           </TextScallingFalse>
-          <TextScallingFalse className="text-white text-3xl font-bold mt-1">
-            Suggested supports
+          <TextScallingFalse className="text-white text-[1.8rem] font-semibold mt-1">
+            Suggested Followers
           </TextScallingFalse>
-          <TextScallingFalse className="text-gray-400 text-base mt-2">
-            Supporting others lets you see updates and keep in touch.
+          <TextScallingFalse className="text-gray-400 text-[0.9rem] mt-2">
+            Following others lets you see updates and keep in touch.
           </TextScallingFalse>
         </View>
 
@@ -236,12 +247,19 @@ const SuggestedSupportScreen: React.FC = () => {
           ) : (
             <View className="flex-row flex-wrap justify-center">
               {fetchedUsers.map((user) => (
-                <SupportCard
+                // <SupportCard
+                //   key={user._id}
+                //   user={user}
+                //   isSelected={selectedPlayers.includes(user._id)}
+                //   onClose={handleClose}
+                //   onSupport={handleSupport}
+                // />
+                <SuggestionCard
                   key={user._id}
                   user={user}
-                  isSelected={selectedPlayers.includes(user._id)}
-                  onClose={handleClose}
-                  onSupport={handleSupport}
+                  size="large" // or "large" depending on your design preference
+                  removeSuggestion={handleClose}
+                  isSelected={handleSelectedPlayers}
                 />
               ))}
             </View>

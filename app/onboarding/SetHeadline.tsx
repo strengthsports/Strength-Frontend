@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Image,
@@ -21,13 +21,16 @@ const defaultImage = require("../../assets/images/onboarding/nopic.jpg");
 
 const SetHeadline: React.FC = () => {
   const [currentHeadline, setCurrentHeadline] = useState("");
+  const [description, setDescription] = useState(`Cricketer-Right hand batsman,
+    Ranji Trophy player`);
+
   const router = useRouter();
   const dispatch = useDispatch();
 
   const { profilePic } = useSelector((state: RootState) => state?.onboarding);
 
   const { loading, error, user } = useSelector(
-    (state: RootState) => state?.auth
+    (state: RootState) => state?.auth,
   );
   // console.log("Loading", loading);
   // console.log("Error", error);
@@ -56,7 +59,13 @@ const SetHeadline: React.FC = () => {
       // params: { selectedFile },
     });
   }
-
+  useEffect(() => {
+    if (currentHeadline) {
+      setDescription(currentHeadline);
+    } else {
+      setDescription("Cricketer-Right hand batsman,\nRanji Trophy player");
+    }
+  }, [currentHeadline]);
   function handleSkipPress() {
     router.push({
       pathname: "/onboarding/SuggestedFollowers",
@@ -78,21 +87,21 @@ const SetHeadline: React.FC = () => {
               <TextScallingFalse className="text-white text-[2.9rem] font-semibold leading-tight">
                 Let's get you{"\n"}started!
               </TextScallingFalse>
-              <TextScallingFalse className="text-gray-500 text-base mt-4">
+              <TextScallingFalse className="text-gray-500 text-[1rem] mt-4">
                 Step 2 of 3
               </TextScallingFalse>
               <TextScallingFalse className="text-white text-[24px] font-semibold mt-2.5">
                 Set your sports Headline
               </TextScallingFalse>
-              <TextScallingFalse className="text-[#A5A5A5] text-base mt-2">
+              <TextScallingFalse className="text-[#A5A5A5] text-[0.9rem] mt-2">
                 Let others know your position, you can always change it later.
               </TextScallingFalse>
 
-              <TextScallingFalse className="text-white text-lg mt-4 mb-2">
+              <TextScallingFalse className="text-white text-[1.3rem] mt-4 mb-2">
                 Headline
               </TextScallingFalse>
               <TextInput
-                className="border border-white rounded-md text-white h-12 px-4 text-lg"
+                className="border border-white rounded-md text-white h-14 px-4 text-[1.3rem]"
                 placeholderTextColor="#666"
                 placeholder="Enter your headline"
                 value={currentHeadline}
@@ -115,7 +124,7 @@ const SetHeadline: React.FC = () => {
                     {user?.lastName || "Lastname"}
                   </TextScallingFalse>
                   <TextScallingFalse className="text-gray-500 text-[1rem] text-center mt-1 leading-5">
-                    Cricketer-Right hand batsman,{"\n"}Ranji Trophy player
+                    {description}
                   </TextScallingFalse>
                 </View>
               </View>
@@ -127,7 +136,7 @@ const SetHeadline: React.FC = () => {
                 className="bg-[#00A67E] h-12 rounded-full justify-center items-center"
                 onPress={handleNextPress}
               >
-                <TextScallingFalse className="text-white text-lg font-medium">
+                <TextScallingFalse className="text-white text-[1rem] font-medium">
                   Next
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -135,7 +144,7 @@ const SetHeadline: React.FC = () => {
                 className="mt-4 items-center"
                 onPress={handleSkipPress}
               >
-                <TextScallingFalse className="text-gray-500 text-base">
+                <TextScallingFalse className="text-gray-500 text-[1rem]">
                   Skip for now
                 </TextScallingFalse>
               </TouchableOpacity>

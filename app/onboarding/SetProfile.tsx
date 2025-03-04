@@ -22,6 +22,7 @@ const ProfilePictureScreen: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { profilePic } = useSelector((state: RootState) => state.onboarding);
+  const defaultUser = require("../../assets/images/onboarding/nopic.jpg");
 
   const pickImage = async (): Promise<void> => {
     try {
@@ -69,7 +70,7 @@ const ProfilePictureScreen: React.FC = () => {
 
   const handleSkip = (): void => {
     router.push({
-      pathname: "/onboarding/SetHeadline",
+      pathname: "/onboarding/SuggestedFollowers",
       params: {},
     });
   };
@@ -78,7 +79,7 @@ const ProfilePictureScreen: React.FC = () => {
     if (profilePic) {
       console.log("Selected profile picture: " + profilePic);
       router.push({
-        pathname: "/onboarding/SetHeadline",
+        pathname: "/onboarding/SuggestedFollowers",
       });
     }
   };
@@ -97,18 +98,18 @@ const ProfilePictureScreen: React.FC = () => {
 
       <Logo />
 
-      <TextScallingFalse className="text-gray-400 text-lg mt-10">
-        Step 1 of 3
+      <TextScallingFalse className="text-gray-400 text-[1rem] mt-10">
+        Step 1 of 2
       </TextScallingFalse>
 
-      <TextScallingFalse className="text-white text-2xl font-bold mt-2">
+      <TextScallingFalse className="text-white text-[1.8rem] font-bold mt-2">
         Pick a profile picture
       </TextScallingFalse>
-      <TextScallingFalse className="text-gray-400 text-base mt-2">
+      <TextScallingFalse className="text-gray-400 text-[1rem] mt-1">
         Adding a photo helps people recognize you.
       </TextScallingFalse>
 
-      <View className="items-center mt-10">
+      <View className="items-center mt-16">
         <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
           {profilePic ? (
             <Image
@@ -117,9 +118,14 @@ const ProfilePictureScreen: React.FC = () => {
               resizeMode="cover"
             />
           ) : (
-            <View className="w-20 h-20 rounded-full bg-gray-600 justify-center items-center">
-              <View className="w-10 h-10 bg-gray-400 rounded-full" />
-            </View>
+            // <View className="w-20 h-20 rounded-full bg-gray-600 justify-center items-center">
+            //   <View className="w-10 h-10 bg-gray-400 rounded-full" />
+            // </View>
+            <Image
+              source={defaultUser}
+              className="w-40 h-40 rounded-full"
+              resizeMode="cover"
+            />
           )}
           <TouchableOpacity
             className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-[#00A67E] justify-center items-center"
@@ -134,11 +140,11 @@ const ProfilePictureScreen: React.FC = () => {
       </View>
 
       <TouchableOpacity
-        className="bg-[#00A67E] rounded-full h-12 justify-center items-center mt-10"
+        className="bg-[#00A67E] rounded-full h-12 justify-center items-center mt-14"
         onPress={profilePic ? handleContinue : pickImage}
         activeOpacity={0.8}
       >
-        <TextScallingFalse className="text-white text-base font-semibold">
+        <TextScallingFalse className="text-white text-[1rem] font-semibold">
           {profilePic ? "Continue" : "Add a photo"}
         </TextScallingFalse>
       </TouchableOpacity>
@@ -149,7 +155,7 @@ const ProfilePictureScreen: React.FC = () => {
           onPress={handleRemovePic}
           activeOpacity={0.8}
         >
-          <TextScallingFalse className="text-[#00A67E] text-center text-base font-semibold">
+          <TextScallingFalse className="text-[#00A67E] text-center text-[1rem] font-semibold">
             Remove Picture
           </TextScallingFalse>
         </TouchableOpacity>
@@ -159,7 +165,7 @@ const ProfilePictureScreen: React.FC = () => {
           onPress={handleSkip}
           activeOpacity={0.8}
         >
-          <TextScallingFalse className="text-[#B4B4B4] text-center text-base font-semibold">
+          <TextScallingFalse className="text-[#B4B4B4] text-center text-[1rem] font-semibold">
             Skip for now
           </TextScallingFalse>
         </TouchableOpacity>

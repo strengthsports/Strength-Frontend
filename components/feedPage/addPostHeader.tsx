@@ -11,7 +11,7 @@ export default function AddPostHeader({
 }: {
   onBackPress: () => void;
 }) {
-  const { user } = useSelector((state: any) => state?.auth);
+  const { user } = useSelector((state: any) => state?.profile);
 
   return (
     <SafeAreaView className="flex flex-row items-center gap-4">

@@ -83,6 +83,7 @@ const MoreModal = memo(
         className={` w-[104%] bg-neutral-900 self-center rounded-t-[40px] border-t border-x border-neutral-700 p-4 ${
           isOwnPost ? "h-44" : "h-64"
         }`}
+        onStartShouldSetResponder={() => true}
       >
         <View className="w-16 h-1 self-center rounded-full bg-neutral-200 my-1" />
 

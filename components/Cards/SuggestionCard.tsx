@@ -25,7 +25,7 @@ const SuggestionCard = ({
     JSON.stringify({ id: user._id, type: user.type })
   );
   const isFollowing = useSelector((state: RootState) =>
-    state.auth?.user?.followings?.has(user._id)
+    state.profile?.followings?.includes(user._id)
   );
   // console.log(userFollowings);
   const [followingStatus, setFollowingStatus] = useState(isFollowing);
@@ -108,7 +108,9 @@ const SuggestionCard = ({
         {/* Profile Image positioned outside the cover's container */}
         <TouchableOpacity
           activeOpacity={0.5}
-          onPress={() => router.push(`/(app)/(main)/profile/${serializedUser}`)}
+          onPress={() =>
+            router.push(`/(app)/(profile)/profile/${serializedUser}`)
+          }
           className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
             size === "small" ? "w-16 h-16" : "w-20 h-20"
           } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}

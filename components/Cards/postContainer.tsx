@@ -69,8 +69,10 @@ const PostContainer = ({
   highlightedHashtag?: string;
 }) => {
   const router = useRouter();
-  const { user } = useSelector((state: RootState) => state?.auth);
-  const isFollowingGlobal = user?.followings?.has(item.postedBy?._id) ?? false;
+  const { user, followings } = useSelector(
+    (state: RootState) => state?.profile
+  );
+  const isFollowingGlobal = followings?.includes(item.postedBy?._id) ?? false;
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
   );
@@ -207,7 +209,7 @@ const PostContainer = ({
             key={index}
             onPress={() =>
               router.push(
-                `/(app)/(main)/hashtag/${word.substring(1, word.length)}`
+                `/(app)/(post)/hashtag/${word.substring(1, word.length)}`
               )
             }
             className={`text-xl text-[#12956B] ${
@@ -239,7 +241,7 @@ const PostContainer = ({
             onPress={() =>
               user?._id === item.postedBy?._id
                 ? router.push("/(app)/(tabs)/profile")
-                : router.push(`../(main)/profile/${serializedUser}`)
+                : router.push(`/(app)/(profile)/profile/${serializedUser}`)
             }
           >
             <Image

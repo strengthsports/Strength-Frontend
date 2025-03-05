@@ -3,7 +3,7 @@ import { Text, View, TouchableOpacity, Image } from "react-native";
 import Icon from "react-native-vector-icons/Entypo";
 import * as ImagePicker from "expo-image-picker";
 import { ThemedText } from "~/components/ThemedText";
-import AddMembersModal from "../addMembersModal";
+import AddMembersModal from "../../addMembersModal";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import DateTimePicker, {
@@ -28,17 +28,17 @@ const EditTeam = () => {
 
   const [captain, setCaptain] = useState("Captain Name");
   const [captainDescription, setCaptainDescription] = useState(
-    "Captain Description",
+    "Captain Description"
   );
   const [captainImage, setCaptainImage] = useState(
-    "https://picsum.photos/200/200",
+    "https://picsum.photos/200/200"
   );
   const [viceCaptain, setViceCaptain] = useState("Vice Captain Name");
   const [viceCaptainDescription, setViceCaptainDescription] = useState(
-    "Vice Captain Description",
+    "Vice Captain Description"
   );
   const [viceCaptainImage, setViceCaptainImage] = useState(
-    "https://picsum.photos/200/200",
+    "https://picsum.photos/200/200"
   );
   const [admin, setAdmin] = useState("Admin Name");
   const [adminDescription, setAdminDescription] = useState("Admin Description");

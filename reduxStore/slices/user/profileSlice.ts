@@ -4,7 +4,7 @@ import { ProfileState, TargetUser, User } from "@/types/user";
 import { loginUser, logoutUser } from "./authSlice";
 import { PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
-import { onboardingUser } from "./onboardingSlice";
+import { onboardingUser, resetOnboardingData } from "./onboardingSlice";
 
 // Initial State
 const initialState: ProfileState = {
@@ -395,6 +395,7 @@ const profileSlice = createSlice({
         state.loading = false;
         state.user = { ...state.user, ...action.payload };
         state.msgBackend = action.payload.message;
+        resetOnboardingData();
         state.error = null;
       })
       .addCase(onboardingUser.rejected, (state, action) => {

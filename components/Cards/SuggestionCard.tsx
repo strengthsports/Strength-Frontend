@@ -15,10 +15,12 @@ const SuggestionCard = ({
   user,
   removeSuggestion,
   size,
+  onboarding,
 }: {
   user: SuggestionUser;
   removeSuggestion: (id: string) => void;
   size: string;
+  onboarding?: boolean;
 }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
@@ -111,6 +113,7 @@ const SuggestionCard = ({
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
+          disabled={onboarding}
           className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
             size === "small" ? "w-16 h-16" : "w-20 h-20"
           } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
@@ -151,7 +154,13 @@ const SuggestionCard = ({
                 followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
               } `}
               activeOpacity={0.6}
-              onPress={followingStatus ? handleOpenModal : handleFollow}
+              onPress={
+                followingStatus
+                  ? onboarding
+                    ? handleUnfollow
+                    : handleOpenModal
+                  : handleFollow
+              }
             >
               {followingStatus ? (
                 <TextScallingFalse className="text-center text-lg text-white">

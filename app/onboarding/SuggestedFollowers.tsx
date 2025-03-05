@@ -89,7 +89,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
   useEffect(() => {
     console.log(selectedSports);
-    dispatch(fetchUserSuggestions(selectedSports));
+    dispatch(fetchUserSuggestions({ selectedSports, limit, page })); // add limit, page for pagination while scrolling up
     console.log("Dispatch completed...");
   }, [dispatch]);
 
@@ -121,7 +121,7 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
       finalOnboardingData.append(
         "followings",
-        JSON.stringify(onboardingData.followings),
+        JSON.stringify(onboardingData.followings)
       );
 
       // Log FormData values (for debugging)
@@ -130,7 +130,7 @@ const SuggestedSupportScreen: React.FC = () => {
       // });
 
       const response = await dispatch(
-        onboardingUser(finalOnboardingData),
+        onboardingUser(finalOnboardingData)
       ).unwrap();
 
       // console.log(response);
@@ -161,9 +161,7 @@ const SuggestedSupportScreen: React.FC = () => {
   };
   const handleSelectedPlayers = (id: string) => {
     setSelectedPlayers((prev) =>
-      prev.includes(id)
-        ? prev.filter((player) => player !== id)
-        : [...prev, id],
+      prev.includes(id) ? prev.filter((player) => player !== id) : [...prev, id]
     );
   };
   const handleSkip = async () => {
@@ -180,7 +178,7 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
       finalOnboardingData.append(
         "followings",
-        JSON.stringify(onboardingData.followings),
+        JSON.stringify(onboardingData.followings)
       );
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
@@ -247,19 +245,12 @@ const SuggestedSupportScreen: React.FC = () => {
           ) : (
             <View className="flex-row flex-wrap justify-center">
               {fetchedUsers.map((user) => (
-                // <SupportCard
-                //   key={user._id}
-                //   user={user}
-                //   isSelected={selectedPlayers.includes(user._id)}
-                //   onClose={handleClose}
-                //   onSupport={handleSupport}
-                // />
                 <SuggestionCard
                   key={user._id}
                   user={user}
-                  size="large" // or "large" depending on your design preference
+                  onboarding={true}
+                  size="regular" // or "small" depending on your design preference
                   removeSuggestion={handleClose}
-                  isSelected={handleSelectedPlayers}
                 />
               ))}
             </View>

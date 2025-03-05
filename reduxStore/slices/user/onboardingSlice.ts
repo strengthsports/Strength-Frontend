@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { User } from "@/types/user";
+import { SuggestionUser, User } from "@/types/user";
 
 interface OnboardingState {
   sportsData: { _id: string; name: string }[];
-  fetchedUsers: User[];
+  fetchedUsers: SuggestionUser[];
   selectedSports: string[];
   profilePic: {
     newUri: string | null;
@@ -64,40 +64,45 @@ export const fetchSportsData = createAsyncThunk(
 //async thunk for getting user suggestions
 export const fetchUserSuggestions = createAsyncThunk<
   any,
-  Array<string>,
+  { sportsData: Array<string>; limit: number; page: number },
   { rejectValue: string }
->("profile/fetchUserSuggestions", async (sportsData, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
-    if (!token) throw new Error("Token not found");
-    console.log("sports : ", sportsData);
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(sportsData),
+>(
+  "profile/fetchUserSuggestions",
+  async ({ sportsData, limit, page }, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+      console.log("sports : ", sportsData);
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions?limit=${limit}&page=${page}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(sportsData),
+        }
+      );
+
+      console.log("Response : ", response);
+
+      const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(
+          data.message || "Error fetching user suggestions"
+        );
       }
-    );
-
-    console.log("Response : ", response);
-
-    const data = await response.json();
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Error fetching user suggestions");
+      return data.data;
+    } catch (error: unknown) {
+      // Type assertion to Error
+      console.log(error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
     }
-    return data.data;
-  } catch (error: unknown) {
-    // Type assertion to Error
-    console.log(error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unexpected error occurred";
-    return rejectWithValue(errorMessage);
   }
-});
+);
 
 // Final onboarding
 export const onboardingUser = createAsyncThunk<

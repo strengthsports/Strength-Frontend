@@ -102,7 +102,7 @@ const signupEnterUsername3 = () => {
           />
         </View>
         <View style={{ marginTop: 55 }}>
-          <SignupButton onPress={handleNext}>
+          <SignupButton disabled={false} onPress={handleNext}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 15, fontWeight: "500" }}
             >

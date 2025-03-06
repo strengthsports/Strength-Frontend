@@ -15,7 +15,7 @@ import {
   Animated,
   ActivityIndicator,
 } from "react-native";
-import SearchBar from "~/components/explorePage/searchbar";
+import SearchBar from "~/components/search/searchbar";
 import { Colors } from "~/constants/Colors";
 
 // Lazy-load heavy content components

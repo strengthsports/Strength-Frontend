@@ -5,7 +5,7 @@ export const reportPostApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     reportPost: builder.mutation<any, ReportPost>({
       query: (body) => ({
-        url: "/api/v1/report",
+        url: "/report",
         method: "POST",
         body,
       }),
@@ -13,7 +13,7 @@ export const reportPostApi = feedApi.injectEndpoints({
     }),
     undoReportPost: builder.mutation<any, Partial<ReportPost>>({
       query: (body) => ({
-        url: "/api/v1/undo-report",
+        url: "/report",
         method: "DELETE",
         body,
       }),

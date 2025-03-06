@@ -5,7 +5,7 @@ import { getToken } from "~/utils/secureStore";
 export const communityApi = createApi({
   reducerPath: "communityApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
+    baseUrl: `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/community`,
     prepareHeaders: async (headers) => {
       const token = await getToken("accessToken");
       if (token) {
@@ -23,7 +23,7 @@ export const communityApi = createApi({
       { limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, lastTimeStamp }) => ({
-        url: "/api/v1/get-similar-sports-users",
+        url: "/similar-sports-users",
         params: {
           limit,
           lastTimeStamp,
@@ -37,7 +37,7 @@ export const communityApi = createApi({
       { limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, lastTimeStamp }) => ({
-        url: "/api/v1/get-similar-users",
+        url: "/similar-users",
         params: {
           limit,
           lastTimeStamp,
@@ -51,7 +51,7 @@ export const communityApi = createApi({
       { limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ limit = 10, lastTimeStamp }) => ({
-        url: "/api/v1/get-popular-users",
+        url: "/popular-users",
         params: {
           limit,
           lastTimeStamp,
@@ -65,7 +65,7 @@ export const communityApi = createApi({
       { city: string; limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ city, limit = 10, lastTimeStamp }) => ({
-        url: "/api/v1/get-users-by-city",
+        url: "/users-by-city",
         method: "POST",
         params: {
           limit,

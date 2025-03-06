@@ -16,9 +16,12 @@ interface FetchLikersResponse {
 
 export const likerApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
-    fetchLikers: builder.query<FetchLikersResponse, { targetId: string; targetType: string }>({
+    fetchLikers: builder.query<
+      FetchLikersResponse,
+      { targetId: string; targetType: string }
+    >({
       query: ({ targetId, targetType }) => ({
-        url: "api/v1/fetchLikers",
+        url: "/post/fetch-likes",
         method: "POST",
         body: { targetId, targetType },
       }),

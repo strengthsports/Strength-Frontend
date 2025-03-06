@@ -21,7 +21,7 @@ import MemberCard from "./components/member";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import TeamCreatedPage from "./components/teamCreationDone";
+import TeamCreatedPage from "./teamCreationDone";
 import LocationModal from "./components/locationModal";
 
 interface CreateTeamProps {
@@ -253,7 +253,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       return;
     }
     console.log("Create team", formData);
-    router.push("./components/teamCreationDone");
+    router.push("../teams/teamCreationDone");
   };
 
   return (

@@ -20,6 +20,7 @@ import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import exploreReducer from "./slices/explore/exploreSlice";
 import hashtagReducer from "./slices/hashtagPage/hashtagPageSlice";
 import profileReducer from "./slices/user/profileSlice";
+import teamReducer from "./slices/team/teamSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { sportsApi } from "./api/sportsApi";
 import { postsApi } from "./api/posts/postsApi";
@@ -47,6 +48,7 @@ const rootReducer = combineReducers({
   explore: exploreReducer,
   profile: profileReducer,
   hashtagPage: hashtagReducer,
+  team: teamReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,

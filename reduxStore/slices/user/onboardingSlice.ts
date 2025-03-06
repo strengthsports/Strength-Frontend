@@ -85,7 +85,15 @@ export const fetchUserSuggestions = createAsyncThunk<
         }
       );
 
-      console.log("Response : ", response);
+      // const text = await response.text();
+      // let dataa;
+      // try {
+      //   dataa = JSON.parse(text);
+      // } catch {
+      //   throw new Error("Invalid JSON response");
+      // }
+
+      // console.log("Readable Response:", JSON.stringify(dataa, null, 2));
 
       const data = await response.json();
       if (!response.ok) {
@@ -93,7 +101,8 @@ export const fetchUserSuggestions = createAsyncThunk<
           data.message || "Error fetching user suggestions"
         );
       }
-      return data.data;
+      console.log("Data fetched : ", data.data.users);
+      return data.data.users;
     } catch (error: unknown) {
       // Type assertion to Error
       console.log(error);
@@ -140,7 +149,7 @@ export const onboardingUser = createAsyncThunk<
   }
 });
 
-const onboardlingSlice = createSlice({
+const onboardingSlice = createSlice({
   name: "profile",
   initialState,
   reducers: {
@@ -241,6 +250,6 @@ export const {
   clearAddress,
   clearUsername,
   resetOnboardingData,
-} = onboardlingSlice.actions;
+} = onboardingSlice.actions;
 
-export default onboardlingSlice.reducer;
+export default onboardingSlice.reducer;

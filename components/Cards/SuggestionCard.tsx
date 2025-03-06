@@ -16,18 +16,20 @@ const SuggestionCard = ({
   removeSuggestion,
   size,
   onboarding,
+  isSelected,
 }: {
   user: SuggestionUser;
   removeSuggestion: (id: string) => void;
   size: string;
   onboarding?: boolean;
+  isSelected?: (id: string) => void;
 }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: user._id, type: user.type })
+    JSON.stringify({ id: user._id, type: user.type }),
   );
   const isFollowing = useSelector((state: RootState) =>
-    state.profile?.followings?.includes(user._id)
+    state.profile?.followings?.includes(user._id),
   );
   // console.log(userFollowings);
   const [followingStatus, setFollowingStatus] = useState(isFollowing);
@@ -41,6 +43,9 @@ const SuggestionCard = ({
   //handle follow
   const handleFollow = async () => {
     try {
+      if (isSelected) {
+        isSelected(user._id); // Add to selected players
+      }
       setFollowingStatus(true);
       const followData: FollowUser = {
         followingId: user._id,
@@ -48,6 +53,7 @@ const SuggestionCard = ({
       };
 
       await followUser(followData);
+     
     } catch (err) {
       setFollowingStatus(false);
       console.error("Follow error:", err);
@@ -63,8 +69,12 @@ const SuggestionCard = ({
         followingId: user._id,
         followingType: user.type || "User",
       };
+      if (isSelected) {
+        isSelected(user._id); // Remove from selected players
+      }
 
       await unFollowUser(unfollowData);
+     
     } catch (err) {
       setFollowingStatus(true);
       console.error("Unfollow error:", err);
@@ -72,6 +82,14 @@ const SuggestionCard = ({
       setModalOpen(false);
     }
   };
+
+  //handle isSelected
+  const handleSelected = () => {
+    if (isSelected) {
+      isSelected(user._id);
+    }
+  };
+ 
 
   const handleOpenModal = () => {
     setModalOpen(true);

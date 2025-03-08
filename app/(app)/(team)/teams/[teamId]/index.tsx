@@ -4,17 +4,18 @@ import TeamCard from "../components/teamCard";
 import SubCategories from "../components/subCategories";
 import CombinedDrawer from "../components/combinedDrawer";
 import { useRouter } from "expo-router";
+import EditTeam from "./edit/editTeam";
 
 const TeamPage = () => {
   const router = useRouter();
   const menuItems = [
     {
       label: "Edit Team",
-      onPress: () => router.push("./edit/editTeam"), // Example function for "Home"
+      onPress: () => router.push("../edit/editTeam"),
     },
     {
       label: "Members",
-      onPress: () => router.push("./edit/members"), // Example function for "Settings"
+      onPress: () => router.push("./edit/members"),
     },
     {
       label: "Add members",

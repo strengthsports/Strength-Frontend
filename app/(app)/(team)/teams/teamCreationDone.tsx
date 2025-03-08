@@ -60,13 +60,13 @@ const TeamCreatedPage: React.FC = () => {
   const toggleSelectMember = (id: number) => {
     setMembers((prevMembers) =>
       prevMembers.map((member) =>
-        member.id === id ? { ...member, selected: !member.selected } : member
-      )
+        member.id === id ? { ...member, selected: !member.selected } : member,
+      ),
     );
   };
 
   const handleSubmit = () => {
-    router.replace("../teams/1");
+    router.replace("../teams/1/edit/editTeam");
   };
   return (
     <SafeAreaView className="flex-1 bg-black pt-2">

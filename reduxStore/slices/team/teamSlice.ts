@@ -33,8 +33,28 @@ type TeamPayload = {
   gender: string;
   description: string;
 };
+function convertToDate(dateString) {
+  // Validate input format (M/YYYY or MM/YYYY)
+  if (!dateString || !/^\d{1,2}\/\d{4}$/.test(dateString)) {
+      throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
+  }
 
-//create team
+  // Extract month and year
+  const [month, year] = dateString.split("/").map(Number);
+
+  // Convert to a Date object (first day of the month)
+  const dateObject = new Date(Date.UTC(year, month - 1, 1));
+
+  // Validate the date
+  if (isNaN(dateObject.getTime())) {
+      throw new Error("Invalid date conversion.");
+  }
+
+  return dateObject; // MongoDB will store this as ISODate
+}
+
+
+
 export const createTeam = createAsyncThunk<
   Team,
   TeamPayload,
@@ -42,6 +62,25 @@ export const createTeam = createAsyncThunk<
 >("team/createTeam", async (teamData: TeamPayload, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
+    console.log("Team Data:", teamData);
+    
+    const formData = new FormData();
+    const datee = convertToDate(teamData.establishedOn);
+    console.log("datee", datee);
+    formData.append("name", teamData.name);
+    formData.append("sport", "6771941c77a19c8141f2f1b7");
+    
+    formData.append("establishedOn", datee);
+    formData.append("gender", teamData.gender);
+    formData.append("description", teamData.description);
+    // formData.append("location",null);
+    formData.append("assets", teamData.logo);
+    
+  
+    
+
+    console.log("Sending FormData:", formData);
+    
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
       {
@@ -49,7 +88,7 @@ export const createTeam = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(teamData), // as the payload type will be FormData, remove JSON.sttringify here
+        body: formData, // FormData does not need JSON.stringify()
       }
     );
 
@@ -62,10 +101,14 @@ export const createTeam = createAsyncThunk<
 
     return data; // Return the response data for the fulfilled state
   } catch (error: any) {
-    console.error("Complete Signup Error:", error);
+    console.error("error:", error);
     return rejectWithValue(error.message || "Network error!");
   }
 });
+
+
+
+
 
 //edit team
 
@@ -101,4 +144,5 @@ const teamSlice = createSlice({
 });
 
 export const { resetTeamState } = teamSlice.actions;
+
 export default teamSlice.reducer;

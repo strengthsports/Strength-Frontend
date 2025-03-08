@@ -19,7 +19,7 @@ const NotificationCardLayout = ({
   target: any;
 }) => {
   const router = useRouter();
-  const userId = useSelector((state: any) => state.auth.user._id);
+  const userId = useSelector((state: any) => state.profile.user._id);
 
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: sender._id, type: sender.type })

@@ -37,6 +37,7 @@ function convertToDate(dateString: any) {
   // Validate input format (M/YYYY or MM/YYYY)
   if (!dateString || !/^\d{1,2}\/\d{4}$/.test(dateString)) {
     throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
+    throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
   }
 
   // Extract month and year
@@ -50,7 +51,7 @@ function convertToDate(dateString: any) {
     throw new Error("Invalid date conversion.");
   }
 
-  return dateObject.toString(); // MongoDB will store this as ISODate
+  return dateObject.toISOString().split("T")[0]; // MongoDB will store this as ISODate
 }
 
 export const createTeam = createAsyncThunk<

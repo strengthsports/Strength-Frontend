@@ -20,7 +20,7 @@ import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { ToastAndroid } from "react-native";
-import SportsChoice from "~/app/onboarding/sportsChoice1";
+import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 
 interface MenuItem {
   label: string;
@@ -43,6 +43,39 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
   const slideAnim = React.useRef(new Animated.Value(250)).current;
   const rotateAnim = React.useRef(new Animated.Value(0)).current;
   const router = useRouter();
+  const [team, setTeam] = useState([]);
+  const [teamDetails, setTeamDetails] = useState([]);
+
+  //store all team ids in an array
+  useEffect(() => {
+    const teamIds = user?.createdTeams.map((team) => team.team._id);
+    console.log("Team Ids:", teamIds);
+    setTeam(teamIds);
+  }, [user]);
+
+  useEffect(() => {
+    if (team.length > 0) {
+      console.log("Fetching team details ");
+      handleFetchTeam();
+    }
+  }, [team]);
+
+  const handleFetchTeam = async () => {
+    try {
+      const teamData = await Promise.all(
+        team.map(async (teamId) => {
+          const fetchteamDetails = await dispatch(
+            fetchTeamDetails(teamId),
+          ).unwrap();
+          return fetchteamDetails; // Store full team details, not just name
+        }),
+      );
+
+      setTeamDetails(teamData); // Store all fetched teams at once
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  };
 
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
@@ -198,6 +231,19 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             <View className=" mt-2 py-4 border-t border-[#5C5C5C] px-6">
               <Text className="text-white text-4xl font-bold">
                 Manage Teams
+              </Text>
+
+              <Text className="text-white text-4xl font-semibold">
+                {/* {user?.createdTeams[0].team._id} Teams */}
+                {teamDetails.length > 0 ? (
+                  teamDetails.map((team, index) => (
+                    <View key={index}>
+                      <Text className="text-white text-lg">{team.name}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="text-white text-lg">No Teams</Text>
+                )}
               </Text>
               <View className="flex-row mt-4">
                 {/* Create Team Button */}

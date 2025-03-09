@@ -10,7 +10,7 @@ import {
   Platform,
   Keyboard,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -37,6 +37,9 @@ import { Text } from "react-native";
 import useGetAddress from "~/hooks/useGetAddress";
 import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 
+//type: PicType for modal-editable fields
+type PicType = "username" | "headline" | "dateOfBirth" | "address" | "height" | "weight" | "";
+
 let finalUploadData = new FormData();
 
 const EditProfile = () => {
@@ -49,7 +52,7 @@ const EditProfile = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  const [picType, setPicType] = useState<keyof typeof formData | "">("");
+  const [picType, setPicType] = useState<PicType>("");
 
   const [selectedField, setSelectedField] = useState<string | null>(
     picType === "height" ? "feetInches" : "kilograms" // this is the default unit for each section
@@ -60,8 +63,12 @@ const EditProfile = () => {
   const [heightInMeters, setHeightInMeters] = useState("");
   const [weightInKg, setWeightInKg] = useState("");
   const [weightInLbs, setWeightInLbs] = useState("");
+
+  // address state
   const [addressPickup, setAddressPickup] = useState(
-    `${user?.address?.city}, ${user?.address?.state}, ${user?.address?.country}`
+    user?.address?.city && user?.address?.state && user?.address?.country
+      ? `${user.address.city}, ${user.address.state}, ${user.address.country}`
+      : ""
   );
   const [isLocationError, setLocationError] = useState("");
   const [isAlertModalSet, setAlertModal] = useState<boolean>(false);
@@ -74,17 +81,15 @@ const EditProfile = () => {
 
   // Main form data of profile
   const [formData, setFormData] = useState<UserData>({
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    username: user?.username,
-    headline: user?.headline,
-    dateOfBirth: user?.dateOfBirth,
-    address: {
-      ...user?.address,
-    },
-    height: user?.height,
-    weight: user?.weight,
-    assets: [user?.coverPic?.toString(), user?.profilePic?.toString()],
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    username: user?.username || "",
+    headline: user?.headline || "",
+    dateOfBirth: user?.dateOfBirth || "",
+    address: user?.address || {},
+    height: user?.height || "",
+    weight: user?.weight || "",
+    assets: [user?.coverPic?.toString() || "", user?.profilePic?.toString() || ""],
   });
 
   // Cover Image, Profile Image states
@@ -96,8 +101,16 @@ const EditProfile = () => {
 
   // Modal toggle functions
   const closeModal = () => setModalVisible(false);
-  const openModal = (type: React.SetStateAction<string>) => {
+  const openModal = (type: PicType) => {
     setPicType(type);
+    if (type === "height") {
+      setSelectedField("feetInches");
+    } else if (type === "weight") {
+      setSelectedField("kilograms");
+    }
+    if (type === "address") {
+      setInputValue(addressPickup); //initialize with current addressPickup
+    }
     setModalVisible(true);
   };
 
@@ -154,7 +167,7 @@ const EditProfile = () => {
     }
   };
 
-  const { label, placeholder, description } = renderModalContent();
+  const { label, placeholder, unit1, unit2, unit3, description } = renderModalContent();
 
   // Set form data on visiting edit profile page
   useEffect(() => {
@@ -167,64 +180,93 @@ const EditProfile = () => {
     console.log("formData-", formData);
   }, [picType, value]);
 
+
+  // reusable toast msg function
+  const showToast = (message: string) => {
+    if (isAndroid) {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      Toast.show({
+        type: "error",
+        text1: message,
+        visibilityTime: 1500,
+        autoHide: true,
+      });
+    }
+  };
+
+  // parse the address string
+  const parseAddress = (addressString: string) => {
+    const parts = addressString.split(",").map((part) => part.trim());
+    if (parts.length === 3) {
+      return { city: parts[0], state: parts[1], country: parts[2] };
+    }
+    return null;
+  };
+
   // Handle done click after changing input value
-  const handleDone = async (field: string, value: any) => {
+  const handleDone = async (field: PicType, value: string) => {
     // Check if the value is empty
     if (
       ["username", "dateOfBirth"].includes(field) &&
       (!value || value.trim() === "")
     ) {
       // Show a popup message for empty fields
-      const message = "This field must not be empty!";
-      if (isAndroid) {
-        ToastAndroid.show(message, ToastAndroid.SHORT);
-      } else {
-        Toast.show({
-          type: "error",
-          text1: message,
-          visibilityTime: 1500,
-          autoHide: true,
-        });
-      }
+      showToast("This field must not be empty!");
       return;
     }
 
     // Handle specific fields
-    if (field === "height") {
-      const heightValue = renderFieldValue(selectedField); // Get the value in the selected unit
-      setFormData((prev) => ({
-        ...prev,
-        [field]: `${heightValue} ${
-          selectedField === "feetInches"
-            ? "ft"
-            : selectedField === "centimeters"
-            ? "cm"
-            : "m"
-        }`,
-      }));
-      finalUploadData.set(
-        "height",
-        `${heightValue} ${
-          selectedField === "feetInches"
-            ? "ft"
-            : selectedField === "centimeters"
-            ? "cm"
-            : "m"
-        }`
-      );
-    } else if (field === "weight") {
-      const weightValue = renderFieldValue(selectedField); // Get value in selected unit
-      setFormData((prev) => ({
-        ...prev,
-        [field]: `${weightValue} ${
-          selectedField === "kilograms" ? "kg" : "lbs"
-        }`,
-      }));
-      finalUploadData.set(
-        "weight",
-        `${selectedField === "kilograms" ? "kg" : "lbs"}`
-      );
-    } else if (field === "username") {
+    if (field === "address") { //address field
+      const parsedAddress = parseAddress(value); //parse the input value
+      if (parsedAddress) {
+        const { city, state, country } = parsedAddress;
+        setFormData((prev) => ({
+          ...prev,
+          address: { city, state, country },
+        }));
+        setAddressPickup(value); //reflect the confirmed address in the UI
+  
+        //sync with redux
+        setAddress({
+          city,
+          state,
+          country,
+          location: { coordinates: address?.coordinates || [] }, // Use fetched coordinates if available
+        });
+  
+        // Update finalUploadData
+        finalUploadData.set("city", city);
+        finalUploadData.set("state", state);
+        finalUploadData.set("country", country);
+        if (address?.coordinates) {
+          finalUploadData.set("latitude", address.coordinates[0].toString());
+          finalUploadData.set("longitude", address.coordinates[1].toString());
+        }
+      } else {
+        showToast("Please enter address in format: city, state, country");
+        return;
+      }
+    }
+    else if (field === "height") { // height field
+      const heightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
+      const heightString = heightValue ? `${heightValue} ${
+        selectedField === "feetInches" ? "ft" : selectedField === "centimeters" ? "cm" : "m"
+      }` : "";
+
+      setFormData((prev) => ({ ...prev, [field]: heightString }));
+      finalUploadData.set("height", heightString);
+
+    } 
+    else if (field === "weight") { // weight field
+      const weightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
+      const weightString = weightValue ? `${weightValue} ${selectedField === "kilograms" ? "kg" : "lbs"}` : "";
+
+      setFormData((prev) => ({ ...prev, [field]: weightString }));
+      finalUploadData.set("weight", weightString);
+      
+    } 
+    else if (field === "username") {
       try {
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/checkUsername`,
@@ -246,28 +288,17 @@ const EditProfile = () => {
           finalUploadData.set("username", value);
         } else {
           Keyboard.dismiss();
-          if (isAndroid) {
-            ToastAndroid.show(
-              data.message || "Username already exists!",
-              ToastAndroid.SHORT
-            );
-          } else {
-            Toast.show({
-              type: "error",
-              text1: data.message || "Username already exists!",
-              visibilityTime: 1500,
-              autoHide: true,
-            });
-          }
+          showToast(data.message || "Username already exists!");
           return;
         }
       } catch (error) {
         console.error("Error checking username:", error);
-        alert("Something went wrong. Please try again.");
+        showToast("Something went wrong. Please try again.");
+        return;
       }
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
-      finalUploadData.set(`${field}`, `${value}`);
+      finalUploadData.set(field, value);
     }
 
     closeModal();
@@ -275,18 +306,21 @@ const EditProfile = () => {
 
   useEffect(() => {
     if (picType) {
-      console.log("Input value changed");
-      setInputValue(formData[picType] || "");
+      if (picType === "address") {
+        setInputValue(addressPickup); //initialize with current addressPickup
+      } else {
+        setInputValue(formData[picType] || "");
+      }
     }
-  }, [picType]);
+  }, [picType, addressPickup]);
 
   // Pick Image (Cover pic, Profile Pic)
   const pickImage = async (imageType: "cover" | "profile") => {
     try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (!permissionResult.granted) {
-        alert("Permission to access the camera roll is required!");
+        showToast("Permission to access the camera roll is required!");
         return;
       }
 
@@ -299,7 +333,7 @@ const EditProfile = () => {
 
       if (!result.canceled && result.assets[0]) {
         const file = result.assets[0];
-        const fileName = file.uri.split("/").pop();
+        const fileName = file.uri.split("/").pop() || "image.jpg";
         const mimeType = file.mimeType || "image/jpeg";
 
         // React Native requires this format for file uploads
@@ -319,14 +353,14 @@ const EditProfile = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      alert("Error picking image");
+      showToast("Error picking image");
     } finally {
       setPicModalVisible({ coverPic: false, profilePic: false });
     }
   };
 
   // Unified toggle function for pic modal
-  const togglePicModal = (type: any) => {
+  const togglePicModal = (type: "coverPic" | "profilePic") => {
     setPicModalVisible((prev) => ({
       ...prev,
       [type]: !prev[type],
@@ -343,32 +377,9 @@ const EditProfile = () => {
   // Sync address with local state and Redux
   useEffect(() => {
     if (address) {
-      console.log("Address to be set : ", address);
-      setAddressPickup(address.formattedAddress);
-      // setFormData((prev) => ({
-      //   ...prev,
-      //   address: {
-      //     city: address.city,
-      //     state: address.state,
-      //     country: address.country,
-      //     location: {
-      //       coordinates: address.coordinates,
-      //     },
-      //   },
-      // }));
-      setAddress({
-        city: address.city,
-        state: address.state,
-        country: address.country,
-        location: {
-          coordinates: address.coordinates,
-        },
-      });
-      finalUploadData.set("city", address.city);
-      finalUploadData.set("state", address.state);
-      finalUploadData.set("country", address.country);
-      finalUploadData.set("latitude", address.coordinates[0].toString());
-      finalUploadData.set("longitude", address.coordinates[1].toString());
+      const formattedAddress = `${address.city}, ${address.state}, ${address.country}`;
+      setAddressPickup(formattedAddress);
+      setInputValue(formattedAddress); // Update input for review. not update formData.address here, let the user confirm it
     }
   }, [address]);
 
@@ -379,24 +390,23 @@ const EditProfile = () => {
   }, [error]);
 
   // <------ Units related functions --->
-  const renderFieldValue = (field: string) => {
+  const renderFieldValue = (field: string | null) => {
     switch (field) {
       case "feetInches":
-        return `${heightInFeet} ft`;
+        return heightInFeet || "";
       case "centimeters":
-        return `${heightInCentimeters} cm`;
+        return heightInCentimeters || "";
       case "meters":
-        return `${heightInMeters} m`;
+        return heightInMeters || "";
       case "kilograms":
-        return `${weightInKg} kg`;
+        return weightInKg || "";
       case "pounds":
-        return `${weightInLbs} lbs`;
-      default:
-        return "";
+        return weightInLbs || "";
+      default: return "";
     }
   };
 
-  const handleFeetChange = (value: string) => {
+  const handleFeetChange = useCallback((value: string) => {
     setHeightInFeet(value);
     if (value === "") {
       setHeightInCentimeters("");
@@ -406,9 +416,9 @@ const EditProfile = () => {
       setHeightInCentimeters((feet * 30.48).toFixed(2));
       setHeightInMeters((feet * 0.3048).toFixed(2));
     }
-  };
-
-  const handleCentimetersChange = (value: string) => {
+  }, [setHeightInFeet, setHeightInCentimeters, setHeightInMeters]);
+  
+  const handleCentimetersChange = useCallback((value: string) => {
     setHeightInCentimeters(value);
     if (value === "") {
       setHeightInFeet("");
@@ -418,9 +428,9 @@ const EditProfile = () => {
       setHeightInFeet((cm / 30.48).toFixed(2));
       setHeightInMeters((cm / 100).toFixed(2));
     }
-  };
-
-  const handleMetersChange = (value: string) => {
+  }, [setHeightInCentimeters, setHeightInFeet, setHeightInMeters]);
+  
+  const handleMetersChange = useCallback((value: string) => {
     setHeightInMeters(value);
     if (value === "") {
       setHeightInFeet("");
@@ -430,9 +440,9 @@ const EditProfile = () => {
       setHeightInFeet((meters / 0.3048).toFixed(2));
       setHeightInCentimeters((meters * 100).toFixed(2));
     }
-  };
-
-  const handleKgChange = (value: string) => {
+  }, [setHeightInMeters, setHeightInFeet, setHeightInCentimeters]);
+  
+  const handleKgChange = useCallback((value: string) => {
     setWeightInKg(value);
     if (value === "") {
       setWeightInLbs("");
@@ -440,9 +450,9 @@ const EditProfile = () => {
       const kg = parseFloat(value) || 0;
       setWeightInLbs((kg * 2.20462).toFixed(2));
     }
-  };
-
-  const handleLbsChange = (value: string) => {
+  }, [setWeightInKg, setWeightInLbs]);
+  
+  const handleLbsChange = useCallback((value: string) => {
     setWeightInLbs(value);
     if (value === "") {
       setWeightInKg("");
@@ -450,7 +460,8 @@ const EditProfile = () => {
       const lbs = parseFloat(value) || 0;
       setWeightInKg((lbs / 2.20462).toFixed(2));
     }
-  };
+  }, [setWeightInLbs, setWeightInKg]);
+
   // <------ Units related functions --->
 
   // Initialize final upload data to empty on path change
@@ -467,7 +478,7 @@ const EditProfile = () => {
       router.push("/profile");
     } catch (error) {
       console.error("Submission error:", error);
-      alert(`Update failed: ${error}`);
+      showToast(`Update failed: ${error}`);
     } finally {
       setIsLoading(false);
       finalUploadData = new FormData();
@@ -586,15 +597,11 @@ const EditProfile = () => {
               activeOpacity={0.9}
               className="bg-black h-full w-full"
             >
-              <Image
-                source={{
-                  uri:
-                    (coverImage as string) ||
-                    "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }}
-                style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                resizeMode="cover"
-              />
+              {coverImage ? (
+                <Image source={{ uri: coverImage as string }} style={{ width: "100%", height: "100%", opacity: 0.5 }} resizeMode="cover" />
+              ) : (
+                <Image source={{ uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }} style={{ width: "100%", height: "100%", opacity: 0.5 }} resizeMode="cover" />
+              )}
               <MaterialCommunityIcons
                 className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
                 name="camera-plus-outline"
@@ -608,15 +615,11 @@ const EditProfile = () => {
               activeOpacity={0.9}
               className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full border-2 border-black"
             >
-              <Image
-                source={{
-                  uri:
-                    (profileImage as string) ||
-                    "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }}
-                className="w-full h-full opacity-50 rounded-full bg-cover"
-              />
-
+              {profileImage ? (
+                <Image source={{ uri: profileImage as string }} className="w-full h-full opacity-50 rounded-full bg-cover" />
+              ) : (
+                <Image source={{ uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }} className="w-full h-full opacity-50 rounded-full bg-cover" />
+              )}
               <MaterialCommunityIcons
                 className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
                 name="camera-plus-outline"
@@ -660,18 +663,20 @@ const EditProfile = () => {
             />
           </View>
           {/* username, dob, location, height, weight */}
-          {formConfig.map(({ type, label, icon, placeholder }, index) => (
+          {formConfig.map(({ type, label, icon, placeholder }, index: Number) => (
             <FormField
               key={type}
               label={label}
               value={
-                type === "address" // Check if the type is "address"
-                  ? `${formData.address?.city}, ${formData.address?.state}, ${formData.address?.country}` // Concatenate address properties
-                  : formData[type] || "" // Use the value directly for other fields
+                type === "address"
+                  ? formData.address?.city && formData.address?.state && formData.address?.country
+                    ? `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`
+                    : ""
+                  : formData[type as keyof UserData] || ""
               }
               isDate={type === "dateOfBirth" && true}
               placeholder={placeholder || "not given"}
-              onPress={() => openModal(type)}
+              onPress={() => openModal(type as PicType)}
               icon={icon}
               isLast={index === formConfig.length - 1}
             />
@@ -921,33 +926,33 @@ const EditProfile = () => {
                     {picType === "height" && (
                       <>
                         <MeasurementInput
-                          unit="In feet inches [approx.]-"
+                          unit={unit1 || ""}
                           value={heightInFeet}
                           onChange={handleFeetChange}
                           field="feetInches"
-                          selectedField={selectedField}
+                          selectedField={selectedField || ""}
                           toggleField={() => toggleSelectedField("feetInches")}
                           renderFieldValue={() =>
                             renderFieldValue("feetInches")
                           }
                         />
                         <MeasurementInput
-                          unit="In Centimeters [approx.]-"
+                          unit={unit2 || ""}
                           value={heightInCentimeters}
                           onChange={handleCentimetersChange}
                           field="centimeters"
-                          selectedField={selectedField}
+                          selectedField={selectedField || ""}
                           toggleField={() => toggleSelectedField("centimeters")}
                           renderFieldValue={() =>
                             renderFieldValue("centimeters")
                           }
                         />
                         <MeasurementInput
-                          unit="In meters [approx.]-"
+                          unit={unit3 || ""}
                           value={heightInMeters}
                           onChange={handleMetersChange}
                           field="meters"
-                          selectedField={selectedField}
+                          selectedField={selectedField || ""}
                           toggleField={() => toggleSelectedField("meters")}
                           renderFieldValue={() => renderFieldValue("meters")}
                         />
@@ -956,20 +961,20 @@ const EditProfile = () => {
                     {picType === "weight" && (
                       <>
                         <MeasurementInput
-                          unit="In Kilograms [approx.]-"
+                          unit={unit1 || ""}
                           value={weightInKg}
                           onChange={handleKgChange}
                           field="kilograms"
-                          selectedField={selectedField}
+                          selectedField={selectedField || ""}
                           toggleField={() => toggleSelectedField("kilograms")}
                           renderFieldValue={() => renderFieldValue("kilograms")}
                         />
                         <MeasurementInput
-                          unit="In pounds [approx.]-"
+                          unit={unit3 || ""}
                           value={weightInLbs}
                           onChange={handleLbsChange}
                           field="pounds"
-                          selectedField={selectedField}
+                          selectedField={selectedField || ""}
                           toggleField={() => toggleSelectedField("pounds")}
                           renderFieldValue={() => renderFieldValue("pounds")}
                         />
@@ -981,7 +986,7 @@ const EditProfile = () => {
                     <Text className="text-gray-500 text-xl">{label}</Text>
                     <View className="flex-row border-b border-white">
                       <TextInput
-                        value={dateFormatter(inputValue, "date")}
+                        value={dateFormatter(new Date(inputValue), "date")}
                         onChangeText={setInputValue}
                         placeholder={placeholder}
                         placeholderTextColor="gray"
@@ -1001,15 +1006,14 @@ const EditProfile = () => {
                   <>
                     <Text className="text-gray-500 text-xl">{label}</Text>
                     <View className="flex-row border-b border-white">
-                      <TextInput
-                        value={
-                          picType === "address" ? addressPickup : inputValue
-                        }
-                        onChangeText={
-                          picType === "address"
-                            ? setAddressPickup
-                            : setInputValue
-                        }
+                    <TextInput
+                        value={inputValue}
+                        onChangeText={(text) => {
+                          setInputValue(text);
+                          if (picType === "address") {
+                            setAddressPickup(text); //sync addressPickup with input
+                          }
+                        }}
                         placeholder={placeholder}
                         placeholderTextColor="gray"
                         className="text-white text-4xl flex-1 pl-0 pb-0"
@@ -1285,9 +1289,9 @@ const MeasurementInput = ({
   value: string;
   onChange: (text: string) => void;
   field: string;
-  selectedField: string;
+  selectedField: string | null;
   toggleField: () => void;
-  renderFieldValue: () => string;
+  renderFieldValue: (field: string | null) => string;
 }) => {
   // Validation logic for height and weight
   const handleInputChange = (text: string) => {
@@ -1337,8 +1341,8 @@ const MeasurementInput = ({
           className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-24"
         />
         <CustomButton
-          field={field}
-          selectedField={selectedField}
+          field={field as "feetInches" | "centimeters" | "meters" | "kilograms" | "pounds"}
+          selectedField={selectedField || ""}
           toggleSelectedField={toggleField}
           renderFieldValue={() => renderFieldValue(field)}
         />

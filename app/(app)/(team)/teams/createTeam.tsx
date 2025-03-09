@@ -226,35 +226,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       }));
     }
   };
-  const uriToFile = async (uri) => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
 
-    // Convert blob to File object
-    const file = new File([blob], "image.jpg", { type: blob.type });
-    return file;
-  };
-
-  // const selectImage = async () => {
-  //   const permissionResult =
-  //     await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-  //   if (permissionResult.granted === false) {
-  //     alert("Permission to access camera roll is required!");
-  //     return;
-  //   }
-
-  //   const result = await ImagePicker.launchImageLibraryAsync({
-  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-  //     allowsEditing: true,
-  //     aspect: [1, 1],
-  //     quality: 1,
-  //   });
-
-  //   if (!result.canceled) {
-  //     setFormData({ ...formData, logo: result.assets[0].uri });
-  //   }
-  // };
   const selectImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -285,9 +257,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       }));
 
       // console.log("FormData:", formData._parts); // Debugging
-
-      // Now you can send formData to your API just like in the first code
-      // Example: await uploadLogo(formData);
     }
   };
 
@@ -317,8 +286,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       return;
     }
     console.log("Create team", formData);
-    dispatch(createTeam(formData));
+    // dispatch(createTeam(formData));
     // router.push("../teams/teamCreationDone");
+    router.push("../teams/67cd0bb8970c518cc730d485");
   };
 
   return (

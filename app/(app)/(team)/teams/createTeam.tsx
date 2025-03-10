@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { createTeam } from "~/reduxStore/slices/team/teamSlice";
 import { AppDispatch } from "~/reduxStore";
+import { fetchUserSuggestions } from "~/reduxStore/slices/user/onboardingSlice";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -140,9 +141,10 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
+  const [suggestedMembers, setSuggestedMembers] = useState([]);
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error } = useSelector((state: RootState) => state.team);
   const { user } = useSelector((state: RootState) => state?.profile);
+  const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   useEffect(() => {
     if (user?.id) {
       setFormData((prevFormData) => ({
@@ -152,6 +154,17 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    console.log("Fetching user suggestions...");
+    dispatch(
+      fetchUserSuggestions({
+        sportsData: ["67cd0bb8970c518cc730d485"],
+        limit: 10,
+        page: 1,
+      }),
+    );
+  }, [dispatch, formData?.sport]); // Add dependencies to avoid unnecessary re-renders
 
   const [formData, setFormData] = useState<FormData>({
     logo: null,
@@ -165,17 +178,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     members: [],
     createdBy: user?.id,
   });
-
-  // Update location when params.country changes
-  // useEffect(() => {
-  //   const country = params?.country;
-  //   if (country) {
-  //     setFormData((prevFormData) => ({
-  //       ...prevFormData,
-  //       location: `${country}`,
-  //     }));
-  //   }
-  // }, [router]);
 
   const games = ["Cricket", "Kabaddi", "Basketball", "Hockey", "Volleyball"];
 
@@ -268,6 +270,8 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   };
 
   const handleInviteMembers = (selectedMembers: Member[]) => {
+    // console.log(fetchedUsers);
+    console.log("Selected members:", selectedMembers);
     setFormData({
       ...formData,
       members: [...formData.members, ...selectedMembers],
@@ -286,9 +290,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       return;
     }
     console.log("Create team", formData);
-    // dispatch(createTeam(formData));
-    // router.push("../teams/teamCreationDone");
-    router.push("../teams/67cd0bb8970c518cc730d485");
+    dispatch(createTeam(formData));
+    router.push("../teams/teamCreationDone");
+    // router.push("../teams/67cd0bb8970c518cc730d485");
   };
 
   return (
@@ -553,12 +557,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
                   {formData.members.map((member) => (
                     <MemberCard
-                      key={member.id}
-                      imageUrl={member.image}
-                      name={member.name}
-                      description={member.role}
+                      key={member._id}
+                      imageUrl={member.profilePic}
+                      name={member.firstName}
+                      description={member?.headline}
                       isAdmin={true}
-                      onRemove={() => removeMember(member.id)}
+                      onRemove={() => removeMember(member._id)}
                       onPress={() => console.log("Member card clicked")}
                     />
                   ))}
@@ -582,7 +586,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   onInvite={handleInviteMembers}
                   buttonName="Invite"
                   multiselect={true}
-                  player={dummyMembers}
+                  player={fetchedUsers}
                 />
               </View>
             </View>

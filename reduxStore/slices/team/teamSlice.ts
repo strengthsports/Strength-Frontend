@@ -136,6 +136,39 @@ export const fetchTeamDetails = createAsyncThunk<
   }
 });
 
+//fetch team/s
+export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
+  "team/fetchTeams",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken"); // Fetch token properly
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Failed to fetch teams");
+      }
+
+      console.log("Teams:", data.data);
+      return data.data; // Return only the relevant data
+    } catch (error: any) {
+      console.error("Error fetching teams:", error.message);
+      return rejectWithValue(error.message || "Network error!"); // Ensure proper error handling
+    }
+  },
+);
+
 //invite member/s
 
 const teamSlice = createSlice({

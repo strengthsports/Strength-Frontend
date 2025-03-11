@@ -26,6 +26,7 @@ import {
 import PostContainer from "~/components/Cards/postContainer";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
+import { Divider } from "react-native-elements";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -124,6 +125,11 @@ export default function Home() {
         return (
           <View className="w-screen">
             <PostContainer item={item.data} />
+            <Divider
+              style={{ marginHorizontal: "auto", width: "95%" }}
+              width={0.2}
+              color="grey"
+            />
           </View>
         );
       }

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SearchState {
-  searchHistory: string[]; // Store only user IDs
+  searchHistory: any[]; // Store full user objects
   recentSearches: string[];
 }
 
@@ -14,18 +14,17 @@ const searchSlice = createSlice({
   name: "search",
   initialState,
   reducers: {
-    addSearchHistory: (state, action: PayloadAction<string>) => {
-      if (!state.searchHistory.includes(action.payload)) {
-        state.searchHistory.unshift(action.payload);
-      }
+    addSearchHistory: (state, action: PayloadAction<any>) => {
+      state.searchHistory = [action.payload, ...state.searchHistory].slice(0, 10); // Keep last 10 searches
     },
     addRecentSearch: (state, action: PayloadAction<string>) => {
-      if (!state.recentSearches.includes(action.payload)) {
-        state.recentSearches.unshift(action.payload);
-      }
+      state.recentSearches = [action.payload, ...state.recentSearches].slice(0, 10);
+    },
+    resetSearchHistory: (state) => {
+      state.searchHistory = []; // Reset search history to empty array
     },
   },
 });
 
-export const { addSearchHistory, addRecentSearch } = searchSlice.actions;
+export const { addSearchHistory, addRecentSearch, resetSearchHistory } = searchSlice.actions;
 export default searchSlice.reducer;

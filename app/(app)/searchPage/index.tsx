@@ -17,6 +17,7 @@ import { useSearchUsersMutation } from "~/reduxStore/api/explore/searchApi";
 import {
   addSearchHistory,
   addRecentSearch,
+  resetSearchHistory
 } from "~/reduxStore/slices/explore/searchSlice";
 import SearchInput from "~/components/search/searchInput";
 import SearchHistoryText from "~/components/search/searchHistoryText";
@@ -26,10 +27,13 @@ const SearchPage: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { width } = Dimensions.get("window");
+  const { height } = Dimensions.get("window");
 
   const [searchText, setSearchText] = useState<string>("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchBarHeight, setSearchBarHeight] = useState(0);
+
 
   // Redux State: Extract user info & search history
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -39,16 +43,12 @@ const SearchPage: React.FC = () => {
   const latitude = location?.coordinates?.[1] ?? null;
   const longitude = location?.coordinates?.[0] ?? null;
 
-  const searchHistory = useSelector((state: RootState) =>
-    state.search.searchHistory.filter((id) => id !== undefined && id !== null)
+  const searchHistory = useSelector((state: RootState) => 
+    state.search.searchHistory.filter((item) => item !== null) // Filter out null values
   );
-  
-  const recentSearches = useSelector(
-    (state: RootState) => state.search.recentSearches
-  );
-  const authUser = useSelector((state: RootState) => state.auth.user);
+  const recentSearches = useSelector((state: RootState) => state.search.recentSearches);
 
-  console.log(searchHistory);
+  console.log("Search History (Stored Users):", searchHistory);
 
   // Search API Mutation Hook
   const [searchUsers, { isLoading }] = useSearchUsersMutation();
@@ -81,36 +81,31 @@ const SearchPage: React.FC = () => {
       setSearchResults([]);
     }
   }, [searchText, latitude, longitude, userId]);
-
-  // Function to Get User Details from Redux Store (by userId)
-  const getUserById = (id: string) => {
-    return authUser?.id === id ? authUser : null;
+  const clearSearchHistory = () => {
+    dispatch(resetSearchHistory());
   };
-  console.log("Search History (Raw):", searchHistory);
-
-  // Filter valid users from search history
-  const historyUsers = searchHistory.map(getUserById).filter(Boolean);
-  console.log(historyUsers);
-
+  
   // Handle Item Click (Save to Search History & Recent Searches)
-  const handleItemPress = (item: { _id: string; firstName: string; lastName: string }) => {
-    console.log("Selected User ID:", item._id); // Debug log
+  const handleItemPress = (user) => {
+    console.log("Selected User:", user); // Debug log
     
-    if (!item._id) {
-      console.error("Invalid user ID:", item); // Log invalid data
+    if (!user?._id) {
+      console.error("Invalid user:", user); // Log invalid data
       return;
     }
   
-    setSearchText(`${item.firstName} ${item.lastName}`);
-    dispatch(addSearchHistory(item._id)); // Use _id instead of id
-    dispatch(addRecentSearch(`${item.firstName} ${item.lastName}`));
+    setSearchText(`${user.firstName} ${user.lastName}`);
+    dispatch(addSearchHistory(user)); // Store full user object in Redux
+    dispatch(addRecentSearch(`${user.firstName} ${user.lastName}`));
   };
-  
 
   return (
     <SafeAreaView>
       {/* Header Section */}
-      <View className="flex-row items-center my-4 gap-x-2 max-w-[640px] w-[90%] mx-auto">
+      <View className="flex-row items-center my-4 gap-x-2 max-w-[640px] w-[90%] mx-auto" onLayout={(event) => {
+        const { height } = event.nativeEvent.layout;
+        setSearchBarHeight(height); // 🟢 Store search bar height dynamically
+      }}>
         <TouchableOpacity onPress={() => router.back()}>
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
@@ -121,14 +116,13 @@ const SearchPage: React.FC = () => {
       {searchText.length > 0 && (
         <View
           style={{
-            backgroundColor: "#1E1E1E",
-            width: "90%",
-            borderRadius: 10,
-            padding: 10,
-            maxHeight: 200,
+            backgroundColor: "black",
+            width: width,
+            padding: 8,
+            maxHeight: height,
             alignSelf: "center",
             position: "absolute",
-            top: 80,
+            top: searchBarHeight+10,
             zIndex: 10,
           }}
         >
@@ -137,68 +131,75 @@ const SearchPage: React.FC = () => {
           ) : (
             <FlatList
               data={searchResults || []}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => handleItemPress(item)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    borderBottomWidth: 1,
-                    borderBottomColor: "#444",
-                  }}
-                >
-                  {item.profilePic && (
-                    <Image
-                      source={{ uri: item.profilePic }}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        marginRight: 10,
-                      }}
-                    />
-                  )}
-
-                  <Text
-                    style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+              renderItem={({ item }) =>
+                item ? (
+                  <TouchableOpacity
+                    onPress={() => handleItemPress(item)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 10,
+                      paddingHorizontal: 15,
+                      borderBottomWidth: 1,
+                      borderBottomColor: "black",
+                    }}
                   >
-                    {item.firstName} {item.lastName}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item, index) =>
-                item?._id ? item._id.toString() : index.toString()
+                    {item.profilePic && (
+                      <Image
+                        source={{ uri: item.profilePic }}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          marginRight: 10,
+                        }}
+                      />
+                    )}
+
+                    <Text
+                      style={{ color: "white", fontSize: 16, fontWeight: "300" }}
+                    >
+                      {item.firstName} {item.lastName}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null
               }
+              keyExtractor={(item, index) => (item?._id ? item._id.toString() : index.toString())}
             />
           )}
         </View>
       )}
 
       {/* Recent Profiles and Search History */}
+      
       {searchText.length === 0 && (
         <View className="px-5">
           <View className="flex-row justify-between items-center">
             <Text className="text-2xl text-[#808080] mb-2">Recent</Text>
           </View>
+
+          {/* Search History Profiles */}
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={historyUsers}
-            renderItem={({ item }) => (
-              <SearchHistoryProfile
-                name={item.firstName}
-                username={item.username}
-              />
-            )}
-            keyExtractor={(item) => item.id.toString()}
+            data={searchHistory}
+            renderItem={({ item }) =>
+              item ? (
+                <SearchHistoryProfile
+                  name={item.firstName ?? "Mrinal"}
+                  username={item.username ?? "Anand"}
+                  profilePic={item.profilePic}
+                />
+              ) : null
+            }
+            keyExtractor={(item, index) => `${item?._id || index}-${index}`}
             contentContainerStyle={{
               paddingHorizontal: 0,
               gap: 16,
             }}
           />
 
+          {/* Recent Searches */}
           <FlatList
             showsVerticalScrollIndicator={false}
             data={recentSearches}

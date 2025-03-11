@@ -7,6 +7,35 @@ import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
 import { RefreshControl } from "react-native";
 
+type Notification = {
+  _id: string;
+  sender: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    profilePic: string | null;
+    type: string;
+  };
+  receiver: {
+    _id: string;
+    type: string;
+  };
+  target: {
+    _id: string;
+    assets: Object[] | any;
+    caption: string;
+    type: string;
+  };
+  type: string;
+  isNotificationRead: boolean;
+  [key: string]: any;
+};
+
+type Grouped = {
+  title: string;
+  data: Notification[];
+};
+
 const Notification = () => {
   // RTK Query hook that now subscribes to real-time notifications via Socket.IO
   const { data, isLoading, isError, refetch } = useGetNotificationsQuery(null);
@@ -16,7 +45,7 @@ const Notification = () => {
 
   // Group notifications by time periods: Today, Yesterday, 1 Week Ago, 2 Weeks Ago
   const groupNotificationsByTime = (notifications = []) => {
-    const grouped = [
+    const grouped: Grouped[] = [
       { title: "Today", data: [] },
       { title: "Yesterday", data: [] },
       { title: "1 Week Ago", data: [] },
@@ -24,7 +53,7 @@ const Notification = () => {
     ];
 
     const now = moment();
-    notifications.forEach((notification) => {
+    notifications.forEach((notification: Notification) => {
       const createdAt = moment(notification.createdAt);
       const daysDiff = now.diff(createdAt, "days");
 
@@ -63,7 +92,7 @@ const Notification = () => {
   const debouncedRefresh = debounce(handleRefresh, 1000);
 
   return (
-    <View style={{ flex: 1, padding: 24, backgroundColor: "black" }}>
+    <View style={{ padding: 24, backgroundColor: "black" }}>
       <Text style={{ fontSize: 24, color: "white", marginBottom: 16 }}>
         Notifications
       </Text>
@@ -87,23 +116,26 @@ const Notification = () => {
       {groupedNotifications.length > 0 ? (
         <SectionList
           sections={groupedNotifications}
-          keyExtractor={(item) =>
+          keyExtractor={(item: Notification) =>
             item.notificationId
               ? item.notificationId.toString()
               : item._id.toString()
           }
-          renderItem={({ item }) => (
-            <NotificationCardLayout
-              date={item.createdAt}
-              type={item.type}
-              sender={item.sender}
-              target={item.target}
-            />
-          )}
+          renderItem={({ item }) => {
+            console.log("Item : ", item);
+            return (
+              <NotificationCardLayout
+                date={item.createdAt}
+                type={item.type}
+                sender={item.sender}
+                target={item.target}
+              />
+            );
+          }}
           renderSectionHeader={({ section: { title } }) => (
             <Text
               style={{
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: "bold",
                 color: "#808080",
                 marginVertical: 8,

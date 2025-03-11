@@ -103,8 +103,10 @@ const SignupEmail1 = () => {
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";
+        // console.log('Zod response',validationError)
         feedback(validationError, "error");
       } else {
+        console.log('Backend response: ',err)
         feedback(err || "An error occurred. Please try again.");
       }
     }
@@ -226,6 +228,7 @@ const SignupEmail1 = () => {
                 marginTop: 4,
                 paddingLeft: 10,
                 alignItems: "center",
+                justifyContent: "space-between", // Add this to space out the icon and text
               }}
             >
               <TouchableOpacity
@@ -234,12 +237,21 @@ const SignupEmail1 = () => {
                 activeOpacity={0.5}
               >
                 <AntDesign name="calendar" size={25} color="white" />
-                <Text
-                  style={{ color: "white", fontSize: 14, fontWeight: "400" }}
-                >
+                <Text style={{ color: "white", fontSize: 14, fontWeight: "400" }}>
                   {dateOfBirth}
                 </Text>
               </TouchableOpacity>
+
+              {/* Add the cross/close icon here */}
+              {dateOfBirth && (
+                <TouchableOpacity
+                  onPress={() => setDateOfBirth("")} // Clear the date of birth
+                  activeOpacity={0.5}
+                  style={{ paddingRight: 10 }}
+                >
+                  <AntDesign name="close" size={20} color="white" />
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
           </View>
 

@@ -23,6 +23,10 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import TeamCreatedPage from "./teamCreationDone";
 import LocationModal from "./components/locationModal";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
+import { createTeam } from "~/reduxStore/slices/team/teamSlice";
+import { AppDispatch } from "~/reduxStore";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -43,14 +47,16 @@ interface PotentialMember {
 }
 
 interface FormData {
-  logo: string | null;
+  logo: any;
   name: string;
   sport: string;
-  established: string;
-  location: string;
+  establishedOn: string;
+  address: string;
   gender: "male" | "female";
   description: string;
   members: Member[];
+  admin: string[];
+  createdBy: string | null;
 }
 const dummyMembers: PotentialMember[] = [
   {
@@ -134,15 +140,30 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.team);
+  const { user } = useSelector((state: RootState) => state?.profile);
+  useEffect(() => {
+    if (user?.id) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        admin: [user.id],
+        createdBy: user.id,
+      }));
+    }
+  }, [user]);
+
   const [formData, setFormData] = useState<FormData>({
     logo: null,
     name: "",
     sport: "Cricket",
-    location: "",
-    established: "",
+    address: "",
+    establishedOn: "",
     gender: "male",
     description: "",
+    admin: [user?.id],
     members: [],
+    createdBy: user?.id,
   });
 
   // Update location when params.country changes
@@ -186,7 +207,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       console.log("Country:", country);
       setFormData((prevFormData) => ({
         ...prevFormData,
-        location: data.country,
+        address: data.country,
       }));
     }
   };
@@ -201,16 +222,44 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       setDate(selected);
       setFormData((prevFormData) => ({
         ...prevFormData,
-        established: formattedDate,
+        establishedOn: formattedDate,
       }));
     }
   };
+  const uriToFile = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
 
+    // Convert blob to File object
+    const file = new File([blob], "image.jpg", { type: blob.type });
+    return file;
+  };
+
+  // const selectImage = async () => {
+  //   const permissionResult =
+  //     await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  //   if (permissionResult.granted === false) {
+  //     alert("Permission to access camera roll is required!");
+  //     return;
+  //   }
+
+  //   const result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     aspect: [1, 1],
+  //     quality: 1,
+  //   });
+
+  //   if (!result.canceled) {
+  //     setFormData({ ...formData, logo: result.assets[0].uri });
+  //   }
+  // };
   const selectImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === false) {
+    if (!permissionResult.granted) {
       alert("Permission to access camera roll is required!");
       return;
     }
@@ -223,7 +272,22 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     });
 
     if (!result.canceled) {
-      setFormData({ ...formData, logo: result.assets[0].uri });
+      const file = {
+        uri: result.assets[0].uri,
+        name: "logo.jpg", // You can customize the filename
+        type: "image/jpeg",
+      };
+
+      console.log("File object :", file);
+      setFormData((prevData) => ({
+        ...prevData,
+        logo: file, // Only updating logo
+      }));
+
+      // console.log("FormData:", formData._parts); // Debugging
+
+      // Now you can send formData to your API just like in the first code
+      // Example: await uploadLogo(formData);
     }
   };
 
@@ -245,15 +309,16 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     if (
       !formData.name ||
       !formData.sport ||
-      !formData.location ||
-      !formData.established ||
+      !formData.address ||
+      !formData.establishedOn ||
       !formData.description
     ) {
       alert("Please fill all required fields.");
       return;
     }
     console.log("Create team", formData);
-    router.push("../teams/teamCreationDone");
+    dispatch(createTeam(formData));
+    // router.push("../teams/teamCreationDone");
   };
 
   return (
@@ -292,7 +357,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                       {/* Left side: Image */}
                       <View className="relative">
                         <Image
-                          source={{ uri: formData.logo }}
+                          source={{ uri: formData.logo.uri }}
                           className="w-32 h-28 rounded"
                         />
                       </View>
@@ -408,10 +473,10 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     </Text> */}
                     <Text
                       className={`flex-1 ${
-                        formData.location ? "text-white" : "text-gray-400"
+                        formData.address ? "text-white" : "text-gray-400"
                       }`}
                     >
-                      {formData.location || "Add location"}
+                      {formData.address || "Add location"}
                     </Text>
                     <EntypoIcon name="location-pin" size={20} color="#b0b0b0" />
                   </TouchableOpacity>

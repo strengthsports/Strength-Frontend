@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -6,10 +6,9 @@ import {
   Text,
   Animated,
   Image,
-  TouchableWithoutFeedback,
-  Platform,
-  TouchableNativeFeedback,
+  Modal as RNModal,
 } from "react-native";
+import Modal from "react-native-modal";
 import Icon from "react-native-vector-icons/Entypo";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import defaultPic from "../../assets/images/nopic.jpg";
@@ -19,8 +18,10 @@ import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
+import { Platform } from "react-native";
 import { ToastAndroid } from "react-native";
-import SportsChoice from "~/app/onboarding/sportsChoice1";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AddPostContainer from "../Cards/AddPostContainer";
 
 interface MenuItem {
   label: string;
@@ -37,13 +38,8 @@ const HEADER_HEIGHT = 60;
 const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { error, loading, user } = useSelector((state: any) => state?.profile);
-  console.log("User Data:", user);
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(250)).current;
-  const rotateAnim = React.useRef(new Animated.Value(0)).current;
-  const router = useRouter();
-
+  const [isAddPostContainerOpen, setAddPostContainerOpen] =
+    useState<boolean>(false);
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
     try {
@@ -59,33 +55,20 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
-        ? ToastAndroid.show("Logout failed", ToastAndroid.SHORT)
+        ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
             type: "error",
-            text1: "Logout failed",
+            text1: "Logged out successfully",
             visibilityTime: 1500,
             autoHide: true,
           });
     }
   };
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+
   const toggleSidebar = () => {
-    const toValue = isSidebarOpen ? 250 : 0;
-    const rotateToValue = isSidebarOpen ? 0 : 1;
-
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(rotateAnim, {
-        toValue: rotateToValue,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
     setIsSidebarOpen(!isSidebarOpen);
   };
 
@@ -94,7 +77,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
   };
 
   return (
-    <View className="flex-1">
+    <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
         className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
@@ -122,12 +105,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             justifyContent: "space-between",
             paddingHorizontal: 6,
           }}
-          onPress={() =>
-            router.push({
-              pathname: "/(app)/(post)/addPost",
-              options: { animation: "slide_from_bottom" }, // Specify the animation
-            })
-          }
+          onPress={() => setAddPostContainerOpen(true)}
         >
           <Text
             style={{
@@ -166,99 +144,132 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
 
       {/* Sidebar Modal */}
       {isSidebarOpen && (
-        <View className="absolute top-0 left-0 bottom-0 w-3/4 bg-black bg-opacity-80 z-50 pt-6">
-          {/* Close Button */}
+        <Modal
+          isVisible={isSidebarOpen}
+          animationIn="slideInLeft"
+          animationOut="slideOutLeft"
+          onBackButtonPress={() => setIsSidebarOpen(false)}
+          style={{ margin: 0, padding: 0 }}
+        >
           <TouchableOpacity
-            onPress={closeSidebar}
-            className="absolute top-4 right-4"
+            className="flex-1"
+            activeOpacity={1}
+            onPress={() => setIsSidebarOpen(false)}
           >
-            <Icon name="cross" size={30} color="white" />
-          </TouchableOpacity>
+            <View
+              className="absolute top-0 left-0 bottom-0 w-3/4 bg-black z-50 pt-6"
+              onStartShouldSetResponder={() => true}
+            >
+              {/* Close Button */}
+              <TouchableOpacity
+                onPress={() => setIsSidebarOpen(false)}
+                className="absolute top-4 right-4"
+              >
+                <Icon name="cross" size={30} color="white" />
+              </TouchableOpacity>
 
-          {/* Sidebar Content */}
-          <View className="flex-1 pt-12">
-            {/* Profile Section */}
-            <View className="flex-row items-center space-x-4 mb-6 px-6">
-              <Image
-                source={
-                  user?.profilePic ? { uri: user?.profilePic } : defaultPic
-                }
-                className="w-16 h-16 rounded-full"
-                resizeMode="cover"
-              />
-              <View className="pl-4">
-                <Text className="text-white text-xl font-semibold">
-                  {user?.firstName} {user?.lastName}
-                </Text>
-                <Text className="text-gray-400 text-lg">@{user?.username}</Text>
-              </View>
-            </View>
-
-            {/* Sidebar Menu */}
-            <View className=" mt-2 py-4 border-t border-[#5C5C5C] px-6">
-              <Text className="text-white text-4xl font-bold">
-                Manage Teams
-              </Text>
-              <View className="flex-row mt-4">
-                {/* Create Team Button */}
-                <View className="border border-[#12956B] px-4 py-2 rounded-md flex-row items-center">
-                  <TouchableOpacity
-                    onPress={() => router.push("/teams/InitiateCreateTeam")}
-                  >
-                    <Text className="text-[#12956B] text-md font-semibold">
-                      Create Team
+              {/* Sidebar Content */}
+              <View className="flex-1 pt-12">
+                {/* Profile Section */}
+                <View className="flex-row items-center space-x-4 mb-6 px-6">
+                  <Image
+                    source={
+                      user?.profilePic ? { uri: user?.profilePic } : defaultPic
+                    }
+                    className="w-16 h-16 rounded-full"
+                    resizeMode="cover"
+                  />
+                  <View className="pl-4">
+                    <Text className="text-white text-xl font-semibold">
+                      {user?.firstName} {user?.lastName}
                     </Text>
-                  </TouchableOpacity>
-                  <Icon name="plus" size={15} color="#12956B" />
-                </View>
-
-                {/* Join Team Button with Spacing */}
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push("../../../onboarding/sportsChoice1")
-                  }
-                >
-                  <View className="ml-4 bg-[#12956B] px-4 py-2 rounded-md items-center">
-                    <Text className="text-white text-md font-semibold">
-                      Join Team
+                    <Text className="text-gray-400 text-lg">
+                      @{user?.username}
                     </Text>
                   </View>
+                </View>
+
+                {/* Sidebar Menu */}
+                <View className=" mt-2 py-4 border-t border-[#5C5C5C] px-6">
+                  <Text className="text-white text-4xl font-bold">
+                    Manage Teams
+                  </Text>
+                  <View className="flex-row mt-4">
+                    {/* Create Team Button */}
+                    <View className="border border-[#12956B] px-4 py-2 rounded-md flex-row items-center">
+                      <TouchableOpacity
+                        onPress={() =>
+                          router.push("/(app)/(team)/teams/InitiateCreateTeam")
+                        }
+                      >
+                        <Text className="text-[#12956B] text-md font-semibold">
+                          Create Team
+                        </Text>
+                      </TouchableOpacity>
+                      <Icon name="plus" size={15} color="green" />
+                    </View>
+
+                    {/* Join Team Button with Spacing */}
+                    <View className="ml-4 bg-[#12956B] px-4 py-2 rounded-md items-center">
+                      <Text className="text-white text-md font-semibold">
+                        Join Team
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View className="border-t border-[#5C5C5C] mt-4 py-2 px-6">
+                  <Text className="text-white text-4xl font-semibold">
+                    Add in Squad
+                  </Text>
+                </View>
+                <View className="border-t border-b border-[#5C5C5C] mt-2 py-2 px-6">
+                  <TouchableOpacity onPress={() => handleLogout()}>
+                    <Text className="text-white text-4xl font-semibold">
+                      Logout
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View className="p-4">
+                <TouchableOpacity className="flex-row items-center border-t border-[#5C5C5C] py-3">
+                  <Feather
+                    name="settings"
+                    size={20}
+                    color="white"
+                    className="mr-2"
+                  />
+                  <Text className="text-white text-5xl font-bold">
+                    Settings
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
 
-            <View className="border-t border-[#5C5C5C] mt-4 py-2 px-6">
-              <Text className="text-white text-4xl font-semibold">
-                Add in Squad
-              </Text>
-            </View>
-            <View className="border-t border-b border-[#5C5C5C] mt-2 py-2 px-6">
-              <TouchableOpacity onPress={() => handleLogout()}>
-                <Text className="text-white text-4xl font-semibold">
-                  Logout
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View className="p-4">
-            <TouchableOpacity className="flex-row items-center border-t border-[#5C5C5C] py-3">
-              <Feather
-                name="settings"
-                size={20}
-                color="white"
-                className="mr-2"
-              />
-              <Text className="text-white text-5xl font-bold">Settings</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      {/* Add Post Modal */}
+      {isAddPostContainerOpen && (
+        <RNModal
+          visible={isAddPostContainerOpen}
+          animationType="slide"
+          onRequestClose={() => setAddPostContainerOpen(false)}
+          transparent={true}
+        >
+          <TouchableOpacity className="flex-1 bg-black" activeOpacity={1}>
+            <AddPostContainer
+              onBackPress={() => setAddPostContainerOpen(false)}
+            />
+          </TouchableOpacity>
+        </RNModal>
       )}
 
       {/* Scrollable Content Area */}
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {children}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

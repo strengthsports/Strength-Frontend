@@ -17,10 +17,17 @@ export const searchApi = createApi({
   tagTypes: ["SearchResults"],
   endpoints: (builder) => ({
     searchUsers: builder.mutation({
-      query: ({ query, limit = 10, page = 1, latitude, longitude,userId }) => ({
-        url: "", 
-        method: "POST", 
-        body: { query, limit, page, latitude, longitude,userId }, 
+      query: ({
+        username,
+        limit = 10,
+        page = 1,
+        latitude,
+        longitude,
+        userId,
+      }) => ({
+        url: "",
+        method: "POST",
+        body: { username, limit, page, latitude, longitude, userId },
       }),
       transformResponse: (response: { data: any }) => response.data,
       invalidatesTags: ["SearchResults"],
@@ -28,4 +35,4 @@ export const searchApi = createApi({
   }),
 });
 
-export const { useSearchUsersMutation } = searchApi; 
+export const { useSearchUsersMutation } = searchApi;

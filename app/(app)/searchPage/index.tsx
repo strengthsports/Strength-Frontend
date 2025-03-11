@@ -17,11 +17,12 @@ import { useSearchUsersMutation } from "~/reduxStore/api/explore/searchApi";
 import {
   addSearchHistory,
   addRecentSearch,
-  resetSearchHistory
+  resetSearchHistory,
 } from "~/reduxStore/slices/explore/searchSlice";
 import SearchInput from "~/components/search/searchInput";
 import SearchHistoryText from "~/components/search/searchHistoryText";
 import SearchHistoryProfile from "~/components/search/searchHistoryProfile";
+import nopic from "@/assets/images/nopic.jpg";
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
@@ -34,21 +35,23 @@ const SearchPage: React.FC = () => {
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchBarHeight, setSearchBarHeight] = useState(0);
 
-
   // Redux State: Extract user info & search history
-  const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const userId = useSelector((state: RootState) => state.profile.user?._id);
   const location = useSelector(
-    (state: RootState) => state.auth.user?.address?.location
+    (state: RootState) => state.profile.user?.address?.location
   );
   const latitude = location?.coordinates?.[1] ?? null;
   const longitude = location?.coordinates?.[0] ?? null;
 
-  const searchHistory = useSelector((state: RootState) => 
-    state.search.searchHistory.filter((item) => item !== null) // Filter out null values
+  const searchHistory = useSelector(
+    (state: RootState) =>
+      state.search.searchHistory.filter((item) => item !== null) // Filter out null values
   );
-  const recentSearches = useSelector((state: RootState) => state.search.recentSearches);
+  const recentSearches = useSelector(
+    (state: RootState) => state.search.recentSearches
+  );
 
-  console.log("Search History (Stored Users):", searchHistory);
+  // console.log("Search History (Stored Users):", searchHistory);
 
   // Search API Mutation Hook
   const [searchUsers, { isLoading }] = useSearchUsersMutation();
@@ -56,16 +59,19 @@ const SearchPage: React.FC = () => {
   useEffect(() => {
     if (searchText.length > 0) {
       setIsSearching(true);
+      console.log("Search Text : ", searchText);
       const fetchResults = async () => {
         try {
           const response = await searchUsers({
-            query: searchText,
+            username: searchText,
             limit: 10,
             page: 1,
             latitude,
             longitude,
             userId,
           }).unwrap();
+
+          console.log("Response :", response);
 
           setSearchResults(response || []);
         } catch (err) {
@@ -74,6 +80,8 @@ const SearchPage: React.FC = () => {
           setIsSearching(false);
         }
       };
+
+      // console.log(fetchResults);
 
       const debounce = setTimeout(fetchResults, 300); // Add debounce to reduce API calls
       return () => clearTimeout(debounce);
@@ -84,28 +92,36 @@ const SearchPage: React.FC = () => {
   const clearSearchHistory = () => {
     dispatch(resetSearchHistory());
   };
-  
+
   // Handle Item Click (Save to Search History & Recent Searches)
-  const handleItemPress = (user) => {
+  const handleItemPress = (user: any) => {
+    const serializedUser = encodeURIComponent(
+      JSON.stringify({ id: user._id, type: "User" })
+    );
     console.log("Selected User:", user); // Debug log
-    
+
     if (!user?._id) {
       console.error("Invalid user:", user); // Log invalid data
       return;
     }
-  
+
     setSearchText(`${user.firstName} ${user.lastName}`);
     dispatch(addSearchHistory(user)); // Store full user object in Redux
     dispatch(addRecentSearch(`${user.firstName} ${user.lastName}`));
+
+    router.push(`/(app)/(profile)/profile/${serializedUser}`);
   };
 
   return (
     <SafeAreaView>
       {/* Header Section */}
-      <View className="flex-row items-center my-4 gap-x-2 max-w-[640px] w-[90%] mx-auto" onLayout={(event) => {
-        const { height } = event.nativeEvent.layout;
-        setSearchBarHeight(height); // 🟢 Store search bar height dynamically
-      }}>
+      <View
+        className="flex-row items-center my-4 gap-x-2 max-w-[640px] w-[90%] mx-auto"
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setSearchBarHeight(height); // 🟢 Store search bar height dynamically
+        }}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
@@ -122,7 +138,7 @@ const SearchPage: React.FC = () => {
             maxHeight: height,
             alignSelf: "center",
             position: "absolute",
-            top: searchBarHeight+10,
+            top: searchBarHeight + 10,
             zIndex: 10,
           }}
         >
@@ -144,34 +160,40 @@ const SearchPage: React.FC = () => {
                       borderBottomColor: "black",
                     }}
                   >
-                    {item.profilePic && (
-                      <Image
-                        source={{ uri: item.profilePic }}
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
-                          marginRight: 10,
-                        }}
-                      />
-                    )}
+                    <Image
+                      source={
+                        item.profilePic ? { uri: item.profilePic } : nopic
+                      }
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        marginRight: 10,
+                      }}
+                    />
 
                     <Text
-                      style={{ color: "white", fontSize: 16, fontWeight: "300" }}
+                      style={{
+                        color: "white",
+                        fontSize: 16,
+                        fontWeight: "300",
+                      }}
                     >
                       {item.firstName} {item.lastName}
                     </Text>
                   </TouchableOpacity>
                 ) : null
               }
-              keyExtractor={(item, index) => (item?._id ? item._id.toString() : index.toString())}
+              keyExtractor={(item, index) =>
+                item?._id ? item._id.toString() : index.toString()
+              }
             />
           )}
         </View>
       )}
 
       {/* Recent Profiles and Search History */}
-      
+
       {searchText.length === 0 && (
         <View className="px-5">
           <View className="flex-row justify-between items-center">

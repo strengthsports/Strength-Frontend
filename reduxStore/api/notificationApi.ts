@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getToken } from "~/utils/secureStore";
 import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
+import { Notification } from "~/types/others";
 
 export const notificationApi = createApi({
   reducerPath: "notificationApi",
@@ -23,21 +24,21 @@ export const notificationApi = createApi({
         url: "/api/v1/notification",
         method: "GET",
       }),
-      transformResponse: (response) => response.data, // Adjust this if your API structure differs
-      providesTags: ["Notifications"],
+      transformResponse: (response: any) => response.data,
       async onCacheEntryAdded(
         arg,
         { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         const userId = useSelector((state: any) => state.profile.user._id);
+        console.log("\n\n\nUser ID fetched : ", userId);
 
         // Create a Socket.IO connection
         const socket = io(process.env.EXPO_PUBLIC_SOCKET_URL, {
           transports: ["websocket"],
         });
-        console.log("Socket connection created");
-        socket.emit("join", userId);
-        console.log("Joined room");
+        console.log("\n\nSocket connection created");
+        socket.emit("\n\njoin", userId);
+        console.log("\nJoined room");
         try {
           // Wait until the initial cache data is loaded
           await cacheDataLoaded;
@@ -48,7 +49,7 @@ export const notificationApi = createApi({
             updateCachedData((draft) => {
               // Optionally, check for duplicates here if needed:
               const exists = draft.find(
-                (n) =>
+                (n: Notification) =>
                   n._id === notification._id ||
                   n.notificationId === notification.notificationId
               );

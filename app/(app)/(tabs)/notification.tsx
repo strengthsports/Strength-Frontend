@@ -6,37 +6,14 @@ import moment from "moment";
 import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
 import { RefreshControl } from "react-native";
-
-type Notification = {
-  _id: string;
-  sender: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    profilePic: string | null;
-    type: string;
-  };
-  receiver: {
-    _id: string;
-    type: string;
-  };
-  target: {
-    _id: string;
-    assets: Object[] | any;
-    caption: string;
-    type: string;
-  };
-  type: string;
-  isNotificationRead: boolean;
-  [key: string]: any;
-};
+import { Notification } from "~/types/others";
 
 type Grouped = {
   title: string;
   data: Notification[];
 };
 
-const Notification = () => {
+const NotificationPage = () => {
   // RTK Query hook that now subscribes to real-time notifications via Socket.IO
   const { data, isLoading, isError, refetch } = useGetNotificationsQuery(null);
   console.log("Notifications:", data);
@@ -116,13 +93,8 @@ const Notification = () => {
       {groupedNotifications.length > 0 ? (
         <SectionList
           sections={groupedNotifications}
-          keyExtractor={(item: Notification) =>
-            item.notificationId
-              ? item.notificationId.toString()
-              : item._id.toString()
-          }
+          keyExtractor={(item: Notification) => item._id}
           renderItem={({ item }) => {
-            console.log("Item : ", item);
             return (
               <NotificationCardLayout
                 date={item.createdAt}
@@ -168,4 +140,4 @@ const Notification = () => {
   );
 };
 
-export default Notification;
+export default NotificationPage;

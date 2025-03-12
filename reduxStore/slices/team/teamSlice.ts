@@ -73,6 +73,7 @@ export const createTeam = createAsyncThunk<
     formData.append("gender", teamData.gender);
     formData.append("description", teamData.description);
     // formData.append("location",null);
+    formData.append("address", teamData.address);
     formData.append("assets", teamData.logo);
 
     console.log("Sending FormData:", formData);

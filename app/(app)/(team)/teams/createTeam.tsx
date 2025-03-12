@@ -52,7 +52,7 @@ interface FormData {
   name: string;
   sport: string;
   establishedOn: string;
-  address: string;
+  address: object;
   gender: "male" | "female";
   description: string;
   members: Member[];
@@ -170,7 +170,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     logo: null,
     name: "",
     sport: "Cricket",
-    address: "",
+    address: {
+      city: "Kolkata",
+      state: "West Bengal",
+      country: "India",
+      location: { type: "Point", coordinates: [22.1111, 82.8948] },
+    },
     establishedOn: "",
     gender: "male",
     description: "",
@@ -205,12 +210,35 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
   const handleSaveLocation = (data: any) => {
     const country = data.country;
-    if (country) {
-      console.log("Country:", country);
+    const city = data.city;
+    const state = data.state;
+    const coordinates = data.coordinates;
+    console.log("Coordinates", coordinates);
+    // const formattedAddress = data.formattedAddress;
+    // console.log("Formmatted Address", formattedAddress);
+    if (country && city && state) {
+      console.log("formatted address", `${city}, ${country}`);
+      // setFormData((prevFormData) => ({
+      //   ...prevFormData,
+      //   address: `${city}, ${country}`,
+      // }));
       setFormData((prevFormData) => ({
         ...prevFormData,
-        address: data.country,
+        address: {
+          ...prevFormData.address,
+          city: city,
+          state: state,
+          country: country,
+          location: {
+            ...prevFormData.address.location,
+            coordinates: coordinates, // New coordinates for Mumbai
+          },
+        },
       }));
+      console.log(
+        "Form data address:",
+        JSON.stringify(formData.address, null, 2),
+      );
     }
   };
 
@@ -278,7 +306,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     });
   };
 
-  const handleCreateTeam = () => {
+  const handleCreateTeam = async () => {
     if (
       !formData.name ||
       !formData.sport ||
@@ -290,9 +318,11 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       return;
     }
     console.log("Create team", formData);
-    dispatch(createTeam(formData));
-    router.push("../teams/teamCreationDone");
-    // router.push("../teams/67cd0bb8970c518cc730d485");
+    const response = await dispatch(createTeam(formData));
+    console.log("Response", response);
+    if (response.payload.success) {
+      router.push("../teams/teamCreationDone");
+    }
   };
 
   return (
@@ -447,10 +477,10 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     </Text> */}
                     <Text
                       className={`flex-1 ${
-                        formData.address ? "text-white" : "text-gray-400"
+                        formData.address.city ? "text-white" : "text-gray-400"
                       }`}
                     >
-                      {formData.address || "Add location"}
+                      {formData.address?.city || "Add location"}
                     </Text>
                     <EntypoIcon name="location-pin" size={20} color="#b0b0b0" />
                   </TouchableOpacity>

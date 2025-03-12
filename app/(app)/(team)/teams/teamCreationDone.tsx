@@ -66,7 +66,7 @@ const TeamCreatedPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    router.replace("../teams/1/edit/editTeam");
+    router.replace("../teams/67cd0bb8970c518cc730d485");
   };
   return (
     <SafeAreaView className="flex-1 bg-black pt-2">

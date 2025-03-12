@@ -33,9 +33,10 @@ type TeamPayload = {
   gender: string;
   description: string;
 };
-function convertToDate(dateString) {
+function convertToDate(dateString: any) {
   // Validate input format (M/YYYY or MM/YYYY)
   if (!dateString || !/^\d{1,2}\/\d{4}$/.test(dateString)) {
+    throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
     throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
   }
 
@@ -72,6 +73,7 @@ export const createTeam = createAsyncThunk<
     formData.append("gender", teamData.gender);
     formData.append("description", teamData.description);
     // formData.append("location",null);
+    formData.append("address", teamData.address);
     formData.append("assets", teamData.logo);
 
     console.log("Sending FormData:", formData);
@@ -84,7 +86,7 @@ export const createTeam = createAsyncThunk<
           Authorization: `Bearer ${token}`,
         },
         body: formData, // FormData does not need JSON.stringify()
-      }
+      },
     );
 
     const data = await response.json();
@@ -104,6 +106,69 @@ export const createTeam = createAsyncThunk<
 //edit team
 
 //fetch team details
+export const fetchTeamDetails = createAsyncThunk<
+  Team,
+  string,
+  { rejectValue: string }
+>("team/fetchTeamDetails", async (teamId: string, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/${teamId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const data = await response.json();
+    const teamData = data.data;
+    console.log("Team Data:", teamData);
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Something went wrong!");
+    }
+
+    return data.data; // Return the response data for the fulfilled state
+  } catch (error: any) {
+    console.error("error:", error);
+    return rejectWithValue(error.message || "Network error!");
+  }
+});
+
+//fetch team/s
+export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
+  "team/fetchTeams",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken"); // Fetch token properly
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Failed to fetch teams");
+      }
+
+      console.log("Teams:", data.data);
+      return data.data; // Return only the relevant data
+    } catch (error: any) {
+      console.error("Error fetching teams:", error.message);
+      return rejectWithValue(error.message || "Network error!"); // Ensure proper error handling
+    }
+  },
+);
 
 //invite member/s
 

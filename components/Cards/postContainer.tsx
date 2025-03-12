@@ -32,34 +32,7 @@ import { useFollow } from "~/hooks/useFollow";
 import nopic from "@/assets/images/nopic.jpg";
 import { ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
-
-// Type definitions
-interface SwiperImageProps {
-  uri: string;
-  onDoubleTap: () => void;
-}
-
-const SwiperImage = memo<SwiperImageProps>(({ uri, onDoubleTap }) => {
-  let lastTap = useRef(0).current;
-
-  const handleDoubleTap = () => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      onDoubleTap();
-    }
-    lastTap = now;
-  };
-
-  return (
-    <TouchableOpacity activeOpacity={1} onPress={handleDoubleTap}>
-      <Image
-        className="w-full h-full object-cover"
-        source={{ uri }}
-        resizeMode="cover"
-      />
-    </TouchableOpacity>
-  );
-});
+import SwiperImage from "../ui/SwiperImage";
 
 const PostContainer = ({
   item,
@@ -367,13 +340,19 @@ const PostContainer = ({
         {item.assets && item.assets.length > 0 && (
           <Swiper
             {...swiperConfig}
-            className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400"
+            className="w-full h-auto rounded-l-[20px] bg-slate-400"
+            style={{
+              aspectRatio: item.aspectRatio
+                ? item.aspectRatio[0] / item.aspectRatio[1]
+                : 3 / 2,
+            }}
           >
             {item.assets.map((asset) => (
               <SwiperImage
                 key={asset.url}
                 uri={asset.url}
                 onDoubleTap={handleDoubleTap}
+                details={item}
               />
             ))}
           </Swiper>

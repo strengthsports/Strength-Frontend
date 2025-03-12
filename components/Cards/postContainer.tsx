@@ -231,10 +231,10 @@ const PostContainer = ({
   };
 
   return (
-    <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-8">
+    <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
       <View className="flex">
         {/* Profile Section */}
-        <View className="ml-[5%] flex flex-row gap-2 z-20 pb-0">
+        <View className="relative ml-[5%] flex flex-row gap-2 z-20 pb-0">
           <TouchableOpacity
             activeOpacity={0.5}
             className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
@@ -264,6 +264,7 @@ const PostContainer = ({
               }
             />
           </TouchableOpacity>
+          <TouchableOpacity className="absolute w-[64px] h-[64px] z-[-1] mt-[2px] ml-[-2px] aspect-square rounded-full bg-black opacity-[16%] blur-2xl"></TouchableOpacity>
 
           <View className="w-64 flex flex-col justify-between">
             <TouchableOpacity
@@ -307,7 +308,7 @@ const PostContainer = ({
         </View>
 
         {/* Caption Section */}
-        <View className="relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[72px] rounded-tr-[16px] pb-3 bg-neutral-900">
+        <View className="relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[40px] rounded-tr-[16px] pb-3 bg-neutral-900">
           <TouchableOpacity
             className="absolute right-4 p-2 z-30"
             onPress={() => setIsMoreModalVisible(true)}
@@ -396,7 +397,7 @@ const PostContainer = ({
         </Animated.View>
 
         {/* Interaction Bar */}
-        <View className="relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[72px] rounded-br-[16px] bg-neutral-900">
+        <View className="relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[40px] rounded-br-[16px] bg-neutral-900">
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             {/* like */}
             <TouchableOpacity

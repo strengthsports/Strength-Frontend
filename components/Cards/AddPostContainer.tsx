@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { useAddPostMutation } from "~/reduxStore/api/feed/features/feedApi.addPost";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddPostContainer({
   onBackPress,
@@ -86,7 +87,7 @@ export default function AddPostContainer({
   };
 
   return (
-    <>
+    <SafeAreaView className="h-full">
       <View className="flex flex-row items-center justify-between p-4">
         <AddPostHeader onBackPress={onBackPress} />
         <TouchableOpacity
@@ -191,7 +192,7 @@ export default function AddPostContainer({
           />
         </View>
       </View>
-    </>
+    </SafeAreaView>
   );
 }
 

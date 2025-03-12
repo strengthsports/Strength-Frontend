@@ -15,16 +15,29 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: "#12956B",
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        // tabBarButton: HapticTab,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: "absolute",
+            height: 60, // Increase height to create space
+            paddingBottom: 15, // Adds space at the bottom
+            paddingTop: 5, // Adds space at the top
+            borderTopLeftRadius: 10, // Rounded top-left corner
+            borderTopRightRadius: 10, // Rounded top-right corner
+            overflow: "hidden", // Prevents background bleed
+            backgroundColor: "#000",
           },
-          default: {},
+          default: {
+            height: 60, // Ensures consistent height
+            paddingBottom: 15,
+            paddingTop: 5,
+            borderTopLeftRadius: 10, // Rounded top-left corner
+            borderTopRightRadius: 10, // Rounded top-right corner
+            overflow: "hidden", // Prevents background bleed
+            backgroundColor: "#000",
+          },
         }),
       }}
     >
@@ -35,7 +48,7 @@ export default function TabLayout() {
           href: "/(app)/(tabs)/home",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
-              name={focused ? "home" : "home-outline"}
+              name={focused ? "home-outline" : "home-outline"}
               color={color}
             />
           ),

@@ -100,7 +100,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
     <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
-        className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
+        className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30 border-b-[0.5px] border-[#525252]"
         style={{ height: HEADER_HEIGHT }}
       >
         {/* Avatar Profile Picture */}
@@ -120,7 +120,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             backgroundColor: "#141414",
             padding: 6,
             borderRadius: 12,
-            width: "72%",
+            width: "75%",
             height: 37,
             justifyContent: "space-between",
             paddingHorizontal: 6,
@@ -132,7 +132,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
               color: "grey",
               fontSize: 14,
               fontWeight: "400",
-              marginRight: 6,
+              marginLeft: 6,
             }}
           >
             What's on your mind...

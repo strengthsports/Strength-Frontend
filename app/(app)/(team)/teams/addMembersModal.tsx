@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -46,7 +46,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
       if (multiselect) {
         // Allow multiple selection
         return prevMembers.map((member) =>
-          member.id === memberId
+          member._id === memberId
             ? { ...member, selected: !member.selected }
             : member,
         );
@@ -59,10 +59,12 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
       }
     });
   };
-
-  const filteredMembers = members.filter((member) =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  useEffect(() => {
+    console.log("got users", members);
+  }, [player]);
+  // const filteredMembers = members.filter((member) =>
+  //   member.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  // );
 
   const handleInvite = () => {
     const selectedMembers = members.filter((member) => member.selected);
@@ -85,7 +87,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
               <Icon name="arrowleft" size={30} color="white" />
             </TouchableOpacity>
             <Text className="text-white text-5xl font-semibold">
-             {buttonName}
+              {buttonName}
             </Text>
             <View className="w-8" />
           </View>
@@ -106,19 +108,19 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
 
           {/* Members List */}
           <ScrollView className="flex-1">
-            {filteredMembers.map((member) => (
+            {members.map((member) => (
               <TouchableOpacity
                 key={member.id}
-                onPress={() => toggleMemberSelection(member.id)}
+                onPress={() => toggleMemberSelection(member._id)}
                 className="flex-row items-center py-4 border-b border-[#1F2937]"
               >
                 <Image
-                  source={{ uri: member.image }}
+                  source={{ uri: member.profilePic }}
                   className="w-12 h-12 rounded-full mr-4"
                 />
                 <View className="flex-1">
-                  <Text className="text-white text-lg">{member.name}</Text>
-                  <Text className="text-[#9CA3AF]">{member.role}</Text>
+                  <Text className="text-white text-lg">{member.firstName}</Text>
+                  <Text className="text-[#9CA3AF]">@{member.username}</Text>
                 </View>
                 <View
                   className={`w-6 h-6 rounded-md border ${

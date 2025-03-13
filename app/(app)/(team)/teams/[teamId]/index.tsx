@@ -56,13 +56,14 @@ const TeamPage = () => {
       <View>
         <TeamCard
           teamName={team?.name || "Loading..."}
-          sportCategory={team?.sport || "Loading..."}
+          sportCategory={team?.sport.name || "Loading..."}
           captain={team?.captain || " "} // Placeholder (You may fetch it dynamically)
           viceCapt={team?.viceCaptain || " "} // Placeholder
           location={
             `${team?.address?.city}, ${team?.address?.country}` || "Unknown"
           }
           teamLogo={team?.logo?.url || "https://picsum.photos/200/200"}
+          sportLogo={team?.sport?.logo || "https://picsum.photos/200/200"}
         />
         <SubCategories teamDetails={team} />
       </View>

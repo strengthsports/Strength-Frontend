@@ -57,7 +57,7 @@ const DiscoverPeopleList = () => {
           renderItem={({ item }) => (
             <View style={styles.itemWrapper}>
               {item.isCustomCard ? (
-                <View className="bg-black justify-center items-center gap-y-2 rounded-xl pb-4 m-1 relative border w-[150px] h-[180px] border-[#80808085] overflow-hidden">
+                <View className="bg-black justify-center items-center gap-y-2 rounded-xl pb-4 relative border w-[150px] h-[180px] border-[#80808085] overflow-hidden">
                   <View
                     className="flex-row justify-center items-center"
                     style={{ overflow: "visible" }}

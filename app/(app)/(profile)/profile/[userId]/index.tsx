@@ -281,7 +281,7 @@ const Overview = () => {
                           >
                             Position:{" "}
                             <TextScallingFalse className="font-light">
-                              {team.position || "Not Specified"}
+                              {team.position || team.role || "Not Specified"}
                             </TextScallingFalse>
                           </TextScallingFalse>
 
@@ -289,9 +289,9 @@ const Overview = () => {
                             className="text-white font-light pt-2"
                             style={{ fontSize: 13 * scaleFactor }}
                           >
-                            {team.creationDate
+                            {team.creationDate || team.joiningDate
                               ? `${new Date(
-                                  team.creationDate
+                                  team.creationDate || team.joiningDate
                                 ).getFullYear()} - Present`
                               : "Joining Date Not Available"}
                           </TextScallingFalse>

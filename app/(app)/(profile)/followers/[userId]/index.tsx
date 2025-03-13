@@ -20,6 +20,7 @@ import {
 import { TargetUser } from "~/types/user";
 import nopic from "@/assets/images/nopic.jpg";
 import { useSelector } from "react-redux";
+import { showFeedback } from "~/utils/feedbackToast";
 
 const FollowersPage = () => {
   const router = useRouter();
@@ -181,9 +182,12 @@ const FollowersPage = () => {
         )}
 
         {error && (
-          <Text style={styles.errorText}>
-            Failed to load {type.toLowerCase()}. Please try again.
-          </Text>
+          <>
+            {showFeedback(
+              `Can't retrieve ${params.pageType} now! Try again later!`,
+              "error"
+            )}
+          </>
         )}
 
         {!isLoading && !error && data?.length === 0 && (

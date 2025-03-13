@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -10,7 +10,7 @@ import TeamMember from "./teamMember";
 import Icon from "react-native-vector-icons/Entypo";
 import { useFonts } from "expo-font";
 import AddMembersModal from "../addMembersModal";
-import { useState } from "react";
+import { useSelector } from "react-redux";
 
 interface PotentialMember {
   id: string;
@@ -19,107 +19,51 @@ interface PotentialMember {
   image: string;
   selected?: boolean;
 }
-const Squad: React.FC = () => {
+
+interface SquadProps {
+  teamDetails: any;
+}
+
+const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   const [fontsLoaded] = useFonts({
     "Sansation-Regular": require("../../../../../assets/fonts/Sansation_Bold_Italic.ttf"),
   });
-
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
+  const [proper, setProper] = useState<string[]>([]);
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const userId = user?._id;
 
+  useEffect(() => {
+    // Check if teamDetails and teamDetails.sport exist before accessing properties
+    if (teamDetails && teamDetails.sport && teamDetails.sport.playerTypes) {
+      setProper(teamDetails.sport.playerTypes.map((item: any) => item.name));
+      const adminCheck = teamDetails.admin.some(
+        (admin) => admin._id === userId,
+      );
+      setIsAdmin(adminCheck);
+      console.log("isAdmin", isAdmin);
+    } else {
+      console.log("teamDetails is missing required data:", teamDetails);
+      setProper([]); // Set to empty array if data is not available
+    }
+  }, [teamDetails]);
+
+  // Loading state
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="white" />;
   }
 
-  const properties = [
-    "Batter",
-    "Bowler",
-    "Fielding",
-    "Wicket Keeper",
-    "All-Rounder",
-  ];
+  // If teamDetails is not loaded yet, show loading indicator
+  if (!teamDetails) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="white" />
+        <Text className="text-white mt-4">Loading team details...</Text>
+      </View>
+    );
+  }
 
-  const teamMembers = [
-    {
-      id: "1",
-      name: "Rahul Sharma",
-      position: "Batter",
-      imageUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-      uid: "user-001",
-      description: "A powerful batsman with great consistency.",
-    },
-    {
-      id: "2",
-      name: "Piyush Shukla",
-      position: "Bowler",
-      imageUrl: "https://randomuser.me/api/portraits/men/2.jpg",
-      uid: "user-002",
-      description: "A fast bowler known for his pace and accuracy.",
-    },
-    {
-      id: "3",
-      name: "Alok Verma",
-      position: "All-rounder",
-      imageUrl: "https://randomuser.me/api/portraits/men/3.jpg",
-      uid: "user-003",
-      description: "An all-rounder who excels with both bat and ball.",
-    },
-    {
-      id: "4",
-      name: "Sneha Roy",
-      position: "Wicket Keeper",
-      imageUrl: "https://randomuser.me/api/portraits/women/1.jpg",
-      uid: "user-004",
-      description: "A wicketkeeper with exceptional reflexes and skill.",
-    },
-    {
-      id: "5",
-      name: "Ravi Kumar",
-      position: "Batter",
-      imageUrl: "https://randomuser.me/api/portraits/men/4.jpg",
-      uid: "user-005",
-      description: "A reliable batter who can anchor the innings.",
-    },
-    {
-      id: "6",
-      name: "Meera Singh",
-      position: "Bowler",
-      imageUrl: "https://randomuser.me/api/portraits/women/2.jpg",
-      uid: "user-006",
-      description: "A left-arm spinner with great variations.",
-    },
-    {
-      id: "7",
-      name: "Ajay Patel",
-      position: "All-rounder",
-      imageUrl: "https://randomuser.me/api/portraits/men/5.jpg",
-      uid: "user-007",
-      description: "A versatile all-rounder with skills in both departments.",
-    },
-    {
-      id: "8",
-      name: "Nisha Sharma",
-      position: "Wicket Keeper",
-      imageUrl: "https://randomuser.me/api/portraits/women/3.jpg",
-      uid: "user-008",
-      description: "An agile wicketkeeper with a sharp eye.",
-    },
-    {
-      id: "9",
-      name: "Karan Desai",
-      position: "Batter",
-      imageUrl: "https://randomuser.me/api/portraits/men/6.jpg",
-      uid: "user-009",
-      description: "An aggressive batsman known for his power hitting.",
-    },
-    {
-      id: "10",
-      name: "Simran Kaur",
-      position: "Bowler",
-      imageUrl: "https://randomuser.me/api/portraits/women/4.jpg",
-      uid: "user-010",
-      description: "A talented bowler with excellent control and flight.",
-    },
-  ];
   const dummyMembers: PotentialMember[] = [
     {
       id: "1",
@@ -192,74 +136,98 @@ const Squad: React.FC = () => {
       selected: false,
     },
   ];
+
   const handleInvite = (selectedUsers: any) => {
     console.log("Inviting users:", selectedUsers);
     setShowMembersModal(false);
   };
 
   return (
-    <ScrollView className="flex-1  max-w-screen-lg px-4">
-      {properties.map((property) => (
-        <View key={property}>
-          <View className="flex flex-row justify-between items-center  px-4 mt-2">
-            <Text
-              style={{
-                fontFamily: "Sansation-Regular",
-                color: "white",
-                fontSize: 24,
-              }}
-            >
-              {property}
-            </Text>
-            <View>
-              <Icon name="dots-three-horizontal" size={30} color="white" />
+    <ScrollView className="flex-1 max-w-screen-lg px-4">
+      {proper.length > 0 ? (
+        proper.map((property) => (
+          <View key={property}>
+            <View className="flex flex-row justify-between items-center px-4 mt-2">
+              <Text
+                style={{
+                  fontFamily: "Sansation-Regular",
+                  color: "white",
+                  fontSize: 24,
+                }}
+              >
+                {property}
+              </Text>
+              <View>
+                <Icon name="dots-three-horizontal" size={30} color="white" />
+              </View>
+            </View>
+
+            {/* Displaying team members */}
+            <View className="flex flex-row flex-wrap">
+              {teamDetails.members && teamDetails.members.length > 0 ? (
+                teamDetails.members
+                  .filter((member: any) => member.role === property)
+                  .map((member: any) => {
+                    const user = member.user; // Extract user from member
+                    return (
+                      <View
+                        key={
+                          user?._id || member._id || Math.random().toString()
+                        }
+                        className="w-1/2 p-2"
+                      >
+                        <TeamMember
+                          imageUrl={user?.profilePic}
+                          name={`${user?.firstName || "Unknown"} ${
+                            user?.lastName || ""
+                          }`}
+                          description={
+                            user?.headline || "No description available"
+                          }
+                          isAdmin={isAdmin}
+                          onRemove={() =>
+                            console.log("Remove user:", user?._id)
+                          }
+                        />
+                      </View>
+                    );
+                  })
+              ) : (
+                <Text className="text-gray-400 ml-4 mb-2">
+                  No members in this category
+                </Text>
+              )}
+
+              {/* Card for adding new member */}
+              <TouchableOpacity
+                className="w-1/2 p-2"
+                onPress={() => setShowMembersModal(true)}
+              >
+                <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 30,
+                      fontFamily: "Sansation-Regular",
+                    }}
+                  >
+                    +
+                  </Text>
+                  <Text
+                    style={{ color: "white", fontFamily: "Sansation-Regular" }}
+                  >
+                    Add Member
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
-
-          {/* Displaying two team members per row */}
-          <View className="flex flex-row flex-wrap">
-            {teamMembers
-              .filter((user) => user.position === property)
-              .map((user) => (
-                <View key={user.id} className="w-1/2 p-2">
-                  {/* Each team member takes up half the width */}
-                  <TeamMember
-                    imageUrl={user.imageUrl}
-                    name={user.name}
-                    description={user.description}
-                    isCaptain={user.id === "1"}
-                    isViceCaptain={user.id === "2"}
-                    isAdmin={true}
-                    onRemove={() => console.log("Removing user:", user)}
-                  />
-                </View>
-              ))}
-
-            {/* Card for adding new member */}
-            <TouchableOpacity
-              className="w-1/2 p-2"
-              onPress={() => setShowMembersModal(true)} // Opens modal to add a new member
-            >
-              <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 30,
-                    fontFamily: "Sansation-Regular",
-                  }}
-                >
-                  +
-                </Text>
-                <Text
-                  style={{ color: "white", fontFamily: "Sansation-Regular" }}
-                >
-                  Add Member
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+        ))
+      ) : (
+        <View className="flex items-center justify-center p-8">
+          <Text className="text-white text-lg">No player types available</Text>
         </View>
-      ))}
+      )}
 
       {/* Modal to add new members */}
       <AddMembersModal

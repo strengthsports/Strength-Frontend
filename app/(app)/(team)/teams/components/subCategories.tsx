@@ -13,7 +13,7 @@ const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
 
   const renderContent = () => {
     if (selectedTab === "SQUAD") {
-      return <Squad />;
+      return <Squad teamDetails={teamDetails.teamDetails} />;
     } else if (selectedTab === "ABOUT") {
       return (
         <Text className="text-white text-lg">

@@ -9,6 +9,7 @@ type TeamCardProps = {
   viceCapt: string;
   location: string;
   teamLogo: string;
+  sportLogo: string;
 };
 const TeamCard: React.FC<TeamCardProps> = ({
   teamName,
@@ -17,6 +18,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
   viceCapt,
   location,
   teamLogo,
+  sportLogo,
 }) => {
   return (
     <>
@@ -46,7 +48,11 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1 justify-center items-center">
               <ThemedText className="text-white text-xl">-</ThemedText>
             </View>
-            <View className="flex-1 justify-end items-center">
+            <View className="flex-1 flex-row items-center justify-center space-x-2">
+              <Image
+                source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
+                className="h-7 w-7 mr-2"
+              />
               <ThemedText className="text-white text-xl">
                 {sportCategory}
               </ThemedText>

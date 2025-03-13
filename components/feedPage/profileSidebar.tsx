@@ -85,11 +85,13 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
 
   const check = async () => {
     const fetchedTeamsData = await dispatch(getTeams()).unwrap();
-    const teamsList = fetchedTeamsData.createdTeams.map((teamEntry) => ({
-      name: teamEntry.team.name, // Assuming 'name' exists in team object
-      url: teamEntry.team.logo.url, // Assuming 'url' exists in team object
-      id: teamEntry.team._id,
-    }));
+    const teamsList = fetchedTeamsData.createdTeams
+      .concat(fetchedTeamsData.joinedTeams)
+      .map((teamEntry) => ({
+        name: teamEntry.team.name, // Assuming 'name' exists in team object
+        url: teamEntry.team.logo.url, // Assuming 'url' exists in team object
+        id: teamEntry.team._id,
+      }));
 
     console.log(teamsList); // Logs an array of team names and URLs
 
@@ -125,7 +127,8 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             justifyContent: "space-between",
             paddingHorizontal: 6,
           }}
-          onPress={() => setAddPostContainerOpen(true)}
+          // onPress={() => setAddPostContainerOpen(true)}
+          onPress={() => router.push("/addPost")}
         >
           <Text
             style={{
@@ -314,10 +317,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
         </RNModal>
       )}
 
-      {/* Scrollable Content Area */}
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        {children}
-      </ScrollView>
+      {children}
     </SafeAreaView>
   );
 };

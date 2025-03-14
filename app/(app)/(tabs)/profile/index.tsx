@@ -40,8 +40,9 @@ const Overview = () => {
 
   // Dynamic scaling for responsiveness
   const containerWidth = width > 768 ? "50%" : "96%";
-  const { width: screenWidth2 } = Dimensions.get("window");
-  const scaleFactor = screenWidth2 / 410;
+  const { width: screenWidth } = useWindowDimensions();
+  const gap = 10; // Space between posts
+  const postWidth = (screenWidth - gap) / 1.25; // Width of each post
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSubSection, setActiveSubSection] = useState(
@@ -56,11 +57,11 @@ const Overview = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View className="w-screen pl-3">
+      <View style={{ width: postWidth, marginRight: gap }}>
         <PostContainer item={item} />
       </View>
     ),
-    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+    [postWidth, gap] // Empty dependency array ensures the function is memoized and doesn't re-create
   );
   const memoizedEmptyComponent = memo(() => (
     <Text className="text-white text-center p-4">No new posts available</Text>
@@ -309,33 +310,13 @@ const Overview = () => {
       </View>
 
       {/* recent posts */}
-      <View style={{ paddingTop: "3%", alignItems: "center" }} className="mb-8">
+      <View className="py-4 items-center">
         <View
-          style={{
-            borderWidth: 0.3,
-            width: "97.56%",
-            height: 582 * scaleFactor,
-            borderRadius: 20,
-            borderLeftColor: "#494949",
-            borderBottomColor: "#494949",
-            borderTopColor: "#494949",
-          }}
+          className="ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
+          style={{ height: 582 * scaleFactor }}
         >
-          <View
-            style={{
-              width: "100%",
-              height: "8.5%",
-              justifyContent: "flex-end",
-              paddingHorizontal: 22,
-            }}
-          >
-            <TextScallingFalse
-              style={{
-                color: "grey",
-                fontSize: responsiveFontSize(2.23),
-                fontWeight: "bold",
-              }}
-            >
+          <View className="w-full h-12 justify-end pl-5">
+            <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
               RECENT POSTS
             </TextScallingFalse>
           </View>
@@ -348,33 +329,22 @@ const Overview = () => {
             renderItem={renderItem}
             ListEmptyComponent={memoizedEmptyComponent}
             bounces={false}
-            contentContainerStyle={{ paddingBottom: 40 }}
             horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={postWidth + gap} // Snap to each post plus the gap
+            decelerationRate="normal" // Smooth snapping
+            contentContainerStyle={{ paddingRight: (screenWidth - postWidth) / 1.5 }} // Spacer for last post alignment
           />
-          <View
-            style={{
-              width: "100%",
-              height: "15%",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{ height: 0.5, width: "90%", backgroundColor: "grey" }}
-            />
-            <TouchableOpacity
-              activeOpacity={0.3}
-              style={{ paddingTop: "3.5%" }}
-            >
-              <TextScallingFalse
-                style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
-              >
-                See all posts..
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
+          <View className="w-auto h-[15%] justify-center items-center">
+          <View className="h-[1px] w-[90%] bg-gray-500" />
+          <TouchableOpacity activeOpacity={0.3} className="pt-4">
+            <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
+              See all posts...
+            </TextScallingFalse>
+          </TouchableOpacity>
         </View>
       </View>
+    </View>
     </ScrollView>
   );
 };

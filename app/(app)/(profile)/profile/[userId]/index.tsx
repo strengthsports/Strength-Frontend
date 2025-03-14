@@ -6,6 +6,7 @@ import {
   ScrollView,
   Dimensions,
   Text,
+  useWindowDimensions,
 } from "react-native";
 import React, { useContext, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
@@ -92,11 +93,76 @@ const posts = [
       },
     ],
   },
+  {
+    id: 3,
+    firstName: "Sebastian",
+    lastName: "Cilb",
+    profilepic:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
+    headline:
+      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
+    caption:
+      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
+    likes: ["harshal_123", "Miraj_123"],
+    comments: [
+      {
+        id: 1,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "amazing",
+      },
+      {
+        id: 2,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "agg laga deya",
+      },
+    ],
+  },
+  {
+    id: 4,
+    firstName: "Sebastian",
+    lastName: "Cilb",
+    profilepic:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
+    headline:
+      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
+    caption:
+      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
+    likes: ["harshal_123", "Miraj_123"],
+    comments: [
+      {
+        id: 1,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "amazing",
+      },
+      {
+        id: 2,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "agg laga deya",
+      },
+    ],
+  },
 ];
 
 const Overview = () => {
-  const { width: screenWidth2 } = Dimensions.get("window");
+  // const { width: screenWidth2 } = Dimensions.get("window");
+  const { width: screenWidth2 } = useWindowDimensions();
   const scaleFactor = screenWidth2 / 410;
+
+  const gap = 10; // Space between posts
+  const postWidth = (screenWidth2 - gap) / 1.25; // Width of each post
+  const spacerWidth = (screenWidth2 - postWidth) / 1.5; //spacer width for the end of the ScrollView
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -107,12 +173,17 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   // console.log("User data on Overview page : ", profileData);
 
+// <<<<<<< amit
+//   const validSports = profileData?.selectedSports?.filter((s: any) => s.sport) || [];
+//   const [activeSubSection, setActiveSubSection] = useState(validSports[0]?.sport.name || null);
+// =======
   const sports = profileData?.selectedSports
     ? [...profileData.selectedSports]
     : [];
   const [activeSubSection, setActiveSubSection] = useState(
     sports[0]?.sport?.name
   );
+// >>>>>>> master
 
   if (error) {
     return (
@@ -139,7 +210,7 @@ const Overview = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {profileData?.selectedSports?.length > 0 && (
+      {validSports.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
             horizontal
@@ -148,7 +219,7 @@ const Overview = () => {
             className="mt-2"
           >
             <TabsList className="flex-row gap-x-2 w-[100%]">
-              {profileData?.selectedSports?.map((sport: any) => (
+              {validSports.map((sport: any) => (
                 <TouchableOpacity
                   key={sport.sport?._id}
                   onPress={() => setActiveSubSection(sport.sport?.name)}
@@ -187,8 +258,13 @@ const Overview = () => {
           </ScrollView>
 
           {/* Tab Contents */}
+<!-- <<<<<<< amit
+<!--           {validSports.map((sport : any) => (
+            <TabsContent key={sport.sport._id} value={sport.sport.name}>
+======= -->
           {profileData?.selectedSports?.map((sport: any) => (
             <TabsContent key={sport.sport?._id} value={sport.sport?.name}>
+<!-- >>>>>>> master -->
               {/* Sports Overview */}
               <View className="w-full flex-1 items-center p-2">
                 {sport.details && (
@@ -352,63 +428,38 @@ const Overview = () => {
 
       {/* recent posts */}
       {posts && posts.length > 0 && (
-        <View style={{ paddingTop: "3%", alignItems: "center" }}>
+        <View className="py-4 items-center">
           <View
-            style={{
-              borderWidth: 0.3,
-              width: "97.56%",
-              height: 582 * scaleFactor,
-              borderRadius: 20,
-              borderLeftColor: "#494949",
-              borderBottomColor: "#494949",
-              borderTopColor: "#494949",
-            }}
+            className="ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
+            style={{ height: 582 * scaleFactor }}
           >
-            <View
-              style={{
-                width: "100%",
-                height: "8.5%",
-                justifyContent: "flex-end",
-                paddingHorizontal: 22,
-              }}
-            >
-              <TextScallingFalse
-                style={{
-                  color: "grey",
-                  fontSize: responsiveFontSize(2.23),
-                  fontWeight: "bold",
-                }}
-              >
+            <View className="w-full h-12 justify-end pl-5">
+              <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
                 RECENT POSTS
               </TextScallingFalse>
             </View>
-            <ScrollView horizontal style={{ paddingStart: 20 }}>
-              <View style={{ flexDirection: "row", gap: 20 }}>
-                {posts.map((post: any) => (
-                  <PostSmallCard key={post.id} post={post} />
+
+            <ScrollView
+              horizontal
+              snapToInterval={postWidth + gap}
+              decelerationRate="normal"
+              showsHorizontalScrollIndicator={false}
+            >
+              <View className="flex-row ml-4" style={{ gap }}>
+                {posts.map((post) => (
+                  <View key={post.id} style={{ width: postWidth, height: "100%" }}>
+                    <PostSmallCard post={post} />
+                  </View>
                 ))}
-                <View style={{ width: 10 }} />
+                <View style={{ width: spacerWidth }} />
               </View>
             </ScrollView>
-            <View
-              style={{
-                width: "100%",
-                height: "15%",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{ height: 0.5, width: "90%", backgroundColor: "grey" }}
-              />
-              <TouchableOpacity
-                activeOpacity={0.3}
-                style={{ paddingTop: "3.5%" }}
-              >
-                <TextScallingFalse
-                  style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
-                >
-                  See all posts..
+
+            <View className="w-auto h-[15%] justify-center items-center">
+              <View className="h-[0.5] w-[90%] bg-gray-400" />
+              <TouchableOpacity activeOpacity={0.3} className="pt-4">
+                <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
+                  See all posts...
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>
@@ -422,6 +473,7 @@ const Overview = () => {
     </View>
   );
 };
+
 
 export default Overview;
 

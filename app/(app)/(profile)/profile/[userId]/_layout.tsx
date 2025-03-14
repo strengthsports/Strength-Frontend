@@ -283,23 +283,45 @@ const ProfileLayout = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* username */}
+          {/* top bar */}
           <View
             style={{
+              flexDirection: "row",
               justifyContent: "space-between",
               paddingHorizontal: 13,
-              flexDirection: "row",
               height: 45,
               alignItems: "center",
             }}
           >
-            <TextScallingFalse style={{ color: "white", fontSize: 19 }}>
-              @{profileData?.username}
-            </TextScallingFalse>
+            {/* back to home button */}
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity 
+                activeOpacity={0.5}
+                onPress={() => router.replace('/')}
+              >
+                <MaterialCommunityIcons
+                  name="arrow-left"
+                  size={24}
+                  color="white"
+                />
+              </TouchableOpacity>
+              {/* username */}
+              <TextScallingFalse 
+                style={{ 
+                  color: "white", 
+                  fontSize: 19,
+                  marginLeft: 10 
+                }}
+              >
+                @{profileData?.username}
+              </TextScallingFalse>
+            </View>
+            {/* add post button */}
             <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
               <View style={{ marginTop: 1.5 }}>
                 <PostButton />
               </View>
+              {/* message button */}
               <TouchableOpacity activeOpacity={0.5}>
                 <MaterialCommunityIcons
                   name="message-reply-text-outline"
@@ -451,7 +473,7 @@ const ProfileLayout = () => {
                   <View style={{ paddingTop: "3.6%" }}>
                     {/* age, height, weight, teams */}
                     <View style={{ position: "relative", left: -3 }}>
-                      <View style={{ flexDirection: "row", gap: "3.65%" }}>
+                      <View style={{ flexDirection: "row", justifyContent:"space-between" }}>
                         <View style={{ flexDirection: "row" }}>
                           <Entypo
                             name="dot-single"

@@ -34,6 +34,7 @@ import nocoverpic from "@/assets/images/nocover.png";
 import { AppDispatch } from "~/reduxStore";
 import { removePic } from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
+import Header from "~/components/profilePage/Header";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -97,24 +98,7 @@ const ProfileLayout = () => {
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[5]}
       >
-        {/* username */}
-        <View className="justify-between px-3 flex-row h-12 items-center">
-          <TextScallingFalse className="text-white text-5xl">
-            @{user?.username}
-          </TextScallingFalse>
-          <View className="flex-row gap-[0.85rem] mt-1">
-            <View>
-              <PostButton />
-            </View>
-            <TouchableOpacity activeOpacity={0.5}>
-              <MaterialCommunityIcons
-                name="message-reply-text-outline"
-                size={27}
-                color="white"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Header username={user?.username} isBackButtonVisible={false} />
 
         {/* profile pic and cover image */}
         <View
@@ -229,7 +213,12 @@ const ProfileLayout = () => {
             <View style={{ paddingTop: "3.6%" }}>
               {/* age, height, weight, teams */}
               <View style={{ position: "relative", left: -3 }}>
-                <View style={{ flexDirection: "row", justifyContent:"space-between" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <View style={{ flexDirection: "row" }}>
                     <Entypo
                       name="dot-single"
@@ -464,10 +453,11 @@ const ProfileLayout = () => {
           }}
         ></View>
         {/* Tabs Header */}
-        <View className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600"
-          style={{ 
-            backgroundColor: 'black',
-            zIndex: 1
+        <View
+          className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600"
+          style={{
+            backgroundColor: "black",
+            zIndex: 1,
           }}
         >
           {tabs.map((tab) => {

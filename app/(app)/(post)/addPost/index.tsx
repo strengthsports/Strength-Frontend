@@ -201,7 +201,7 @@ export default function AddPostContainer() {
   return (
     <SafeAreaView className="h-full bg-black">
       <View className="flex flex-row items-center justify-between p-4">
-        <AddPostHeader />
+        <AddPostHeader onBackPress={navigateBack} />
         <TouchableOpacity
           className={`px-5 py-1 rounded-full ${
             isPostButtonEnabled ? "bg-theme" : "bg-neutral-600"
@@ -220,7 +220,7 @@ export default function AddPostContainer() {
       </View>
 
       <ScrollView 
-        className="px-6"
+        className="px-0"
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         removeClippedSubviews={true}
@@ -232,7 +232,7 @@ export default function AddPostContainer() {
           placeholder="What is on your mind..."
           value={postText}
           onChangeText={setPostText}
-          className="min-h-24 h-auto align-top text-white text-4xl mb-2"
+          className="min-h-24 mx-6 h-auto align-top text-white text-4xl mb-2"
         />
 
         {/* Only render CustomImageSlider when there are images */}

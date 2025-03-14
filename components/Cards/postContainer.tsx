@@ -33,6 +33,7 @@ import { Post, ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
 import SwiperImage from "../ui/SwiperImage";
 import { showFeedback } from "~/utils/feedbackToast";
+import { BlurView } from "expo-blur";
 
 const PostContainer = ({
   item,
@@ -217,7 +218,7 @@ const PostContainer = ({
         <View className="relative ml-[5%] flex flex-row gap-2 z-20 pb-0">
           <TouchableOpacity
             activeOpacity={0.5}
-            className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
+            className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-700"
             onPress={() =>
               user?._id === item.postedBy?._id
                 ? router.push("/(app)/(tabs)/profile")
@@ -244,7 +245,11 @@ const PostContainer = ({
               }
             />
           </TouchableOpacity>
-          <TouchableOpacity className="absolute w-[64px] h-[64px] z-[-1] mt-[2px] ml-[-2px] aspect-square rounded-full bg-black opacity-[16%] blur-2xl"></TouchableOpacity>
+          <BlurView
+            intensity={20}
+            tint="dark"
+            className="absolute w-[54px] h-[54px] z-[-1] mt-[0px] ml-[0px] aspect-square rounded-full opacity-40"
+          />
 
           <View className="w-64 flex flex-col justify-between">
             <TouchableOpacity
@@ -363,7 +368,7 @@ const PostContainer = ({
           >
             <Swiper
               {...swiperConfig}
-              className="w-full h-auto rounded-l-[20px] bg-slate-400"
+              className="w-full h-auto rounded-l-[20px] bg-white/40"
             >
               {item.assets.map((asset) => (
                 <SwiperImage

@@ -19,7 +19,7 @@ const SwiperImage = memo<SwiperImageProps>(
 
     return (
       <TouchableOpacity
-        activeOpacity={0.5}
+        activeOpacity={0.8}
         onPress={() =>
           router.push({
             pathname: "/(app)/(modal)/post/1",

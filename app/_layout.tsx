@@ -16,6 +16,7 @@ import store, { persistor } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/configs/toastConfig";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaperProvider } from "react-native-paper";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,10 +41,14 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
-            {/* <Slot /> */}
-            <Stack screenOptions={{ headerShown: false, animation: "fade" }} />
-            <StatusBar backgroundColor="black" />
-            <Toast config={toastConfig} />
+            <PaperProvider>
+              {/* <Slot /> */}
+              <Stack
+                screenOptions={{ headerShown: false, animation: "fade" }}
+              />
+              <StatusBar backgroundColor="black" />
+              <Toast config={toastConfig} />
+            </PaperProvider>
           </Provider>
         </PersistGate>
       </ThemeProvider>

@@ -19,6 +19,7 @@ import {
   Entypo,
   MaterialIcons,
   FontAwesome6,
+  Feather,
 } from "@expo/vector-icons";
 import {
   responsiveHeight,
@@ -54,6 +55,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import PicModal from "~/components/profilePage/PicModal";
 import { PicModalType } from "~/types/others";
+import Header from "~/components/profilePage/Header";
 
 // Define the context type
 interface ProfileContextType {
@@ -283,54 +285,8 @@ const ProfileLayout = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* top bar */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              paddingHorizontal: 13,
-              height: 45,
-              alignItems: "center",
-            }}
-          >
-            {/* back to home button */}
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <TouchableOpacity 
-                activeOpacity={0.5}
-                onPress={() => router.replace('/')}
-              >
-                <MaterialCommunityIcons
-                  name="arrow-left"
-                  size={24}
-                  color="white"
-                />
-              </TouchableOpacity>
-              {/* username */}
-              <TextScallingFalse 
-                style={{ 
-                  color: "white", 
-                  fontSize: 19,
-                  marginLeft: 10 
-                }}
-              >
-                @{profileData?.username}
-              </TextScallingFalse>
-            </View>
-            {/* add post button */}
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
-              <View style={{ marginTop: 1.5 }}>
-                <PostButton />
-              </View>
-              {/* message button */}
-              <TouchableOpacity activeOpacity={0.5}>
-                <MaterialCommunityIcons
-                  name="message-reply-text-outline"
-                  size={27}
-                  color="white"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <Header username={profileData?.username} isBackButtonVisible={true} />
+
           {/* profile pic and cover image */}
           <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
             <TouchableOpacity
@@ -473,7 +429,12 @@ const ProfileLayout = () => {
                   <View style={{ paddingTop: "3.6%" }}>
                     {/* age, height, weight, teams */}
                     <View style={{ position: "relative", left: -3 }}>
-                      <View style={{ flexDirection: "row", justifyContent:"space-between" }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <View style={{ flexDirection: "row" }}>
                           <Entypo
                             name="dot-single"

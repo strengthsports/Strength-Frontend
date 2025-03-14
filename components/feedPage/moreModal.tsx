@@ -16,6 +16,13 @@ import { useDeletePostMutation } from "~/reduxStore/api/feed/features/feedApi.De
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "../CentralText";
 import Toast from "react-native-toast-message";
+import { ReportPost } from "~/types/post";
+import { useFollow } from "~/hooks/useFollow";
+import { useReport } from "~/hooks/useReport";
+import { FollowUser } from "~/types/user";
+
+const modalText = "text-white ml-4 text-4xl";
+const modalOption = "flex-row items-center py-3 px-2 rounded-lg";
 
 const MoreModal = memo(
   ({
@@ -24,20 +31,12 @@ const MoreModal = memo(
     isReported,
     isOwnPost,
     postId,
-    onDelete, // Callback to handle post deletion
-    handleFollow,
-    handleUnfollow,
-    handleReport,
   }: {
     firstName: string;
     followingStatus: boolean;
     isReported: boolean;
     isOwnPost: boolean;
-    postId: string; // Pass the postId to delete
-    onDelete: () => void; // Callback to notify parent component after deletion
-    handleFollow: () => void;
-    handleUnfollow: () => void;
-    handleReport: (reason: string) => void;
+    postId: string;
   }) => {
     const isAndroid = Platform.OS === "android";
     const [deletePost, { isLoading }] = useDeletePostMutation(); // Use the delete mutation
@@ -45,12 +44,17 @@ const MoreModal = memo(
     const [isReportModalOpen, setReportModalOpen] = useState(false);
     const [isOptionsVisible, setOptionsVisible] = useState(false);
     const [selectedOption, setSelectedOption] = useState("");
+    const [isPostReported, setIsReported] = useState<boolean>(isReported);
+    const [currfollowingStatus, setFollowingStatus] = useState<boolean>(false);
+
+    const { followUser, unFollowUser } = useFollow();
+    const { reportPost } = useReport();
 
     const handleDeletePost = async () => {
       try {
         setIsDeleting(true);
         await deletePost(postId).unwrap(); // Trigger the delete mutation
-        onDelete();
+        // onDelete()
         showFeedback("Post deleted successfully!", "success");
       } catch (error) {
         console.error("Failed to delete post:", error);
@@ -65,8 +69,48 @@ const MoreModal = memo(
       setOptionsVisible(false);
     };
 
-    const postReport = () => {
-      handleReport(selectedOption);
+    //handle follow
+    const handleFollow = async () => {
+      try {
+        setFollowingStatus(true);
+        const followData: FollowUser = {
+          followingId: item.postedBy?._id,
+          followingType: item.postedBy?.type,
+        };
+
+        await followUser(followData);
+      } catch (err) {
+        setFollowingStatus(false);
+        console.error("Follow error:", err);
+      }
+    };
+
+    //handle unfollow
+    const handleUnfollow = async () => {
+      try {
+        setFollowingStatus(false);
+        const unfollowData: FollowUser = {
+          followingId: item.postedBy?._id,
+          followingType: item.postedBy?.type,
+        };
+
+        await unFollowUser(unfollowData);
+      } catch (err) {
+        setFollowingStatus(true);
+        console.error("Unfollow error:", err);
+      }
+    };
+
+    //handle report
+    const handleReport = async () => {
+      setIsReported((prev) => !prev);
+      const reportData: ReportPost = {
+        targetId: postId,
+        targetType: "Post",
+        reason: selectedOption,
+      };
+
+      await reportPost(reportData);
       isAndroid
         ? ToastAndroid.show("Post Reported", ToastAndroid.SHORT)
         : Toast.show({
@@ -80,47 +124,43 @@ const MoreModal = memo(
 
     return (
       <View
-        className={` w-[104%] bg-neutral-900 self-center rounded-t-[40px] border-t border-x border-neutral-700 p-4 ${
-          isOwnPost ? "h-44" : "h-64"
-        }`}
+        className={`w-full self-center p-4 ${isOwnPost ? "h-full" : "h-full"}`}
         onStartShouldSetResponder={() => true}
       >
-        <View className="w-16 h-1 self-center rounded-full bg-neutral-200 my-1" />
-
         <View className="flex-1 justify-evenly">
           <TouchableOpacity
-            className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
+            className={modalOption}
             onPress={() => showFeedback("Checking Share Post!", "success")}
           >
             <FontAwesome name="share" size={20} color="white" />
-            <Text className="text-white ml-4">Share</Text>
+            <Text className={modalText}>Share</Text>
           </TouchableOpacity>
           {!isOwnPost && (
             <>
               <TouchableOpacity
-                className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
-                onPress={() => isReported || setReportModalOpen(true)}
-                disabled={isReported}
+                className={modalOption}
+                onPress={() => isPostReported || setReportModalOpen(true)}
+                disabled={isPostReported}
               >
                 <MaterialIcons
                   name="report-problem"
                   size={22}
-                  color={isReported ? "#808080" : "white"}
+                  color={isPostReported ? "#808080" : "white"}
                 />
                 <Text
                   className={`${
-                    isReported ? "text-[#808080]" : "text-white"
-                  } ml-4`}
+                    isPostReported ? "text-[#808080]" : "text-white"
+                  } ml-4 text-4xl`}
                 >
-                  {isReported ? "Reported" : "Report"}
+                  {isPostReported ? "Reported" : "Report"}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
+                className={modalOption}
                 onPress={followingStatus ? handleUnfollow : handleFollow}
               >
                 <FontAwesome name="user-plus" size={19} color="white" />
-                <Text className="text-white ml-4">
+                <Text className={modalText}>
                   {followingStatus
                     ? `Unfollow ${firstName}`
                     : `Follow ${firstName}`}
@@ -130,7 +170,7 @@ const MoreModal = memo(
           )}
           {isOwnPost && (
             <TouchableOpacity
-              className="flex-row items-center py-3 px-2 active:bg-neutral-800 rounded-lg"
+              className={modalOption}
               onPress={handleDeletePost}
               disabled={isLoading || isDeleting}
             >
@@ -139,7 +179,7 @@ const MoreModal = memo(
               ) : (
                 <>
                   <MaterialIcons name="delete" size={22} color="white" />
-                  <Text className="text-white ml-4">Delete Post</Text>
+                  <Text className={modalText}>Delete Post</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -223,7 +263,7 @@ const MoreModal = memo(
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={postReport}
+                onPress={handleReport}
                 disabled={!selectedOption}
               >
                 <TextScallingFalse

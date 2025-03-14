@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -13,6 +14,7 @@ import {
   Text,
   Platform,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
@@ -20,7 +22,6 @@ import debounce from "lodash.debounce";
 import { Colors } from "~/constants/Colors";
 import {
   feedPostApi,
-  Post,
   useGetFeedPostQuery,
 } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import PostContainer from "~/components/Cards/postContainer";
@@ -28,6 +29,14 @@ import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
 import { Divider } from "react-native-elements";
 import TextScallingFalse from "~/components/CentralText";
+import { showFeedback } from "~/utils/feedbackToast";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import MoreModal from "~/components/feedPage/moreModal";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Portal } from "react-native-paper";
+import { StyleSheet } from "react-native";
+import { Post } from "~/types/post";
+import { BackHandler } from "react-native";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -40,6 +49,10 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   // A flag to prevent duplicate load-more calls
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [isBottomSheetOpen, setBottomSheetOpen] = useState<boolean>(false);
+  const [selectedPost, setSelectedPost] = useState<Post>();
 
   const {
     data,
@@ -115,6 +128,36 @@ export default function Home() {
     return data;
   }, [posts]);
 
+  // Callback to handle the three dot press from a post
+  const handlePressMore = useCallback((post: Post) => {
+    setSelectedPost(post);
+    setBottomSheetOpen(true);
+    bottomSheetRef.current?.expand();
+  }, []);
+
+  // Close the more bottom sheet
+  const handleCloseBottomSheet = () => {
+    setBottomSheetOpen(false);
+    bottomSheetRef.current?.close();
+  };
+
+  // Close the more bottom sheet on back button press
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (isBottomSheetOpen) {
+        handleCloseBottomSheet();
+        return true; // Prevent default back action
+      }
+      return false;
+    };
+
+    BackHandler.addEventListener("hardwareBackPress", handleBackPress);
+
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
+    };
+  }, [isBottomSheetOpen]);
+
   // Render item based on its type
   const renderItem = useCallback(
     ({
@@ -125,7 +168,7 @@ export default function Home() {
       if (item.type === "post") {
         return (
           <View className="w-screen">
-            <PostContainer item={item.data} />
+            <PostContainer item={item.data} onPressMore={handlePressMore} />
             <Divider
               style={{ marginHorizontal: "auto", width: "100%" }}
               width={0.4}
@@ -159,6 +202,9 @@ export default function Home() {
   const EmptyComponent = ({ error }: { error: any }) => {
     if (error) {
       console.error("Feed Error:", error);
+      <>
+        {showFeedback(`Can't retrieve posts now! Try again later!`, "error")}
+      </>;
     }
     return (
       <Text className="text-white text-center p-4">No new posts available</Text>
@@ -211,53 +257,109 @@ export default function Home() {
   const ListFooterComponent = () => {
     if (isLoadingMore) {
       return (
-        <View style={{ padding: 10 }}>
+        <View style={{ padding: 10, height: 30 }}>
           <ActivityIndicator size="small" color={Colors.themeColor} />
         </View>
       );
     }
-    return (
-      <View className="px-10">
-        <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
-          you
-        </TextScallingFalse>
-        <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
-          did it!
-        </TextScallingFalse>
-        <TextScallingFalse className="text-4xl text-neutral-400">
-          Crafted with &#10084; in Kolkata, IN{" "}
-        </TextScallingFalse>
-      </View>
-    );
+    if (data?.data?.nextPage === null) {
+      return (
+        <View className="px-10 mt-10 h-80">
+          <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
+            you
+          </TextScallingFalse>
+          <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
+            did it!
+          </TextScallingFalse>
+          <TextScallingFalse className="text-4xl text-neutral-400">
+            Crafted with &#10084; in Kolkata, IN{" "}
+          </TextScallingFalse>
+        </View>
+      );
+    }
+    return <View className="mt-10" />;
   };
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1">
-      <FlatList
-        data={interleavedData}
-        keyExtractor={keyExtractor}
-        initialNumToRender={5}
-        removeClippedSubviews={isAndroid}
-        windowSize={11}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={debouncedRefresh}
-            colors={["#12956B", "#6E7A81"]}
-            tintColor="#6E7A81"
-            title="Refreshing Your Feed..."
-            titleColor="#6E7A81"
-            progressBackgroundColor="#181A1B"
-          />
-        }
-        renderItem={renderItem}
-        ListEmptyComponent={<MemoizedEmptyComponent error={error} />}
-        ListFooterComponent={ListFooterComponent}
-        bounces={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5} // Adjust as needed
-      />
+      {isBottomSheetOpen && (
+        <Pressable style={styles.overlay} onPress={handleCloseBottomSheet} />
+      )}
+      <GestureHandlerRootView>
+        <FlatList
+          data={interleavedData}
+          keyExtractor={keyExtractor}
+          initialNumToRender={5}
+          removeClippedSubviews={isAndroid}
+          windowSize={11}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={debouncedRefresh}
+              colors={["#12956B", "#6E7A81"]}
+              tintColor="#6E7A81"
+              title="Refreshing Your Feed..."
+              titleColor="#6E7A81"
+              progressBackgroundColor="#181A1B"
+            />
+          }
+          renderItem={renderItem}
+          ListEmptyComponent={<MemoizedEmptyComponent error={error} />}
+          ListFooterComponent={ListFooterComponent}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5} // Adjust as needed
+        />
+        <Portal>
+          <BottomSheet
+            ref={bottomSheetRef}
+            backgroundStyle={{
+              backgroundColor: "#171717",
+              borderColor: "#404040",
+            }}
+            handleIndicatorStyle={{
+              backgroundColor: "#fff",
+              width: 64,
+              height: 4,
+            }}
+            backgroundComponent={({ style }) => (
+              <View style={[style, styles.customBackground]} />
+            )}
+            enablePanDownToClose
+            onClose={handleCloseBottomSheet}
+          >
+            <BottomSheetView style={{ position: "absolute", zIndex: 50 }}>
+              {selectedPost && (
+                <MoreModal
+                  firstName={selectedPost.postedBy.firstName}
+                  followingStatus={selectedPost.followingStatus}
+                  isOwnPost={
+                    selectedPost.postedBy._id === selectedPost.currUser
+                  }
+                  postId={selectedPost._id}
+                  isReported={selectedPost.isReported}
+                />
+              )}
+            </BottomSheetView>
+          </BottomSheet>
+        </Portal>
+      </GestureHandlerRootView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "black", // Color overlay when bottom sheet is open
+    opacity: 0.5, // Adjust opacity as needed
+    zIndex: 50,
+  },
+  customBackground: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    borderColor: "#404040",
+    borderWidth: 0.5,
+  },
+});

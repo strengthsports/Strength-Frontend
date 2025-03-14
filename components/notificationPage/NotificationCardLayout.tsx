@@ -19,7 +19,7 @@ const NotificationCardLayout = ({
   target: any;
 }) => {
   const router = useRouter();
-  const userId = useSelector((state: any) => state.auth.user._id);
+  const userId = useSelector((state: any) => state.profile.user._id);
 
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: sender._id, type: sender.type })
@@ -52,12 +52,12 @@ const NotificationCardLayout = ({
         onPress={() =>
           userId === sender._id
             ? router.push("/(app)/(tabs)/profile")
-            : router.push(`../(main)/profile/${serializedUser}`)
+            : router.push(`../(profile)/profile/${serializedUser}`)
         }
         className="w-12 h-12 rounded-full justify-center items-center flex-shrink-0"
       >
         <Image
-          source={{ uri: sender.profilePic }}
+          source={sender.profilePic ? { uri: sender.profilePic } : nopic}
           className="w-10 h-10 rounded-full"
           style={{
             maxWidth: 50,

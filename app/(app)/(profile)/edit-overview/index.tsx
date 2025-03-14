@@ -94,10 +94,10 @@ function EditOverview() {
   useEffect(() => {
     if (user?.selectedSports) {
       const data = user.selectedSports.map((sls: any) => ({
-        sportsId: sls.sport._id,
-        sportsName: sls.sport.name,
+        sportsId: sls.sport?._id || "",
+        sportsName: sls.sport?.name || "",
         keyDetails: sls.details,
-        logo: sls.sport.logo,
+        logo: sls.sport?.logo || "",
       }));
       setInitialSportsData(data);
       setFinalSelectedSports(data);

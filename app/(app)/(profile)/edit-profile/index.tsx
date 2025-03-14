@@ -99,19 +99,97 @@ const EditProfile = () => {
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
 
+  const [initialValue, setInitialValue] = useState<string>("");
+  const [initialMeasurement, setInitialMeasurement] = useState<number>(0);
+
   // Modal toggle functions
   const closeModal = () => setModalVisible(false);
   const openModal = (type: PicType) => {
     setPicType(type);
-    if (type === "height") {
-      setSelectedField("feetInches");
-    } else if (type === "weight") {
-      setSelectedField("kilograms");
-    }
-    if (type === "address") {
-      setInputValue(addressPickup); //initialize with current addressPickup
+    if (type === "height" || type === "weight") {
+      const currentValue = formData[type];
+      let selectedUnit: string = type === "height" ? "feetInches" : "kilograms";
+      let parsedValue = 0;
+      let unit = "";
+
+      if (currentValue) {
+        [parsedValue, unit] = parseMeasurement(currentValue);
+        selectedUnit = unit === "ft" ? "feetInches" :
+                      unit === "cm" ? "centimeters" :
+                      unit === "m" ? "meters" :
+                      unit === "kg" ? "kilograms" : "pounds";
+      }
+
+      setSelectedField(selectedUnit);
+
+      // Initialize measurement values
+      if (type === "height") {
+        if (unit === "ft") {
+          setHeightInFeet(parsedValue.toFixed(2));
+          const cm = parsedValue * 30.48;
+          setHeightInCentimeters(cm.toFixed(2));
+          const meters = parsedValue * 0.3048;
+          setHeightInMeters(meters.toFixed(2));
+        } else if (unit === "cm") {
+          setHeightInCentimeters(parsedValue.toFixed(2));
+          const feet = parsedValue / 30.48;
+          setHeightInFeet(feet.toFixed(2));
+          const meters = parsedValue / 100;
+          setHeightInMeters(meters.toFixed(2));
+        } else if (unit === "m") {
+          setHeightInMeters(parsedValue.toFixed(2));
+          const feet = parsedValue / 0.3048;
+          setHeightInFeet(feet.toFixed(2));
+          const cm = parsedValue * 100;
+          setHeightInCentimeters(cm.toFixed(2));
+        } else {
+          setHeightInFeet("");
+          setHeightInCentimeters("");
+          setHeightInMeters("");
+        }
+      } else {
+        if (unit === "kg") {
+          setWeightInKg(parsedValue.toFixed(2));
+          const lbs = parsedValue * 2.20462;
+          setWeightInLbs(lbs.toFixed(2));
+        } else if (unit === "lbs") {
+          setWeightInLbs(parsedValue.toFixed(2));
+          const kg = parsedValue / 2.20462;
+          setWeightInKg(kg.toFixed(2));
+        } else {
+          setWeightInKg("");
+          setWeightInLbs("");
+        }
+      }
+
+      // Set initial measurement
+      const initial = calculateBaseMeasurement(type, parsedValue, unit);
+      setInitialMeasurement(initial);
+    } else {
+      const value = type === "address" ? addressPickup : formData[type as keyof UserData] || "";
+      setInputValue(value);
+      setInitialValue(value);
     }
     setModalVisible(true);
+  };
+
+  const parseMeasurement = (value: string): [number, string] => {
+    const parts = value.split(" ");
+    if (parts.length !== 2) return [0, ""];
+    const numericValue = parseFloat(parts[0]);
+    const unit = parts[1];
+    return [numericValue, unit];
+  };
+  
+  // Helper to calculate base measurement
+  const calculateBaseMeasurement = (type: string, value: number, unit: string) => {
+    if (type === "height") {
+      return unit === "ft" ? value * 30.48 :
+             unit === "cm" ? value :
+             unit === "m" ? value * 100 : 0;
+    }
+    return unit === "kg" ? value :
+           unit === "lbs" ? value / 2.20462 : 0;
   };
 
   // Render modal content based on type
@@ -207,6 +285,7 @@ const EditProfile = () => {
   // Handle done click after changing input value
   const handleDone = async (field: PicType, value: string) => {
     // Check if the value is empty
+    if (!hasChanges) return;
     if (
       ["username", "dateOfBirth"].includes(field) &&
       (!value || value.trim() === "")
@@ -515,25 +594,54 @@ const EditProfile = () => {
       icon: <AntDesign name="down" size={20} color="grey" />,
       placeholder: "not joined yet",
     },
-    {
-      type: "academy",
-      label: "Academy",
-      icon: <AntDesign name="down" size={20} color="grey" />,
-      placeholder: "not joined yet",
-    },
-    {
-      type: "club",
-      label: "Club",
-      icon: <AntDesign name="down" size={20} color="grey" />,
-      placeholder: "not joined yet",
-    },
-    {
-      type: "gym",
-      label: "Gym",
-      icon: <AntDesign name="down" size={20} color="grey" />,
-      placeholder: "not joined yet",
-    },
+    // {
+    //   type: "academy",
+    //   label: "Academy",
+    //   icon: <AntDesign name="down" size={20} color="grey" />,
+    //   placeholder: "not joined yet",
+    // },
+    // {
+    //   type: "club",
+    //   label: "Club",
+    //   icon: <AntDesign name="down" size={20} color="grey" />,
+    //   placeholder: "not joined yet",
+    // },
+    // {
+    //   type: "gym",
+    //   label: "Gym",
+    //   icon: <AntDesign name="down" size={20} color="grey" />,
+    //   placeholder: "not joined yet",
+    // },
   ];
+
+  const calculateCurrentMeasurement = () => {
+    if (picType === "height") {
+      const field = selectedField;
+      const value = parseFloat(
+        field === "feetInches" ? heightInFeet :
+        field === "centimeters" ? heightInCentimeters :
+        heightInMeters
+      ) || 0;
+      
+      return field === "feetInches" ? value * 30.48 :
+            field === "centimeters" ? value :
+            value * 100;
+    }
+    
+    if (picType === "weight") {
+      const field = selectedField;
+      const value = parseFloat(
+        field === "kilograms" ? weightInKg : weightInLbs
+      ) || 0;
+      
+      return field === "kilograms" ? value : value / 2.20462;
+    }
+    return 0;
+  };
+
+  const hasChanges = ["height", "weight"].includes(picType)
+    ? calculateCurrentMeasurement() !== initialMeasurement
+    : inputValue !== initialValue;
 
   return (
     <SafeAreaView>
@@ -914,8 +1022,13 @@ const EditProfile = () => {
                 </View>
                 <TouchableOpacity
                   onPress={() => handleDone(picType, inputValue)}
+                  disabled={!hasChanges}
                 >
-                  <MaterialIcons name="done" size={28} color="#12956B" />
+                  <MaterialIcons
+                    name="done"
+                    size={28}
+                    color={hasChanges ? "#12956B" : ""}
+                  />
                 </TouchableOpacity>
               </View>
 
@@ -1334,12 +1447,24 @@ const MeasurementInput = ({
     <View className="flex-row items-center justify-between w-full mb-4">
       <Text className="text-white text-3xl font-light basis-[55%]">{unit}</Text>
       <View className="flex-row basis-[45%]">
-        <TextInput
-          value={value}
-          onChangeText={handleInputChange} // Use the validated input handler
-          keyboardType="numeric"
-          className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-24"
-        />
+        <View className="relative">
+          <TextInput
+            value={value}
+            onChangeText={handleInputChange}
+            keyboardType="numeric"
+            className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-32 h-9"
+            style={{ 
+              textAlign: 'justify', 
+              textAlignVertical: 'center' 
+            }}
+          />
+          <Text className="absolute right-4 top-[5px] text-white text-2xl font-semibold pointer-events-none">
+            {field === 'feetInches' ? 'ft' :
+             field === 'centimeters' ? 'Cm' :
+             field === 'meters' ? 'm' :
+             field === 'kilograms' ? 'kg' : 'lbs'}
+          </Text>
+        </View>
         <CustomButton
           field={field as "feetInches" | "centimeters" | "meters" | "kilograms" | "pounds"}
           selectedField={selectedField || ""}

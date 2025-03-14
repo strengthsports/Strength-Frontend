@@ -7,7 +7,16 @@ import { AntDesign, Feather, FontAwesome5 } from '@expo/vector-icons';
 
 
 
-const PostSmallCard = ({post}) => {
+interface Post {
+  profilepic: string;
+  firstName: string;
+  lastName: string;
+  headline: string;
+  caption: string;
+  image: string;
+}
+
+const PostSmallCard = ({ post }: { post: Post }) => {
 
      const { width: screenWidth2 } = Dimensions.get('window');
         const scaleFactor = screenWidth2 / 410;

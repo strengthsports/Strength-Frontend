@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { TextInput } from "react-native-gesture-handler";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-const SearchInput = () => {
+const SearchInput = ({ searchText, setSearchText }: { searchText: string; setSearchText: (text: string) => void }) => {
   const searchInputRef = useRef<TextInput>(null);
 
   // Focus the TextInput on component mount
@@ -26,6 +26,9 @@ const SearchInput = () => {
         className="w-full h-full text-white"
         placeholderTextColor="grey"
         placeholder="Search..."
+        value={searchText}
+        onChangeText={setSearchText} // Pass the input text to parent state
+
       />
     </TouchableOpacity>
   );

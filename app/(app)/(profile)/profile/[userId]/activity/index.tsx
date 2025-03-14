@@ -10,12 +10,10 @@ import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 import TextScallingFalse from "~/components/CentralText";
 import PostContainer from "~/components/Cards/postContainer";
-import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
 const Posts = () => {
-  const router = useRouter();
   const params = useLocalSearchParams();
 
   const fetchedUserId = useMemo(() => {

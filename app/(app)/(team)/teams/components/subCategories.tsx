@@ -2,14 +2,24 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import Squad from "./Squad";
 
-const SubCategories = () => {
+interface SubCategoriesProps {
+  // teamId: string | string[];
+  teamDetails: any;
+}
+
+const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
+  console.log("Checking", teamDetails);
   const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("SQUAD");
 
   const renderContent = () => {
     if (selectedTab === "SQUAD") {
-      return <Squad />;
+      return <Squad teamDetails={teamDetails.teamDetails} />;
     } else if (selectedTab === "ABOUT") {
-      return <Text className="text-white text-lg">ABOUT Content</Text>;
+      return (
+        <Text className="text-white text-lg">
+          {teamDetails.teamDetails.description}
+        </Text>
+      );
     }
   };
 

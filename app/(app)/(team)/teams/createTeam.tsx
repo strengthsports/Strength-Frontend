@@ -23,6 +23,11 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import TeamCreatedPage from "./teamCreationDone";
 import LocationModal from "./components/locationModal";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
+import { createTeam } from "~/reduxStore/slices/team/teamSlice";
+import { AppDispatch } from "~/reduxStore";
+import { fetchUserSuggestions } from "~/reduxStore/slices/user/onboardingSlice";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -43,14 +48,16 @@ interface PotentialMember {
 }
 
 interface FormData {
-  logo: string | null;
+  logo: any;
   name: string;
   sport: string;
-  established: string;
-  location: string;
+  establishedOn: string;
+  address: object;
   gender: "male" | "female";
   description: string;
   members: Member[];
+  admin: string[];
+  createdBy: string | null;
 }
 const dummyMembers: PotentialMember[] = [
   {
@@ -134,27 +141,48 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
+  const [suggestedMembers, setSuggestedMembers] = useState([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state?.profile);
+  const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
+  useEffect(() => {
+    if (user?.id) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        admin: [user.id],
+        createdBy: user.id,
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    console.log("Fetching user suggestions...");
+    dispatch(
+      fetchUserSuggestions({
+        sportsData: ["67cd0bb8970c518cc730d485"],
+        limit: 10,
+        page: 1,
+      }),
+    );
+  }, [dispatch, formData?.sport]); // Add dependencies to avoid unnecessary re-renders
+
   const [formData, setFormData] = useState<FormData>({
     logo: null,
     name: "",
     sport: "Cricket",
-    location: "",
-    established: "",
+    address: {
+      city: "Kolkata",
+      state: "West Bengal",
+      country: "India",
+      location: { type: "Point", coordinates: [22.1111, 82.8948] },
+    },
+    establishedOn: "",
     gender: "male",
     description: "",
+    admin: [user?.id],
     members: [],
+    createdBy: user?.id,
   });
-
-  // Update location when params.country changes
-  // useEffect(() => {
-  //   const country = params?.country;
-  //   if (country) {
-  //     setFormData((prevFormData) => ({
-  //       ...prevFormData,
-  //       location: `${country}`,
-  //     }));
-  //   }
-  // }, [router]);
 
   const games = ["Cricket", "Kabaddi", "Basketball", "Hockey", "Volleyball"];
 
@@ -182,12 +210,35 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
   const handleSaveLocation = (data: any) => {
     const country = data.country;
-    if (country) {
-      console.log("Country:", country);
+    const city = data.city;
+    const state = data.state;
+    const coordinates = data.coordinates;
+    console.log("Coordinates", coordinates);
+    // const formattedAddress = data.formattedAddress;
+    // console.log("Formmatted Address", formattedAddress);
+    if (country && city && state) {
+      console.log("formatted address", `${city}, ${country}`);
+      // setFormData((prevFormData) => ({
+      //   ...prevFormData,
+      //   address: `${city}, ${country}`,
+      // }));
       setFormData((prevFormData) => ({
         ...prevFormData,
-        location: data.country,
+        address: {
+          ...prevFormData.address,
+          city: city,
+          state: state,
+          country: country,
+          location: {
+            ...prevFormData.address.location,
+            coordinates: coordinates, // New coordinates for Mumbai
+          },
+        },
       }));
+      console.log(
+        "Form data address:",
+        JSON.stringify(formData.address, null, 2),
+      );
     }
   };
 
@@ -201,7 +252,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       setDate(selected);
       setFormData((prevFormData) => ({
         ...prevFormData,
-        established: formattedDate,
+        establishedOn: formattedDate,
       }));
     }
   };
@@ -210,7 +261,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === false) {
+    if (!permissionResult.granted) {
       alert("Permission to access camera roll is required!");
       return;
     }
@@ -223,7 +274,19 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     });
 
     if (!result.canceled) {
-      setFormData({ ...formData, logo: result.assets[0].uri });
+      const file = {
+        uri: result.assets[0].uri,
+        name: "logo.jpg", // You can customize the filename
+        type: "image/jpeg",
+      };
+
+      console.log("File object :", file);
+      setFormData((prevData) => ({
+        ...prevData,
+        logo: file, // Only updating logo
+      }));
+
+      // console.log("FormData:", formData._parts); // Debugging
     }
   };
 
@@ -235,25 +298,31 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   };
 
   const handleInviteMembers = (selectedMembers: Member[]) => {
+    // console.log(fetchedUsers);
+    console.log("Selected members:", selectedMembers);
     setFormData({
       ...formData,
       members: [...formData.members, ...selectedMembers],
     });
   };
 
-  const handleCreateTeam = () => {
+  const handleCreateTeam = async () => {
     if (
       !formData.name ||
       !formData.sport ||
-      !formData.location ||
-      !formData.established ||
+      !formData.address ||
+      !formData.establishedOn ||
       !formData.description
     ) {
       alert("Please fill all required fields.");
       return;
     }
     console.log("Create team", formData);
-    router.push("../teams/teamCreationDone");
+    const response = await dispatch(createTeam(formData));
+    console.log("Response", response);
+    if (response.payload.success) {
+      router.push("../teams/teamCreationDone");
+    }
   };
 
   return (
@@ -292,7 +361,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                       {/* Left side: Image */}
                       <View className="relative">
                         <Image
-                          source={{ uri: formData.logo }}
+                          source={{ uri: formData.logo.uri }}
                           className="w-32 h-28 rounded"
                         />
                       </View>
@@ -408,10 +477,10 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     </Text> */}
                     <Text
                       className={`flex-1 ${
-                        formData.location ? "text-white" : "text-gray-400"
+                        formData.address.city ? "text-white" : "text-gray-400"
                       }`}
                     >
-                      {formData.location || "Add location"}
+                      {formData.address?.city || "Add location"}
                     </Text>
                     <EntypoIcon name="location-pin" size={20} color="#b0b0b0" />
                   </TouchableOpacity>
@@ -518,12 +587,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
                   {formData.members.map((member) => (
                     <MemberCard
-                      key={member.id}
-                      imageUrl={member.image}
-                      name={member.name}
-                      description={member.role}
+                      key={member._id}
+                      imageUrl={member.profilePic}
+                      name={member.firstName}
+                      description={member?.headline}
                       isAdmin={true}
-                      onRemove={() => removeMember(member.id)}
+                      onRemove={() => removeMember(member._id)}
                       onPress={() => console.log("Member card clicked")}
                     />
                   ))}
@@ -547,7 +616,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   onInvite={handleInviteMembers}
                   buttonName="Invite"
                   multiselect={true}
-                  player={dummyMembers}
+                  player={fetchedUsers}
                 />
               </View>
             </View>

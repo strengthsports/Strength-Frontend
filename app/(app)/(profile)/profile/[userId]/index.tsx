@@ -6,30 +6,16 @@ import {
   ScrollView,
   Dimensions,
   Text,
+  useWindowDimensions,
 } from "react-native";
 import React, { useContext, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
-import { useSelector } from "react-redux";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
 import { ProfileContext } from "./_layout";
-
-const data = {
-  currentteamcricket: [
-    {
-      id: 1,
-      cteamname: "Pro Trackers",
-      cteamaddress: "Queensland, Australia",
-      cteamposition: "Sprit-Lead",
-      cteamjoinedon: "2/4/20",
-      cteamlogo:
-        "https://th.bing.com/th/id/R.8e89771a422f8151c53146eb2b950755?rik=x2SbdtUqdN4MrA&riu=http%3a%2f%2f1.bp.blogspot.com%2f-PSo_4af_Y4M%2fU1fY4UHfHOI%2fAAAAAAAANfw%2fMHW_GKUCYLE%2fs1600%2fchelsea-fc-logo-wallpapers%2b02.jpg&ehk=KVIwGdoGS9heIpR7oXnPO0o1K6GL5PhcyN9ugrRzpqA%3d&risl=&pid=ImgRaw&r=0",
-    },
-  ],
-};
 
 const posts = [
   {
@@ -92,11 +78,76 @@ const posts = [
       },
     ],
   },
+  {
+    id: 3,
+    firstName: "Sebastian",
+    lastName: "Cilb",
+    profilepic:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
+    headline:
+      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
+    caption:
+      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
+    likes: ["harshal_123", "Miraj_123"],
+    comments: [
+      {
+        id: 1,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "amazing",
+      },
+      {
+        id: 2,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "agg laga deya",
+      },
+    ],
+  },
+  {
+    id: 4,
+    firstName: "Sebastian",
+    lastName: "Cilb",
+    profilepic:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
+    headline:
+      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
+    caption:
+      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
+    likes: ["harshal_123", "Miraj_123"],
+    comments: [
+      {
+        id: 1,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "amazing",
+      },
+      {
+        id: 2,
+        firstName: "harshl",
+        lastName: "mishra",
+        description: "kjaskjdashdkasjndjansjndjan",
+        comment: "agg laga deya",
+      },
+    ],
+  },
 ];
 
 const Overview = () => {
-  const { width: screenWidth2 } = Dimensions.get("window");
+  // const { width: screenWidth2 } = Dimensions.get("window");
+  const { width: screenWidth2 } = useWindowDimensions();
   const scaleFactor = screenWidth2 / 410;
+
+  const gap = 10; // Space between posts
+  const postWidth = (screenWidth2 - gap) / 1.25; // Width of each post
+  const spacerWidth = (screenWidth2 - postWidth) / 1.5; //spacer width for the end of the ScrollView
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -107,11 +158,10 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   // console.log("User data on Overview page : ", profileData);
 
-  const sports = profileData?.selectedSports
-    ? [...profileData.selectedSports]
-    : [];
+  const validSports =
+    profileData?.selectedSports?.filter((s: any) => s.sport) || [];
   const [activeSubSection, setActiveSubSection] = useState(
-    sports[0]?.sport.name
+    validSports[0]?.sport.name || null
   );
 
   if (error) {
@@ -139,7 +189,7 @@ const Overview = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {profileData?.selectedSports?.length > 0 && (
+      {validSports.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
             horizontal
@@ -148,21 +198,22 @@ const Overview = () => {
             className="mt-2"
           >
             <TabsList className="flex-row gap-x-2 w-[100%]">
-              {profileData?.selectedSports?.map((sport: any) => (
+              {validSports.map((sport: any) => (
                 <TouchableOpacity
-                  key={sport.sport._id}
-                  onPress={() => setActiveSubSection(sport.sport.name)}
+                  key={sport.sport?._id}
+                  onPress={() => setActiveSubSection(sport.sport?.name)}
                   className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
-                    activeSubSection === sport.sport.name
+                    activeSubSection === sport.sport?.name
                       ? "bg-[#12956B]"
                       : "bg-black border-gray-600"
                   } border`}
                   style={{
-                    borderRadius: activeSubSection === sport.sport.name ? 7 : 9,
+                    borderRadius:
+                      activeSubSection === sport.sport?.name ? 7 : 9,
                   }}
                 >
                   <Image
-                    source={{ uri: sport.sport.logo }}
+                    source={{ uri: sport.sport?.logo }}
                     style={{
                       width: 20 * scaleFactor,
                       height: 20 * scaleFactor,
@@ -171,14 +222,14 @@ const Overview = () => {
                   />
                   <TextScallingFalse
                     className={`text-sm font-medium ${
-                      activeSubSection === sport.sport.name
+                      activeSubSection === sport.sport?.name
                         ? "text-white"
                         : "text-gray-400"
                     }`}
                     style={styles.buttonText}
                   >
-                    {sport.sport.name.charAt(0).toUpperCase() +
-                      sport.sport.name.slice(1)}
+                    {sport.sport?.name.charAt(0).toUpperCase() +
+                      sport.sport?.name.slice(1)}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
@@ -186,7 +237,7 @@ const Overview = () => {
           </ScrollView>
 
           {/* Tab Contents */}
-          {profileData?.selectedSports?.map((sport: any) => (
+          {validSports.map((sport: any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
               {/* Sports Overview */}
               <View className="w-full flex-1 items-center p-2">
@@ -280,7 +331,7 @@ const Overview = () => {
                           >
                             Position:{" "}
                             <TextScallingFalse className="font-light">
-                              {team.position || "Not Specified"}
+                              {team.position || team.role || "Not Specified"}
                             </TextScallingFalse>
                           </TextScallingFalse>
 
@@ -288,9 +339,9 @@ const Overview = () => {
                             className="text-white font-light pt-2"
                             style={{ fontSize: 13 * scaleFactor }}
                           >
-                            {team.creationDate
+                            {team.creationDate || team.joiningDate
                               ? `${new Date(
-                                  team.creationDate
+                                  team.creationDate || team.joiningDate
                                 ).getFullYear()} - Present`
                               : "Joining Date Not Available"}
                           </TextScallingFalse>
@@ -351,63 +402,41 @@ const Overview = () => {
 
       {/* recent posts */}
       {posts && posts.length > 0 && (
-        <View style={{ paddingTop: "3%", alignItems: "center" }}>
+        <View className="py-4 items-center">
           <View
-            style={{
-              borderWidth: 0.3,
-              width: "97.56%",
-              height: 582 * scaleFactor,
-              borderRadius: 20,
-              borderLeftColor: "#494949",
-              borderBottomColor: "#494949",
-              borderTopColor: "#494949",
-            }}
+            className="ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
+            style={{ height: 582 * scaleFactor }}
           >
-            <View
-              style={{
-                width: "100%",
-                height: "8.5%",
-                justifyContent: "flex-end",
-                paddingHorizontal: 22,
-              }}
-            >
-              <TextScallingFalse
-                style={{
-                  color: "grey",
-                  fontSize: responsiveFontSize(2.23),
-                  fontWeight: "bold",
-                }}
-              >
+            <View className="w-full h-12 justify-end pl-5">
+              <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
                 RECENT POSTS
               </TextScallingFalse>
             </View>
-            <ScrollView horizontal style={{ paddingStart: 20 }}>
-              <View style={{ flexDirection: "row", gap: 20 }}>
-                {posts.map((post: any) => (
-                  <PostSmallCard key={post.id} post={post} />
+
+            <ScrollView
+              horizontal
+              snapToInterval={postWidth + gap}
+              decelerationRate="normal"
+              showsHorizontalScrollIndicator={false}
+            >
+              <View className="flex-row ml-4" style={{ gap }}>
+                {posts.map((post) => (
+                  <View
+                    key={post.id}
+                    style={{ width: postWidth, height: "100%" }}
+                  >
+                    <PostSmallCard post={post} />
+                  </View>
                 ))}
-                <View style={{ width: 10 }} />
+                <View style={{ width: spacerWidth }} />
               </View>
             </ScrollView>
-            <View
-              style={{
-                width: "100%",
-                height: "15%",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{ height: 0.5, width: "90%", backgroundColor: "grey" }}
-              />
-              <TouchableOpacity
-                activeOpacity={0.3}
-                style={{ paddingTop: "3.5%" }}
-              >
-                <TextScallingFalse
-                  style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
-                >
-                  See all posts..
+
+            <View className="w-auto h-[15%] justify-center items-center">
+              <View className="h-[0.5] w-[90%] bg-gray-400" />
+              <TouchableOpacity activeOpacity={0.3} className="pt-4">
+                <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
+                  See all posts...
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>

@@ -95,6 +95,7 @@ const ProfileLayout = () => {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[5]}
       >
         {/* username */}
         <View className="justify-between px-3 flex-row h-12 items-center">
@@ -228,7 +229,7 @@ const ProfileLayout = () => {
             <View style={{ paddingTop: "3.6%" }}>
               {/* age, height, weight, teams */}
               <View style={{ position: "relative", left: -3 }}>
-                <View style={{ flexDirection: "row", gap: "3.65%" }}>
+                <View style={{ flexDirection: "row", justifyContent:"space-between" }}>
                   <View style={{ flexDirection: "row" }}>
                     <Entypo
                       name="dot-single"
@@ -463,7 +464,12 @@ const ProfileLayout = () => {
           }}
         ></View>
         {/* Tabs Header */}
-        <View className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600">
+        <View className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600"
+          style={{ 
+            backgroundColor: 'black',
+            zIndex: 1
+          }}
+        >
           {tabs.map((tab) => {
             // Check if this tab is active.
             const isActive = activeTab === tab.name;

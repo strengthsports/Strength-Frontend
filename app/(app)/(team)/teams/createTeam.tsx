@@ -28,6 +28,8 @@ import { RootState } from "~/reduxStore";
 import { createTeam } from "~/reduxStore/slices/team/teamSlice";
 import { AppDispatch } from "~/reduxStore";
 import { fetchUserSuggestions } from "~/reduxStore/slices/user/onboardingSlice";
+import { fetchTeamSports } from "~/reduxStore/slices/team/teamSlice";
+import { set } from "zod";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -38,13 +40,6 @@ interface Member {
   name: string;
   role: string;
   image: string;
-}
-interface PotentialMember {
-  id: string;
-  name: string;
-  role: string;
-  image: string;
-  selected?: boolean;
 }
 
 interface FormData {
@@ -59,81 +54,8 @@ interface FormData {
   admin: string[];
   createdBy: string | null;
 }
-const dummyMembers: PotentialMember[] = [
-  {
-    id: "1",
-    name: "Prathik Jha",
-    role: "Cricketer | Ranji Trophy Player",
-    image: "https://picsum.photos/id/1/100/100",
-    selected: false,
-  },
-  {
-    id: "2",
-    name: "Rohan Deb Nath",
-    role: "Cricketer | Right-Hand Batsman",
-    image: "https://picsum.photos/id/2/100/100",
-    selected: false,
-  },
-  {
-    id: "3",
-    name: "Aditi Mehra",
-    role: "Cricketer | Left-Hand Batsman",
-    image: "https://picsum.photos/id/3/100/100",
-    selected: false,
-  },
-  {
-    id: "4",
-    name: "Arjun Kapoor",
-    role: "All-Rounder | State Team Player",
-    image: "https://picsum.photos/id/4/100/100",
-    selected: false,
-  },
-  {
-    id: "5",
-    name: "Sneha Roy",
-    role: "Cricketer | Wicket-Keeper",
-    image: "https://picsum.photos/id/5/100/100",
-    selected: false,
-  },
-  {
-    id: "6",
-    name: "Rajesh Kumar",
-    role: "Bowler | Swing Specialist",
-    image: "https://picsum.photos/id/6/100/100",
-    selected: false,
-  },
-  {
-    id: "7",
-    name: "Priya Singh",
-    role: "All-Rounder | District Team Player",
-    image: "https://picsum.photos/id/7/100/100",
-    selected: false,
-  },
-  {
-    id: "8",
-    name: "Vikram Joshi",
-    role: "Cricketer | Opening Batsman",
-    image: "https://picsum.photos/id/8/100/100",
-    selected: false,
-  },
-  {
-    id: "9",
-    name: "Tanya Sharma",
-    role: "Cricketer | Spin Bowler",
-    image: "https://picsum.photos/id/9/100/100",
-    selected: false,
-  },
-  {
-    id: "10",
-    name: "Karan Patel",
-    role: "Bowler | Fast Bowling Specialist",
-    image: "https://picsum.photos/id/10/100/100",
-    selected: false,
-  },
-];
 
 const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
-  const params = useLocalSearchParams();
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState("Select Game");
@@ -145,6 +67,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state?.profile);
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
+  const [game, setGame] = useState([]);
   useEffect(() => {
     if (user?.id) {
       setFormData((prevFormData) => ({
@@ -159,17 +82,27 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     console.log("Fetching user suggestions...");
     dispatch(
       fetchUserSuggestions({
-        sportsData: ["67cd0bb8970c518cc730d485"],
+        sportsData: [formData?.sport],
         limit: 10,
         page: 1,
       }),
     );
   }, [dispatch, formData?.sport]); // Add dependencies to avoid unnecessary re-renders
 
+  useEffect(() => {
+    fetchSports();
+  }, []);
+
+  const fetchSports = async () => {
+    const data = await fetchTeamSports();
+    console.log("Data", data);
+    setGame(data);
+  };
+
   const [formData, setFormData] = useState<FormData>({
     logo: null,
     name: "",
-    sport: "Cricket",
+    sport: "",
     address: {
       city: "Kolkata",
       state: "West Bengal",
@@ -186,27 +119,18 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
   const games = ["Cricket", "Kabaddi", "Basketball", "Hockey", "Volleyball"];
 
-  const getGameIcon = (game: string) => {
-    switch (game) {
-      case "Cricket":
-        return require("../../../../assets/images/Sports Icons/okcricket.png");
-      case "Kabaddi":
-        return require("../../../../assets/images/Sports Icons/okkabaddi.png");
-      case "Basketball":
-        return require("../../../../assets/images/Sports Icons/okbasketball.png");
-      case "Hockey":
-        return require("../../../../assets/images/Sports Icons/okhockey.png");
-      case "Volleyball":
-        return require("../../../../assets/images/Sports Icons/okvollyball.png");
-    }
-  };
-
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleSelectGame = (game: string) => {
     setSelectedGame(game);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      sport: game,
+    }));
     setIsDropdownOpen(false); // Close the dropdown after selection
   };
+
+  // Call the function inside `useEffect`
 
   const handleSaveLocation = (data: any) => {
     const country = data.country;
@@ -306,6 +230,14 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     });
   };
 
+  const handleSportsChange = (sport: string, gameId: string) => {
+    handleSelectGame(sport);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      sport: gameId,
+    }));
+  };
+
   const handleCreateTeam = async () => {
     if (
       !formData.name ||
@@ -365,20 +297,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                           className="w-32 h-28 rounded"
                         />
                       </View>
-
-                      {/* Right side: Name + Size */}
-                      {/* <View className="ml-4 flex-1">
-                        <Text className="text-white truncate" numberOfLines={1}>
-                          {formData.logo.split("/").pop()}
-                        </Text>
-                        <Text className="text-gray-400 text-sm">
-                          {formData.logo
-                            ? `${(formData.logo.length / 1024).toFixed(2)} KB`
-                            : ""}
-                        </Text>
-                      </View> */}
-
-                      {/* Close button on the right */}
                     </View>
                   ) : (
                     <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
@@ -414,15 +332,22 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                 {/* Sport */}
                 <View>
                   <Text className="text-white text-2xl mt-2 mb-1">Sport*</Text>
+
+                  {/* Dropdown Button */}
                   <TouchableOpacity
                     onPress={toggleDropdown}
                     className="border border-[#515151] rounded-lg p-4 flex-row justify-between items-center"
                   >
                     <View className="flex-row items-center">
-                      <Image
-                        source={getGameIcon(selectedGame)}
-                        className="w-6 h-6 mr-2"
-                      />
+                      {selectedGame !== "Select Game" && (
+                        <Image
+                          source={{
+                            uri: game.find((g) => g.name === selectedGame)
+                              ?.logo,
+                          }}
+                          className="w-6 h-6 mr-2"
+                        />
+                      )}
                       <Text
                         className={`${
                           selectedGame === "Select Game"
@@ -441,28 +366,27 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     />
                   </TouchableOpacity>
 
-                  {/* Dropdown Games List */}
+                  {/* Dropdown List */}
                   {isDropdownOpen && (
                     <View className="mt-2 border border-[#515151] rounded-lg p-4">
-                      {games.map((game, index) => (
+                      {game.map((g, index) => (
                         <TouchableOpacity
-                          key={index}
-                          onPress={() => handleSelectGame(game)}
+                          key={g._id}
+                          onPress={() => handleSportsChange(g.name, g._id)}
                           className="py-2 border-b border-[#515151]"
                         >
                           <View className="flex-row items-center">
                             <Image
-                              source={getGameIcon(game)}
+                              source={{ uri: g.logo }}
                               className="w-8 h-8 mr-2"
                             />
-                            <Text className="text-white ml-2">{game}</Text>
+                            <Text className="text-white ml-2">{g.name}</Text>
                           </View>
                         </TouchableOpacity>
                       ))}
                     </View>
                   )}
                 </View>
-
                 {/* Location */}
                 <View>
                   <Text className="text-white text-2xl mt-2 mb-1">

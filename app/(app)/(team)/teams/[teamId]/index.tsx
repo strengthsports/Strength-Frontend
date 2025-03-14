@@ -25,17 +25,23 @@ const TeamPage = () => {
   const handleFetchTeam = async () => {
     try {
       const teamDetails = await dispatch(fetchTeamDetails(teamId)).unwrap();
-      console.log("Fetched Team Data:", teamDetails);
+      // console.log("Fetched Team Data:", teamDetails);
       setTeam(teamDetails);
     } catch (error) {
       console.error("Error fetching team:", error);
     }
   };
+  const handleEditTeam = () => {
+    router.push({
+      pathname: `/teams/${teamId}/edit/editTeam`,
+      params: { teamDetails: JSON.stringify(team) }, // Convert object to string
+    });
+  };
 
   const menuItems = [
     {
       label: "Edit Team",
-      onPress: () => router.push("../edit/editTeam"),
+      onPress: () => handleEditTeam(),
     },
     {
       label: "Members",

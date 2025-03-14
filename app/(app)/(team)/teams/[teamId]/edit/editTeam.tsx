@@ -11,6 +11,10 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import EditDescription from "./editDescription";
 import LocationModal from "../../components/locationModal";
+import { useLocalSearchParams } from "expo-router";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
+import { UseDispatch } from "react-redux";
 
 interface PotentialMember {
   id: string;
@@ -19,6 +23,7 @@ interface PotentialMember {
   image: string;
   selected?: boolean;
 }
+
 const EditTeam = () => {
   const [imageUri, setImageUri] = useState("https://picsum.photos/200/200");
   const [teamName, setTeamName] = useState("Team Name");
@@ -45,7 +50,7 @@ const EditTeam = () => {
   const [admin, setAdmin] = useState("Admin Name");
   const [adminDescription, setAdminDescription] = useState("Admin Description");
   const [adminImage, setAdminImage] = useState("https://picsum.photos/200/200");
-
+  const [sportLogo, setSportLogo] = useState("https://picsum.photos/200/200");
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showCaptainModal, setShowCaptainModal] = useState(false);
   const [showViceCaptainModal, setShowViceCaptainModal] = useState(false);
@@ -55,6 +60,33 @@ const EditTeam = () => {
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
   const [showEditDescription, setShowEditDescription] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const { team, loading, error } = useSelector(
+    (state: RootState) => state.team,
+  );
+
+  //fetching team details
+  const params = useLocalSearchParams();
+  const teamId = params.teamId;
+  const teamDetails = params.teamDetails;
+  // console.log("Fetching team details for ID:", teamDetails);
+
+  useEffect(() => {
+    // console.log(team?.name);
+    setTeamName(team?.name);
+    setSport(team?.sport.name);
+    setLocation(`${team?.address?.city}, ${team?.address?.country}`);
+    setDescription(team?.description);
+    setCaptain(team?.captain);
+    setViceCaptain(team?.viceCaptain);
+    setAdmin(team?.admin._id);
+    setImageUri(team?.logo.url);
+    const date = new Date(team?.establishedOn);
+    const monthYear = date.toLocaleString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+    setEstablished(monthYear);
+  }, [teamId, teamDetails]);
   const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate || establishedDate;
     setEstablishedDate(currentDate);

@@ -60,7 +60,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
     });
   };
   useEffect(() => {
-    console.log("got users", members);
+    // console.log("got users", members);
   }, [player]);
   // const filteredMembers = members.filter((member) =>
   //   member.name.toLowerCase().includes(searchQuery.toLowerCase()),

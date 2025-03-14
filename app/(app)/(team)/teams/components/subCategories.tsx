@@ -8,7 +8,7 @@ interface SubCategoriesProps {
 }
 
 const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
-  console.log("Checking", teamDetails);
+  // console.log("Checking from subcategories", teamDetails);
   const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("SQUAD");
 
   const renderContent = () => {

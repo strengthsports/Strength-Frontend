@@ -67,7 +67,7 @@ export const createTeam = createAsyncThunk<
     const datee = convertToDate(teamData.establishedOn);
     console.log("datee", datee);
     formData.append("name", teamData.name);
-    formData.append("sport", "6771941c77a19c8141f2f1b7");
+    formData.append("sport", teamData.sport);
 
     formData.append("establishedOn", datee);
     formData.append("gender", teamData.gender);
@@ -137,7 +137,6 @@ export const fetchTeamDetails = createAsyncThunk<
   }
 });
 
-//fetch team/s
 export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
   "team/fetchTeams",
   async (_, { rejectWithValue }) => {
@@ -160,8 +159,8 @@ export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
       if (!response.ok) {
         return rejectWithValue(data.message || "Failed to fetch teams");
       }
-
-      console.log("Teams:", data.data);
+      // console.log("API Response:", data);
+      // console.log("Teams:", data.data);
       return data.data; // Return only the relevant data
     } catch (error: any) {
       console.error("Error fetching teams:", error.message);
@@ -169,11 +168,38 @@ export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
     }
   },
 );
+export const fetchTeamSports = async () => {
+  try {
+    const token = await getToken("accessToken");
+
+    const url = new URL(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/fetch-allSports`,
+    );
+    url.searchParams.append("type", "team");
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Something went wrong!");
+    }
+
+    // console.log("Fetched Team Sports:", data.data);
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching sports:", error);
+  }
+};
 
 //invite member/s
 
 const teamSlice = createSlice({
-  name: "auth",
+  name: "team",
   initialState,
   reducers: {
     resetTeamState: (state) => {
@@ -193,6 +219,21 @@ const teamSlice = createSlice({
       state.error = null;
     });
     builder.addCase(createTeam.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+    //fetch team details
+    builder.addCase(fetchTeamDetails.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchTeamDetails.fulfilled, (state, action) => {
+      state.loading = false;
+      // console.log("Updating Redux with Team:", action.payload);
+      state.team = action.payload; // Update team details
+      state.error = null;
+    });
+    builder.addCase(fetchTeamDetails.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
-import showTeam from "../showTeam";
+import showTeam from "./[teamId]";
 
 interface TeamMember {
   id: number;
@@ -66,7 +66,7 @@ const TeamCreatedPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    router.replace("../showTeam");
+    router.replace("../teams/67cd0bb8970c518cc730d485");
   };
   return (
     <SafeAreaView className="flex-1 bg-black pt-2">
@@ -80,7 +80,7 @@ const TeamCreatedPage: React.FC = () => {
         {/* Image Section */}
         <View className="flex items-center mt-8 px-16">
           <Image
-            source={require("../../../../../assets/images/teams/done.png")}
+            source={require("../../../../assets/images/teams/done.png")}
             className="rounded-full h-40 w-40"
           />
         </View>
@@ -98,12 +98,12 @@ const TeamCreatedPage: React.FC = () => {
         {/* Team Details Section */}
         <View className="flex flex-row items-center py-4 w-72 max-w-84 mt-8 pl-6">
           <Image
-            source={require("../../../../../assets/images/teams/dummyteam.png")}
+            source={require("../../../../assets/images/teams/dummyteam.png")}
             className="w-36 h-36"
           />
           <View className="flex flex-row items-center ml-9">
             <Image
-              source={require("../../../../../assets/images/teams/Vector 64.png")}
+              source={require("../../../../assets/images/teams/Vector 64.png")}
               className="mr-2 h-[108px]"
             />
             <View className="flex flex-col ml-8">

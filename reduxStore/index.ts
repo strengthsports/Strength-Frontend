@@ -20,22 +20,26 @@ import forgotPasswordReducer from "./slices/user/forgotPasswordSlice";
 import exploreReducer from "./slices/explore/exploreSlice";
 import hashtagReducer from "./slices/hashtagPage/hashtagPageSlice";
 import profileReducer from "./slices/user/profileSlice";
+import teamReducer from "./slices/team/teamSlice";
+import searchReducer from "./slices/explore/searchSlice"
 import { profileApi } from "./api/profile/profileApi";
 import { sportsApi } from "./api/sportsApi";
 import { postsApi } from "./api/posts/postsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { cricketApi } from "./api/explore/cricketApi";
+import { searchApi } from "./api/explore/searchApi";
 
 // Single feedApi
 import { feedApi } from "./api/feed/services/feedApi";
 import { footballApi } from "./api/explore/footballApi";
 
+
 // Persist configuration
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "signup", "onboarding", "forgotPassword", "profile"],
+  whitelist: ["auth", "signup", "onboarding", "forgotPassword", "profile","search"],
 };
 
 // Combine reducers
@@ -47,6 +51,8 @@ const rootReducer = combineReducers({
   explore: exploreReducer,
   profile: profileReducer,
   hashtagPage: hashtagReducer,
+  team: teamReducer,
+  search:searchReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,
@@ -55,6 +61,8 @@ const rootReducer = combineReducers({
   [footballApi.reducerPath]: footballApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
+  [searchApi.reducerPath]: searchApi.reducer, 
+ 
   // Use feedApi as the single reducer for all feed-related features
 });
 
@@ -77,7 +85,9 @@ const store = configureStore({
       cricketApi.middleware,
       footballApi.middleware,
       feedApi.middleware,
-      postsApi.middleware
+      postsApi.middleware,
+      searchApi.middleware
+
       // Single middleware for all feed features
     ),
 });

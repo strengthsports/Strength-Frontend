@@ -7,19 +7,22 @@ export const signupSchema = z.object({
     .string()
     .nonempty("Email is required")
     .email("Invalid email address"),
+  
   dateOfBirth: z
     .string()
-    .nonempty("Date of birth is required")
+    .optional()
     .refine(
       (date) => {
+        if (date === "") return true; // Allow empty value
         const parsedDate = new Date(date);
-        return !isNaN(parsedDate.getTime());
+        return !isNaN(parsedDate.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(date); // Check valid date and 'YYYY-MM-DD' format
       },
       { message: "Invalid date format. Use 'YYYY-MM-DD'." }
     ),
-  gender: z.enum(["male", "female"], {
-    errorMap: () => ({ message: "Gender is required" }),
-  }),
+    
+  gender: z
+  .union([z.enum(["male", "female"]), z.literal("")])
+  .optional(),
 
   // password: z
   //   .string()

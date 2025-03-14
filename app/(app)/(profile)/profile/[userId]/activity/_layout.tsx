@@ -57,7 +57,7 @@ const ActivityLayout = () => {
                     setActiveSubSection(tab);
                     router.push(
                       tab === "posts"
-                        ? `/(app)/(main)/profile/${params?.userId}/activity`
+                        ? `/(app)/(profile)/profile/${params?.userId}/activity`
                         : (`/profile/${params?.userId}/activity/${tab}` as any)
                     );
                   }}

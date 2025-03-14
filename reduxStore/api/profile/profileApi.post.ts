@@ -14,7 +14,7 @@ export const profileEndpoints = profileApi.injectEndpoints({
       }
     >({
       query: ({ postedBy, postedByType, limit, skip, lastTimestamp }) => ({
-        url: "/api/v1/specific-user-posts",
+        url: "/api/v1/post/other-user",
         method: "POST",
         body: { postedBy, postedByType },
         params: { limit, skip, lastTimestamp },

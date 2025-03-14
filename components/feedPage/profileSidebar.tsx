@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -22,6 +22,8 @@ import { Platform } from "react-native";
 import { ToastAndroid } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AddPostContainer from "../Cards/AddPostContainer";
+import { getTeams } from "~/reduxStore/slices/team/teamSlice";
+import CreateTeam from "~/app/(app)/(team)/teams/createTeam";
 
 interface MenuItem {
   label: string;
@@ -37,6 +39,7 @@ const HEADER_HEIGHT = 60;
 
 const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [teamDetails, setTeamDetails] = useState<any>([]);
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const [isAddPostContainerOpen, setAddPostContainerOpen] =
     useState<boolean>(false);
@@ -72,16 +75,32 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const handleInitiateTeam = () => {
+  const closeSidebar = () => {
     setIsSidebarOpen(false);
-    router.push("/(app)/(team)/teams/InitiateCreateTeam");
+  };
+
+  useEffect(() => {
+    check();
+  }, []);
+
+  const check = async () => {
+    const fetchedTeamsData = await dispatch(getTeams()).unwrap();
+    const teamsList = fetchedTeamsData.createdTeams.map((teamEntry) => ({
+      name: teamEntry.team.name, // Assuming 'name' exists in team object
+      url: teamEntry.team.logo.url, // Assuming 'url' exists in team object
+      id: teamEntry.team._id,
+    }));
+
+    console.log(teamsList); // Logs an array of team names and URLs
+
+    setTeamDetails(teamsList);
   };
 
   return (
     <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
-        className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
+        className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30 border-b-[0.5px] border-[#525252]"
         style={{ height: HEADER_HEIGHT }}
       >
         {/* Avatar Profile Picture */}
@@ -101,7 +120,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
             backgroundColor: "#141414",
             padding: 6,
             borderRadius: 12,
-            width: "72%",
+            width: "75%",
             height: 37,
             justifyContent: "space-between",
             paddingHorizontal: 6,
@@ -113,7 +132,7 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
               color: "grey",
               fontSize: 14,
               fontWeight: "400",
-              marginRight: 6,
+              marginLeft: 6,
             }}
           >
             What's on your mind...
@@ -195,23 +214,56 @@ const ProfileSidebar: React.FC<DrawerProps> = ({ children, menuItems }) => {
                   <Text className="text-white text-4xl font-bold">
                     Manage Teams
                   </Text>
+
+                  <Text className="text-white text-4xl font-semibold mt-2 mb-4 px-6">
+                    <View className="">
+                      {teamDetails.map((team, index) => (
+                        <TouchableOpacity
+                          onPress={() =>
+                            router.push(`../(team)/teams/${team.id}`)
+                          }
+                        >
+                          <View key={index}>
+                            <View className="flex-row items-center mt-4">
+                              <Image
+                                source={
+                                  team.url ? { uri: team.url } : defaultPic
+                                }
+                                className="w-12 h-12 rounded-full"
+                                resizeMode="cover"
+                              />
+                              <Text className="text-white text-4xl font-semibold ml-4">
+                                {team.name}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </Text>
                   <View className="flex-row mt-4">
                     {/* Create Team Button */}
                     <View className="border border-[#12956B] px-4 py-2 rounded-md flex-row items-center">
-                      <TouchableOpacity onPress={handleInitiateTeam}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          router.push("/(app)/(team)/teams/InitiateCreateTeam")
+                        }
+                      >
                         <Text className="text-[#12956B] text-md font-semibold">
                           Create Team
                         </Text>
                       </TouchableOpacity>
-                      <Icon name="plus" size={15} color="green" />
+                      <Icon name="plus" size={15} color="#12956B" />
                     </View>
 
                     {/* Join Team Button with Spacing */}
-                    <View className="ml-4 bg-[#12956B] px-4 py-2 rounded-md items-center">
-                      <Text className="text-white text-md font-semibold">
-                        Join Team
-                      </Text>
-                    </View>
+                    <TouchableOpacity onPress={() => check()}>
+                      <View className="ml-4 bg-[#12956B] px-4 py-2 rounded-md items-center">
+                        <Text className="text-white text-md font-semibold">
+                          Join Team
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
                   </View>
                 </View>
 

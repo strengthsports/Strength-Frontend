@@ -2,6 +2,7 @@ import React from "react";
 import { View, TouchableOpacity, TextInput } from "react-native";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import TextScallingFalse from "../CentralText";
 
 const SearchBar = ({ searchText }: { searchText?: string }) => {
   const router = useRouter();
@@ -18,22 +19,16 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
       {/* Search Bar */}
       <TouchableOpacity
         activeOpacity={0.8}
-        className="flex-row bg-neutral-800 rounded-3xl px-3 items-center flex-1"
-        onPress={() => ({})}
+        className="flex-row bg-neutral-800 rounded-3xl px-3 py-2 items-center flex-1"
+        onPress={() => router.push("/(app)/searchPage")}
       >
-        <MaterialCommunityIcons
-          name="magnify"
-          size={24}
-          color="grey"
-          className=""
-        />
-        <TextInput
-          placeholder="Search for news, team, matches, etc..."
-          placeholderTextColor="grey"
-          className="text-2xl text-white"
+        <MaterialCommunityIcons name="magnify" size={24} color="grey" />
+        <TextScallingFalse
+          className={`text-2xl ${searchText ? "text-white" : "text-[#808080]"}`}
+          aria-disabled={true}
         >
-          {searchText}
-        </TextInput>
+          {searchText || "Search for news, team, matches, etc..."}
+        </TextScallingFalse>
       </TouchableOpacity>
 
       {/* Plus Icon */}

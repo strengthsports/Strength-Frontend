@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, View, TouchableOpacity, Image } from "react-native";
 import Icon from "react-native-vector-icons/Entypo";
 import * as ImagePicker from "expo-image-picker";
 import { ThemedText } from "~/components/ThemedText";
-import AddMembersModal from "../addMembersModal";
+import AddMembersModal from "../../addMembersModal";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import EditDescription from "./editDescription";
+import LocationModal from "../../components/locationModal";
 
 interface PotentialMember {
   id: string;
@@ -51,6 +53,8 @@ const EditTeam = () => {
   const [isDescriptionEditing, setDescriptionEditing] = useState(false); // state for editing mode
   const [establishedDate, setEstablishedDate] = useState(new Date());
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+  const [showEditDescription, setShowEditDescription] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate || establishedDate;
     setEstablishedDate(currentDate);
@@ -188,6 +192,9 @@ const EditTeam = () => {
       selected: false,
     },
   ];
+  useEffect(() => {
+    console.log("showEditDescription changed:", showEditDescription);
+  }, [showEditDescription]);
 
   const handleSetAdmin = (selectedMembers: any) => {
     console.log("Admin selected: ", selectedMembers);
@@ -196,7 +203,13 @@ const EditTeam = () => {
     setAdminDescription(selectedMembers[0].role);
     setShowAdminModal(false);
   };
-
+  const handleSaveLocation = (data: any) => {
+    const country = data.country;
+    if (country) {
+      console.log("Country:", country);
+      setLocation(country);
+    }
+  };
   const handleSetCaptain = (selectedMembers: any) => {
     console.log("Captain selected: ", selectedMembers);
     setCaptain(selectedMembers[0].name);
@@ -228,39 +241,39 @@ const EditTeam = () => {
           <Text className="text-white  text-4xl">Save</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView>
-        {/* Editable Image Box */}
-        <View className="flex flex-col items-center">
-          <View className="h-56 w-56 border border-[#303030] rounded-lg mt-8 items-center justify-center relative">
-            {imageUri ? (
-              <>
-                {/* Remove Icon */}
-                <TouchableOpacity
-                  onPress={removeImage}
-                  style={{ position: "absolute", top: 8, right: 8 }}
-                >
-                  <Icon name="cross" size={24} color="white" />
-                </TouchableOpacity>
 
-                {/* Image */}
-                <Image
-                  source={{ uri: imageUri }}
-                  className="w-40 h-40 rounded-lg"
-                />
-              </>
-            ) : (
+      {/* Editable Image Box */}
+      <View className="flex flex-col items-center">
+        <View className="h-56 w-56 border border-[#303030] rounded-lg mt-8 items-center justify-center relative">
+          {imageUri ? (
+            <>
+              {/* Remove Icon */}
               <TouchableOpacity
-                onPress={uploadImage}
-                className="items-center justify-center"
+                onPress={removeImage}
+                style={{ position: "absolute", top: 8, right: 8 }}
               >
-                {/* Upload Icon */}
-                <Icon name="upload" size={48} color="#303030" />
-                <ThemedText>Upload Image</ThemedText>
+                <Icon name="cross" size={24} color="white" />
               </TouchableOpacity>
-            )}
-          </View>
-        </View>
 
+              {/* Image */}
+              <Image
+                source={{ uri: imageUri }}
+                className="w-40 h-40 rounded-lg"
+              />
+            </>
+          ) : (
+            <TouchableOpacity
+              onPress={uploadImage}
+              className="items-center justify-center"
+            >
+              {/* Upload Icon */}
+              <Icon name="upload" size={48} color="#303030" />
+              <ThemedText>Upload Image</ThemedText>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      <ScrollView>
         {/* Team Name Change Input */}
         <View className="border-b border-t border-[#202020] mt-8">
           <View className="flex flex-row items-center justify-between p-4">
@@ -295,16 +308,18 @@ const EditTeam = () => {
             <Text className="text-white font-bold w-1/3">Sport*</Text>
             <Text className="text-white w-2/3">{sport}</Text>
           </View>
-          <View className="flex flex-row items-center justify-between p-4 border-t border-[#202020]">
-            <Text className="text-white font-bold w-1/3">Location*</Text>
-            <Text className="text-white w-2/3">{location}</Text>
-            <Icon
-              name="location"
-              size={20}
-              color="white"
-              style={{ position: "absolute", right: 8 }}
-            />
-          </View>
+          <TouchableOpacity onPress={() => setShowLocationModal(true)}>
+            <View className="flex flex-row items-center justify-between p-4 border-t border-[#202020]">
+              <Text className="text-white font-bold w-1/3">Location*</Text>
+              <Text className="text-white w-2/3">{location}</Text>
+              <Icon
+                name="location"
+                size={20}
+                color="white"
+                style={{ position: "absolute", right: 8 }}
+              />
+            </View>
+          </TouchableOpacity>
           {/*Established On*/}
           {/* Established On */}
           <View className="flex flex-row items-center justify-between p-4 border-t border-[#202020]">
@@ -432,7 +447,7 @@ const EditTeam = () => {
 
               {/* Change icon based on editing state */}
               <TouchableOpacity
-                onPress={() => router.push("./editDescription")}
+                onPress={() => setShowEditDescription(true)}
                 className="absolute right-0 top-1/2 transform -translate-y-1/2 px-2"
               >
                 <Icon name="chevron-thin-right" size={20} color="white" />
@@ -464,6 +479,20 @@ const EditTeam = () => {
           buttonName="Set Vice Captain"
           multiselect={false}
           player={dummyMembers}
+        />
+        <EditDescription
+          isVisible={showEditDescription}
+          onClose={() => setShowEditDescription(false)}
+          onSave={(newDesc: any) => {
+            setDescription(newDesc);
+            setShowEditDescription(false);
+          }}
+          initialDescription={description}
+        />
+        <LocationModal
+          visible={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          onSave={handleSaveLocation}
         />
       </ScrollView>
     </View>

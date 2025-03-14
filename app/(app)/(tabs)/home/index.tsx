@@ -26,6 +26,8 @@ import {
 import PostContainer from "~/components/Cards/postContainer";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
+import { Divider } from "react-native-elements";
+import TextScallingFalse from "~/components/CentralText";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -124,6 +126,11 @@ export default function Home() {
         return (
           <View className="w-screen">
             <PostContainer item={item.data} />
+            <Divider
+              style={{ marginHorizontal: "auto", width: "100%" }}
+              width={0.4}
+              color="#282828"
+            />
           </View>
         );
       }
@@ -209,7 +216,19 @@ export default function Home() {
         </View>
       );
     }
-    return null;
+    return (
+      <View className="px-10">
+        <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
+          you
+        </TextScallingFalse>
+        <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
+          did it!
+        </TextScallingFalse>
+        <TextScallingFalse className="text-4xl text-neutral-400">
+          Crafted with &#10084; in Kolkata, IN{" "}
+        </TextScallingFalse>
+      </View>
+    );
   };
 
   return (

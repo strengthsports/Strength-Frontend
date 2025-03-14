@@ -81,7 +81,8 @@ export interface SuggestionUser {
   type: string;
   profilePic: string;
   coverPic: string;
-  followerCount: number;
+  followerCount?: number;
+  [key: string]: any;
 }
 
 export interface ReportUser {

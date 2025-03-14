@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Text, View, TouchableOpacity, TextInput, Modal } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { UseSelector, useDispatch } from "react-redux";
+import useGetAddress from "~/hooks/useGetAddress";
+import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 
 type LocationModalProps = {
   visible: boolean;
@@ -16,10 +19,32 @@ const LocationModal: React.FC<LocationModalProps> = ({
 }) => {
   const [country, setCountry] = useState("India");
   const [city, setCity] = useState("Kolkata, West Bengal");
+  const [formattedAddress, setFormattedAddress] = useState("");
+  const [coordinates, setCoordinates] = useState<[number, number]>([0, 0]);
+  const [state, setState] = useState("West Bengal");
+  const dispatch = useDispatch();
+  const { loading, error, address, getAddress } = useGetAddress();
+
+  const setAddress = async () => {
+    try {
+      await getAddress();
+      if (address) {
+        setCountry(address.country);
+        setCity(`${address.city}, ${address.state}`);
+        setFormattedAddress(address.formattedAddress);
+        setCoordinates(address.coordinates);
+
+        console.log("Country:", address.country);
+        console.log("City:", address.city);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleDone = () => {
     // Call the onSave callback with the location data
-    onSave({ country, city });
+    onSave({ country, city, formattedAddress, coordinates,state });
     onClose();
   };
 
@@ -67,7 +92,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
         {/* Current Location Button */}
         <View className="flex items-center mt-8">
-          <TouchableOpacity>
+          <TouchableOpacity onPress={setAddress}>
             <Text className="text-[#12956B] text-4xl font-semibold">
               Use Current Location
             </Text>

@@ -15,17 +15,21 @@ const SuggestionCard = ({
   user,
   removeSuggestion,
   size,
+  onboarding,
+  isSelected,
 }: {
   user: SuggestionUser;
   removeSuggestion: (id: string) => void;
   size: string;
+  onboarding?: boolean;
+  isSelected?: (id: string) => void;
 }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: user._id, type: user.type })
+    JSON.stringify({ id: user._id, type: user.type }),
   );
   const isFollowing = useSelector((state: RootState) =>
-    state.profile?.followings?.includes(user._id)
+    state.profile?.followings?.includes(user._id),
   );
   // console.log(userFollowings);
   const [followingStatus, setFollowingStatus] = useState(isFollowing);
@@ -39,6 +43,9 @@ const SuggestionCard = ({
   //handle follow
   const handleFollow = async () => {
     try {
+      if (isSelected) {
+        isSelected(user._id); // Add to selected players
+      }
       setFollowingStatus(true);
       const followData: FollowUser = {
         followingId: user._id,
@@ -46,6 +53,7 @@ const SuggestionCard = ({
       };
 
       await followUser(followData);
+     
     } catch (err) {
       setFollowingStatus(false);
       console.error("Follow error:", err);
@@ -61,8 +69,12 @@ const SuggestionCard = ({
         followingId: user._id,
         followingType: user.type || "User",
       };
+      if (isSelected) {
+        isSelected(user._id); // Remove from selected players
+      }
 
       await unFollowUser(unfollowData);
+     
     } catch (err) {
       setFollowingStatus(true);
       console.error("Unfollow error:", err);
@@ -70,6 +82,14 @@ const SuggestionCard = ({
       setModalOpen(false);
     }
   };
+
+  //handle isSelected
+  const handleSelected = () => {
+    if (isSelected) {
+      isSelected(user._id);
+    }
+  };
+ 
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -111,6 +131,7 @@ const SuggestionCard = ({
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
+          disabled={onboarding}
           className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
             size === "small" ? "w-16 h-16" : "w-20 h-20"
           } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
@@ -151,7 +172,13 @@ const SuggestionCard = ({
                 followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
               } `}
               activeOpacity={0.6}
-              onPress={followingStatus ? handleOpenModal : handleFollow}
+              onPress={
+                followingStatus
+                  ? onboarding
+                    ? handleUnfollow
+                    : handleOpenModal
+                  : handleFollow
+              }
             >
               {followingStatus ? (
                 <TextScallingFalse className="text-center text-lg text-white">

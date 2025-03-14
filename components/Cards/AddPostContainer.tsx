@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { useAddPostMutation } from "~/reduxStore/api/feed/features/feedApi.addPost";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddPostContainer({
   onBackPress,
@@ -30,6 +31,7 @@ export default function AddPostContainer({
     useState(false);
   const [pickedImageUris, setPickedImageUris] = useState<string[]>([]);
   const [addPost, { isLoading }] = useAddPostMutation();
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState([3, 2]);
 
   const handlePostSubmit = async () => {
     if (!postText.trim() && pickedImageUris.length === 0) return;
@@ -45,6 +47,7 @@ export default function AddPostContainer({
         };
         formData.append(`assets${index + 1}`, file);
       });
+      formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
       console.log("formData", formData._parts);
       await addPost(formData).unwrap();
       setPostText("");
@@ -58,6 +61,7 @@ export default function AddPostContainer({
   };
 
   const pickImage = async (ratio: [number, number]) => {
+    setSelectedAspectRatio(ratio);
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -86,7 +90,7 @@ export default function AddPostContainer({
   };
 
   return (
-    <>
+    <SafeAreaView className="h-full">
       <View className="flex flex-row items-center justify-between p-4">
         <AddPostHeader onBackPress={onBackPress} />
         <TouchableOpacity
@@ -121,7 +125,10 @@ export default function AddPostContainer({
         {pickedImageUris.length > 0 && (
           <Swiper
             {...swiperConfig}
-            className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400"
+            className={`w-full h-auto rounded-l-[20px] bg-slate-400`}
+            style={{
+              aspectRatio: selectedAspectRatio[0] / selectedAspectRatio[1],
+            }}
           >
             {pickedImageUris.map((uri, index) => (
               <View key={index} className="relative w-full h-full">
@@ -181,7 +188,12 @@ export default function AddPostContainer({
               activeOpacity={1}
               onPress={() => setIsImageRatioModalVisible(false)}
             >
-              <ImageRatioModal pickImage={pickImage} />
+              <ImageRatioModal
+                pickImage={(ratio) => {
+                  setSelectedAspectRatio(ratio);
+                  pickImage(ratio); // Your existing image picker call
+                }}
+              />
             </TouchableOpacity>
           </Modal>
           <MaterialCommunityIcons
@@ -191,7 +203,7 @@ export default function AddPostContainer({
           />
         </View>
       </View>
-    </>
+    </SafeAreaView>
   );
 }
 

@@ -173,8 +173,17 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   // console.log("User data on Overview page : ", profileData);
 
-  const validSports = profileData?.selectedSports?.filter((s: any) => s.sport) || [];
-  const [activeSubSection, setActiveSubSection] = useState(validSports[0]?.sport.name || null);
+// <<<<<<< amit
+//   const validSports = profileData?.selectedSports?.filter((s: any) => s.sport) || [];
+//   const [activeSubSection, setActiveSubSection] = useState(validSports[0]?.sport.name || null);
+// =======
+  const sports = profileData?.selectedSports
+    ? [...profileData.selectedSports]
+    : [];
+  const [activeSubSection, setActiveSubSection] = useState(
+    sports[0]?.sport?.name
+  );
+// >>>>>>> master
 
   if (error) {
     return (
@@ -212,19 +221,20 @@ const Overview = () => {
             <TabsList className="flex-row gap-x-2 w-[100%]">
               {validSports.map((sport: any) => (
                 <TouchableOpacity
-                  key={sport.sport._id}
-                  onPress={() => setActiveSubSection(sport.sport.name)}
+                  key={sport.sport?._id}
+                  onPress={() => setActiveSubSection(sport.sport?.name)}
                   className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
-                    activeSubSection === sport.sport.name
+                    activeSubSection === sport.sport?.name
                       ? "bg-[#12956B]"
                       : "bg-black border-gray-600"
                   } border`}
                   style={{
-                    borderRadius: activeSubSection === sport.sport.name ? 7 : 9,
+                    borderRadius:
+                      activeSubSection === sport.sport?.name ? 7 : 9,
                   }}
                 >
                   <Image
-                    source={{ uri: sport.sport.logo }}
+                    source={{ uri: sport.sport?.logo }}
                     style={{
                       width: 20 * scaleFactor,
                       height: 20 * scaleFactor,
@@ -233,14 +243,14 @@ const Overview = () => {
                   />
                   <TextScallingFalse
                     className={`text-sm font-medium ${
-                      activeSubSection === sport.sport.name
+                      activeSubSection === sport.sport?.name
                         ? "text-white"
                         : "text-gray-400"
                     }`}
                     style={styles.buttonText}
                   >
-                    {sport.sport.name.charAt(0).toUpperCase() +
-                      sport.sport.name.slice(1)}
+                    {sport.sport?.name.charAt(0).toUpperCase() +
+                      sport.sport?.name.slice(1)}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
@@ -248,8 +258,13 @@ const Overview = () => {
           </ScrollView>
 
           {/* Tab Contents */}
-          {validSports.map((sport : any) => (
+<!-- <<<<<<< amit
+<!--           {validSports.map((sport : any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
+======= -->
+          {profileData?.selectedSports?.map((sport: any) => (
+            <TabsContent key={sport.sport?._id} value={sport.sport?.name}>
+<!-- >>>>>>> master -->
               {/* Sports Overview */}
               <View className="w-full flex-1 items-center p-2">
                 {sport.details && (

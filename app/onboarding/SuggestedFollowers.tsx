@@ -21,6 +21,7 @@ import { onboardingUser } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
 import SuggestionCard from "~/components/Cards/SuggestionCard";
 import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
+import { FlatList } from "react-native";
 
 interface SupportCardProps {
   user: any;
@@ -29,80 +30,39 @@ interface SupportCardProps {
   onSupport: (id: string) => void;
 }
 
-const SupportCard: React.FC<SupportCardProps> = ({
-  user,
-  isSelected,
-  onClose,
-  onSupport,
-}) => (
-  <View className="rounded-xl p-4 m-1 w-[180px] relative border border-[#464646]">
-    <TouchableOpacity
-      className="absolute right-2 top-2 z-10"
-      onPress={() => onClose(user._id)}
-    >
-      <TextScallingFalse className="text-gray-400 text-lg">×</TextScallingFalse>
-    </TouchableOpacity>
-
-    <View className="items-center space-y-2">
-      <View className="bg-white rounded-full w-16 h-16 items-center justify-center">
-        <Image
-          source={{ uri: user.profilePic }}
-          className="w-10 h-10"
-          resizeMode="contain"
-        />
-      </View>
-
-      <TextScallingFalse className="text-white text-lg font-semibold">
-        {user.firstName} {user.lastName}
-      </TextScallingFalse>
-
-      <TextScallingFalse className="text-gray-400 text-sm text-center">
-        {user.headline}
-      </TextScallingFalse>
-
-      <TouchableOpacity
-        className={`mt-4 border rounded-full px-6 py-2 ${
-          isSelected ? "bg-[#12956B]" : "border-[#12956B]"
-        }`}
-        onPress={() => onSupport(user._id)}
-      >
-        <TextScallingFalse
-          className={`text-center ${
-            isSelected ? "text-white" : "text-[#12956B]"
-          }`}
-        >
-          {isSelected ? "Unfollow" : "Follow"}
-        </TextScallingFalse>
-      </TouchableOpacity>
-    </View>
-  </View>
-);
-
 const SuggestedSupportScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch<AppDispatch>();
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [limit, SetLimit] = useState(10);
+  const [page, SetPage] = useState(1);
+  const [users, setUsers] = useState([]);
 
-  const { fetchedUsers, headline, profilePic, selectedSports, loading, error } =
-    useSelector((state: RootState) => state.onboarding);
+  const { headline, profilePic, selectedSports, loading, error } = useSelector(
+    (state: RootState) => state.onboarding,
+  );
+  const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    console.log(selectedSports);
-    dispatch(fetchUserSuggestions(selectedSports));
+    console.log("Selected Sports id:", selectedSports);
+    dispatch(fetchUserSuggestions({ selectedSports, limit, page })); // add limit, page for pagination while scrolling up
     console.log("Dispatch completed...");
-  }, [dispatch]);
+  }, [dispatch, page]);
+  useEffect(() => {
+    if (fetchedUsers) {
+      setUsers((prevUsers) => [...prevUsers, ...fetchedUsers]);
+    }
+  }, [fetchedUsers]); // Update `users` when `fetchedUsers` changes
+
+  const loadMoreUsers = () => {
+    if (!loading) {
+      SetPage((prevPage) => prevPage + 1); // Increment page to load more users
+    }
+  };
 
   const handleClose = (id: string) => {
     setSelectedPlayers((prev) => prev.filter((player) => player !== id));
-  };
-
-  const handleSupport = (id: string) => {
-    if (selectedPlayers.includes(id)) {
-      setSelectedPlayers((prev) => prev.filter((player) => player !== id));
-    } else {
-      setSelectedPlayers((prev) => [...prev, id]);
-    }
   };
 
   const handleContinue = async () => {
@@ -233,7 +193,7 @@ const SuggestedSupportScreen: React.FC = () => {
           </TextScallingFalse>
         </View>
 
-        <ScrollView
+        {/* <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: "center",
@@ -247,24 +207,50 @@ const SuggestedSupportScreen: React.FC = () => {
           ) : (
             <View className="flex-row flex-wrap justify-center">
               {fetchedUsers.map((user) => (
-                // <SupportCard
-                //   key={user._id}
-                //   user={user}
-                //   isSelected={selectedPlayers.includes(user._id)}
-                //   onClose={handleClose}
-                //   onSupport={handleSupport}
-                // />
                 <SuggestionCard
                   key={user._id}
                   user={user}
-                  size="large" // or "large" depending on your design preference
+                  onboarding={true}
+                  size="large" // or "small" depending on your design preference
                   removeSuggestion={handleClose}
                   isSelected={handleSelectedPlayers}
                 />
               ))}
             </View>
           )}
-        </ScrollView>
+        </ScrollView> */}
+        <FlatList
+          data={users}
+          keyExtractor={(item) => item._id}
+          numColumns={2} // Adjust based on your preferred layout
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingBottom: 20,
+          }}
+          columnWrapperStyle={{
+            justifyContent: "center", // Aligns items in the center
+          }}
+          ListEmptyComponent={() => (
+            <ActivityIndicator size={24} color="#12956B" />
+          )}
+          renderItem={({ item }) => (
+            <SuggestionCard
+              user={item}
+              onboarding={true}
+              size="large"
+              removeSuggestion={handleClose}
+              isSelected={handleSelectedPlayers}
+            />
+          )}
+          onEndReached={loadMoreUsers}
+          onEndReachedThreshold={0.9} // Load more users when the list is halfway to the bottom
+          ListFooterComponent={
+            users.length > 0 && loading ? (
+              <ActivityIndicator size={24} color="#12956B" />
+            ) : null
+          }
+        />
 
         <TouchableOpacity
           className={`py-2 mt-4 mx-4 rounded-full  ${

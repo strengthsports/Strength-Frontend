@@ -13,24 +13,9 @@ import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
-import { useSelector } from "react-redux";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
 import { ProfileContext } from "./_layout";
-
-const data = {
-  currentteamcricket: [
-    {
-      id: 1,
-      cteamname: "Pro Trackers",
-      cteamaddress: "Queensland, Australia",
-      cteamposition: "Sprit-Lead",
-      cteamjoinedon: "2/4/20",
-      cteamlogo:
-        "https://th.bing.com/th/id/R.8e89771a422f8151c53146eb2b950755?rik=x2SbdtUqdN4MrA&riu=http%3a%2f%2f1.bp.blogspot.com%2f-PSo_4af_Y4M%2fU1fY4UHfHOI%2fAAAAAAAANfw%2fMHW_GKUCYLE%2fs1600%2fchelsea-fc-logo-wallpapers%2b02.jpg&ehk=KVIwGdoGS9heIpR7oXnPO0o1K6GL5PhcyN9ugrRzpqA%3d&risl=&pid=ImgRaw&r=0",
-    },
-  ],
-};
 
 const posts = [
   {
@@ -173,17 +158,11 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   // console.log("User data on Overview page : ", profileData);
 
-// <<<<<<< amit
-//   const validSports = profileData?.selectedSports?.filter((s: any) => s.sport) || [];
-//   const [activeSubSection, setActiveSubSection] = useState(validSports[0]?.sport.name || null);
-// =======
-  const sports = profileData?.selectedSports
-    ? [...profileData.selectedSports]
-    : [];
+  const validSports =
+    profileData?.selectedSports?.filter((s: any) => s.sport) || [];
   const [activeSubSection, setActiveSubSection] = useState(
-    sports[0]?.sport?.name
+    validSports[0]?.sport.name || null
   );
-// >>>>>>> master
 
   if (error) {
     return (
@@ -258,13 +237,8 @@ const Overview = () => {
           </ScrollView>
 
           {/* Tab Contents */}
-<!-- <<<<<<< amit
-<!--           {validSports.map((sport : any) => (
+          {validSports.map((sport: any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
-======= -->
-          {profileData?.selectedSports?.map((sport: any) => (
-            <TabsContent key={sport.sport?._id} value={sport.sport?.name}>
-<!-- >>>>>>> master -->
               {/* Sports Overview */}
               <View className="w-full flex-1 items-center p-2">
                 {sport.details && (
@@ -447,7 +421,10 @@ const Overview = () => {
             >
               <View className="flex-row ml-4" style={{ gap }}>
                 {posts.map((post) => (
-                  <View key={post.id} style={{ width: postWidth, height: "100%" }}>
+                  <View
+                    key={post.id}
+                    style={{ width: postWidth, height: "100%" }}
+                  >
                     <PostSmallCard post={post} />
                   </View>
                 ))}
@@ -473,7 +450,6 @@ const Overview = () => {
     </View>
   );
 };
-
 
 export default Overview;
 

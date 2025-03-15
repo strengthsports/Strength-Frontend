@@ -120,22 +120,21 @@ const PostContainer = ({
       // setLikeCount(prev => prev + 1);
 
       handleLikeAction();
-
-      scaleAnim.setValue(0);
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.delay(500),
-        Animated.timing(scaleAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
     }
+    scaleAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.delay(500),
+      Animated.timing(scaleAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   //handle follow
@@ -375,6 +374,7 @@ const PostContainer = ({
                 isFeedPage={true}
                 postDetails={item}
                 setIndex={handleSetActiveIndex}
+                onDoubleTap={handleDoubleTap}
               />
             );
           })()}

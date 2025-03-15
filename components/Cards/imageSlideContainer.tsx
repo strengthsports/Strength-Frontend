@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
 import { Post } from "~/types/post";
+import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 
 interface CustomImageSliderProps {
   images: string[];
@@ -20,6 +21,7 @@ interface CustomImageSliderProps {
   isFeedPage?: boolean;
   postDetails?: Post;
   setIndex: (index: any) => any;
+  onDoubleTap?: () => any;
 }
 
 const RemoveButton = memo(({ onPress }: { onPress: () => void }) => (
@@ -52,6 +54,7 @@ const ImageSlide = memo(
     totalSlides,
     isFeedPage,
     postDetails,
+    onDoubleTap,
   }: {
     uri: string;
     index: number;
@@ -60,21 +63,23 @@ const ImageSlide = memo(
     totalSlides: number;
     isFeedPage?: boolean;
     postDetails?: Post;
+    onDoubleTap?: () => any;
   }) => {
     const router = useRouter();
     return (
-      <TouchableOpacity
+      <TouchableWithDoublePress
         className={`flex-1 relative overflow-hidden ${
           !isFeedPage && isFirstSlide ? "ml-2" : ""
         }`}
         activeOpacity={0.95}
-        onPress={() =>
+        onSinglePress={() =>
           isFeedPage &&
           router.push({
             pathname: "/post/1" as RelativePathString,
             params: { details: JSON.stringify(postDetails) },
           })
         }
+        onDoublePress={onDoubleTap}
       >
         <Image
           source={{ uri }}
@@ -84,7 +89,7 @@ const ImageSlide = memo(
           resizeMode="cover"
         />
         {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
-      </TouchableOpacity>
+      </TouchableWithDoublePress>
     );
   }
 );
@@ -96,6 +101,7 @@ const CustomImageSlider = ({
   isFeedPage,
   postDetails,
   setIndex,
+  onDoubleTap,
 }: // renderPagination
 CustomImageSliderProps) => {
   const swiperRef = useRef(null);
@@ -116,6 +122,7 @@ CustomImageSliderProps) => {
     if (images.length > prevImagesLengthRef.current && swiperRef.current) {
       const newIndex = images.length - 1;
       setActiveIndex(newIndex);
+      console.log("New Index : ", newIndex);
       // Using setTimeout to ensure the Swiper has updated its internal state
       setTimeout(() => {
         if (swiperRef.current && swiperRef.current.scrollBy) {
@@ -124,7 +131,7 @@ CustomImageSliderProps) => {
       }, 50);
     }
     prevImagesLengthRef.current = images.length;
-  }, [images.length, activeIndex]);
+  }, [images.length]);
 
   // Optimized dimension update handler
   useEffect(() => {
@@ -165,25 +172,25 @@ CustomImageSliderProps) => {
     return null;
   }
 
-  // Custom pagination component for Swiper
-  const renderPagination = (index: any, total: number) => {
-    if (total <= 1) return null;
+  // // Custom pagination component for Swiper
+  // const renderPagination = (index: any, total: number) => {
+  //   if (total <= 1) return null;
 
-    return (
-      <View className="absolute bottom-3 left-0 right-0 flex-row justify-center">
-        {Array.from({ length: total }).map((_, i) => (
-          <View
-            key={`dot-${i}`}
-            className={
-              i === index
-                ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-            }
-          />
-        ))}
-      </View>
-    );
-  };
+  //   return (
+  //     <View className="absolute bottom-3 left-0 right-0 flex-row justify-center">
+  //       {Array.from({ length: total }).map((_, i) => (
+  //         <View
+  //           key={`dot-${i}`}
+  //           className={
+  //             i === index
+  //               ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
+  //               : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
+  //           }
+  //         />
+  //       ))}
+  //     </View>
+  //   );
+  // };
 
   return (
     <View>
@@ -214,6 +221,7 @@ CustomImageSliderProps) => {
               totalSlides={images.length}
               isFeedPage={isFeedPage}
               postDetails={postDetails}
+              onDoubleTap={onDoubleTap}
             />
           ))}
         </Swiper>

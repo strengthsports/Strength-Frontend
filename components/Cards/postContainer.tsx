@@ -365,7 +365,7 @@ const PostContainer = ({
             return (
               <CustomImageSlider
                 onRemoveImage={() => {}}
-                aspectRatio={item.aspectRatio}
+                aspectRatio={item.aspectRatio || [3, 2]}
                 images={imageUrls}
                 isFeedPage={true}
                 postDetails={item}

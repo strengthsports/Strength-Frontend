@@ -39,7 +39,7 @@ const SuggestedSupportScreen: React.FC = () => {
   const [users, setUsers] = useState([]);
 
   const { headline, profilePic, selectedSports, loading, error } = useSelector(
-    (state: RootState) => state.onboarding,
+    (state: RootState) => state.onboarding
   );
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   const { user } = useSelector((state: RootState) => state.auth);
@@ -81,7 +81,7 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
       finalOnboardingData.append(
         "followings",
-        JSON.stringify(onboardingData.followings),
+        JSON.stringify(onboardingData.followings)
       );
 
       // Log FormData values (for debugging)
@@ -90,7 +90,7 @@ const SuggestedSupportScreen: React.FC = () => {
       // });
 
       const response = await dispatch(
-        onboardingUser(finalOnboardingData),
+        onboardingUser(finalOnboardingData)
       ).unwrap();
 
       // console.log(response);
@@ -121,9 +121,7 @@ const SuggestedSupportScreen: React.FC = () => {
   };
   const handleSelectedPlayers = (id: string) => {
     setSelectedPlayers((prev) =>
-      prev.includes(id)
-        ? prev.filter((player) => player !== id)
-        : [...prev, id],
+      prev.includes(id) ? prev.filter((player) => player !== id) : [...prev, id]
     );
   };
   const handleSkip = async () => {
@@ -140,7 +138,7 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
       finalOnboardingData.append(
         "followings",
-        JSON.stringify(onboardingData.followings),
+        JSON.stringify(onboardingData.followings)
       );
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();

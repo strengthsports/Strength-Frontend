@@ -4,7 +4,7 @@ export interface Post {
   _id: string;
   caption: string;
   assets: Array<{ url: string }>;
-  aspectRatio?: Array<Number>;
+  aspectRatio: [number, number];
   postedBy: {
     _id: string;
     type: string;

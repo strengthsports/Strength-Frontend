@@ -1,17 +1,44 @@
-import { Tabs, useRouter } from "expo-router";
-import React from "react";
-import { Platform } from "react-native";
-
-import { HapticTab } from "@/components/HapticTab";
+import { Tabs } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Platform, View } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import createSSEConnection from "~/utils/sse";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const router = useRouter();
+  const userId = useSelector((state: RootState) => state?.profile?.user?._id);
+  console.log("user Id : ", userId);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
 
+  useEffect(() => {
+    if (!userId) {
+      console.log("User ID is not available. Skipping SSE connection.");
+      return;
+    }
+
+    let sse: EventSource;
+
+    // Immediately invoked async function
+    (async () => {
+      try {
+        sse = await createSSEConnection(userId, (data) => {
+          console.log("User ID : ", userId);
+          console.log("Received notification:", data);
+          setHasNewNotification(true);
+        });
+      } catch (error) {
+        console.error("Failed to establish SSE connection:", error);
+      }
+    })();
+
+    // Cleanup on unmount
+    return () => {
+      if (sse) {
+        sse.close();
+      }
+    };
+  }, [userId]);
   return (
     <Tabs
       screenOptions={{
@@ -81,11 +108,32 @@ export default function TabLayout() {
         options={{
           title: "Notification",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol
-              name={focused ? "bell" : "bell-outline"}
-              color={color}
-            />
+            <View style={{ position: "relative" }}>
+              <IconSymbol
+                name={focused ? "bell" : "bell-outline"}
+                color={color}
+              />
+              {hasNewNotification && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "#12956B",
+                  }}
+                />
+              )}
+            </View>
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            // When the notification tab is pressed, hide the dot
+            setHasNewNotification(false);
+          },
         }}
       />
       <Tabs.Screen

@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import React, { useContext, useState } from "react";
-import TextScallingFalse from "@/components/CentralText";
+import TextScallingFalse from "~/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";

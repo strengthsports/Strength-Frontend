@@ -29,8 +29,7 @@ import {
 
 // Components import
 import PageThemeView from "~/components/PageThemeView";
-import PostButton from "~/components/PostButton";
-import TextScallingFalse from "@/components/CentralText";
+import TextScallingFalse from "~/components/CentralText";
 
 // Utilities import
 import { dateFormatter } from "~/utils/dateFormatter";
@@ -82,7 +81,7 @@ const ProfileLayout = () => {
   }, [params.userId]);
   // console.log(userId);
   const isFollowing = useSelector((state: RootState) =>
-    state.profile?.followings?.includes(userId.id)
+    state.profile.followings.includes(userId.id)
   );
   console.log("Id : ", userId, "Following : ", isFollowing);
   // RTK Querys

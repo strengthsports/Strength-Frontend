@@ -334,18 +334,20 @@ const Overview = () => {
             showsHorizontalScrollIndicator={false}
             snapToInterval={postWidth + gap} // Snap to each post plus the gap
             decelerationRate="normal" // Smooth snapping
-            contentContainerStyle={{ paddingRight: (screenWidth - postWidth) / 1.5 }} // Spacer for last post alignment
+            contentContainerStyle={{
+              paddingRight: (screenWidth - postWidth) / 1.5,
+            }} // Spacer for last post alignment
           />
           <View className="w-auto h-[15%] justify-center items-center">
-          <View className="h-[1px] w-[90%] bg-gray-500" />
-          <TouchableOpacity activeOpacity={0.3} className="pt-4">
-            <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
-              See all posts...
-            </TextScallingFalse>
-          </TouchableOpacity>
+            <View className="h-[1px] w-[90%] bg-gray-500" />
+            <TouchableOpacity activeOpacity={0.3} className="pt-4">
+              <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
+                See all posts...
+              </TextScallingFalse>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
     </ScrollView>
   );
 };

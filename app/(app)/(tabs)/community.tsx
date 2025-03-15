@@ -16,6 +16,7 @@ import {
   useGetUsersOfSimilarSportsQuery,
   useLazyGetUsersOfSpecificCityQuery,
 } from "~/reduxStore/api/community/communityApi";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Community = () => {
   // Fetch different types of suggestions
@@ -146,14 +147,14 @@ const Community = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#050505] pt-4 px-4">
+    <SafeAreaView className="flex-1 bg-[#050505] pt-4 px-4">
       {/* Search Bar */}
-      <View className="flex-row items-center bg-[#1E1E1E] px-3 py-[0.5px] rounded-full mb-3">
+      <View className="flex-row items-center bg-[#1E1E1E] px-3  rounded-full mb-3">
         <Ionicons name="search" size={20} color="gray" className="ml-2" />
         <TextInput
           placeholder="Search..."
           placeholderTextColor="gray"
-          className="text-white flex-1 ml-2"
+          className="text-white flex-1 ml-2 p-3"
         />
       </View>
 
@@ -175,7 +176,7 @@ const Community = () => {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

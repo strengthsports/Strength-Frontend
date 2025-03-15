@@ -3,6 +3,7 @@ import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import moment from "moment";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Notification = () => {
   const { data, isLoading, isError } = useGetNotificationsQuery(null);
@@ -43,7 +44,7 @@ const Notification = () => {
     : [];
 
   return (
-    <View className="flex-1 p-6 bg-black">
+    <SafeAreaView className="flex-1 p-6 bg-black">
       <Text className="text-6xl font-normal text-white mb-4">
         Notifications
       </Text>
@@ -88,7 +89,7 @@ const Notification = () => {
           </Text>
         )
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

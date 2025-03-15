@@ -38,8 +38,8 @@ const PostDetails = () => {
   };
 
   return (
-    <SafeAreaView className="h-screen">
-      <View className="w-full z-50 absolute top-0 left-0 right-0 bg-black/80 py-4 flex-row justify-between items-center px-5">
+    <SafeAreaView className="flex-1">
+      <View className="w-full z-50  bg-black/80 py-4 flex-row justify-between items-center px-5">
         <TouchableOpacity onPress={() => router.back()}>
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>

@@ -281,7 +281,7 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView edges={["top", "bottom"]} className="flex-1">
+    <View className="flex-1">
       {isBottomSheetOpen && (
         <Pressable style={styles.overlay} onPress={handleCloseBottomSheet} />
       )}
@@ -345,7 +345,7 @@ export default function Home() {
           </BottomSheet>
         </Portal>
       </GestureHandlerRootView>
-    </SafeAreaView>
+    </View>
   );
 }
 

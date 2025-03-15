@@ -21,9 +21,8 @@ import { AppDispatch } from "~/reduxStore";
 import { Platform } from "react-native";
 import { ToastAndroid } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AddPostContainer from "../Cards/AddPostContainer";
+import AddPostContainer from "../modals/AddPostContainer";
 import { getTeams } from "~/reduxStore/slices/team/teamSlice";
-import CreateTeam from "~/app/(app)/(team)/teams/createTeam";
 
 interface MenuItem {
   label: string;

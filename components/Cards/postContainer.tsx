@@ -16,7 +16,7 @@ import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
-import MoreModal from "../feedPage/moreModal";
+import MoreModal from "../feedPage/MoreModal";
 import LikerModal from "../feedPage/likerModal";
 import CommentModal from "../feedPage/commentModal";
 import { RootState } from "~/reduxStore";
@@ -34,6 +34,7 @@ import { useReport } from "~/hooks/useReport";
 import SwiperImage from "../ui/SwiperImage";
 import { showFeedback } from "~/utils/feedbackToast";
 import { BlurView } from "expo-blur";
+import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 
 const PostContainer = ({
   item,
@@ -336,7 +337,7 @@ const PostContainer = ({
 
           <View className={`${isExpanded ? "pl-8" : "pl-12"} pr-6 pt-12 pb-4`}>
             <Text
-              className="text-xl text-neutral-200"
+              className="text-xl leading-5 text-neutral-200"
               numberOfLines={isExpanded ? undefined : 2}
               ellipsizeMode="tail"
               onTextLayout={handleTextLayout}
@@ -357,30 +358,20 @@ const PostContainer = ({
         </View>
 
         {/* Image Swiper */}
-        {item.assets && item.assets.length > 0 && (
-          <View
-            style={{
-              width: "100%",
-              aspectRatio: item.aspectRatio
-                ? item.aspectRatio[0] / item.aspectRatio[1]
-                : 3 / 2,
-            }}
-          >
-            <Swiper
-              {...swiperConfig}
-              className="w-full h-auto rounded-l-[20px] bg-white/40"
-            >
-              {item.assets.map((asset) => (
-                <SwiperImage
-                  key={asset.url}
-                  uri={asset.url}
-                  onDoubleTap={handleDoubleTap}
-                  details={item}
-                />
-              ))}
-            </Swiper>
-          </View>
-        )}
+        {item.assets &&
+          item.assets.length > 0 &&
+          (() => {
+            const imageUrls = item.assets.map((asset) => asset.url);
+            return (
+              <CustomImageSlider
+                onRemoveImage={() => {}}
+                aspectRatio={item.aspectRatio}
+                images={imageUrls}
+                isFeedPage={true}
+                postDetails={item}
+              />
+            );
+          })()}
 
         {/* Like Animation */}
         <Animated.View
@@ -447,11 +438,12 @@ const PostContainer = ({
                     className="flex-1 justify-end bg-black/50"
                     activeOpacity={1}
                     onPress={() => setIsCommentCountModalVisible(false)}
-                  ></TouchableOpacity>
-                  <CommentModal
-                    targetId={item?._id}
-                    setCommentCount={setCommentCount}
-                  />
+                  >
+                    <CommentModal
+                      targetId={item?._id}
+                      setCommentCount={setCommentCount}
+                    />
+                  </TouchableOpacity>
                 </Modal>
               )}
             </TouchableOpacity>
@@ -503,13 +495,12 @@ const PostContainer = ({
                     activeOpacity={1}
                     onPress={() => setIsCommentModalVisible(false)}
                   >
-                    {/* <LikerModal targetId={item._id} targetType="Post" /> */}
+                    <CommentModal
+                      targetId={item?._id}
+                      autoFocusKeyboard={isCommentModalVisible}
+                      setCommentCount={setCommentCount}
+                    />
                   </TouchableOpacity>
-                  <CommentModal
-                    targetId={item?._id}
-                    autoFocusKeyboard={isCommentModalVisible}
-                    setCommentCount={setCommentCount}
-                  />
                 </Modal>
               )}
             </TouchableOpacity>

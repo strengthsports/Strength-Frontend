@@ -12,7 +12,7 @@ import {
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
 import AddPostHeader from "~/components/feedPage/addPostHeader";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
@@ -150,6 +150,7 @@ export default function AddPostContainer() {
       const result = await ImagePicker.launchImageLibraryAsync({
         aspect: ratio,
         quality: 0.8,
+        allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 
@@ -270,8 +271,6 @@ export default function AddPostContainer() {
               images={pickedImageUris}
               aspectRatio={selectedAspectRatio}
               onRemoveImage={removeImage}
-              onAddImage={handlePickImageOrAddMore}
-              maxImages={10}
             />
           )}
         </ScrollView>
@@ -295,10 +294,15 @@ export default function AddPostContainer() {
           <View className="flex flex-row justify-between gap-2 ">
             <TouchableOpacity onPress={handlePickImageOrAddMore}>
               <MaterialCommunityIcons
-                name="image-multiple"
+                name="image-outline"
                 size={24}
                 color={Colors.themeColor}
               />
+              {pickedImageUris.length > 0 && (
+                <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
+                  <FontAwesome6 name="add" size={12} color="#12956B" />
+                </View>
+              )}
             </TouchableOpacity>
             <Modal
               visible={isImageRatioModalVisible}

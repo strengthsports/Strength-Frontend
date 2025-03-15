@@ -9,6 +9,7 @@ import {
   Text,
   Pressable,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
@@ -499,7 +500,7 @@ const ProfileLayout = () => {
             className="flex-1 justify-center items-center bg-black"
             activeOpacity={1}
           >
-            <View className="w-full h-full justify-between items-center mx-auto">
+            <SafeAreaView className="w-full h-full justify-between items-center mx-auto">
               {isPicEditModalVisible.message === "profilePic" ? (
                 <PicModal
                   type={isPicEditModalVisible.message}
@@ -533,7 +534,7 @@ const ProfileLayout = () => {
               ) : (
                 <View></View>
               )}
-            </View>
+            </SafeAreaView>
           </TouchableOpacity>
         </Modal>
       </ScrollView>

@@ -72,6 +72,9 @@ const SearchPage: React.FC = () => {
           }).unwrap();
 
           console.log("Response :", response);
+          if (!response || response.length === 0) {
+            console.warn("⚠ No results found from API!");
+          }
 
           setSearchResults(response || []);
         } catch (err) {
@@ -92,6 +95,7 @@ const SearchPage: React.FC = () => {
   const clearSearchHistory = () => {
     dispatch(resetSearchHistory());
   };
+  console.log(searchResults);
 
   // Handle Item Click (Save to Search History & Recent Searches)
   const handleItemPress = (user: any) => {
@@ -130,18 +134,7 @@ const SearchPage: React.FC = () => {
 
       {/* Live Search Results Dropdown */}
       {searchText.length > 0 && (
-        <View
-          style={{
-            backgroundColor: "black",
-            width: width,
-            padding: 8,
-            maxHeight: height,
-            alignSelf: "center",
-            position: "absolute",
-            top: searchBarHeight + 10,
-            zIndex: 10,
-          }}
-        >
+        <View className="px-5">
           {isLoading ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
@@ -151,34 +144,18 @@ const SearchPage: React.FC = () => {
                 item ? (
                   <TouchableOpacity
                     onPress={() => handleItemPress(item)}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: 10,
-                      paddingHorizontal: 15,
-                      borderBottomWidth: 1,
-                      borderBottomColor: "black",
-                    }}
+                    className="flex-row items-center py-2 px-4 border-b border-black"
                   >
                     <Image
                       source={
-                        item.profilePic ? { uri: item.profilePic } : nopic
+                        item?.profilePic && item.profilePic.trim() !== ""
+                          ? { uri: item.profilePic }
+                          : nopic
                       }
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        marginRight: 10,
-                      }}
+                      className="w-10 h-10 rounded-full mr-3"
                     />
 
-                    <Text
-                      style={{
-                        color: "white",
-                        fontSize: 16,
-                        fontWeight: "300",
-                      }}
-                    >
+                    <Text className="text-white text-lg font-light">
                       {item.firstName} {item.lastName}
                     </Text>
                   </TouchableOpacity>

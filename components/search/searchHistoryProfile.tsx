@@ -13,7 +13,6 @@ const SearchHistoryProfile = ({
   name: string;
   username: string;
   profilePic?: string; // ✅ Accept profilePic as an optional prop
-
 }) => {
   return (
     <View
@@ -28,7 +27,9 @@ const SearchHistoryProfile = ({
         {/* Profile Image */}
         <Image
           className="rounded-full mb-1"
-          source={profilePic ? { uri: profilePic } : nopic} 
+          source={
+            profilePic && profilePic.trim() !== "" ? { uri: profilePic } : nopic
+          }
           style={{ width: 35, height: 35 }}
         />
 

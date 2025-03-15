@@ -3,6 +3,7 @@ import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import moment from "moment";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
 import { RefreshControl } from "react-native";
@@ -69,8 +70,8 @@ const NotificationPage = () => {
   const debouncedRefresh = debounce(handleRefresh, 1000);
 
   return (
-    <View style={{ padding: 24, backgroundColor: "black" }}>
-      <Text style={{ fontSize: 24, color: "white", marginBottom: 16 }}>
+    <SafeAreaView className="flex-1 p-6 bg-black">
+      <Text className="text-6xl font-normal text-white mb-4">
         Notifications
       </Text>
 
@@ -136,7 +137,7 @@ const NotificationPage = () => {
           </Text>
         )
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

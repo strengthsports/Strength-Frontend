@@ -10,7 +10,7 @@ import { View, Image, TouchableOpacity, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
-import { useRouter } from "expo-router";
+import { RelativePathString, useRouter } from "expo-router";
 import { Post } from "~/types/post";
 
 interface CustomImageSliderProps {
@@ -19,6 +19,7 @@ interface CustomImageSliderProps {
   onRemoveImage: (index: number) => void;
   isFeedPage?: boolean;
   postDetails?: Post;
+  setIndex: (index: any) => any;
 }
 
 const RemoveButton = memo(({ onPress }: { onPress: () => void }) => (
@@ -70,7 +71,7 @@ const ImageSlide = memo(
         onPress={() =>
           isFeedPage &&
           router.push({
-            pathname: "/post/1",
+            pathname: "/post/1" as RelativePathString,
             params: { details: JSON.stringify(postDetails) },
           })
         }
@@ -83,13 +84,6 @@ const ImageSlide = memo(
           resizeMode="cover"
         />
         {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
-
-        {/* Indicator for multiple images */}
-        {isFirstSlide && totalSlides > 1 && (
-          <View className="absolute right-3 bottom-3 w-5 h-1.5 flex-row items-center justify-center">
-            <View className="w-1.5 h-1.5 rounded-full bg-white/80 mx-0.5" />
-          </View>
-        )}
       </TouchableOpacity>
     );
   }
@@ -101,7 +95,9 @@ const CustomImageSlider = ({
   onRemoveImage,
   isFeedPage,
   postDetails,
-}: CustomImageSliderProps) => {
+  setIndex,
+}: // renderPagination
+CustomImageSliderProps) => {
   const swiperRef = useRef(null);
   const prevImagesLengthRef = useRef(images.length);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -148,6 +144,8 @@ const CustomImageSlider = ({
   // Handle index change
   const handleIndexChange = useCallback((index: number) => {
     setActiveIndex(index);
+    setIndex(index);
+    console.log("Index", index);
   }, []);
 
   // Handle image removal
@@ -168,7 +166,7 @@ const CustomImageSlider = ({
   }
 
   // Custom pagination component for Swiper
-  const renderPagination = (index, total) => {
+  const renderPagination = (index: any, total: number) => {
     if (total <= 1) return null;
 
     return (
@@ -178,7 +176,7 @@ const CustomImageSlider = ({
             key={`dot-${i}`}
             className={
               i === index
-                ? "w-2 h-2 rounded-full bg-white mx-0.5"
+                ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
                 : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
             }
           />
@@ -204,7 +202,7 @@ const CustomImageSlider = ({
           removeClippedSubviews={false}
           loop={false}
           showsPagination={images.length > 1}
-          renderPagination={renderPagination}
+          // renderPagination={renderPagination}
         >
           {images.map((uri, index) => (
             <ImageSlide

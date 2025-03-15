@@ -72,6 +72,11 @@ const PostContainer = ({
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
     useState(false);
+  const [activeIndex, setActiveIndex] = useState<any>(0);
+
+  const handleSetActiveIndex = (index: any) => {
+    setActiveIndex(index);
+  };
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -369,6 +374,7 @@ const PostContainer = ({
                 images={imageUrls}
                 isFeedPage={true}
                 postDetails={item}
+                setIndex={handleSetActiveIndex}
               />
             );
           })()}
@@ -418,6 +424,21 @@ const PostContainer = ({
                 </Modal>
               )}
             </TouchableOpacity>
+
+            {item.assets && item.assets.length > 1 && (
+              <View className="flex-row justify-center">
+                {Array.from({ length: item.assets.length }).map((_, i) => (
+                  <View
+                    key={`dot-${i}`}
+                    className={
+                      i === activeIndex
+                        ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
+                        : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
+                    }
+                  />
+                ))}
+              </View>
+            )}
 
             {/* comment count */}
             <TouchableOpacity

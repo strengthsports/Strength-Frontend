@@ -92,6 +92,12 @@ export default function AddPostContainer() {
     [number, number]
   >([3, 2]);
 
+  const [activeIndex, setActiveIndex] = useState<any>(0);
+
+  const handleSetActiveIndex = (index: any) => {
+    setActiveIndex(index);
+  };
+
   // Memoize derived values
   const isPostButtonEnabled = useMemo(
     () => postText.trim() || pickedImageUris.length > 0,
@@ -271,9 +277,27 @@ export default function AddPostContainer() {
               images={pickedImageUris}
               aspectRatio={selectedAspectRatio}
               onRemoveImage={removeImage}
+              setIndex={handleSetActiveIndex}
             />
           )}
+
+          {/* Pagination */}
+          {pickedImageUris.length > 1 && (
+            <View className="flex-row justify-center mt-2">
+              {Array.from({ length: pickedImageUris.length }).map((_, i) => (
+                <View
+                  key={`dot-${i}`}
+                  className={
+                    i === activeIndex
+                      ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
+                      : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
+                  }
+                />
+              ))}
+            </View>
+          )}
         </ScrollView>
+
         <View className="flex flex-row justify-between items-center p-5">
           <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
             <MaterialCommunityIcons

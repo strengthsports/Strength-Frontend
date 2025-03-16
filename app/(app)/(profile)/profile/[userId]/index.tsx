@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
 import { ProfileContext } from "./_layout";
+import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 
 const posts = [
   {
@@ -443,6 +444,8 @@ const Overview = () => {
           </View>
         </View>
       )}
+
+      <DiscoverPeopleList />
 
       <View
         style={{ height: 30, width: "100%", backgroundColor: "transparent" }}

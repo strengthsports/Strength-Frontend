@@ -27,7 +27,6 @@ import { dateFormatter } from "~/utils/dateFormatter";
 import { MotiView } from "moti";
 import Overview from ".";
 import Activity from "./activity/_layout";
-import Events from "./events";
 import Teams from "./teams";
 import PicModal from "~/components/profilePage/PicModal";
 import nopic from "@/assets/images/nopic.jpg";
@@ -36,6 +35,7 @@ import { AppDispatch } from "~/reduxStore";
 import { removePic } from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
+import Boost from "./boost";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -54,8 +54,8 @@ const ProfileLayout = () => {
     () => [
       { name: "Overview" },
       { name: "Activity" },
-      { name: "Events" },
       { name: "Teams" },
+      { name: "Boost" },
     ],
     []
   );
@@ -67,10 +67,10 @@ const ProfileLayout = () => {
         return <Overview />;
       case "Activity":
         return <Activity />;
-      case "Events":
-        return <Events />;
       case "Teams":
         return <Teams />;
+      case "Boost":
+        return <Boost />;
       default:
         return <Overview />;
     }

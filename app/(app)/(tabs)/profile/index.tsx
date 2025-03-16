@@ -311,41 +311,39 @@ const Overview = () => {
       </View>
 
       {/* recent posts */}
-      <View className="py-4 items-center">
-        <View
-          className="ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
-          style={{ height: 582 * scaleFactor }}
-        >
-          <View className="w-full h-12 justify-end pl-5">
-            <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
-              RECENT POSTS
+      <View
+        className="py-2 my-2 ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
+        style={{ height: 582 * scaleFactor }}
+      >
+        <View className="w-full h-12 justify-end pl-5">
+          <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
+            RECENT POSTS
+          </TextScallingFalse>
+        </View>
+        <FlatList
+          data={posts || []}
+          keyExtractor={(item) => item._id}
+          initialNumToRender={5}
+          removeClippedSubviews={isAndroid}
+          windowSize={11}
+          renderItem={renderItem}
+          ListEmptyComponent={memoizedEmptyComponent}
+          bounces={false}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={postWidth + gap} // Snap to each post plus the gap
+          decelerationRate="normal" // Smooth snapping
+          contentContainerStyle={{
+            paddingRight: (screenWidth - postWidth) / 1.5,
+          }} // Spacer for last post alignment
+        />
+        <View className="w-auto h-[15%] justify-center items-center">
+          <View className="h-[1px] w-[90%] bg-gray-500" />
+          <TouchableOpacity activeOpacity={0.3} className="pt-4">
+            <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
+              See all posts...
             </TextScallingFalse>
-          </View>
-          <FlatList
-            data={posts || []}
-            keyExtractor={(item) => item._id}
-            initialNumToRender={5}
-            removeClippedSubviews={isAndroid}
-            windowSize={11}
-            renderItem={renderItem}
-            ListEmptyComponent={memoizedEmptyComponent}
-            bounces={false}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={postWidth + gap} // Snap to each post plus the gap
-            decelerationRate="normal" // Smooth snapping
-            contentContainerStyle={{
-              paddingRight: (screenWidth - postWidth) / 1.5,
-            }} // Spacer for last post alignment
-          />
-          <View className="w-auto h-[15%] justify-center items-center">
-            <View className="h-[1px] w-[90%] bg-gray-500" />
-            <TouchableOpacity activeOpacity={0.3} className="pt-4">
-              <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
-                See all posts...
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>

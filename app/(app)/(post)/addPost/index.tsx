@@ -189,6 +189,7 @@ export default function AddPostContainer() {
       const result = await ImagePicker.launchImageLibraryAsync({
         aspect: selectedAspectRatio,
         quality: 0.8,
+        allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 

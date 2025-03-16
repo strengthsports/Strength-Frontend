@@ -322,7 +322,10 @@ const profileSlice = createSlice({
       state.followings = [...(state.followings || []), action.payload];
     },
     pullFollowings: (state, action) => {
+      console.log(state.followings);
+      console.log(action.payload);
       state.followings?.filter((id) => id !== action.payload);
+      console.log(state.followings);
     },
     resetProfile: (state) => {
       state.user = null;

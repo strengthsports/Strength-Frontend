@@ -173,17 +173,8 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   // console.log("User data on Overview page : ", profileData);
 
-// <<<<<<< amit
-//   const validSports = profileData?.selectedSports?.filter((s: any) => s.sport) || [];
-//   const [activeSubSection, setActiveSubSection] = useState(validSports[0]?.sport.name || null);
-// =======
-  const sports = profileData?.selectedSports
-    ? [...profileData.selectedSports]
-    : [];
-  const [activeSubSection, setActiveSubSection] = useState(
-    sports[0]?.sport?.name
-  );
-// >>>>>>> master
+  const validSports = profileData?.selectedSports?.filter((s: any) => s.sport) || [];
+  const [activeSubSection, setActiveSubSection] = useState(validSports[0]?.sport.name || null);
 
   if (error) {
     return (
@@ -258,13 +249,8 @@ const Overview = () => {
           </ScrollView>
 
           {/* Tab Contents */}
-<!-- <<<<<<< amit
-<!--           {validSports.map((sport : any) => (
+           {validSports.map((sport : any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
-======= -->
-          {profileData?.selectedSports?.map((sport: any) => (
-            <TabsContent key={sport.sport?._id} value={sport.sport?.name}>
-<!-- >>>>>>> master -->
               {/* Sports Overview */}
               <View className="w-full flex-1 items-center p-2">
                 {sport.details && (

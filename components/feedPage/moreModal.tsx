@@ -124,7 +124,7 @@ const MoreModal = memo(
 
     return (
       <View
-        className={`w-full self-center p-4 ${isOwnPost ? "h-full" : "h-full"}`}
+        className={`w-full self-center p-4 h-40`}
         onStartShouldSetResponder={() => true}
       >
         <View className="flex-1 justify-evenly">

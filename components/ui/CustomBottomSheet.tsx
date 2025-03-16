@@ -1,5 +1,5 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import React, { useCallback, useEffect, useImperativeHandle } from "react";
+import { Dimensions, StyleSheet, View } from "react-native";
+import React, { useCallback, useImperativeHandle } from "react";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolate,
@@ -7,15 +7,15 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
+  runOnJS,
 } from "react-native-reanimated";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
 const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50;
 
 type BottomSheetProps = {
   children?: React.ReactNode;
+  onClose?: () => void; // optional callback when sheet is closed
 };
 
 export type BottomSheetRefProps = {
@@ -26,14 +26,13 @@ export type BottomSheetRefProps = {
 const CustomBottomSheet = React.forwardRef<
   BottomSheetRefProps,
   BottomSheetProps
->(({ children }, ref) => {
+>(({ children, onClose }, ref) => {
   const translateY = useSharedValue(0);
   const active = useSharedValue(false);
 
   const scrollTo = useCallback((destination: number) => {
     "worklet";
     active.value = destination !== 0;
-
     translateY.value = withSpring(destination, { damping: 50 });
   }, []);
 
@@ -56,9 +55,14 @@ const CustomBottomSheet = React.forwardRef<
       translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
     })
     .onEnd(() => {
+      // if the sheet is dragged down beyond one-third of the screen height, close it
       if (translateY.value > -SCREEN_HEIGHT / 3) {
         scrollTo(0);
+        if (onClose) {
+          runOnJS(onClose)();
+        }
       } else if (translateY.value < -SCREEN_HEIGHT / 1.5) {
+        // if dragged far enough upward, snap fully open
         scrollTo(MAX_TRANSLATE_Y);
       }
     });
@@ -91,10 +95,12 @@ const styles = StyleSheet.create({
   bottomSheetContainer: {
     height: SCREEN_HEIGHT,
     width: "100%",
-    backgroundColor: "white",
+    backgroundColor: "#121212",
     position: "absolute",
     top: SCREEN_HEIGHT,
     borderRadius: 25,
+    borderWidth: 0.5,
+    borderColor: "#404040",
   },
   line: {
     width: 75,

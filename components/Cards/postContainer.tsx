@@ -39,11 +39,11 @@ import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 const PostContainer = ({
   item,
   highlightedHashtag,
-  onPressMore,
+  handlePressMore,
 }: {
   item: Post;
   highlightedHashtag?: string;
-  onPressMore?: (item: Post) => void;
+  handlePressMore?: (item: Post) => void;
 }) => {
   const router = useRouter();
   const { user, followings } = useSelector(
@@ -303,7 +303,7 @@ const PostContainer = ({
             className="absolute right-4 p-2 z-30"
             // onPress={() => setIsMoreModalVisible(true)}
             onPress={() =>
-              onPressMore({
+              handlePressMore({
                 ...item,
                 followingStatus: isFollowingGlobal,
                 isReported: item?.isReported,
@@ -419,8 +419,9 @@ const PostContainer = ({
                     className="flex-1 justify-end bg-black/50"
                     activeOpacity={1}
                     onPress={() => setIsPostLikersModalVisible(false)}
-                  ></TouchableOpacity>
-                  <LikerModal targetId={item?._id} targetType="Post" />
+                  >
+                    <LikerModal targetId={item?._id} targetType="Post" />
+                  </TouchableOpacity>
                 </Modal>
               )}
             </TouchableOpacity>

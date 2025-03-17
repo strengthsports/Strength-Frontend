@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
-import AddPostHeader from "~/components/feedPage/addPostHeader";
+import AddPostHeader from "~/components/feedPage/AddPostHeader";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";

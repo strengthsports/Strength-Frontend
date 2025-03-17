@@ -13,7 +13,11 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  RelativePathString,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import { AntDesign, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
@@ -22,11 +26,14 @@ import { swiperConfig } from "~/utils/swiperConfig";
 import nopic from "@/assets/images/nopic.jpg";
 import { LinearGradient } from "expo-linear-gradient";
 import PostDetailsModal from "~/components/modals/PostDetailsModal";
+import { Post } from "~/types/post";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
 
 const PostDetails = () => {
-  const { details } = useLocalSearchParams();
-  //   console.log("details : ", JSON.parse(details));
-  const postDetails = JSON.parse(details as any);
+  const postDetails = useSelector(
+    (state: RootState) => state.profile.currentPost
+  );
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
@@ -117,12 +124,12 @@ const PostDetails = () => {
         <View
           className="relative w-full"
           style={{
-            aspectRatio: postDetails.aspectRatio
+            aspectRatio: postDetails?.aspectRatio
               ? postDetails.aspectRatio[0] / postDetails.aspectRatio[1]
               : 3 / 2,
           }}
         >
-          {postDetails.assets && postDetails.assets.length > 0 && (
+          {postDetails?.assets && postDetails.assets.length > 0 && (
             <Swiper {...swiperConfig} className="w-full h-auto bg-slate-400">
               {postDetails.assets.map((asset: { url: string }) => (
                 <Image
@@ -144,7 +151,9 @@ const PostDetails = () => {
             <FontAwesome name="thumbs-up" size={16} color="gray" />
             <TextScallingFalse className="text-base text-white">
               {postDetails?.likesCount}{" "}
-              {postDetails?.likesCount > 1 ? "Likes" : "Like"}
+              {postDetails?.likesCount && postDetails.likesCount > 1
+                ? "Likes"
+                : "Like"}
             </TextScallingFalse>
           </View>
 
@@ -182,7 +191,11 @@ const PostDetails = () => {
           {/* comment now */}
           <TouchableOpacity
             className="flex flex-row items-center gap-2"
-            onPress={() => setPostDetailsModalOpen(true)}
+            onPress={() =>
+              router.push({
+                pathname: "/post-details/1" as RelativePathString,
+              })
+            }
           >
             <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
               <FontAwesome name="comment" size={16} color="grey" />
@@ -225,25 +238,11 @@ const PostDetails = () => {
               toggleExpand();
             }}
           >
-            {renderCaptionWithHashtags(postDetails.caption)}
+            {postDetails?.caption &&
+              renderCaptionWithHashtags(postDetails?.caption)}
           </Text>
         </ScrollView>
       </LinearGradient>
-
-      <Modal
-        visible={isPostDetailsModalOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setPostDetailsModalOpen(false)}
-      >
-        <TouchableOpacity
-          className="flex-1 justify-end bg-black/50"
-          activeOpacity={1}
-          onPress={() => setPostDetailsModalOpen(false)}
-        >
-          <PostDetailsModal details={details} />
-        </TouchableOpacity>
-      </Modal>
     </Pressable>
   );
 };

@@ -104,7 +104,7 @@ const ReportModal = memo(
   }
 );
 
-const CommenterCard = memo(
+export const CommenterCard = memo(
   ({
     comment,
     targetId,

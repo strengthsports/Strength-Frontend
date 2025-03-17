@@ -11,7 +11,7 @@ interface LikersListProps {
 
 const ITEM_HEIGHT = 60; // Fixed height of each item in pixels
 
-const LikerCard = ({ liker }: { liker: any }) => (
+export const LikerCard = ({ liker }: { liker: any }) => (
   <>
     <View className="flex-row items-center p-2 my-1 h-[60px]">
       <Image

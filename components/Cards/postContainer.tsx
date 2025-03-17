@@ -40,10 +40,12 @@ const PostContainer = ({
   item,
   highlightedHashtag,
   handlePressMore,
+  isFeedPage,
 }: {
   item: Post;
   highlightedHashtag?: string;
   handlePressMore?: (item: Post) => void;
+  isFeedPage?: boolean;
 }) => {
   const router = useRouter();
   const { user, followings } = useSelector(
@@ -402,7 +404,11 @@ const PostContainer = ({
             {/* like */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
-              onPress={() => setIsPostLikersModalVisible(true)}
+              onPress={() =>
+                isFeedPage
+                  ? setIsPostLikersModalVisible(true)
+                  : router.push("/post-details/1/likes")
+              }
             >
               <FontAwesome name="thumbs-up" size={16} color="gray" />
               <TextScallingFalse className="text-base text-white">
@@ -444,7 +450,7 @@ const PostContainer = ({
             {/* comment count */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
-              onPress={() => setIsCommentCountModalVisible(true)}
+              onPress={() => isFeedPage && setIsCommentCountModalVisible(true)}
             >
               <TextScallingFalse className="text-base text-white">
                 {commentCount} Comments

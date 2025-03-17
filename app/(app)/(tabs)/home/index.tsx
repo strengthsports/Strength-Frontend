@@ -162,7 +162,11 @@ export default function Home() {
       if (item.type === "post") {
         return (
           <View className="w-screen">
-            <PostContainer item={item.data} handlePressMore={handlePressMore} />
+            <PostContainer
+              item={item.data}
+              handlePressMore={handlePressMore}
+              isFeedPage={true}
+            />
             <Divider
               style={{ marginHorizontal: "auto", width: "100%" }}
               width={0.4}

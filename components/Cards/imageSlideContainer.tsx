@@ -13,6 +13,9 @@ import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
 import { Post } from "~/types/post";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
+import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 
 interface CustomImageSliderProps {
   images: string[];
@@ -32,18 +35,6 @@ const RemoveButton = memo(({ onPress }: { onPress: () => void }) => (
     <MaterialCommunityIcons name="close" size={20} color="white" />
   </TouchableOpacity>
 ));
-
-// const AddMoreButton = memo(({ onPress }: { onPress: () => void }) => (
-//   <TouchableOpacity
-//     className="flex-row items-center bg-neutral-800/50 rounded-full px-3 py-1 absolute bottom-2 left-4 z-20"
-//     onPress={onPress}
-//   >
-//     <MaterialCommunityIcons name="plus" size={18} color="white" />
-//     <TextScallingFalse className="text-white ml-1 text-base">
-//       Add more
-//     </TextScallingFalse>
-//   </TouchableOpacity>
-// ));
 
 const ImageSlide = memo(
   ({
@@ -66,19 +57,20 @@ const ImageSlide = memo(
     onDoubleTap?: () => any;
   }) => {
     const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
     return (
       <TouchableWithDoublePress
         className={`flex-1 relative overflow-hidden ${
           !isFeedPage && isFirstSlide ? "ml-2" : ""
         }`}
         activeOpacity={0.95}
-        onSinglePress={() =>
+        onSinglePress={() => {
           isFeedPage &&
-          router.push({
-            pathname: "/post/1" as RelativePathString,
-            params: { details: JSON.stringify(postDetails) },
-          })
-        }
+            router.push({
+              pathname: "/post-view/1" as RelativePathString,
+            });
+          dispatch(setCurrentPost(postDetails));
+        }}
         onDoublePress={onDoubleTap}
       >
         <Image

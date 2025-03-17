@@ -1,10 +1,10 @@
 import { Slot } from "expo-router";
 import React from "react";
 import PageThemeView from "~/components/PageThemeView";
-import ProfileSidebar from "~/components/feedPage/profileSidebar";
+import HomeLayout from "~/components/feedPage/HomeLayout";
 import { View } from "moti";
 
-const ProfileLayout = () => {
+const HomeLayoutPage = () => {
   const menuItems = [
     {
       label: "Edit Team",
@@ -24,14 +24,10 @@ const ProfileLayout = () => {
     },
   ];
   return (
-    <ProfileSidebar menuItems={menuItems}>
-      <PageThemeView>
-        <View style={{ flex: 1 }}>
-          <Slot />
-        </View>
-      </PageThemeView>
-    </ProfileSidebar>
+    <HomeLayout menuItems={menuItems}>
+      <Slot />
+    </HomeLayout>
   );
 };
 
-export default ProfileLayout;
+export default HomeLayoutPage;

@@ -305,19 +305,17 @@ export default function Home() {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5} // Adjust as needed
         />
-        <Portal>
-          <CustomBottomSheet ref={bottomSheetRef} onClose={handleSheetClose}>
-            {selectedData && (
-              <MoreModal
-                firstName={selectedData.postedBy.firstName}
-                followingStatus={selectedData.followingStatus}
-                isOwnPost={selectedData.postedBy._id === selectedData.currUser}
-                postId={selectedData._id}
-                isReported={selectedData.isReported}
-              />
-            )}
-          </CustomBottomSheet>
-        </Portal>
+        <CustomBottomSheet ref={bottomSheetRef} onClose={handleSheetClose}>
+          {selectedData && (
+            <MoreModal
+              firstName={selectedData.postedBy.firstName}
+              followingStatus={selectedData.followingStatus}
+              isOwnPost={selectedData.postedBy._id === selectedData.currUser}
+              postId={selectedData._id}
+              isReported={selectedData.isReported}
+            />
+          )}
+        </CustomBottomSheet>
       </GestureHandlerRootView>
     </View>
   );

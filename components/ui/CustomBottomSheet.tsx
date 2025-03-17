@@ -9,6 +9,7 @@ import Animated, {
   withSpring,
   runOnJS,
 } from "react-native-reanimated";
+import { Portal } from "react-native-paper";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50;
@@ -82,12 +83,14 @@ const CustomBottomSheet = React.forwardRef<
   });
 
   return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
-        <View style={styles.line} />
-        {children}
-      </Animated.View>
-    </GestureDetector>
+    <Portal>
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
+          <View style={styles.line} />
+          {children}
+        </Animated.View>
+      </GestureDetector>
+    </Portal>
   );
 });
 

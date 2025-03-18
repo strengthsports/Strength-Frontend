@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -35,6 +35,7 @@ import SwiperImage from "../ui/SwiperImage";
 import { showFeedback } from "~/utils/feedbackToast";
 import { BlurView } from "expo-blur";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
+import CustomBottomSheet from "../ui/CustomBottomSheet";
 
 const PostContainer = ({
   item,
@@ -75,6 +76,15 @@ const PostContainer = ({
   const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
     useState(false);
   const [activeIndex, setActiveIndex] = useState<any>(0);
+  // State to hold the selected data from the button press
+  const [isBottomSheetOpen, setBottomSheetOpen] = useState<any>({
+    type: "",
+    status: false,
+  });
+
+  // Ref for the bottom sheet
+  const likeBottomSheetRef = useRef(null);
+  const commentBottomSheetRef = useRef(null);
 
   const handleSetActiveIndex = (index: any) => {
     setActiveIndex(index);
@@ -218,6 +228,26 @@ const PostContainer = ({
     setIsMoreModalVisible(false);
   };
 
+  // Callback invoked by the button in child components
+  const handleOpenBottomSheet = ({ type }: { type: string }) => {
+    console.log(`${type} Bottom sheet opens...`);
+    setBottomSheetOpen({ type, status: true });
+    type === "like"
+      ? likeBottomSheetRef.current?.scrollTo(-550)
+      : type === "comment"
+      ? commentBottomSheetRef.current?.scrollTo(-550)
+      : null;
+  };
+
+  const handleCloseBottomSheet = ({ type }: { type: string }) => {
+    type === "like"
+      ? likeBottomSheetRef.current?.scrollTo(0)
+      : type === "comment"
+      ? commentBottomSheetRef.current?.scrollTo(0)
+      : null;
+    setBottomSheetOpen({ type, status: false });
+  };
+
   return (
     <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
       <View className="flex">
@@ -225,7 +255,7 @@ const PostContainer = ({
         <View className="relative ml-[5%] flex flex-row gap-2 z-20 pb-0">
           <TouchableOpacity
             activeOpacity={0.5}
-            className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-700"
+            className="w-[14%] h-[14%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-700"
             onPress={() =>
               user?._id === item.postedBy?._id
                 ? router.push("/(app)/(tabs)/profile")
@@ -240,15 +270,6 @@ const PostContainer = ({
                       uri: item.postedBy.profilePic,
                     }
                   : nopic
-              }
-              style={
-                {
-                  elevation: 8,
-                  shadowColor: "black",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.8,
-                  shadowRadius: 4,
-                } as ImageStyle
               }
             />
           </TouchableOpacity>
@@ -316,31 +337,6 @@ const PostContainer = ({
             <MaterialIcons name="more-horiz" size={18} color="white" />
           </TouchableOpacity>
 
-          {/* <Modal
-            visible={isMoreModalVisible}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setIsMoreModalVisible(false)}
-          >
-            <TouchableOpacity
-              className="flex-1 justify-end bg-black/50"
-              activeOpacity={1}
-              onPress={() => setIsMoreModalVisible(false)}
-            >
-              <MoreModal
-                firstName={item.postedBy?.firstName}
-                followingStatus={followingStatus}
-                isOwnPost={item.postedBy?._id === user?._id}
-                postId={item._id}
-                onDelete={handleDeletePost}
-                handleFollow={handleFollow}
-                handleUnfollow={handleUnfollow}
-                handleReport={handleReport}
-                isReported={isReported}
-              />
-            </TouchableOpacity>
-          </Modal> */}
-
           <View className={`${isExpanded ? "pl-8" : "pl-12"} pr-6 pt-12 pb-4`}>
             <Text
               className="text-xl leading-5 text-neutral-200"
@@ -406,7 +402,7 @@ const PostContainer = ({
               className="flex flex-row items-center gap-2"
               onPress={() =>
                 isFeedPage
-                  ? setIsPostLikersModalVisible(true)
+                  ? handleOpenBottomSheet({ type: "like" })
                   : router.push("/post-details/1/likes")
               }
             >
@@ -414,22 +410,18 @@ const PostContainer = ({
               <TextScallingFalse className="text-base text-white">
                 {likeCount} {likeCount > 1 ? "Likes" : "Like"}
               </TextScallingFalse>
-              {isPostLikersModalVisible && (
-                <Modal
-                  visible={isPostLikersModalVisible}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={() => setIsPostLikersModalVisible(false)}
-                >
-                  <TouchableOpacity
-                    className="flex-1 justify-end bg-black/50"
-                    activeOpacity={1}
-                    onPress={() => setIsPostLikersModalVisible(false)}
-                  >
+              <CustomBottomSheet
+                ref={likeBottomSheetRef}
+                onClose={() => handleCloseBottomSheet({ type: "like" })}
+                animationSpeed={20}
+                controllerVisibility={false}
+                bgColor="bg-[#000]"
+              >
+                {isBottomSheetOpen.type === "like" &&
+                  isBottomSheetOpen.status && (
                     <LikerModal targetId={item?._id} targetType="Post" />
-                  </TouchableOpacity>
-                </Modal>
-              )}
+                  )}
+              </CustomBottomSheet>
             </TouchableOpacity>
 
             {item.assets && item.assets.length > 1 && (
@@ -450,30 +442,28 @@ const PostContainer = ({
             {/* comment count */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
-              onPress={() => isFeedPage && setIsCommentCountModalVisible(true)}
+              onPress={() =>
+                isFeedPage && handleOpenBottomSheet({ type: "comment" })
+              }
             >
               <TextScallingFalse className="text-base text-white">
                 {commentCount} Comments
               </TextScallingFalse>
-              {isCommentCountModalVisible && (
-                <Modal
-                  visible={isCommentCountModalVisible}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={() => setIsCommentCountModalVisible(false)}
-                >
-                  <TouchableOpacity
-                    className="flex-1 justify-end bg-black/50"
-                    activeOpacity={1}
-                    onPress={() => setIsCommentCountModalVisible(false)}
-                  >
+              <CustomBottomSheet
+                ref={commentBottomSheetRef}
+                onClose={() => handleCloseBottomSheet({ type: "comment" })}
+                animationSpeed={20}
+                controllerVisibility={false}
+                bgColor="bg-[#000]"
+              >
+                {isBottomSheetOpen.type === "comment" &&
+                  isBottomSheetOpen.status && (
                     <CommentModal
                       targetId={item?._id}
                       setCommentCount={setCommentCount}
                     />
-                  </TouchableOpacity>
-                </Modal>
-              )}
+                  )}
+              </CustomBottomSheet>
             </TouchableOpacity>
           </View>
 

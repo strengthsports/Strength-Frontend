@@ -406,7 +406,7 @@ const PostContainer = ({
                   : router.push("/post-details/1/likes")
               }
             >
-              <FontAwesome name="thumbs-up" size={16} color="gray" />
+              <FontAwesome name="thumbs-up" size={16} color="#fbbf24" />
               <TextScallingFalse className="text-base text-white">
                 {likeCount} {likeCount > 1 ? "Likes" : "Like"}
               </TextScallingFalse>

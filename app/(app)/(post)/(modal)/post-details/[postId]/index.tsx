@@ -21,8 +21,8 @@ import nopic from "@/assets/images/nopic.jpg";
 import { Colors } from "~/constants/Colors";
 
 const PostDetailsPage = () => {
-  const postDetails = useSelector(
-    (state: RootState) => state.profile.currentPost
+  const { currentPost: postDetails, user } = useSelector(
+    (state: RootState) => state.profile
   );
   const router = useRouter();
 
@@ -124,7 +124,7 @@ const PostDetailsPage = () => {
                 paddingTop: 20,
               }}
             >
-              Hey! You are the first to comment!
+              Hey! Be the first one to comment here!
             </TextScallingFalse>
           }
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
@@ -140,11 +140,7 @@ const PostDetailsPage = () => {
             <View className="bg-black p-2">
               <View className="w-full flex-row items-center justify-around rounded-full bg-neutral-900 px-4 py-1.5">
                 <Image
-                  source={
-                    postDetails.postedBy.profilePic
-                      ? { uri: postDetails.postedBy.profilePic }
-                      : nopic
-                  }
+                  source={user.profilePic ? { uri: user.profilePic } : nopic}
                   className="w-10 h-10 rounded-full"
                   resizeMode="cover"
                 />

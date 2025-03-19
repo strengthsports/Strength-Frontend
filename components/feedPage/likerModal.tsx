@@ -57,7 +57,7 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   return (
     <View
       onStartShouldSetResponder={() => true}
-      className="h-3/4 w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x  border-neutral-700"
+      className="h-full w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x  border-neutral-700"
     >
       <Divider
         className="w-16 self-center rounded-full bg-neutral-700 my-1"

@@ -154,7 +154,7 @@ export default function AddPostContainer() {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        aspect: ratio,
+        aspect: Platform.OS === "ios" ? ratio : ratio,
         quality: 0.8,
         allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -187,7 +187,8 @@ export default function AddPostContainer() {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        aspect: selectedAspectRatio,
+        aspect:
+          Platform.OS === "ios" ? selectedAspectRatio : selectedAspectRatio,
         quality: 0.8,
         allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,

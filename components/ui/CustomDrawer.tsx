@@ -10,6 +10,7 @@ import Animated, {
   withSpring,
   runOnJS,
 } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Define the drawer width (e.g., 75% of screen width)
@@ -44,7 +45,7 @@ const CustomDrawer = React.forwardRef<DrawerRefProps, DrawerProps>(
     const closeDrawer = useCallback(() => {
       "worklet";
       active.value = false;
-      translateX.value = withSpring(-DRAWER_WIDTH, { damping: 50 });
+      translateX.value = withSpring(-DRAWER_WIDTH, { damping: 20 });
     }, []);
 
     const toggleDrawer = useCallback(() => {
@@ -131,11 +132,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: DRAWER_WIDTH,
     backgroundColor: "#fff",
-    // Optional shadow for depth:
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 5, height: 0 },
-    shadowRadius: 10,
     elevation: 10,
   },
 });

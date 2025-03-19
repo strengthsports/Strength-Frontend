@@ -11,34 +11,34 @@ export default function TabLayout() {
   console.log("user Id : ", userId);
   const [hasNewNotification, setHasNewNotification] = useState(false);
 
-  useEffect(() => {
-    if (!userId) {
-      console.log("User ID is not available. Skipping SSE connection.");
-      return;
-    }
+  // useEffect(() => {
+  //   if (!userId) {
+  //     console.log("User ID is not available. Skipping SSE connection.");
+  //     return;
+  //   }
 
-    let sse: EventSource;
+  //   let sse: EventSource;
 
-    // Immediately invoked async function
-    (async () => {
-      try {
-        sse = await createSSEConnection(userId, (data) => {
-          console.log("User ID : ", userId);
-          console.log("Received notification:", data);
-          setHasNewNotification(true);
-        });
-      } catch (error) {
-        console.error("Failed to establish SSE connection:", error);
-      }
-    })();
+  //   // Immediately invoked async function
+  //   (async () => {
+  //     try {
+  //       sse = await createSSEConnection(userId, (data) => {
+  //         console.log("User ID : ", userId);
+  //         console.log("Received notification:", data);
+  //         setHasNewNotification(true);
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to establish SSE connection:", error);
+  //     }
+  //   })();
 
-    // Cleanup on unmount
-    return () => {
-      if (sse) {
-        sse.close();
-      }
-    };
-  }, [userId]);
+  //   // Cleanup on unmount
+  //   return () => {
+  //     if (sse) {
+  //       sse.close();
+  //     }
+  //   };
+  // }, [userId]);
   return (
     <Tabs
       screenOptions={{

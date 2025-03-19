@@ -24,7 +24,6 @@ const LazyLatest = React.lazy(() => import("./latest"));
 const LazyPeople = React.lazy(() => import("./people"));
 const LazyPhotos = React.lazy(() => import("./photos"));
 const LazyComments = React.lazy(() => import("./comments"));
-const LazyMore = React.lazy(() => import("./more"));
 
 // Define tabs outside component to prevent re-renders
 const tabs = [
@@ -32,8 +31,7 @@ const tabs = [
   { label: "Latest", component: LazyLatest },
   { label: "People", component: LazyPeople },
   { label: "Photos", component: LazyPhotos },
-  { label: "Comments", component: LazyComments },
-  { label: "More", component: LazyMore },
+  { label: "Polls", component: LazyComments },
 ];
 
 // Memoized loader component

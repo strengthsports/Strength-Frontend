@@ -112,13 +112,6 @@ export default function Home() {
     setBottomSheetOpen(false);
   };
 
-  const handleSheetClose = useCallback(() => {
-    console.log("Bottom sheet closed");
-    // perform any additional actions here, e.g., clearing state
-    setBottomSheetOpen(false);
-    setSelectedData(null);
-  }, []);
-
   // Handler to refresh the list (pull-to-refresh)
   const handleRefresh = async () => {
     if (refreshing) return;
@@ -252,13 +245,10 @@ export default function Home() {
   }
 
   // List footer to display the loader during pagination
-  const ListFooterComponent = () => {
+  const ListFooterComponent = React.memo(() => {
     if (isLoadingMore) {
-      return (
-        <View style={{ padding: 10, height: 30 }}>
-          <ActivityIndicator size="small" color={Colors.themeColor} />
-        </View>
-      );
+      console.log("Loading...");
+      return <ActivityIndicator size="large" color={Colors.themeColor} />;
     }
     if (data?.data?.nextPage === null) {
       return (
@@ -276,7 +266,7 @@ export default function Home() {
       );
     }
     return <View className="mt-10" />;
-  };
+  });
 
   return (
     <View className="flex-1">
@@ -289,7 +279,7 @@ export default function Home() {
           keyExtractor={keyExtractor}
           initialNumToRender={5}
           removeClippedSubviews={isAndroid}
-          windowSize={11}
+          windowSize={21}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -305,11 +295,17 @@ export default function Home() {
           ListEmptyComponent={<MemoizedEmptyComponent error={error} />}
           ListFooterComponent={ListFooterComponent}
           bounces={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: 40, minHeight: "100%" }}
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5} // Adjust as needed
+          onEndReachedThreshold={0.7} // Adjust as needed
         />
-        <CustomBottomSheet ref={bottomSheetRef} onClose={handleSheetClose}>
+        <CustomBottomSheet
+          ref={bottomSheetRef}
+          onClose={handleCloseBottomSheet}
+          animationSpeed={20}
+          isFixed={true}
+          fixedHeight={220}
+        >
           {selectedData && (
             <MoreModal
               firstName={selectedData.postedBy.firstName}

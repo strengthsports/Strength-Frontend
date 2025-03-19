@@ -12,6 +12,7 @@ import PostContainer from "~/components/Cards/postContainer";
 import { Colors } from "~/constants/Colors";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import TextScallingFalse from "~/components/CentralText";
+import { Divider } from "react-native-elements";
 
 export default function HashtagPosts({ sort }: { sort?: number }) {
   const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
@@ -34,6 +35,11 @@ export default function HashtagPosts({ sort }: { sort?: number }) {
     return (
       <View className="w-screen">
         <PostContainer item={item} highlightedHashtag={`#${hashtag}`} />
+        <Divider
+          style={{ marginHorizontal: "auto", width: "100%" }}
+          width={0.4}
+          color="#282828"
+        />
       </View>
     );
   }, []);

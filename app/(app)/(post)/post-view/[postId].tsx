@@ -30,6 +30,7 @@ import { Post } from "~/types/post";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ZoomableImage from "~/components/ui/ZoomableImage";
 
 const PostDetails = () => {
   const postDetails = useSelector(
@@ -39,6 +40,7 @@ const PostDetails = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [isPostDetailsModalOpen, setPostDetailsModalOpen] = useState(false);
+  const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
 
   // Enable LayoutAnimation on Android
   useEffect(() => {
@@ -83,14 +85,26 @@ const PostDetails = () => {
     setIsExpanded(!isExpanded);
   };
 
+  const toggleHeaderFooterVisibility = () => {
+    isHeaderFooterVisible
+      ? setHeaderFooterVisible(false)
+      : setHeaderFooterVisible(true);
+  };
+
   return (
     <Pressable
       className="h-screen flex justify-center items-center"
-      onPress={() => isExpanded && setIsExpanded(false)}
+      onPress={() =>
+        isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
+      }
     >
       <SafeAreaView className="flex-1">
         {/*testing for iOS issue*/}
-        <View className="w-full z-50 pt-4 flex-row justify-between items-center px-5 basis-[6%]">
+        <View
+          className={`w-full z-50 pt-4 flex-row justify-between items-center px-5 basis-[6%] transition-opacity ease-in-out ${
+            !isHeaderFooterVisible && "opacity-0"
+          }`}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <AntDesign name="arrowleft" size={24} color="white" />
           </TouchableOpacity>
@@ -146,7 +160,12 @@ const PostDetails = () => {
           </View>
         </ScrollView>
         {/* Interaction Bar */}
-        <View className="basis-[18%] w-full p-4 pt-10">
+        <View
+          className={`basis-[18%] w-full p-4 pt-10 transition-opacity ease-in-out ${
+            !isHeaderFooterVisible && "opacity-0"
+          }`}
+          onStartShouldSetResponder={() => true}
+        >
           <View className="w-full px-4 py-3 flex flex-row justify-between items-center">
             {/* like */}
             <View className="flex flex-row items-center gap-2">
@@ -221,7 +240,9 @@ const PostDetails = () => {
           colors={["rgba(0,0,0,0.0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,0.8)"]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
-          className="px-8 pt-4 w-full absolute bottom-[18%] max-h-60 overflow-hidden"
+          className={`px-8 pt-4 w-full absolute bottom-[18%] max-h-60 overflow-hidden transition-opacity ease-in-out ${
+            !isHeaderFooterVisible && "opacity-0"
+          }`}
         >
           <ScrollView
             className="max-h-full"

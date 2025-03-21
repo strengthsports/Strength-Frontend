@@ -5,7 +5,13 @@ import { useRouter } from "expo-router";
 import PostContainer from "~/components/Cards/postContainer";
 import { useSelector } from "react-redux";
 import { RootState } from "@reduxjs/toolkit/query";
-import { FlatList, KeyboardAvoidingView, Platform, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import {
   useFetchCommentsQuery,
@@ -117,15 +123,19 @@ const PostDetailsPage = () => {
           )}
           inverted={false}
           ListEmptyComponent={
-            <TextScallingFalse
-              style={{
-                color: "grey",
-                textAlign: "center",
-                paddingTop: 20,
-              }}
-            >
-              Hey! Be the first one to comment here!
-            </TextScallingFalse>
+            isFetching ? (
+              <ActivityIndicator size="large" color={Colors.themeColor} />
+            ) : (
+              <TextScallingFalse
+                style={{
+                  color: "grey",
+                  textAlign: "center",
+                  paddingTop: 20,
+                }}
+              >
+                Hey! Be the first one to comment here!
+              </TextScallingFalse>
+            )
           }
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
         />

@@ -234,15 +234,15 @@ const PostContainer = ({
           );
         } else if (word.startsWith("@")) {
           // Find the tagged user by username
-          console.log(taggedUsers);
+          // console.log(taggedUsers);
           const user = taggedUsers.find(
             (u) => u.username === word.split("@")[1]
           );
-          console.log(user);
+          // console.log(user);
           const serializedUser = encodeURIComponent(
-            JSON.stringify({ id: user?._id, type: "User" })
+            JSON.stringify({ id: user?._id, type: user?.type })
           );
-          console.log(serializedUser);
+          // console.log(serializedUser);
           return (
             <Text
               key={index}

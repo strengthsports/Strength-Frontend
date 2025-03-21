@@ -15,11 +15,11 @@ import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
 import LikerModal from "../feedPage/LikerModal";
 import CommentModal from "../feedPage/CommentModal";
-import { RootState } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
 import { swiperConfig } from "~/utils/swiperConfig";
 import {
@@ -36,6 +36,15 @@ import { showFeedback } from "~/utils/feedbackToast";
 import { BlurView } from "expo-blur";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import CustomBottomSheet from "../ui/CustomBottomSheet";
+import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
+import { RelativePathString } from "expo-router";
+import CustomDivider from "../ui/CustomDivider";
+
+type TaggedUser = {
+  _id: string;
+  username: string;
+  type: string;
+};
 
 const PostContainer = ({
   item,
@@ -49,6 +58,7 @@ const PostContainer = ({
   isFeedPage?: boolean;
 }) => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const { user, followings } = useSelector(
     (state: RootState) => state?.profile
   );
@@ -198,29 +208,58 @@ const PostContainer = ({
     await reportPost(reportData);
   };
 
-  // Function to render caption with clickable hashtags
-  const renderCaptionWithHashtags = (caption: string) => {
-    return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
-      if (word.startsWith("#")) {
-        return (
-          <Text
-            key={index}
-            onPress={() =>
-              router.push(
-                `/(app)/(post)/hashtag/${word.substring(1, word.length)}`
-              )
-            }
-            className={`text-xl text-[#12956B] ${
-              highlightedHashtag?.toLowerCase() === word.toLowerCase() &&
-              "font-semibold"
-            }`}
-          >
-            {word}
-          </Text>
-        );
-      }
-      return word;
-    });
+  // Function to render caption with clickable hashtags and mention tags
+  const renderCaptionWithTags = (
+    caption: string,
+    taggedUsers: TaggedUser[] // Array of user objects with _id and username
+  ) => {
+    // Split on both hashtags and mentions using regex
+    return caption
+      ?.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g)
+      .map((word, index) => {
+        if (word.startsWith("#")) {
+          return (
+            <Text
+              key={index}
+              onPress={() =>
+                router.push(`/(app)/(post)/hashtag/${word.split("#")[1]}`)
+              }
+              className={`text-xl text-[#12956B] ${
+                highlightedHashtag?.toLowerCase() === word.toLowerCase() &&
+                "font-semibold"
+              }`}
+            >
+              {word}
+            </Text>
+          );
+        } else if (word.startsWith("@")) {
+          // Find the tagged user by username
+          console.log(taggedUsers);
+          const user = taggedUsers.find(
+            (u) => u.username === word.split("@")[1]
+          );
+          console.log(user);
+          const serializedUser = encodeURIComponent(
+            JSON.stringify({ id: user?._id, type: "User" })
+          );
+          console.log(serializedUser);
+          return (
+            <Text
+              key={index}
+              onPress={() =>
+                serializedUser &&
+                router.push(`/(app)/(profile)/profile/${serializedUser}`)
+              }
+              className="text-xl text-[#12956B]"
+            >
+              {word}
+            </Text>
+          );
+        }
+
+        // Return regular text for non-tag parts
+        return <Text key={index}>{word}</Text>;
+      });
   };
 
   const handleDeletePost = () => {
@@ -344,9 +383,8 @@ const PostContainer = ({
               ellipsizeMode="tail"
               onTextLayout={handleTextLayout}
             >
-              {renderCaptionWithHashtags(item.caption)}
+              {renderCaptionWithTags(item.caption, item.taggedUsers || [])}
             </Text>
-
             {showSeeMore && !isExpanded && (
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -395,7 +433,7 @@ const PostContainer = ({
         </Animated.View>
 
         {/* Interaction Bar */}
-        <View className="relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[40px] rounded-br-[16px] bg-neutral-900">
+        <View className="bg-neutral-900 relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[40px] rounded-br-[16px]">
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             {/* like */}
             <TouchableOpacity
@@ -442,14 +480,17 @@ const PostContainer = ({
             {/* comment count */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
-              onPress={() =>
-                isFeedPage && handleOpenBottomSheet({ type: "comment" })
-              }
+              onPress={() => {
+                router.push({
+                  pathname: "/post-details/1" as RelativePathString,
+                });
+                dispatch(setCurrentPost(item));
+              }}
             >
               <TextScallingFalse className="text-base text-white">
                 {commentCount} Comments
               </TextScallingFalse>
-              <CustomBottomSheet
+              {/* <CustomBottomSheet
                 ref={commentBottomSheetRef}
                 onClose={() => handleCloseBottomSheet({ type: "comment" })}
                 animationSpeed={20}
@@ -463,14 +504,14 @@ const PostContainer = ({
                       setCommentCount={setCommentCount}
                     />
                   )}
-              </CustomBottomSheet>
+              </CustomBottomSheet> */}
             </TouchableOpacity>
           </View>
 
-          <Divider
-            style={{ marginLeft: "12%", width: "80%" }}
-            width={0.2}
-            color="grey"
+          <CustomDivider
+            color="#5C5C5C"
+            thickness={0.5}
+            style={{ marginHorizontal: "auto", width: "80%" }}
           />
 
           <View className="w-full px-6 py-5 mb-1 flex flex-row justify-evenly items-center">

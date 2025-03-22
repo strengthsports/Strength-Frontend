@@ -48,7 +48,7 @@ export default function TabLayout() {
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
-            height: 60, // Increase height to create space
+            height: 100, // Increase height to create space
             paddingBottom: 15, // Adds space at the bottom
             paddingTop: 5, // Adds space at the top
             borderTopLeftRadius: 10, // Rounded top-left corner

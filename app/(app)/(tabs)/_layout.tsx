@@ -5,6 +5,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import createSSEConnection from "~/utils/sse";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
+import { HapticTab } from "~/components/common/HapticTab";
 
 export default function TabLayout() {
   const userId = useSelector((state: RootState) => state?.profile?.user?._id);
@@ -42,9 +43,9 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        // tabBarActiveBackgroundColor: "white",
         tabBarActiveTintColor: "#12956B",
         headerShown: false,
-        // tabBarButton: HapticTab,
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",

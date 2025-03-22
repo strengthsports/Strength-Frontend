@@ -106,8 +106,6 @@ export default function Home() {
   };
 
   const handleCloseBottomSheet = () => {
-    bottomSheetRef.current?.scrollTo(0);
-    setSelectedData(null);
     setBottomSheetOpen(false);
     triggerChildFunction();
   };
@@ -270,7 +268,7 @@ export default function Home() {
   });
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-black">
       {isBottomSheetOpen && (
         <Pressable style={styles.overlay} onPress={handleCloseBottomSheet} />
       )}

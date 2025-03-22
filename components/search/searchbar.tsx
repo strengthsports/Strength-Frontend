@@ -20,10 +20,10 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
   };
 
   return (
-    <View className="flex-row items-center justify-between gap-2 my-2 px-2">
+    <View className="flex-row my-3.5 px-5">
       <TouchableOpacity
         activeOpacity={0.8}
-        className="flex-row bg-[#212121] rounded-3xl px-3 py-3 items-center flex-1"
+        className="flex-row bg-[#212121] rounded-3xl px-4 py-2 items-center flex-1"
         onPress={() => router.push("/(app)/searchPage")}
       >
         <Feather name="search" size={22} color="grey" />
@@ -39,7 +39,7 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
 
       {/* Plus Icon */}
       <TouchableOpacity
-        activeOpacity={0.5}
+        activeOpacity={0.7}
         onPress={() => setModalVisible(true)}
         className="justify-center items-center ml-3"
       >

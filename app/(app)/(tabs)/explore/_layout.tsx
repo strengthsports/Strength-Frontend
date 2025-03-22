@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
-import { ExploreCategoryHeader } from "~/components/explorePage/exploreHeader";
 import SearchBar from "~/components/search/searchbar";
 import { RootState } from "~/reduxStore";
 import TrendingAll from "./allCategory";
@@ -81,7 +80,6 @@ export default function ExploreMainLayout() {
     <SafeAreaView className="flex-1">
       <View className="">
         <SearchBar />
-        {/* <ExploreCategoryHeader /> */}
       </View>
       <CategoryComponent />
     </SafeAreaView>

@@ -132,7 +132,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-black">
       {isDrawerOpen && (
         <Pressable style={styles.overlay} onPress={handleCloseDrawer} />
       )}
@@ -319,26 +319,12 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
                 }}
               />
             </View>
-
-            <View className="mt-2 w-[90%] mx-auto">
-              {menuItems.map((item: MenuItem, index: number) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    onPress={handleLogout}
-                    className="mb-2 px-2"
-                  >
-                    <Text className="text-white text-4xl font-semibold">
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                  <CustomDivider
-                    color="#5C5C5C"
-                    thickness={0.5}
-                    style={{ marginVertical: 10, opacity: 0.5 }}
-                  />
-                </View>
-              ))}
-            </View>
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="mb-2 w-[90%] mx-auto"
+            >
+              <Text className="text-white text-4xl font-semibold">Logout</Text>
+            </TouchableOpacity>
           </View>
 
           <CustomDivider
@@ -348,7 +334,13 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
           />
 
           <View className="pb-24 w-[90%] mx-auto">
-            <TouchableOpacity className="flex-row items-center">
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={() => {
+                router.push("/(app)/(settings)/settings");
+                handleCloseDrawer();
+              }}
+            >
               <Feather
                 name="settings"
                 size={20}

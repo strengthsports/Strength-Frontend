@@ -9,28 +9,20 @@ import {
   Platform,
   UIManager,
   LayoutAnimation,
-  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
-import {
-  RelativePathString,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { RelativePathString, useRouter } from "expo-router";
 import { AntDesign, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
-import { Divider } from "react-native-elements";
 import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
 import nopic from "@/assets/images/nopic.jpg";
 import { LinearGradient } from "expo-linear-gradient";
-import PostDetailsModal from "~/components/modals/PostDetailsModal";
-import { Post } from "~/types/post";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ZoomableImage from "~/components/ui/ZoomableImage";
+import CustomDivider from "@/components/ui/CustomDivider";
 
 const PostDetails = () => {
   const postDetails = useSelector(
@@ -186,13 +178,7 @@ const PostDetails = () => {
             </View>
           </View>
 
-          <Divider
-            style={{ marginHorizontal: "auto", width: "80%" }}
-            width={0.2}
-            color="grey"
-          />
-
-          <View className="w-full px-6 py-5 flex flex-row justify-evenly items-center">
+          <View className="w-full mx-auto py-4 flex-row gap-x-6 border-t-[0.5px] border-[#5C5C5C]">
             <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
                 <FontAwesome
@@ -209,7 +195,6 @@ const PostDetails = () => {
                 </TextScallingFalse>
               </View>
             </TouchableOpacity>
-            {/* comment now */}
             <TouchableOpacity
               className="flex flex-row items-center gap-2"
               onPress={() =>

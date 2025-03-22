@@ -13,7 +13,13 @@ import {
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { RelativePathString, useRouter } from "expo-router";
-import { AntDesign, FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  FontAwesome,
+  FontAwesome5,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
 import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
@@ -85,7 +91,7 @@ const PostDetails = () => {
 
   return (
     <Pressable
-      className="h-screen flex justify-center items-center"
+      className="h-screen flex justify-center items-center bg-black"
       onPress={() =>
         isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
       }
@@ -161,7 +167,7 @@ const PostDetails = () => {
           <View className="w-full px-4 py-3 flex flex-row justify-between items-center">
             {/* like */}
             <View className="flex flex-row items-center gap-2">
-              <FontAwesome name="thumbs-up" size={16} color="gray" />
+              <AntDesign name="like1" size={16} color="#fbbf24" />
               <TextScallingFalse className="text-base text-white">
                 {postDetails?.likesCount}{" "}
                 {postDetails?.likesCount && postDetails.likesCount > 1
@@ -181,10 +187,10 @@ const PostDetails = () => {
           <View className="w-full mx-auto py-4 flex-row gap-x-6 border-t-[0.5px] border-[#5C5C5C]">
             <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome
-                  name={postDetails?.isLiked ? "thumbs-up" : "thumbs-o-up"}
+                <AntDesign
+                  name={postDetails?.isLiked ? "like1" : "like2"}
                   size={16}
-                  color={postDetails?.isLiked ? "#FABE25" : "gray"}
+                  color={postDetails?.isLiked ? "#fbbf24" : "white"}
                 />
                 <TextScallingFalse
                   className={`text-base ${
@@ -204,7 +210,7 @@ const PostDetails = () => {
               }
             >
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome name="comment" size={16} color="grey" />
+                <Feather name="message-square" size={16} color="white" />
                 <TextScallingFalse className="text-base text-white">
                   Comment
                 </TextScallingFalse>
@@ -212,7 +218,7 @@ const PostDetails = () => {
             </TouchableOpacity>
             <TouchableOpacity>
               <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome name="paper-plane" size={16} color="grey" />
+                <FontAwesome5 name="location-arrow" size={16} color="white" />
                 <TextScallingFalse className="text-base text-white">
                   Share
                 </TextScallingFalse>

@@ -14,7 +14,7 @@ const BadmintonAll = lazy(() => import("./BadmintonAll"));
 const HockeyAll = lazy(() => import("./HockeyAll"));
 const AllBasketball = lazy(() => import("./BasketballAll"));
 const KabaddiAll = lazy(() => import("./KabaddiAll"));
-const TennisAll = lazy(() => import("./TennisAll"));
+// const TennisAll = lazy(() => import("./TennisAll"));
 const TableTennisAll = lazy(() => import("./TableTennisAll"));
 
 const DefaultContent = () => <ComingSoon text="More" />;

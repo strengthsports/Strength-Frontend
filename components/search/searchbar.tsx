@@ -3,6 +3,7 @@ import { View, TouchableOpacity, TextInput } from "react-native";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
+import FilterIcon from "@/components/SvgIcons/filtericon";
 
 const SearchBar = ({ searchText }: { searchText?: string }) => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
         className="justify-center items-center ml-3"
       >
         {/* <MaterialCommunityIcons name="plus" size={20} color="white" /> */}
-        <Feather name="align-right" size={30} color="white" />
+         <FilterIcon />
       </TouchableOpacity>
     </View>
   );

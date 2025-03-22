@@ -63,7 +63,7 @@ const ExploreAllLayout = () => {
 
   return (
     <View className="bg-black flex-1">
-      <ExploreAllSportsCategoryHeader />
+      {/* <ExploreAllSportsCategoryHeader /> */}
       <Suspense
         fallback={
           <View className="flex-1 justify-center items-center">

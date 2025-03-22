@@ -31,7 +31,7 @@ import { Divider } from "react-native-elements";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import MoreModal from "~/components/feedPage/MoreModal";
+import MoreModal from "~/components/feedPage/moreModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Portal } from "react-native-paper";
 import { StyleSheet } from "react-native";

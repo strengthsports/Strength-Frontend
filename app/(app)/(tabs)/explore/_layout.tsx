@@ -81,7 +81,7 @@ export default function ExploreMainLayout() {
     <SafeAreaView className="flex-1">
       <View className="">
         <SearchBar />
-        <ExploreCategoryHeader />
+        {/* <ExploreCategoryHeader /> */}
       </View>
       <CategoryComponent />
     </SafeAreaView>

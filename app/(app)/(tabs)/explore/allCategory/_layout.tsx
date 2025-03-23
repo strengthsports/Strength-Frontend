@@ -14,7 +14,7 @@ const BadmintonAll = lazy(() => import("./BadmintonAll"));
 const HockeyAll = lazy(() => import("./HockeyAll"));
 const AllBasketball = lazy(() => import("./BasketballAll"));
 const KabaddiAll = lazy(() => import("./KabaddiAll"));
-const TennisAll = lazy(() => import("./TennisAll"));
+// const TennisAll = lazy(() => import("./TennisAll"));
 const TableTennisAll = lazy(() => import("./TableTennisAll"));
 
 const DefaultContent = () => <ComingSoon text="More" />;
@@ -45,7 +45,7 @@ const componentMap: Record<
   Hockey: HockeyAll,
   Basketball: AllBasketball,
   Kabbadi: KabaddiAll,
-  Tennis: TennisAll,
+  Tennis: TableTennisAll,
   "Table Tennis": TableTennisAll,
   "More \u2193": DefaultContent,
   Default: DefaultContent,
@@ -63,7 +63,7 @@ const ExploreAllLayout = () => {
 
   return (
     <View className="bg-black flex-1">
-      <ExploreAllSportsCategoryHeader />
+      {/* <ExploreAllSportsCategoryHeader /> */}
       <Suspense
         fallback={
           <View className="flex-1 justify-center items-center">

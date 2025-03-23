@@ -1,44 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, TouchableOpacity, TextInput } from "react-native";
-import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  Feather,
+  FontAwesome5,
+} from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
+import { FilterModal } from "../explorePage/filter";
+import FilterIcon from "@/components/SvgIcons/filtericon";
 
 const SearchBar = ({ searchText }: { searchText?: string }) => {
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const applyFilters = () => {
+    // Apply filter logic here
+    setModalVisible(false);
+  };
+
   return (
-    <View className="flex-row items-center justify-between gap-2 my-2 px-2">
-      {/* Back Icon */}
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => router.push("/(app)/(tabs)/home")}
-        className="justify-center items-center"
-      >
-        <Feather name="chevron-left" size={30} color="white" />
-      </TouchableOpacity>
-      {/* Search Bar */}
+    <View className="flex-row my-3.5 px-5">
       <TouchableOpacity
         activeOpacity={0.8}
-        className="flex-row bg-neutral-800 rounded-3xl px-3 py-2 items-center flex-1"
+        className="flex-row bg-[#212121] rounded-3xl px-4 py-2 items-center flex-1"
         onPress={() => router.push("/(app)/searchPage")}
       >
-        <MaterialCommunityIcons name="magnify" size={24} color="grey" />
+        <Feather name="search" size={22} color="grey" />
         <TextScallingFalse
-          className={`text-2xl ${searchText ? "text-white" : "text-[#808080]"}`}
+          className={`text-3xl pl-2 ${
+            searchText ? "text-white" : "text-[#808080]"
+          }`}
           aria-disabled={true}
         >
-          {searchText || "Search for news, team, matches, etc..."}
+          {searchText || "Search..."}
         </TextScallingFalse>
       </TouchableOpacity>
 
       {/* Plus Icon */}
       <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => ({})}
+        activeOpacity={0.7}
+        onPress={() => setModalVisible(true)}
         className="justify-center items-center ml-3"
       >
         {/* <MaterialCommunityIcons name="plus" size={20} color="white" /> */}
-        <Feather name="align-right" size={30} color="white" />
+        {/* <FontAwesome5 name="sliders-h" size={24} color="white" /> */}
+        <FilterIcon />
+        <FilterModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onApplyFilters={applyFilters}
+        />
       </TouchableOpacity>
     </View>
   );

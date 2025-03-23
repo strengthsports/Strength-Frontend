@@ -14,60 +14,11 @@ import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
 import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
+import SwiperTop from "~/components/explorePage/SwiperTop"
 
 const TrendingAll = () => {
   const renderSwiper = () => (
-    <Swiper
-      autoplay={true}
-      autoplayTimeout={3}
-      showsPagination={true}
-      paginationStyle={{ bottom: 8, gap: 4 }}
-      dotStyle={{
-        backgroundColor: Colors.greyText,
-        width: 6,
-        height: 6,
-        marginHorizontal: 20,
-      }}
-      activeDotStyle={{
-        backgroundColor: "white",
-        width: 7,
-        height: 7,
-        marginHorizontal: 20,
-      }}
-      style={{ height: 250, marginTop: 0.5 }}
-    >
-      {ExploreImageBanner.map((item, index) => (
-        <View key={index} className="flex-1">
-          <Image
-            source={{ uri: item.url }}
-            className="w-full h-72"
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={["transparent", "rgba(0, 0, 0, 0.8)"]}
-            className="absolute bottom-0 left-0 right-0 h-40"
-          />
-          <View className="absolute bottom-9 pl-5">
-            <TextScallingFalse className="text-white text-6xl font-bold">
-              {item.title}
-            </TextScallingFalse>
-            <View className="flex-row items-center">
-              <TextScallingFalse className="text-[#12956B] text-xl font-bold text-start">
-                {item.game}
-              </TextScallingFalse>
-              <TextScallingFalse className="text-white text-xl">
-                {" "}
-                • {item.date}
-              </TextScallingFalse>
-              <TextScallingFalse className="text-white text-xl">
-                {" "}
-                • {item.time}
-              </TextScallingFalse>
-            </View>
-          </View>
-        </View>
-      ))}
-    </Swiper>
+    <SwiperTop/>
   );
 
   const renderHashtags = () => (
@@ -90,6 +41,8 @@ const TrendingAll = () => {
   } = useGetCricketMatchesQuery({});
   const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
     cricketData || {};
+
+  const renderTrendingLiveMatches = () => {}
 
   const renderCricketLiveMatches = () => {
     return (
@@ -184,12 +137,8 @@ const TrendingAll = () => {
 
   const renderFootballLiveMatches = () => {
     return (
-      <View className="mt-7">
-        <View className="flex-row items-center justify-end pl-7 pr-10 mb-4">
-          {/* <View className="flex-row items-center ">
-            <TextScallingFalse className="text-white text-6xl font-bold">Matches</TextScallingFalse>
-            <MaterialCommunityIcons name="chevron-double-right" size={22} color="white" className="-mb-1" />
-          </View> */}
+      <View className="mt-4">
+        {/* <View className="flex-row items-center justify-end pl-7 pr-10 mb-4">
           <MaterialCommunityIcons
             name="reload"
             size={22}
@@ -197,7 +146,7 @@ const TrendingAll = () => {
             className="-mb-1"
             onPress={refetchFootball}
           />
-        </View>
+        </View> */}
         <FlatList
           data={liveFootballMatches}
           keyExtractor={(item) => item.id.toString()}
@@ -215,13 +164,13 @@ const TrendingAll = () => {
               )}
             </View>
           )}
-          ListEmptyComponent={
-            <View className="w-screen justify-center mt-10">
-              <TextScallingFalse className="text-white self-center text-center pr-7">
-                No live matches available
-              </TextScallingFalse>
-            </View>
-          }
+          // ListEmptyComponent={
+          //   <View className="w-screen justify-center mt-10">
+          //     <TextScallingFalse className="text-white self-center text-center pr-7">
+          //       No live matches available
+          //     </TextScallingFalse>
+          //   </View>
+          // }
         />
       </View>
     );

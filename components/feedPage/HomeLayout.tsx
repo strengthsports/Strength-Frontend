@@ -238,15 +238,15 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
             {/* Profile Section */}
             <View className="flex-row items-center justify-start pl-6 space-x-4 mb-6">
               <Image
-                source={user.profilePic ? { uri: user.profilePic } : nopic} // replace with user?.profilePic or defaultPic
+                source={user?.profilePic ? { uri: user?.profilePic } : nopic} // replace with user?.profilePic or defaultPic
                 className="w-14 h-14 rounded-full"
                 resizeMode="cover"
               />
               <View className="pl-4">
                 <Text className="text-white text-xl font-semibold">
-                  {user.firstName} {user.lastName}
+                  {user?.firstName} {user?.lastName}
                 </Text>
-                <Text className="text-gray-400 text-lg">@{user.username}</Text>
+                <Text className="text-gray-400 text-lg">@{user?.username}</Text>
               </View>
             </View>
 

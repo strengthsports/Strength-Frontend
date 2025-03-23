@@ -1,9 +1,15 @@
 import { Tabs } from "expo-router";
 import React, { useState } from "react";
-import { Platform, View } from "react-native";
+import { Platform, View, Text } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
+import { HapticTab } from "~/components/common/HapticTab";
+import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
+import HomeIcon from "~/components/SvgIcons/navbar/HomeIcon";
+import CommunityIcon from "~/components/SvgIcons/navbar/CommunityIcon";
+import NotificationIcon from "~/components/SvgIcons/navbar/NotificationIcon";
+import ProfileIcon from "~/components/SvgIcons/navbar/ProfileIcon";
 
 export default function TabLayout() {
   const userId = useSelector((state: RootState) => state?.profile?.user?._id);
@@ -46,10 +52,18 @@ export default function TabLayout() {
           title: "Home",
           href: "/(app)/(tabs)/home",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol
-              name={focused ? "home-outline" : "home-outline"}
-              color={color}
-            />
+            // <IconSymbol
+            //   name={focused ? "home-outline" : "home-outline"}
+            //   color={color}
+            // />
+            <HomeIcon color={focused ? "#12956B" : "white"} />
+          ),
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+            >
+              Home
+            </Text>
           ),
         }}
       />
@@ -59,7 +73,14 @@ export default function TabLayout() {
           title: "Explore",
           href: "/(app)/(tabs)/explore/allCategory",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol name="magnify" color={color} />
+            <SearchIcon color={focused ? "#12956B" : "white"} />
+          ),
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+            >
+              Explore
+            </Text>
           ),
         }}
       />
@@ -68,10 +89,14 @@ export default function TabLayout() {
         options={{
           title: "Community",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol
-              name={focused ? "account-group" : "account-group-outline"}
-              color={color}
-            />
+            <CommunityIcon color={focused ? "#12956B" : "white"} />
+          ),
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+            >
+              Community
+            </Text>
           ),
         }}
       />
@@ -81,10 +106,11 @@ export default function TabLayout() {
           title: "Notification",
           tabBarIcon: ({ color, focused }) => (
             <View style={{ position: "relative" }}>
-              <IconSymbol
+              {/* <IconSymbol
                 name={focused ? "bell" : "bell-outline"}
                 color={color}
-              />
+              /> */}
+              <NotificationIcon color={focused ? "#12956B" : "white"} />
               {hasNewNotification && (
                 <View
                   style={{
@@ -100,6 +126,13 @@ export default function TabLayout() {
               )}
             </View>
           ),
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+            >
+              Notification
+            </Text>
+          ),
         }}
         listeners={{
           tabPress: () => {
@@ -114,14 +147,22 @@ export default function TabLayout() {
           title: "Profile",
           href: "/(app)/(tabs)/profile",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol
-              name={
-                focused
-                  ? "card-account-details"
-                  : "card-account-details-outline"
-              }
-              color={color}
-            />
+            // <IconSymbol
+            //   name={
+            //     focused
+            //       ? "card-account-details"
+            //       : "card-account-details-outline"
+            //   }
+            //   color={color}
+            // />
+            <ProfileIcon color={focused ? "#12956B" : "white"} />
+          ),
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+            >
+              Profile
+            </Text>
           ),
         }}
       />

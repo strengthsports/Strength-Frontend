@@ -32,6 +32,8 @@ import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
 import { Divider } from "react-native-elements";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import MoreModal from "~/components/feedPage/MoreModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 import { Post } from "~/types/post";

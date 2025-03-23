@@ -7,12 +7,16 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
-export default function AddPostHeader() {
+export default function AddPostHeader({
+  onBackPress,
+}: {
+  onBackPress: () => void;
+}) {
   const { user } = useSelector((state: any) => state?.profile);
 
   return (
     <SafeAreaView className="flex flex-row items-center gap-4">
-      <TouchableOpacity onPress={router.back}>
+      <TouchableOpacity onPress={onBackPress}>
         <MaterialCommunityIcons
           name="keyboard-backspace"
           size={24}

@@ -15,8 +15,8 @@ import {
   Platform,
   ActivityIndicator,
   Pressable,
+  BackHandler,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import debounce from "lodash.debounce";
 import { Colors } from "~/constants/Colors";
@@ -24,20 +24,17 @@ import {
   feedPostApi,
   useGetFeedPostQuery,
 } from "~/reduxStore/api/feed/features/feedApi.getFeed";
-import PostContainer from "~/components/Cards/postContainer";
+import PostContainer, {
+  PostContainerHandles,
+} from "~/components/Cards/postContainer";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
 import { Divider } from "react-native-elements";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import MoreModal from "~/components/feedPage/MoreModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Portal } from "react-native-paper";
 import { StyleSheet } from "react-native";
 import { Post } from "~/types/post";
-import { BackHandler } from "react-native";
-import CustomBottomSheet from "~/components/ui/CustomBottomSheet";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -94,22 +91,23 @@ export default function Home() {
 
   // State to hold the selected data from the button press
   const [isBottomSheetOpen, setBottomSheetOpen] = useState<boolean>(false);
-  const [selectedData, setSelectedData] = useState<any>(null);
 
   // Ref for the bottom sheet
-  const bottomSheetRef = useRef(null);
+  const postContainerRef = useRef<PostContainerHandles>(null);
 
-  // Callback invoked by the button in child components
-  const handlePressMore = useCallback((data: any) => {
-    setBottomSheetOpen(true);
-    setSelectedData(data);
-    bottomSheetRef.current?.scrollTo(-220);
-  }, []);
+  const triggerChildFunction = () => {
+    if (postContainerRef.current) {
+      // Call the exposed child function with the required parameter
+      postContainerRef.current.closeBottomSheet({ type: "like" });
+      console.log("Like modal");
+    } else {
+      console.log("Like modal not");
+    }
+  };
 
   const handleCloseBottomSheet = () => {
-    bottomSheetRef.current?.scrollTo(0);
-    setSelectedData(null);
     setBottomSheetOpen(false);
+    triggerChildFunction();
   };
 
   // Handler to refresh the list (pull-to-refresh)
@@ -156,9 +154,10 @@ export default function Home() {
         return (
           <View className="w-screen">
             <PostContainer
+              ref={postContainerRef}
               item={item.data}
-              handlePressMore={handlePressMore}
               isFeedPage={true}
+              handleBottomSheet={setBottomSheetOpen}
             />
             <Divider
               style={{ marginHorizontal: "auto", width: "100%" }}
@@ -269,7 +268,7 @@ export default function Home() {
   });
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-black">
       {isBottomSheetOpen && (
         <Pressable style={styles.overlay} onPress={handleCloseBottomSheet} />
       )}
@@ -299,23 +298,6 @@ export default function Home() {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.7} // Adjust as needed
         />
-        <CustomBottomSheet
-          ref={bottomSheetRef}
-          onClose={handleCloseBottomSheet}
-          animationSpeed={20}
-          isFixed={true}
-          fixedHeight={220}
-        >
-          {selectedData && (
-            <MoreModal
-              firstName={selectedData.postedBy.firstName}
-              followingStatus={selectedData.followingStatus}
-              isOwnPost={selectedData.postedBy._id === selectedData.currUser}
-              postId={selectedData._id}
-              isReported={selectedData.isReported}
-            />
-          )}
-        </CustomBottomSheet>
       </GestureHandlerRootView>
     </View>
   );

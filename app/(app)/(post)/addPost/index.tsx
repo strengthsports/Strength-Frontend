@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -9,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Text,
+  BackHandler,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
@@ -21,6 +28,7 @@ import { useAddPostMutation } from "~/reduxStore/api/feed/features/feedApi.addPo
 import { SafeAreaView } from "react-native-safe-area-context";
 import CustomImageSlider from "~/components/Cards/imageSlideContainer";
 import AlertModal from "~/components/modals/AlertModal";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -247,13 +255,13 @@ export default function AddPostContainer() {
   }, []);
 
   // Navigate back handler
-  const navigateBack = useCallback(() => {
-    if (postText !== "" || pickedImageUris.length > 0) {
-      setAlertModalOpen(true);
-    } else {
+  const navigateBack = () => {
+    if (postText == "" && pickedImageUris.length === 0) {
       router.push("..");
+    } else {
+      setAlertModalOpen(true);
     }
-  }, [router]);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -429,8 +437,8 @@ export default function AddPostContainer() {
         alertConfig={{
           title: "Discard Post ?",
           message: "All your changes will be deleted",
-          cancelMessage: "Discard",
-          confirmMessage: "Cancel",
+          cancelMessage: "Cancel",
+          confirmMessage: "Discard",
           confirmAction: () => router.push(".."),
           discardAction: () => setAlertModalOpen(false),
         }}

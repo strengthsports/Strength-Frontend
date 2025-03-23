@@ -132,7 +132,7 @@ const NotificationPage = () => {
         />
       ) : (
         !isLoading && (
-          <Text style={{ color: "#808080", textAlign: "center", fontSize: 24 }}>
+          <Text style={{ color: "#808080", textAlign: "center", fontSize: 16 }}>
             No notifications found
           </Text>
         )

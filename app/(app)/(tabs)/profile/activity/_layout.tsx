@@ -15,6 +15,7 @@ import Images from "./images";
 import Comments from "./comments";
 import WrittenPost from "./writtenpost";
 import { MotiView } from "moti";
+import Polls from "./polls";
 
 const ActivityLayout = () => {
   const router = useRouter();
@@ -32,7 +33,8 @@ const ActivityLayout = () => {
       { name: "Posts" },
       { name: "Images" },
       { name: "Comments" },
-      { name: "Writtenpost" },
+      { name: "Polls" },
+      { name: "Thoughts" },
     ],
     []
   );
@@ -46,7 +48,9 @@ const ActivityLayout = () => {
         return <Images />;
       case "Comments":
         return <Comments />;
-      case "Writtenpost":
+      case "Polls":
+        return <Polls />;
+      case "Thoughts":
         return <WrittenPost />;
       default:
         return <Posts />;

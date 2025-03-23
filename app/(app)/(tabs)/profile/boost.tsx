@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 
-const Events = () => {
+const Boost = () => {
   return (
     <View>
-      <Text>events</Text>
+      <Text>Boost</Text>
     </View>
   );
 };
 
-export default Events;
+export default Boost;
 
 const styles = StyleSheet.create({});

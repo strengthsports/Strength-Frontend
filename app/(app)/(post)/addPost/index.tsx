@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -8,10 +14,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Text,
+  BackHandler,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
-import AddPostHeader from "~/components/feedPage/addPostHeader";
+import AddPostHeader from "~/components/feedPage/AddPostHeader";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";
@@ -19,6 +27,8 @@ import * as ImagePicker from "expo-image-picker";
 import { useAddPostMutation } from "~/reduxStore/api/feed/features/feedApi.addPost";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CustomImageSlider from "~/components/Cards/imageSlideContainer";
+import AlertModal from "~/components/modals/AlertModal";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -93,6 +103,25 @@ export default function AddPostContainer() {
   >([3, 2]);
 
   const [activeIndex, setActiveIndex] = useState<any>(0);
+  const [isAlertModalOpen, setAlertModalOpen] = useState<boolean>(false);
+  const inputRef = useRef<TextInput>(null);
+  const [inputHeight, setInputHeight] = useState(40);
+
+  // Improved regex pattern for tag detection
+  const parseTags = (text: string) => {
+    const parts = text.split(/((?:#|@)[a-zA-Z0-9_]+)/g);
+
+    return parts.map((part, index) => {
+      if (part.startsWith("#") || part.startsWith("@")) {
+        return (
+          <Text key={index} style={{ color: "#12956B" }}>
+            {part}
+          </Text>
+        );
+      }
+      return <Text key={index}>{part}</Text>;
+    });
+  };
 
   const handleSetActiveIndex = (index: any) => {
     setActiveIndex(index);
@@ -124,6 +153,8 @@ export default function AddPostContainer() {
 
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
 
+      formData.append("taggedUsers", JSON.stringify([]));
+
       await addPost(formData).unwrap();
       setPostText("");
       setPickedImageUris([]);
@@ -154,7 +185,7 @@ export default function AddPostContainer() {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        aspect: ratio,
+        aspect: Platform.OS === "ios" ? ratio : ratio,
         quality: 0.8,
         allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -187,7 +218,8 @@ export default function AddPostContainer() {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        aspect: selectedAspectRatio,
+        aspect:
+          Platform.OS === "ios" ? selectedAspectRatio : selectedAspectRatio,
         quality: 0.8,
         allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -223,9 +255,13 @@ export default function AddPostContainer() {
   }, []);
 
   // Navigate back handler
-  const navigateBack = useCallback(() => {
-    router.push("..");
-  }, [router]);
+  const navigateBack = () => {
+    if (postText == "" && pickedImageUris.length === 0) {
+      router.push("..");
+    } else {
+      setAlertModalOpen(true);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -262,15 +298,58 @@ export default function AddPostContainer() {
           keyboardShouldPersistTaps="handled"
           removeClippedSubviews={true}
         >
-          <TextInput
-            autoFocus
-            multiline
-            placeholderTextColor="grey"
-            placeholder="What is on your mind..."
-            value={postText}
-            onChangeText={setPostText}
-            className="min-h-24 mx-6 h-auto align-top text-white text-4xl mb-2"
-          />
+          <View style={{ minHeight: 100 }}>
+            {/* Overlay text with highlighting */}
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                pointerEvents: "none",
+                paddingHorizontal: 16,
+                paddingTop: Platform.OS === "ios" ? 8 : 4,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: "transparent",
+                  lineHeight: 24,
+                  // Match TextInput's text alignment behavior
+                  textAlignVertical: "top",
+                  includeFontPadding: false,
+                }}
+              >
+                {parseTags(postText)}
+              </Text>
+            </View>
+
+            {/* Actual text input */}
+            <TextInput
+              ref={inputRef}
+              multiline
+              autoFocus
+              placeholder="What's on your mind..."
+              placeholderTextColor="grey"
+              value={postText}
+              onChangeText={setPostText}
+              onContentSizeChange={(e) => {
+                setInputHeight(e.nativeEvent.contentSize.height);
+              }}
+              style={{
+                fontSize: 16,
+                color: "white",
+                paddingHorizontal: 16,
+                height: Math.max(40, inputHeight),
+                opacity: 0.99, // Needs to be almost opaque to hide overlay
+                lineHeight: 24,
+                textAlignVertical: "top",
+              }}
+              textBreakStrategy="highQuality"
+              keyboardAppearance="dark"
+            />
+          </View>
 
           {/* Only render CustomImageSlider when there are images */}
           {pickedImageUris.length > 0 && (
@@ -351,6 +430,19 @@ export default function AddPostContainer() {
           </View>
         </View>
       </View>
+
+      {/* alert modal */}
+      <AlertModal
+        isVisible={isAlertModalOpen}
+        alertConfig={{
+          title: "Discard Post ?",
+          message: "All your changes will be deleted",
+          cancelMessage: "Cancel",
+          confirmMessage: "Discard",
+          confirmAction: () => router.push(".."),
+          discardAction: () => setAlertModalOpen(false),
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }

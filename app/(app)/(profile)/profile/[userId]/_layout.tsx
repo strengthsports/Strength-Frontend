@@ -916,8 +916,8 @@ const Tabs = ({
   const tabs = [
     { name: "Overview", path: `/profile/${params}` },
     { name: "Activity", path: `/profile/${params}/activity` },
-    { name: "Events", path: `/profile/${params}/events` },
     { name: "Teams", path: `/profile/${params}/teams` },
+    { name: "Boost", path: `/profile/${params}/boost` },
   ];
 
   return (

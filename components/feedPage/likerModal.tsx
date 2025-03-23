@@ -1,8 +1,16 @@
 import React, { memo, useEffect } from "react";
-import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { Divider } from "react-native-elements";
 import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
 import nopic from "@/assets/images/nopic.jpg";
+import { useRouter } from "expo-router";
 
 interface LikersListProps {
   targetId: string;
@@ -11,28 +19,40 @@ interface LikersListProps {
 
 const ITEM_HEIGHT = 60; // Fixed height of each item in pixels
 
-const LikerCard = ({ liker }: { liker: any }) => (
-  <>
-    <View className="flex-row items-center p-2 my-1 h-[60px]">
-      <Image
-        source={liker.profilePic ? { uri: liker.profilePic } : nopic}
-        className="w-12 h-12 rounded-full mr-4"
-      />
-      <View className="flex-1">
-        <Text className="text-white font-semibold text-base">
-          {liker.firstName} {liker.lastName}
-        </Text>
-        <Text
-          className="text-neutral-400 text-sm mt-1 w-5/6"
-          ellipsizeMode="tail"
-          numberOfLines={1}
+export const LikerCard = ({ liker }: { liker: any }) => {
+  const router = useRouter();
+  const serializedUser = encodeURIComponent(
+    JSON.stringify({ id: liker._id, type: "User" })
+  );
+  return (
+    <>
+      <View className="flex-row items-center p-2 my-1 h-[60px]">
+        <TouchableOpacity
+          onPress={() =>
+            router.push(`/(app)/(profile)/profile/${serializedUser}`)
+          }
         >
-          {liker.headline}
-        </Text>
+          <Image
+            source={liker.profilePic ? { uri: liker.profilePic } : nopic}
+            className="w-12 h-12 rounded-full mr-4"
+          />
+        </TouchableOpacity>
+        <View className="flex-1">
+          <Text className="text-white font-semibold text-base">
+            {liker.firstName} {liker.lastName}
+          </Text>
+          <Text
+            className="text-neutral-400 text-sm mt-1 w-5/6"
+            ellipsizeMode="tail"
+            numberOfLines={1}
+          >
+            {liker.headline}
+          </Text>
+        </View>
       </View>
-    </View>
-  </>
-);
+    </>
+  );
+};
 
 const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   const { data, error, isLoading, refetch } = useFetchLikersQuery({
@@ -55,7 +75,10 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
   });
 
   return (
-    <View className="h-3/4 w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x  border-neutral-700		 ">
+    <View
+      onStartShouldSetResponder={() => true}
+      className="h-full w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x  border-neutral-700"
+    >
       <Divider
         className="w-16 self-center rounded-full bg-neutral-700 my-1"
         width={4}

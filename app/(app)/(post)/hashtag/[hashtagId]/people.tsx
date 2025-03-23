@@ -81,7 +81,7 @@ const People = () => {
               ? router.push("/(app)/(tabs)/profile")
               : router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
-          className="w-16 h-16 rounded-full overflow-hidden"
+          className="w-14 h-14 rounded-full overflow-hidden"
         >
           {item.profilePic ? (
             <Image
@@ -115,7 +115,7 @@ const People = () => {
         </View>
         <View className="flex-1 items-end">
           <TouchableOpacity
-            className={`border rounded-xl px-8 py-1.5 ${
+            className={`border rounded-lg px-8 py-1.5 ${
               followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
             } `}
             activeOpacity={0.6}

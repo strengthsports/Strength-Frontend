@@ -1,3 +1,5 @@
+import { Post } from "./post";
+
 // Types
 export interface User {
   id: string;
@@ -42,6 +44,7 @@ export interface ProfileState {
   msgBackend: string | null;
   posts: Array<any>;
   followings: string[];
+  currentPost: Post | null;
   [key: string]: any;
 }
 

@@ -14,6 +14,7 @@ const initialState: ProfileState = {
   error: null,
   msgBackend: null,
   posts: [],
+  currentPost: null,
 };
 
 // Edit user profile details
@@ -327,6 +328,9 @@ const profileSlice = createSlice({
       state.followings?.filter((id) => id !== action.payload);
       console.log(state.followings);
     },
+    setCurrentPost: (state, action) => {
+      state.currentPost = action.payload;
+    },
     resetProfile: (state) => {
       state.user = null;
       state.loading = false;
@@ -520,6 +524,7 @@ export const {
   setFollowingCount,
   pullFollowings,
   pushFollowings,
+  setCurrentPost,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

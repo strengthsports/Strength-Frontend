@@ -1,70 +1,41 @@
 import { Tabs } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Platform, View } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import createSSEConnection from "~/utils/sse";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
-import { HapticTab } from "~/components/common/HapticTab";
 
 export default function TabLayout() {
   const userId = useSelector((state: RootState) => state?.profile?.user?._id);
   console.log("user Id : ", userId);
   const [hasNewNotification, setHasNewNotification] = useState(false);
 
-  // useEffect(() => {
-  //   if (!userId) {
-  //     console.log("User ID is not available. Skipping SSE connection.");
-  //     return;
-  //   }
-
-  //   let sse: EventSource;
-
-  //   // Immediately invoked async function
-  //   (async () => {
-  //     try {
-  //       sse = await createSSEConnection(userId, (data) => {
-  //         console.log("User ID : ", userId);
-  //         console.log("Received notification:", data);
-  //         setHasNewNotification(true);
-  //       });
-  //     } catch (error) {
-  //       console.error("Failed to establish SSE connection:", error);
-  //     }
-  //   })();
-
-  //   // Cleanup on unmount
-  //   return () => {
-  //     if (sse) {
-  //       sse.close();
-  //     }
-  //   };
-  // }, [userId]);
   return (
     <Tabs
       screenOptions={{
-        // tabBarActiveBackgroundColor: "white",
         tabBarActiveTintColor: "#12956B",
         headerShown: false,
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
-            height: 100, // Increase height to create space
-            paddingBottom: 15, // Adds space at the bottom
-            paddingTop: 5, // Adds space at the top
-            borderTopLeftRadius: 10, // Rounded top-left corner
-            borderTopRightRadius: 10, // Rounded top-right corner
-            overflow: "hidden", // Prevents background bleed
-            backgroundColor: "#000",
-          },
-          default: {
-            height: 60, // Ensures consistent height
+            height: 100,
             paddingBottom: 15,
             paddingTop: 5,
-            borderTopLeftRadius: 10, // Rounded top-left corner
-            borderTopRightRadius: 10, // Rounded top-right corner
-            overflow: "hidden", // Prevents background bleed
-            backgroundColor: "#000",
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            overflow: "hidden",
+            backgroundColor: "#000", // Ensure consistent background
+          },
+          default: {
+            height: 60,
+            paddingBottom: 15,
+            paddingTop: 5,
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            overflow: "hidden",
+            backgroundColor: "#000", // Ensure consistent background
+            elevation: 0, // Remove shadow on Android
+            borderTopWidth: 0, // Remove top border shadow
           },
         }),
       }}

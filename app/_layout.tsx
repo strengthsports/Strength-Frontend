@@ -5,7 +5,7 @@ import {
 } from "@react-navigation/native";
 import { StatusBar } from "react-native";
 import { useFonts } from "expo-font";
-import { Slot, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -17,6 +17,7 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "@/configs/toastConfig";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
+import * as NavigationBar from "expo-navigation-bar";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +33,8 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  NavigationBar.setBackgroundColorAsync("black");
+
   if (!loaded) {
     return null;
   }
@@ -46,7 +49,7 @@ export default function RootLayout() {
               <Stack
                 screenOptions={{ headerShown: false, animation: "fade" }}
               />
-              <StatusBar backgroundColor="black" />
+              <StatusBar barStyle="light-content" backgroundColor="black" />
               <Toast config={toastConfig} />
             </PaperProvider>
           </Provider>

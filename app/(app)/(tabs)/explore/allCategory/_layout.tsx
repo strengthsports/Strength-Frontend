@@ -45,7 +45,7 @@ const componentMap: Record<
   Hockey: HockeyAll,
   Basketball: AllBasketball,
   Kabbadi: KabaddiAll,
-  Tennis: TennisAll,
+  Tennis: TableTennisAll,
   "Table Tennis": TableTennisAll,
   "More \u2193": DefaultContent,
   Default: DefaultContent,

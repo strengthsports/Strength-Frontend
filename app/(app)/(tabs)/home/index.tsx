@@ -251,7 +251,7 @@ export default function Home() {
     }
     if (data?.data?.nextPage === null) {
       return (
-        <View className="px-10 mt-10 h-80">
+        <View className="px-10 mt-10 h-60">
           <TextScallingFalse className="text-[60px] font-bold text-[#808080c6]">
             you
           </TextScallingFalse>

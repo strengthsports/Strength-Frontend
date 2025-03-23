@@ -11,7 +11,12 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import Icon from "react-native-vector-icons/Entypo";
-import { MaterialCommunityIcons, Feather, Ionicons } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  Feather,
+  Ionicons,
+  AntDesign,
+} from "@expo/vector-icons";
 import defaultPic from "../../assets/images/nopic.jpg";
 import { useNavigation, useRouter } from "expo-router";
 import nopic from "@/assets/images/nopic.jpg";
@@ -27,20 +32,32 @@ import { getTeams } from "~/reduxStore/slices/team/teamSlice";
 import CustomDrawer, { DrawerRefProps } from "../ui/CustomDrawer";
 import { StyleSheet } from "react-native";
 import EdgeSwipe from "../ui/EdgeSwipe";
+import CustomDivider from "../ui/CustomDivider";
+import { opacity } from "react-native-reanimated/lib/typescript/Colors";
 
 interface MenuItem {
   label: string;
   onPress: () => void;
 }
 
-interface DrawerProps {
-  children: React.ReactNode;
-  menuItems: MenuItem[];
-}
+const menuItems = [
+  {
+    label: "Add in squad",
+    onPress: () => console.log("/teams/edit/editTeam"), // Example function for "Home"
+  },
+  {
+    label: "Add Members",
+    onPress: () => console.log("/teams/edit/members"), // Example function for "Settings"
+  },
+  {
+    label: "Logout",
+    onPress: () => console.log("Logout clicked!"), // Example function for "Logout"
+  },
+];
 
 const HEADER_HEIGHT = 60;
 
-const HomeLayout: React.FC<DrawerProps> = ({ children, menuItems }) => {
+const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [teamDetails, setTeamDetails] = useState<any>([]);
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -76,14 +93,6 @@ const HomeLayout: React.FC<DrawerProps> = ({ children, menuItems }) => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-  };
 
   useEffect(() => {
     check();
@@ -209,10 +218,10 @@ const HomeLayout: React.FC<DrawerProps> = ({ children, menuItems }) => {
           {/* Sidebar Content */}
           <View className="flex-1 pt-12">
             {/* Profile Section */}
-            <View className="flex-row items-center space-x-4 mb-6 px-6">
+            <View className="flex-row items-center justify-start pl-6 space-x-4 mb-6">
               <Image
                 source={user.profilePic ? { uri: user.profilePic } : nopic} // replace with user?.profilePic or defaultPic
-                className="w-16 h-16 rounded-full"
+                className="w-14 h-14 rounded-full"
                 resizeMode="cover"
               />
               <View className="pl-4">
@@ -223,15 +232,26 @@ const HomeLayout: React.FC<DrawerProps> = ({ children, menuItems }) => {
               </View>
             </View>
 
-            {/* Sidebar Menu */}
-            <View className="mt-2 py-4 border-t border-[#5C5C5C] px-6">
+            <CustomDivider
+              color="#5C5C5C"
+              thickness={0.2}
+              style={{ marginHorizontal: "auto", width: "90%", opacity: 0.5 }}
+            />
+
+            {/* Teams section */}
+            <View className="mt-2 w-[90%] mx-auto">
               <Text className="text-white text-4xl font-bold">
                 Manage Teams
               </Text>
 
-              <View className="mt-2 mb-4">
-                {/* Replace teamDetails mapping with your data */}
-                {teamDetails.map((team, index) => (
+              {teamDetails.map((team: any, index: any) => (
+                <View
+                  className={
+                    index === teamDetails.length - 1 ? "mb-4 mx-2" : "mb-2 mx-2"
+                  }
+                  key={index}
+                >
+                  {/* Replace teamDetails mapping with your data */}
                   <TouchableOpacity
                     key={index}
                     onPress={() => {
@@ -242,30 +262,36 @@ const HomeLayout: React.FC<DrawerProps> = ({ children, menuItems }) => {
                     <View className="flex-row items-center mt-4">
                       <Image
                         source={{ uri: team.url }}
-                        className="w-12 h-12 rounded-full"
+                        className="w-10 h-10 rounded-full"
                         resizeMode="cover"
                       />
-                      <Text className="text-white text-4xl font-semibold ml-4">
+                      <Text className="text-white text-3xl font-medium ml-4">
                         {team.name}
                       </Text>
                     </View>
                   </TouchableOpacity>
-                ))}
-              </View>
+                </View>
+              ))}
 
-              <View className="flex-row mt-4">
+              <View className="flex-row mb-4 px-3">
                 {/* Create Team Button */}
-                <View className="border border-[#12956B] px-4 py-2 rounded-md flex-row items-center">
+                <View className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center">
                   <TouchableOpacity
                     onPress={() => {
                       router.push("/(app)/(team)/teams/InitiateCreateTeam");
+                      handleCloseDrawer();
                     }}
                   >
-                    <Text className="text-[#12956B] text-md font-semibold">
+                    <Text className="text-[#12956B] text-base font-semibold">
                       Create Team
                     </Text>
                   </TouchableOpacity>
-                  <Icon name="add" size={15} color="#12956B" />
+                  <AntDesign
+                    className="ml-1"
+                    name="plus"
+                    size={10}
+                    color="#12956B"
+                  />
                 </View>
 
                 {/* Join Team Button */}
@@ -276,38 +302,60 @@ const HomeLayout: React.FC<DrawerProps> = ({ children, menuItems }) => {
                   className="ml-4"
                 >
                   <View className="bg-[#12956B] px-4 py-2 rounded-md items-center">
-                    <Text className="text-white text-md font-semibold">
+                    <Text className="text-white text-base font-semibold">
                       Join Team
                     </Text>
                   </View>
                 </TouchableOpacity>
               </View>
+
+              <CustomDivider
+                color="#5C5C5C"
+                thickness={0.2}
+                style={{
+                  marginHorizontal: "auto",
+                  width: "100%",
+                  opacity: 0.5,
+                }}
+              />
             </View>
 
-            <View className="border-t border-[#5C5C5C] mt-4 py-2 px-6">
-              <Text className="text-white text-4xl font-semibold">
-                Add in Squad
-              </Text>
-            </View>
-
-            <View className="border-t border-b border-[#5C5C5C] mt-2 py-2 px-6">
-              <TouchableOpacity onPress={handleLogout}>
-                <Text className="text-white text-4xl font-semibold">
-                  Logout
-                </Text>
-              </TouchableOpacity>
+            <View className="mt-2 w-[90%] mx-auto">
+              {menuItems.map((item: MenuItem, index: number) => (
+                <View key={index}>
+                  <TouchableOpacity
+                    onPress={handleLogout}
+                    className="mb-2 px-2"
+                  >
+                    <Text className="text-white text-4xl font-semibold">
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                  <CustomDivider
+                    color="#5C5C5C"
+                    thickness={0.5}
+                    style={{ marginVertical: 10, opacity: 0.5 }}
+                  />
+                </View>
+              ))}
             </View>
           </View>
 
-          <View className="p-4">
-            <TouchableOpacity className="flex-row items-center border-t border-[#5C5C5C] py-3">
+          <CustomDivider
+            color="#5C5C5C"
+            thickness={0.2}
+            style={{ marginHorizontal: "auto", width: "90%", opacity: 0.5 }}
+          />
+
+          <View className="pb-24 w-[90%] mx-auto">
+            <TouchableOpacity className="flex-row items-center">
               <Feather
                 name="settings"
                 size={20}
                 color="white"
                 className="mr-2"
               />
-              <Text className="text-white text-5xl font-bold">Settings</Text>
+              <Text className="text-white text-4xl font-medium">Settings</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View, PixelRatio } from "react-native";
 import React, { useCallback, useImperativeHandle } from "react";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -51,13 +51,12 @@ const CustomBottomSheet = React.forwardRef<
   ) => {
     // Compute the open position:
     // - In fixed mode: top of sheet = SCREEN_HEIGHT - fixedHeight.
-    // - In flexible mode: open position is defined as before.
+    // - In flexible mode: open position is defined as offset from the top.
     const openPosition = isFixed
       ? -(SCREEN_HEIGHT - fixedHeight)
       : -SCREEN_HEIGHT + FLEXIBLE_OPEN_OFFSET;
-    const flexibleMaxTranslateY = -SCREEN_HEIGHT + FLEXIBLE_OPEN_OFFSET; // same as MAX_TRANSLATE_Y
 
-    // Shared value for vertical translation. Initial state: closed = 0.
+    // Shared value for vertical translation. Initial state: closed (0).
     const translateY = useSharedValue(0);
     const active = useSharedValue(false);
 
@@ -77,9 +76,7 @@ const CustomBottomSheet = React.forwardRef<
       isActive,
     ]);
 
-    // In fixed mode, the sheet is meant to be opened only programmatically to openPosition.
-    // The user can only drag downward (to close).
-    // In flexible mode, normal bidirectional drag applies.
+    // We'll only allow two snap points: closed (0) and open (openPosition)
     const context = useSharedValue({ y: 0 });
 
     const gesture = Gesture.Pan()
@@ -87,62 +84,40 @@ const CustomBottomSheet = React.forwardRef<
         context.value = { y: translateY.value };
       })
       .onUpdate((event) => {
+        // For fixed mode, allow only downward drag (if already open)
         if (isFixed) {
-          // Only allow downward dragging (positive translationY)
-          // And only if the sheet is already open
-          if (translateY.value < 0) {
-            // Sheet is open (translateY < 0)
-            // Only allow downward dragging (translationY > 0)
-            if (event.translationY > 0) {
-              translateY.value = context.value.y + event.translationY;
-            } else {
-              // Keep at current position when trying to drag upward
-              translateY.value = context.value.y;
-            }
+          if (translateY.value < 0 && event.translationY > 0) {
+            translateY.value = context.value.y + event.translationY;
           } else {
-            // Sheet is closed, maintain position
-            translateY.value = 0;
+            // Prevent upward drag in fixed mode when closed or open
+            translateY.value = context.value.y;
           }
         } else {
           // Flexible mode: allow bidirectional dragging
-          translateY.value = event.translationY + context.value.y;
+          translateY.value = context.value.y + event.translationY;
           // Clamp to not go beyond fully open position
-          translateY.value = Math.max(translateY.value, flexibleMaxTranslateY);
+          translateY.value = Math.max(translateY.value, openPosition);
         }
       })
       .onEnd(() => {
-        if (isFixed) {
-          // For fixed mode
-          const threshold = 60;
-          // If sheet was open and dragged enough, close it
-          if (
-            translateY.value < 0 &&
-            translateY.value > openPosition + threshold
-          ) {
-            scrollTo(0);
-            if (onClose) runOnJS(onClose)();
-          } else if (translateY.value < 0) {
-            // Otherwise snap back to open position
-            scrollTo(openPosition);
-          }
+        // Calculate the threshold as halfway between open and closed.
+        const threshold = openPosition / 2;
+        // If the sheet is dragged past the halfway point (remember openPosition is negative)
+        if (translateY.value < threshold) {
+          // Snap to open position
+          scrollTo(openPosition);
         } else {
-          // For flexible mode
-          if (translateY.value > -SCREEN_HEIGHT / 3) {
-            scrollTo(0);
-            if (onClose) runOnJS(onClose)();
-          } else if (translateY.value < -SCREEN_HEIGHT / 1.5) {
-            scrollTo(flexibleMaxTranslateY);
-          }
+          // Snap to closed position
+          scrollTo(0);
+          if (onClose) runOnJS(onClose)();
         }
       });
 
     const rBottomSheetStyle = useAnimatedStyle(() => {
+      // Optional interpolation for borderRadius as an example.
       const borderRadius = interpolate(
         translateY.value,
-        [
-          isFixed ? openPosition + 50 : flexibleMaxTranslateY + 50,
-          isFixed ? openPosition : flexibleMaxTranslateY,
-        ],
+        [openPosition + 50, openPosition],
         [25, 5],
         Extrapolate.CLAMP
       );
@@ -177,9 +152,6 @@ const styles = StyleSheet.create({
     width: "100%",
     position: "absolute",
     top: SCREEN_HEIGHT,
-    // borderRadius: 25,
-    // borderWidth: 0.5,
-    // borderColor: "#404040",
   },
   line: {
     width: 75,

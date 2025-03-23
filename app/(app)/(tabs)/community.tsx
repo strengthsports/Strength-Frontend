@@ -147,7 +147,7 @@ const Community = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505] pt-4 px-4">
+    <SafeAreaView className="flex-1 bg-[#0B0B0B] pt-4 px-4">
       {/* Search Bar */}
       <View className="flex-row items-center bg-[#1E1E1E] px-3  rounded-full mb-3">
         <Ionicons name="search" size={20} color="gray" className="ml-2" />

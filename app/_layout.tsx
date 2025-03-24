@@ -33,7 +33,9 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  NavigationBar.setBackgroundColorAsync("black");
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync("black");
+  }, []);
 
   if (!loaded) {
     return null;

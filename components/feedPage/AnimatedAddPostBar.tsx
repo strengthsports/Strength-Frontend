@@ -63,7 +63,7 @@ const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
             justifyContent: "space-between",
             paddingHorizontal: 6,
           }}
-          onPress={() => router.push("/addPost")}
+          onPress={() => router.push(`/addPost?text=${suggestionText}`)}
         >
           <Animated.Text
             style={{

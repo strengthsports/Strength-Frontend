@@ -29,6 +29,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CustomImageSlider from "~/components/Cards/imageSlideContainer";
 import AlertModal from "~/components/modals/AlertModal";
 import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -93,6 +94,8 @@ const ImageRatioModal = React.memo(
 
 export default function AddPostContainer() {
   const router = useRouter();
+  const { text } = useLocalSearchParams();
+  const placeholderText = text.toString();
   const [postText, setPostText] = useState("");
   const [isImageRatioModalVisible, setIsImageRatioModalVisible] =
     useState(false);
@@ -330,7 +333,7 @@ export default function AddPostContainer() {
               ref={inputRef}
               multiline
               autoFocus
-              placeholder="What's on your mind..."
+              placeholder={placeholderText}
               placeholderTextColor="grey"
               value={postText}
               onChangeText={setPostText}

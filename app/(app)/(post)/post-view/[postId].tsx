@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Image,
   ScrollView,
   NativeSyntheticEvent,
   TextLayoutEventData,
@@ -16,7 +15,6 @@ import { RelativePathString, useRouter } from "expo-router";
 import {
   AntDesign,
   Feather,
-  FontAwesome,
   FontAwesome5,
   MaterialIcons,
 } from "@expo/vector-icons";
@@ -28,7 +26,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CustomDivider from "@/components/ui/CustomDivider";
+import { Image } from "expo-image";
 
 const PostDetails = () => {
   const postDetails = useSelector(
@@ -114,8 +112,10 @@ const PostDetails = () => {
                     ? { uri: postDetails.postedBy.profilePic }
                     : nopic
                 }
-                className="w-full h-full"
-                resizeMode="cover"
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                transition={500}
+                placeholder={require("../../../../assets/images/nopic.jpg")}
               />
             </View>
             <TextScallingFalse className="text-white font-light text-4xl">
@@ -145,12 +145,16 @@ const PostDetails = () => {
             }}
           >
             {postDetails?.assets && postDetails.assets.length > 0 && (
-              <Swiper {...swiperConfig} className="w-full h-auto bg-slate-400">
+              <Swiper {...swiperConfig} className="w-full h-auto">
                 {postDetails.assets.map((asset: { url: string }) => (
                   <Image
                     key={asset.url}
                     source={{ uri: asset.url }}
-                    className="size-full"
+                    style={{ width: "100%", height: "100%" }}
+                    transition={1000}
+                    placeholder={require("../../../../assets/images/nocover.png")}
+                    contentFit="cover"
+                    placeholderContentFit="cover"
                   />
                 ))}
               </Swiper>

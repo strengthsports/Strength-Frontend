@@ -8,7 +8,6 @@ import React, {
 import {
   View,
   Text,
-  Image,
   Animated,
   TouchableOpacity,
   Modal,
@@ -44,6 +43,7 @@ import CustomBottomSheet from "../ui/CustomBottomSheet";
 import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { RelativePathString } from "expo-router";
 import { showFeedback } from "~/utils/feedbackToast";
+import { Image } from "expo-image";
 
 type TaggedUser = {
   _id: string;
@@ -339,7 +339,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               }
             >
               <Image
-                className="w-full h-full rounded-full"
                 source={
                   item.postedBy.profilePic
                     ? {
@@ -347,6 +346,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                       }
                     : nopic
                 }
+                style={{ width: "100%", height: "100%", borderRadius: 100 }}
+                transition={500}
+                cachePolicy="memory-disk"
+                placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
             <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[5px] ml-[0px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />

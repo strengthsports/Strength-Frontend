@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { View, Image, TouchableOpacity, Dimensions } from "react-native";
+import { View, TouchableOpacity, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
@@ -16,8 +16,10 @@ import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { Text } from "react-native";
+import { Image } from "expo-image";
 
+const blurhash =
+  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 interface CustomImageSliderProps {
   images: string[];
   aspectRatio: [number, number];
@@ -59,8 +61,7 @@ const ImageSlide = memo(
   }) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
-    // const [isLoaded, setIsLoaded] = useState(false);
-    // const [hasError, setHasError] = useState(false);
+    const [isError, setIsError] = useState(false);
     return (
       <TouchableWithDoublePress
         className={`flex-1 relative overflow-hidden ${
@@ -76,30 +77,42 @@ const ImageSlide = memo(
         }}
         onDoublePress={onDoubleTap}
       >
-        {/* {!isLoaded && !hasError && (
+        {isError ? (
           <Image
             source={require("../../assets/images/nocover.png")}
-            className={`absolute inset-0 transition-all ease-in-out ${
-              isFirstSlide ? "rounded-tl-2xl rounded-bl-2xl" : ""
-            }`}
-            resizeMode="cover"
+            contentFit="cover"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              inset: 0,
+              borderTopLeftRadius: isFirstSlide ? 16 : 0,
+              borderBottomLeftRadius: isFirstSlide ? 16 : 0,
+            }}
           />
-        )} */}
-        <Image
-          source={{ uri }}
-          className={`absolute inset-0 ${
-            isFirstSlide ? "rounded-tl-2xl rounded-bl-2xl" : ""
-          }`}
-          resizeMode="cover"
-          // onLoadStart={() => {
-          //   setIsLoaded(false);
-          //   setHasError(false);
-          // }}
-          // onLoad={() => setIsLoaded(true)}
-          // onError={() => setHasError(true)}
-        />
-        {/* Optional Error State */}
-        {/* {hasError && <Text>Failed to load image</Text>} */}
+        ) : (
+          <Image
+            source={{ uri }}
+            contentFit="cover"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              inset: 0,
+              borderTopLeftRadius: isFirstSlide ? 16 : 0,
+              borderBottomLeftRadius: isFirstSlide ? 16 : 0,
+            }}
+            placeholder={require("../../assets/images/nocover.png")}
+            // placeholder={{ blurhash }}
+            placeholderContentFit="cover"
+            transition={500}
+            cachePolicy="memory-disk"
+            onError={(e) => {
+              setIsError(true);
+              console.log(e);
+            }}
+          />
+        )}
         {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
       </TouchableWithDoublePress>
     );

@@ -11,7 +11,6 @@ import {
   Image,
   Animated,
   TouchableOpacity,
-  ImageStyle,
   Modal,
   NativeSyntheticEvent,
   TextLayoutEventData,
@@ -25,16 +24,12 @@ import {
   Feather,
   FontAwesome5,
 } from "@expo/vector-icons";
-import Swiper from "react-native-swiper";
-import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
-import LikerModal from "../feedPage/LikerModal";
 import CommentModal from "../feedPage/CommentModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
-import { swiperConfig } from "~/utils/swiperConfig";
 import {
   useLikeContentMutation,
   useUnLikeContentMutation,
@@ -44,14 +39,11 @@ import { useFollow } from "~/hooks/useFollow";
 import nopic from "@/assets/images/nopic.jpg";
 import { Post, ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
-import SwiperImage from "../ui/SwiperImage";
-import { showFeedback } from "~/utils/feedbackToast";
-import { BlurView } from "expo-blur";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import CustomBottomSheet from "../ui/CustomBottomSheet";
 import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { RelativePathString } from "expo-router";
-import CustomDivider from "../ui/CustomDivider";
+import { showFeedback } from "~/utils/feedbackToast";
 
 type TaggedUser = {
   _id: string;
@@ -357,11 +349,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 }
               />
             </TouchableOpacity>
-            <BlurView
-              intensity={20}
-              tint="dark"
-              className="absolute w-[54px] h-[54px] z-[-1] mt-[0px] ml-[0px] aspect-square rounded-full opacity-40"
-            />
+            <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[5px] ml-[0px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />
 
             <View className="w-64 flex flex-col justify-between">
               <TouchableOpacity

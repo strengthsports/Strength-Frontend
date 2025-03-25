@@ -16,6 +16,7 @@ import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
+import { Text } from "react-native";
 
 interface CustomImageSliderProps {
   images: string[];
@@ -58,10 +59,12 @@ const ImageSlide = memo(
   }) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
+    // const [isLoaded, setIsLoaded] = useState(false);
+    // const [hasError, setHasError] = useState(false);
     return (
       <TouchableWithDoublePress
         className={`flex-1 relative overflow-hidden ${
-          !isFeedPage && isFirstSlide ? "ml-2" : ""
+          isFirstSlide ? "ml-2" : ""
         }`}
         activeOpacity={0.95}
         onSinglePress={() => {
@@ -73,13 +76,30 @@ const ImageSlide = memo(
         }}
         onDoublePress={onDoubleTap}
       >
+        {/* {!isLoaded && !hasError && (
+          <Image
+            source={require("../../assets/images/nocover.png")}
+            className={`absolute inset-0 transition-all ease-in-out ${
+              isFirstSlide ? "rounded-tl-2xl rounded-bl-2xl" : ""
+            }`}
+            resizeMode="cover"
+          />
+        )} */}
         <Image
           source={{ uri }}
           className={`absolute inset-0 ${
             isFirstSlide ? "rounded-tl-2xl rounded-bl-2xl" : ""
           }`}
           resizeMode="cover"
+          // onLoadStart={() => {
+          //   setIsLoaded(false);
+          //   setHasError(false);
+          // }}
+          // onLoad={() => setIsLoaded(true)}
+          // onError={() => setHasError(true)}
         />
+        {/* Optional Error State */}
+        {/* {hasError && <Text>Failed to load image</Text>} */}
         {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
       </TouchableWithDoublePress>
     );

@@ -436,6 +436,13 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               className={`${isExpanded ? "pl-8" : "pl-12"} pr-6 pt-12 pb-4`}
             >
               <Text
+                onPress={() => {
+                  isFeedPage &&
+                    router.push({
+                      pathname: "/post-details/1" as RelativePathString,
+                    });
+                  dispatch(setCurrentPost(item));
+                }}
                 className="text-xl leading-5 text-neutral-200"
                 numberOfLines={isExpanded ? undefined : 2}
                 ellipsizeMode="tail"
@@ -496,17 +503,16 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               {/* like */}
               <TouchableOpacity
                 className="flex flex-row items-center gap-2"
-                onPress={() =>
-                  isFeedPage
-                    ? handleOpenBottomSheet({ type: "like" })
-                    : router.push("/post-details/1/likes")
-                }
+                onPress={() => {
+                  router.push("/post-details/1/likes");
+                  dispatch(setCurrentPost(item));
+                }}
               >
                 <AntDesign name="like1" size={16} color="#fbbf24" />
                 <TextScallingFalse className="text-base text-white font-light">
                   {likeCount} {likeCount > 1 ? "Likes" : "Like"}
                 </TextScallingFalse>
-                <CustomBottomSheet
+                {/* <CustomBottomSheet
                   ref={likeBottomSheetRef}
                   onClose={() => handleCloseBottomSheet({ type: "like" })}
                   animationSpeed={20}
@@ -517,7 +523,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     isBottomSheetOpen.status && (
                       <LikerModal targetId={item?._id} targetType="Post" />
                     )}
-                </CustomBottomSheet>
+                </CustomBottomSheet> */}
               </TouchableOpacity>
 
               {item.assets && item.assets.length > 1 && (
@@ -596,7 +602,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     Comment
                   </TextScallingFalse>
                 </View>
-                {isCommentModalVisible && (
+                {isFeedPage && isCommentModalVisible && (
                   <Modal
                     visible={isCommentModalVisible}
                     transparent

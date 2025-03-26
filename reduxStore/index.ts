@@ -21,7 +21,9 @@ import exploreReducer from "./slices/explore/exploreSlice";
 import hashtagReducer from "./slices/hashtagPage/hashtagPageSlice";
 import profileReducer from "./slices/user/profileSlice";
 import teamReducer from "./slices/team/teamSlice";
-import searchReducer from "./slices/explore/searchSlice"
+import searchReducer from "./slices/explore/searchSlice";
+import postsReducer from "./slices/post/postSlice";
+import usersReducer from "./slices/user/usersSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { sportsApi } from "./api/sportsApi";
 import { postsApi } from "./api/posts/postsApi";
@@ -34,12 +36,18 @@ import { searchApi } from "./api/explore/searchApi";
 import { feedApi } from "./api/feed/services/feedApi";
 import { footballApi } from "./api/explore/footballApi";
 
-
 // Persist configuration
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "signup", "onboarding", "forgotPassword", "profile","search"],
+  whitelist: [
+    "auth",
+    "signup",
+    "onboarding",
+    "forgotPassword",
+    "profile",
+    "search",
+  ],
 };
 
 // Combine reducers
@@ -52,7 +60,9 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   hashtagPage: hashtagReducer,
   team: teamReducer,
-  search:searchReducer,
+  search: searchReducer,
+  post: postsReducer,
+  user: usersReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,
@@ -61,8 +71,8 @@ const rootReducer = combineReducers({
   [footballApi.reducerPath]: footballApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
-  [searchApi.reducerPath]: searchApi.reducer, 
- 
+  [searchApi.reducerPath]: searchApi.reducer,
+
   // Use feedApi as the single reducer for all feed-related features
 });
 

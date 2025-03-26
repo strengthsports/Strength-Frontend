@@ -10,40 +10,29 @@ import {
   Text,
   Animated,
   TouchableOpacity,
-  Modal,
   NativeSyntheticEvent,
   TextLayoutEventData,
   BackHandler,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import {
-  MaterialIcons,
-  FontAwesome,
-  AntDesign,
-  Feather,
-  FontAwesome5,
-} from "@expo/vector-icons";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
-import CommentModal from "../feedPage/CommentModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
 import {
   useLikeContentMutation,
   useUnLikeContentMutation,
 } from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
-import { FollowUser } from "~/types/user";
-import { useFollow } from "~/hooks/useFollow";
 import nopic from "@/assets/images/nopic.jpg";
-import { Post, ReportPost } from "~/types/post";
-import { useReport } from "~/hooks/useReport";
+import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import CustomBottomSheet from "../ui/CustomBottomSheet";
 import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { RelativePathString } from "expo-router";
-import { showFeedback } from "~/utils/feedbackToast";
 import { Image } from "expo-image";
+import InteractionBar from "../PostContainer/InteractionBar";
 
 type TaggedUser = {
   _id: string;
@@ -66,32 +55,18 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
   ({ item, highlightedHashtag, isFeedPage, handleBottomSheet }, ref) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
-    const { user, followings } = useSelector(
-      (state: RootState) => state?.profile
-    );
-    const isFollowingGlobal = followings?.includes(item.postedBy?._id) ?? false;
+    const { user } = useSelector((state: RootState) => state?.profile);
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
-    const { followUser, unFollowUser } = useFollow();
-    const { reportPost } = useReport();
     // State for individual post
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSeeMore, setShowSeeMore] = useState(false);
-    const [followingStatus, setFollowingStatus] =
-      useState<boolean>(isFollowingGlobal);
-    const [isReported, setIsReported] = useState<boolean>(item?.isReported);
     const [isLiked, setIsLiked] = useState(item?.isLiked);
     const [likeCount, setLikeCount] = useState(item?.likesCount);
-    const [commentCount, setCommentCount] = useState(item?.commentsCount);
     const [likePost, message] = useLikeContentMutation();
     const [unlikePost] = useUnLikeContentMutation();
     const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
-    const [isPostLikersModalVisible, setIsPostLikersModalVisible] =
-      useState(false);
-    const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-    const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
-      useState(false);
     const [activeIndex, setActiveIndex] = useState<any>(0);
     // State to hold the selected data from the button press
     const [isBottomSheetOpen, setBottomSheetOpen] = useState<any>({
@@ -108,11 +83,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     };
 
     const scaleAnim = useRef(new Animated.Value(0)).current;
-
-    // Sync local state with global state changes
-    useEffect(() => {
-      setFollowingStatus(isFollowingGlobal);
-    }, [isFollowingGlobal]);
 
     const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
       const { lines } = e.nativeEvent;
@@ -164,55 +134,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           useNativeDriver: true,
         }),
       ]).start();
-    };
-
-    //handle follow
-    const handleFollow = async () => {
-      try {
-        setFollowingStatus(true);
-        const followData: FollowUser = {
-          followingId: item.postedBy?._id,
-          followingType: item.postedBy?.type,
-        };
-
-        showFeedback(
-          `You are now following ${item?.postedBy?.firstName}`,
-          "success"
-        );
-
-        await followUser(followData);
-      } catch (err) {
-        setFollowingStatus(false);
-        console.error("Follow error:", err);
-      }
-    };
-
-    //handle unfollow
-    const handleUnfollow = async () => {
-      try {
-        setFollowingStatus(false);
-        const unfollowData: FollowUser = {
-          followingId: item.postedBy?._id,
-          followingType: item.postedBy?.type,
-        };
-
-        await unFollowUser(unfollowData);
-      } catch (err) {
-        setFollowingStatus(true);
-        console.error("Unfollow error:", err);
-      }
-    };
-
-    //handle report
-    const handleReport = async (reason: string) => {
-      setIsReported((prev) => !prev);
-      const reportData: ReportPost = {
-        targetId: item._id,
-        targetType: "Post",
-        reason,
-      };
-
-      await reportPost(reportData);
     };
 
     // Function to render caption with clickable hashtags and mention tags
@@ -383,10 +304,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             </View>
 
             {/* Follow button */}
-            {user?._id !== item.postedBy?._id && !followingStatus && (
+            {user?._id !== item.postedBy?._id && !item.isFollowing && (
               <TouchableOpacity
                 className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
-                onPress={handleFollow}
+                // onPress={handleFollow}
               >
                 <TextScallingFalse className="text-white text-sm">
                   + Follow
@@ -489,142 +410,15 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </Animated.View>
 
           {/* Interaction Bar */}
-          <View className="bg-neutral-900 relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[40px] rounded-br-[16px]">
-            <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
-              {/* like */}
-              <TouchableOpacity
-                className="flex flex-row items-center gap-2"
-                onPress={() => {
-                  router.push("/post-details/1/likes");
-                  dispatch(setCurrentPost(item));
-                }}
-              >
-                <AntDesign name="like1" size={16} color="#fbbf24" />
-                <TextScallingFalse className="text-base text-white font-light">
-                  {likeCount} {likeCount > 1 ? "Likes" : "Like"}
-                </TextScallingFalse>
-                {/* <CustomBottomSheet
-                  ref={likeBottomSheetRef}
-                  onClose={() => handleCloseBottomSheet({ type: "like" })}
-                  animationSpeed={20}
-                  controllerVisibility={false}
-                  bgColor="bg-[#000]"
-                >
-                  {isBottomSheetOpen.type === "like" &&
-                    isBottomSheetOpen.status && (
-                      <LikerModal targetId={item?._id} targetType="Post" />
-                    )}
-                </CustomBottomSheet> */}
-              </TouchableOpacity>
-
-              {item.assets && item.assets.length > 1 && (
-                <View className="flex-row justify-center">
-                  {Array.from({ length: item.assets.length }).map((_, i) => (
-                    <View
-                      key={`dot-${i}`}
-                      className={
-                        i === activeIndex
-                          ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                          : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-                      }
-                    />
-                  ))}
-                </View>
-              )}
-
-              {/* comment count */}
-              <TouchableOpacity
-                className="flex flex-row items-center gap-2"
-                onPress={() => {
-                  router.push({
-                    pathname: "/post-details/1" as RelativePathString,
-                  });
-                  dispatch(setCurrentPost(item));
-                }}
-              >
-                <TextScallingFalse className="text-base text-white font-light">
-                  {commentCount} Comments
-                </TextScallingFalse>
-                {/* <CustomBottomSheet
-                ref={commentBottomSheetRef}
-                onClose={() => handleCloseBottomSheet({ type: "comment" })}
-                animationSpeed={20}
-                controllerVisibility={false}
-                bgColor="bg-[#000]"
-              >
-                {isBottomSheetOpen.type === "comment" &&
-                  isBottomSheetOpen.status && (
-                    <CommentModal
-                      targetId={item?._id}
-                      setCommentCount={setCommentCount}
-                    />
-                  )}
-              </CustomBottomSheet> */}
-              </TouchableOpacity>
-            </View>
-
-            <View className="w-[90%] mx-auto py-5 mb-1 flex flex-row justify-end gap-x-5 items-center border-t-[0.5px] border-[#5C5C5C]">
-              {/* like */}
-              <TouchableOpacity onPress={handleLikeAction}>
-                <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-1.5 rounded-3xl">
-                  <AntDesign
-                    name={isLiked ? "like1" : "like2"}
-                    size={16}
-                    color={isLiked ? "#FABE25" : "white"}
-                  />
-                  <TextScallingFalse
-                    className={`text-base ${
-                      isLiked ? "text-amber-400" : "text-white"
-                    }`}
-                  >
-                    {isLiked ? "Liked" : "Like"}
-                  </TextScallingFalse>
-                </View>
-              </TouchableOpacity>
-              {/* comment now */}
-              <TouchableOpacity
-                className="flex flex-row items-center gap-2"
-                onPress={() => setIsCommentModalVisible(true)}
-              >
-                <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-1.5 rounded-3xl">
-                  {/* <FontAwesome name="comment" size={16} color="grey" /> */}
-                  <Feather name="message-square" size={16} color="white" />
-                  <TextScallingFalse className="text-base text-white">
-                    Comment
-                  </TextScallingFalse>
-                </View>
-                {isFeedPage && isCommentModalVisible && (
-                  <Modal
-                    visible={isCommentModalVisible}
-                    transparent
-                    animationType="slide"
-                    onRequestClose={() => setIsCommentModalVisible(false)}
-                  >
-                    <TouchableOpacity
-                      className="flex-1 justify-end bg-black/50"
-                      activeOpacity={1}
-                      onPress={() => setIsCommentModalVisible(false)}
-                    >
-                      <CommentModal
-                        targetId={item?._id}
-                        autoFocusKeyboard={isCommentModalVisible}
-                        setCommentCount={setCommentCount}
-                      />
-                    </TouchableOpacity>
-                  </Modal>
-                )}
-              </TouchableOpacity>
-              {/* share */}
-              <TouchableOpacity className="mr-3">
-                <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-1.5 rounded-3xl">
-                  <FontAwesome5 name="location-arrow" size={16} color="white" />
-                  <TextScallingFalse className="text-base text-white">
-                    Share
-                  </TextScallingFalse>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <InteractionBar
+            commentCount={item.commentsCount}
+            likeCount={item.likesCount}
+            isLiked={item.isLiked}
+            post={item}
+            activeSlideIndex={activeIndex}
+            handleLikeAction={handleLikeAction}
+            isPostContainer={true}
+          />
         </View>
       </View>
     );

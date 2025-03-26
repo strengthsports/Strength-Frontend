@@ -27,6 +27,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
+import InteractionBar from "~/components/PostContainer/InteractionBar";
+import { Post } from "~/types/post";
 
 const PostDetails = () => {
   const postDetails = useSelector(
@@ -85,6 +87,10 @@ const PostDetails = () => {
     isHeaderFooterVisible
       ? setHeaderFooterVisible(false)
       : setHeaderFooterVisible(true);
+  };
+
+  const handleLike = () => {
+    console.log("Liked");
   };
 
   return (
@@ -161,75 +167,22 @@ const PostDetails = () => {
             )}
           </View>
         </ScrollView>
+
         {/* Interaction Bar */}
         <View
-          className={`basis-[18%] w-full p-4 pt-10 transition-opacity ease-in-out ${
+          className={`transition-opacity ease-in-out ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
-          onStartShouldSetResponder={() => true}
         >
-          <View className="w-full px-4 py-3 flex flex-row justify-between items-center">
-            {/* like */}
-            <View className="flex flex-row items-center gap-2">
-              <AntDesign name="like1" size={16} color="#fbbf24" />
-              <TextScallingFalse className="text-base text-white">
-                {postDetails?.likesCount}{" "}
-                {postDetails?.likesCount && postDetails.likesCount > 1
-                  ? "Likes"
-                  : "Like"}
-              </TextScallingFalse>
-            </View>
-
-            {/* comment count */}
-            <View className="flex flex-row items-center gap-2">
-              <TextScallingFalse className="text-base text-white">
-                {postDetails?.commentsCount} Comments
-              </TextScallingFalse>
-            </View>
-          </View>
-
-          <View className="w-full mx-auto py-4 flex-row gap-x-6 border-t-[0.5px] border-[#5C5C5C]">
-            <TouchableOpacity>
-              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <AntDesign
-                  name={postDetails?.isLiked ? "like1" : "like2"}
-                  size={16}
-                  color={postDetails?.isLiked ? "#fbbf24" : "white"}
-                />
-                <TextScallingFalse
-                  className={`text-base ${
-                    postDetails?.isLiked ? "text-amber-400" : "text-white"
-                  }`}
-                >
-                  {postDetails?.isLiked ? "Liked" : "Like"}
-                </TextScallingFalse>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex flex-row items-center gap-2"
-              onPress={() =>
-                router.push({
-                  pathname: "/post-details/1" as RelativePathString,
-                })
-              }
-            >
-              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <Feather name="message-square" size={16} color="white" />
-                <TextScallingFalse className="text-base text-white">
-                  Comment
-                </TextScallingFalse>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome5 name="location-arrow" size={16} color="white" />
-                <TextScallingFalse className="text-base text-white">
-                  Share
-                </TextScallingFalse>
-              </View>
-            </TouchableOpacity>
-          </View>
+          <InteractionBar
+            commentCount={postDetails?.commentsCount as number}
+            likeCount={postDetails?.likesCount as number}
+            isLiked={postDetails?.isLiked as boolean}
+            post={postDetails as Post}
+            handleLikeAction={handleLike}
+          />
         </View>
+
         {/*Caption Bar */}
         <LinearGradient
           colors={["rgba(0,0,0,0.0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,0.8)"]}

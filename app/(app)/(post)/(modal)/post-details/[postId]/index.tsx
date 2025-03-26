@@ -4,7 +4,6 @@ import TopBar from "~/components/TopBar";
 import { useRouter } from "expo-router";
 import PostContainer from "~/components/Cards/postContainer";
 import { useSelector } from "react-redux";
-import { RootState } from "@reduxjs/toolkit/query";
 import {
   ActivityIndicator,
   FlatList,
@@ -25,6 +24,8 @@ import { Divider } from "react-native-elements";
 import { Image } from "react-native";
 import nopic from "@/assets/images/nopic.jpg";
 import { Colors } from "~/constants/Colors";
+import { RootState } from "~/reduxStore";
+import { Post } from "~/types/post";
 
 const PostDetailsPage = () => {
   const { currentPost: postDetails, user } = useSelector(
@@ -49,7 +50,7 @@ const PostDetailsPage = () => {
     error: fetchError,
     isLoading: isFetching,
     refetch: refetchComments,
-  } = useFetchCommentsQuery({ targetId: postDetails._id, targetType: "Post" });
+  } = useFetchCommentsQuery({ targetId: postDetails?._id, targetType: "Post" });
 
   const [postComment, { isLoading: isPosting }] = usePostCommentMutation();
 
@@ -81,18 +82,18 @@ const PostDetailsPage = () => {
     ({ item }: { item: Comment }) => (
       <CommenterCard
         comment={item}
-        targetId={postDetails._id}
+        targetId={postDetails?._id as string}
         targetType="Post"
       />
     ),
-    [postDetails._id]
+    [postDetails?._id]
   );
 
   // ListHeaderComponent combining the TopBar, PostContainer and "Comments" title
   const ListHeader = () => (
     <View>
       <TopBar heading="" backHandler={() => router.push("/")} />
-      <PostContainer item={postDetails} isFeedPage={false} />
+      <PostContainer item={postDetails as Post} isFeedPage={false} />
       <View className="px-4 py-4">
         <View className="relative">
           <TextScallingFalse className="text-white text-5xl mb-2">
@@ -150,7 +151,7 @@ const PostDetailsPage = () => {
             <View className="bg-black p-2">
               <View className="w-full flex-row items-center justify-around rounded-full bg-neutral-900 px-4 py-1.5">
                 <Image
-                  source={user.profilePic ? { uri: user.profilePic } : nopic}
+                  source={user?.profilePic ? { uri: user.profilePic } : nopic}
                   className="w-10 h-10 rounded-full"
                   resizeMode="cover"
                 />

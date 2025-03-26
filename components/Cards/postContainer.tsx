@@ -8,10 +8,8 @@ import React, {
 import {
   View,
   Text,
-  Image,
   Animated,
   TouchableOpacity,
-  ImageStyle,
   Modal,
   NativeSyntheticEvent,
   TextLayoutEventData,
@@ -25,16 +23,12 @@ import {
   Feather,
   FontAwesome5,
 } from "@expo/vector-icons";
-import Swiper from "react-native-swiper";
-import { Divider } from "react-native-elements";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
-import LikerModal from "../feedPage/LikerModal";
 import CommentModal from "../feedPage/CommentModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
-import { swiperConfig } from "~/utils/swiperConfig";
 import {
   useLikeContentMutation,
   useUnLikeContentMutation,
@@ -44,14 +38,12 @@ import { useFollow } from "~/hooks/useFollow";
 import nopic from "@/assets/images/nopic.jpg";
 import { Post, ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
-import SwiperImage from "../ui/SwiperImage";
-import { showFeedback } from "~/utils/feedbackToast";
-import { BlurView } from "expo-blur";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import CustomBottomSheet from "../ui/CustomBottomSheet";
 import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { RelativePathString } from "expo-router";
-import CustomDivider from "../ui/CustomDivider";
+import { showFeedback } from "~/utils/feedbackToast";
+import { Image } from "expo-image";
 
 type TaggedUser = {
   _id: string;
@@ -347,7 +339,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               }
             >
               <Image
-                className="w-full h-full rounded-full"
                 source={
                   item.postedBy.profilePic
                     ? {
@@ -355,13 +346,13 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                       }
                     : nopic
                 }
+                style={{ width: "100%", height: "100%", borderRadius: 100 }}
+                transition={500}
+                cachePolicy="memory-disk"
+                placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
-            <BlurView
-              intensity={20}
-              tint="dark"
-              className="absolute w-[54px] h-[54px] z-[-1] mt-[0px] ml-[0px] aspect-square rounded-full opacity-40"
-            />
+            <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[5px] ml-[0px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />
 
             <View className="w-64 flex flex-col justify-between">
               <TouchableOpacity
@@ -436,6 +427,13 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               className={`${isExpanded ? "pl-8" : "pl-12"} pr-6 pt-12 pb-4`}
             >
               <Text
+                onPress={() => {
+                  isFeedPage &&
+                    router.push({
+                      pathname: "/post-details/1" as RelativePathString,
+                    });
+                  dispatch(setCurrentPost(item));
+                }}
                 className="text-xl leading-5 text-neutral-200"
                 numberOfLines={isExpanded ? undefined : 2}
                 ellipsizeMode="tail"
@@ -496,17 +494,16 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               {/* like */}
               <TouchableOpacity
                 className="flex flex-row items-center gap-2"
-                onPress={() =>
-                  isFeedPage
-                    ? handleOpenBottomSheet({ type: "like" })
-                    : router.push("/post-details/1/likes")
-                }
+                onPress={() => {
+                  router.push("/post-details/1/likes");
+                  dispatch(setCurrentPost(item));
+                }}
               >
                 <AntDesign name="like1" size={16} color="#fbbf24" />
                 <TextScallingFalse className="text-base text-white font-light">
                   {likeCount} {likeCount > 1 ? "Likes" : "Like"}
                 </TextScallingFalse>
-                <CustomBottomSheet
+                {/* <CustomBottomSheet
                   ref={likeBottomSheetRef}
                   onClose={() => handleCloseBottomSheet({ type: "like" })}
                   animationSpeed={20}
@@ -517,7 +514,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     isBottomSheetOpen.status && (
                       <LikerModal targetId={item?._id} targetType="Post" />
                     )}
-                </CustomBottomSheet>
+                </CustomBottomSheet> */}
               </TouchableOpacity>
 
               {item.assets && item.assets.length > 1 && (
@@ -596,7 +593,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     Comment
                   </TextScallingFalse>
                 </View>
-                {isCommentModalVisible && (
+                {isFeedPage && isCommentModalVisible && (
                   <Modal
                     visible={isCommentModalVisible}
                     transparent

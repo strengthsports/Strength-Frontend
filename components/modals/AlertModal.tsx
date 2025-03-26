@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import TextScallingFalse from "../CentralText";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface AlertConfig {
   title: string;
@@ -21,38 +22,66 @@ const AlertModal = ({
   return (
     <Modal visible={isVisible} transparent animationType="fade">
       <View style={styles.AlertModalView}>
-        <View
-          style={styles.AlertModalContainer}
-          className="h-full flex items-center justify-center gap-y-3 pt-5"
-        >
-          <TextScallingFalse className="text-[20px] font-semibold">
-            {alertConfig.title}
-          </TextScallingFalse>
-          <TextScallingFalse className="text-[16px] text-center">
-            {alertConfig.message}
-          </TextScallingFalse>
-          <View className="w-full">
-            <TouchableOpacity
-              onPress={() => {
-                alertConfig.confirmAction();
-              }}
-              className="w-full py-2 items-center border-t border-[#8080808b]"
+        <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[22%] w-[80%]">
+          <View className="flex-1">
+            <TextScallingFalse className="text-center text-6xl font-semibold text-[#FFFCFC] mb-4">
+              {alertConfig.title}
+            </TextScallingFalse>
+            <TextScallingFalse className="text-center text-2xl text-[#D0D0D0] mb-2">
+              {alertConfig.message}
+            </TextScallingFalse>
+          </View>
+          <View className="basis-[40%] flex-row items-center gap-x-3 justify-center border-t border-t-[#2B2B2B]">
+            <LinearGradient
+              colors={["#242424", "#161616"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={{ borderRadius: 10 }}
             >
-              <TextScallingFalse className="font-semibold text-4xl text-red-600">
-                {alertConfig.confirmMessage}
-              </TextScallingFalse>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                alertConfig.discardAction();
-              }}
-              className="w-full py-2 items-center border-t border-[#8080808b]"
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  alertConfig.discardAction();
+                }}
+                style={{
+                  paddingHorizontal: 36,
+                  paddingVertical: 8,
+                  borderWidth: 1,
+                  borderColor: "#242424",
+                  borderRadius: 10,
+                  alignItems: "center",
+                }}
+              >
+                <Text className="text-white text-2xl">
+                  {alertConfig.cancelMessage}
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+            <LinearGradient
+              colors={["#E14A4B", "#A23637"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={{ borderRadius: 10 }}
             >
-              <TextScallingFalse className="font-semibold text-4xl text-[#808080]">
-                {alertConfig.cancelMessage}
-              </TextScallingFalse>
-            </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  alertConfig.confirmAction();
+                }}
+                style={{
+                  paddingHorizontal: 36,
+                  paddingVertical: 8,
+                  borderWidth: 1,
+                  borderColor: "#646464",
+                  borderRadius: 10,
+                  alignItems: "center",
+                }}
+              >
+                <Text className="text-white text-2xl">
+                  {alertConfig.confirmMessage}
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
           </View>
         </View>
       </View>
@@ -65,15 +94,56 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     alignItems: "center",
-    paddingVertical: 250,
+    justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   AlertModalContainer: {
-    width: "80%",
-    height: 200,
-    borderRadius: 20,
-    backgroundColor: "white",
+    width: "85%",
+    backgroundColor: "#161616",
+    borderRadius: 10,
+    overflow: "hidden",
+    borderColor: "#242424",
+  },
+  titleText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  messageText: {
+    color: "white",
+    fontSize: 16,
+    textAlign: "center",
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    borderTopWidth: 0.5,
+    borderTopColor: "gray",
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 15,
     alignItems: "center",
+    borderRightWidth: 0.5,
+    borderRightColor: "gray",
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 15,
+    alignItems: "center",
+  },
+  confirmButtonText: {
+    color: "red",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  cancelButtonText: {
+    color: "white",
+    fontSize: 16,
   },
 });
 

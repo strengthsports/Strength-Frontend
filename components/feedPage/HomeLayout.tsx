@@ -34,6 +34,7 @@ import { StyleSheet } from "react-native";
 import EdgeSwipe from "../ui/EdgeSwipe";
 import CustomDivider from "../ui/CustomDivider";
 import { opacity } from "react-native-reanimated/lib/typescript/Colors";
+import AnimatedAddPostBar from "./AnimatedAddPostBar";
 
 interface MenuItem {
   label: string;
@@ -66,6 +67,20 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [isAddPostContainerOpen, setAddPostContainerOpen] =
     useState<boolean>(false);
+
+  const possibleMessages = [
+    "What's going on...",
+    "What's on your mind...",
+    "Share your sports moment...",
+  ];
+
+  // Select a random message each time the component mounts
+  const [message, setMessage] = React.useState("");
+
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * possibleMessages.length);
+    setMessage(possibleMessages[randomIndex]);
+  }, []);
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
     try {
@@ -150,7 +165,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
         </TouchableOpacity>
 
         {/* Add Post Section */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             position: "relative",
             flexDirection: "row",
@@ -189,7 +204,10 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <Feather name="plus" size={15} color="grey" />
           </Animated.View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={{ flex: 1 }}>
+          <AnimatedAddPostBar suggestionText={message} />
+        </View>
 
         {/* Message Icon */}
         <TouchableOpacity>

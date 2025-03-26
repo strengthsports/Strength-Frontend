@@ -29,6 +29,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CustomImageSlider from "~/components/Cards/imageSlideContainer";
 import AlertModal from "~/components/modals/AlertModal";
 import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
+import AddImageIcon from "~/components/SvgIcons/addpost/AddImageIcon";
+import TagsIcon from "~/components/SvgIcons/addpost/TagIcon";
+import PollsIcon from "~/components/SvgIcons/addpost/PollsIcon";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -93,6 +97,8 @@ const ImageRatioModal = React.memo(
 
 export default function AddPostContainer() {
   const router = useRouter();
+  const { text } = useLocalSearchParams();
+  const placeholderText = text.toString();
   const [postText, setPostText] = useState("");
   const [isImageRatioModalVisible, setIsImageRatioModalVisible] =
     useState(false);
@@ -276,16 +282,16 @@ export default function AddPostContainer() {
         <View className="flex flex-row items-center justify-between p-4">
           <AddPostHeader onBackPress={navigateBack} />
           <TouchableOpacity
-            className={`px-5 py-1 rounded-full ${
-              isPostButtonEnabled ? "bg-theme" : "bg-neutral-600"
+            className={`px-6 py-1 rounded-full ${
+              isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
             }`}
             onPress={handlePostSubmit}
             disabled={!isPostButtonEnabled}
           >
             {isLoading ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color={"white"} />
             ) : (
-              <TextScallingFalse className="text-white text-3xl">
+              <TextScallingFalse className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"} text-3xl font-semibold`}>
                 Post
               </TextScallingFalse>
             )}
@@ -330,7 +336,7 @@ export default function AddPostContainer() {
               ref={inputRef}
               multiline
               autoFocus
-              placeholder="What's on your mind..."
+              placeholder={placeholderText}
               placeholderTextColor="grey"
               value={postText}
               onChangeText={setPostText}
@@ -378,30 +384,35 @@ export default function AddPostContainer() {
           )}
         </ScrollView>
 
-        <View className="flex flex-row justify-between items-center p-5">
-          <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+        <View className="flex flex-row justify-between items-center px-3 p-2">
+          <TouchableOpacity className="flex flex-row gap-2 items-center pl-3 py-1 border border-theme rounded-lg">
             <MaterialCommunityIcons
               name="earth"
-              size={20}
+              size={19}
               color={Colors.themeColor}
             />
-            <TextScallingFalse className="text-theme text-3xl">
+            <TextScallingFalse className="text-theme text-2xl">
               Public
             </TextScallingFalse>
             <MaterialCommunityIcons
               name="menu-down"
-              size={24}
+              size={22}
               color={Colors.themeColor}
             />
           </TouchableOpacity>
 
-          <View className="flex flex-row justify-between gap-2 ">
-            <TouchableOpacity onPress={handlePickImageOrAddMore}>
-              <MaterialCommunityIcons
-                name="image-outline"
-                size={24}
-                color={Colors.themeColor}
-              />
+         {/* component a */}
+          <View className="flex flex-row justify-between pt-2">
+          <TouchableOpacity style={{padding: 5}} activeOpacity={0.5} className="p-[0.5px" onPress={handlePickImageOrAddMore}>
+              <TagsIcon />
+              {pickedImageUris.length > 0 && (
+                <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
+                  <FontAwesome6 name="add" size={12} color="#12956B" />
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity style={{ padding: 5}} activeOpacity={0.5} onPress={handlePickImageOrAddMore}>
+              <AddImageIcon />
               {pickedImageUris.length > 0 && (
                 <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
                   <FontAwesome6 name="add" size={12} color="#12956B" />
@@ -422,11 +433,9 @@ export default function AddPostContainer() {
                 <ImageRatioModal pickImage={selectFirstImage} />
               </TouchableOpacity>
             </Modal>
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={24}
-              color={Colors.themeColor}
-            />
+            <TouchableOpacity style={{padding: 5}} activeOpacity={0.5}>
+            <PollsIcon/>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

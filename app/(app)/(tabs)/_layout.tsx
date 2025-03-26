@@ -1,8 +1,7 @@
 import { Tabs } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Platform, View, Text } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import createSSEConnection from "~/utils/sse";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { HapticTab } from "~/components/common/HapticTab";
@@ -20,28 +19,29 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        // tabBarActiveBackgroundColor: "white",
         tabBarActiveTintColor: "#12956B",
         headerShown: false,
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
-            height: 100, // Increase height to create space
-            paddingBottom: 15, // Adds space at the bottom
-            paddingTop: 5, // Adds space at the top
-            borderTopLeftRadius: 10, // Rounded top-left corner
-            borderTopRightRadius: 10, // Rounded top-right corner
-            overflow: "hidden", // Prevents background bleed
-            backgroundColor: "#000",
-          },
-          default: {
-            height: 60, // Ensures consistent height
+            height: 100,
             paddingBottom: 15,
             paddingTop: 5,
-            borderTopLeftRadius: 10, // Rounded top-left corner
-            borderTopRightRadius: 10, // Rounded top-right corner
-            overflow: "hidden", // Prevents background bleed
-            backgroundColor: "#000",
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            overflow: "hidden",
+            backgroundColor: "#000", // Ensure consistent background
+          },
+          default: {
+            height: 60,
+            paddingBottom: 15,
+            paddingTop: 5,
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            overflow: "hidden",
+            backgroundColor: "#000", // Ensure consistent background
+            elevation: 0, // Remove shadow on Android
+            borderTopWidth: 0, // Remove top border shadow
           },
         }),
       }}
@@ -56,10 +56,14 @@ export default function TabLayout() {
             //   name={focused ? "home-outline" : "home-outline"}
             //   color={color}
             // />
-            <HomeIcon color={focused ? "#12956B" : "white"}/>
+            <HomeIcon color={focused ? "#12956B" : "#cccccc"} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? "#12956B" : "white", fontSize: 10}}>Home</Text>
+            <Text
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
+            >
+              Home
+            </Text>
           ),
         }}
       />
@@ -69,10 +73,14 @@ export default function TabLayout() {
           title: "Explore",
           href: "/(app)/(tabs)/explore/allCategory",
           tabBarIcon: ({ color, focused }) => (
-            <SearchIcon color={focused ? "#12956B" : "white"}/>
+            <SearchIcon color={focused ? "#12956B" : "#cccccc"} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? "#12956B" : "white", fontSize: 10}}>Explore</Text>
+            <Text
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
+            >
+              Explore
+            </Text>
           ),
         }}
       />
@@ -81,10 +89,14 @@ export default function TabLayout() {
         options={{
           title: "Community",
           tabBarIcon: ({ color, focused }) => (
-            <CommunityIcon color={focused ? "#12956B" : "white"}/>
+            <CommunityIcon color={focused ? "#12956B" : "#cccccc"} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? "#12956B" : "white", fontSize: 10}}>Community</Text>
+            <Text
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
+            >
+              Community
+            </Text>
           ),
         }}
       />
@@ -98,7 +110,7 @@ export default function TabLayout() {
                 name={focused ? "bell" : "bell-outline"}
                 color={color}
               /> */}
-              <NotificationIcon color={focused ? "#12956B" : "white"}/>
+              <NotificationIcon color={focused ? "#12956B" : "#cccccc"} />
               {hasNewNotification && (
                 <View
                   style={{
@@ -115,7 +127,11 @@ export default function TabLayout() {
             </View>
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? "#12956B" : "white", fontSize: 10}}>Notification</Text>
+            <Text
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
+            >
+              Notification
+            </Text>
           ),
         }}
         listeners={{
@@ -139,10 +155,14 @@ export default function TabLayout() {
             //   }
             //   color={color}
             // />
-            <ProfileIcon color={focused ? "#12956B" : "white"} />
+            <ProfileIcon color={focused ? "#12956B" : "#CCCCCC"} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? "#12956B" : "white", fontSize: 10}}>Profile</Text>
+            <Text
+              style={{ color: focused ? "#12956B" : "#CCCCCC", fontSize: 9 }}
+            >
+              Profile
+            </Text>
           ),
         }}
       />

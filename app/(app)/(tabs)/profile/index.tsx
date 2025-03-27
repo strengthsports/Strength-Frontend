@@ -21,6 +21,7 @@ import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
 import { FlatList } from "react-native";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -40,9 +41,8 @@ const Overview = () => {
 
   // Dynamic scaling for responsiveness
   const containerWidth = width > 768 ? "50%" : "96%";
-  const { width: screenWidth } = useWindowDimensions();
-  const gap = 10; // Space between posts
-  const postWidth = (screenWidth - gap) / 1.25; // Width of each post
+  const { width: screenWidth2 } = useWindowDimensions();
+  const scaleFactor = screenWidth2 / 410;
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSubSection, setActiveSubSection] = useState(
@@ -55,17 +55,17 @@ const Overview = () => {
     }
   }, [dispatch, posts]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: Post }) => (
-      <View style={{ width: postWidth, marginRight: gap }}>
-        <PostContainer item={item} />
-      </View>
-    ),
-    [postWidth, gap] // Empty dependency array ensures the function is memoized and doesn't re-create
-  );
-  const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No new posts available</Text>
-  ));
+  // const renderItem = useCallback(
+  //   ({ item }: { item: Post }) => (
+  //     <View style={{ width: postWidth, marginRight: gap }}>
+  //       <PostContainer item={item} />
+  //     </View>
+  //   ),
+  //   [postWidth, gap]
+  // );
+  // const memoizedEmptyComponent = memo(() => (
+  //   <Text className="text-white text-center p-4">No new posts available</Text>
+  // ));
 
   //toggle see more
   const handleToggle = () => {
@@ -158,7 +158,7 @@ const Overview = () => {
                       <Feather
                         name="edit"
                         size={18 * scaleFactor}
-                        color="#373737"
+                        color="#717171"
                       />
                     </TouchableOpacity>
                   </View>
@@ -169,87 +169,68 @@ const Overview = () => {
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
                       <TextScallingFalse
-                        className="text-white font-bold"
-                        style={styles.HeadingText}
+                        className="text-[#808080] font-bold"
                       >
                         CURRENT TEAMS
                       </TextScallingFalse>
-                      <TextScallingFalse
-                        className="text-white font-bold"
-                        style={styles.HeadingText}
-                      >
-                        QUICK INFO
-                      </TextScallingFalse>
+                      <View className="flex items-center justify-center flex-row gap-2">
+                        <TouchableOpacity
+                          className="flex items-center justify-center"
+                          style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
+                          onPress={() => router.push("/(app)/(profile)/edit-overview")}
+                        >
+                          <Feather name="plus" size={20 * scaleFactor} color="#717171" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                          <Feather
+                            name="edit"
+                            size={18 * scaleFactor}
+                            color="#717171"
+                          />
+                        </TouchableOpacity>
+                      </View>
                     </View>
 
                     {/* Teams Mapping */}
-                    {sport.teams.map((team: any, index: any) => (
-                      <View
-                        key={team._id || index}
-                        className="flex-row justify-between items-center py-3 border-b border-gray-800"
-                      >
-                        {/* Left Column - Team Info */}
-                        <View className="flex-row items-center gap-x-3 w-[50%]">
-                          {/* Team Logo */}
-                          <Image
-                            source={{ uri: team.team.logo?.url }}
-                            style={{
-                              width: 45 * scaleFactor,
-                              height: 45 * scaleFactor,
-                              borderRadius: 100,
-                            }}
-                          />
-                          <View>
-                            <TextScallingFalse
-                              className="text-white font-bold"
-                              style={{
-                                fontSize: responsiveFontSize(1.76),
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {team.team.name}
-                            </TextScallingFalse>
-                            <TextScallingFalse
-                              className="text-gray-400"
-                              style={{ fontSize: 13 * scaleFactor }}
-                            >
-                              {team.location || "Location Not Available"}
-                            </TextScallingFalse>
-                          </View>
-                        </View>
-
-                        {/* Right Column - Quick Info */}
-                        <View className="w-[50%] flex items-end">
-                          <TextScallingFalse
-                            className="text-white font-medium"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            Position:{" "}
-                            <TextScallingFalse className="font-light">
-                              {team.position || team.role || "Not Specified"}
-                            </TextScallingFalse>
-                          </TextScallingFalse>
-
-                          <TextScallingFalse
-                            className="text-white font-light pt-2"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            {team.creationDate || team.joiningDate
-                              ? `${new Date(
-                                  team.creationDate || team.joiningDate
-                                ).getFullYear()} - Present`
-                              : "Joining Date Not Available"}
-                          </TextScallingFalse>
-
-                          <TextScallingFalse
-                            className="text-gray-400 pt-2"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            Present:
-                          </TextScallingFalse>
-                        </View>
+                    {sport.teams.map((team:any, index:any) => (
+                      <View key={index} style={{ marginVertical: 1 }}>
+                        <TeamEntry team={team} />
+                        <View
+                          style={{
+                            height: 0.2,
+                            backgroundColor: "#717171",
+                            marginVertical: 16,
+                          }}
+                        />
                       </View>
                     ))}
+                    <TouchableOpacity
+                      activeOpacity={0.3}
+                      onPress={() => console.log('Navigate to Full Insights')}
+                      style={{
+                        flex:1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent:"center",
+                        marginVertical: 6,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#808080",
+                          fontSize: 15,
+                          fontWeight: '700', // Bold
+                        }}
+                      >
+                        Full Insights
+                      </Text>
+                      <Feather
+                        name="arrow-right"
+                        size={20}
+                        color={"#808080"}
+                        style={{ marginLeft: 5 }}
+                      />
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
@@ -304,48 +285,18 @@ const Overview = () => {
                 router.push("/(app)/(profile)/edit-overview?about=true")
               }
             >
-              <Feather name="edit" size={18 * scaleFactor} color="#373737" />
+              <Feather name="edit" size={18 * scaleFactor} color="#717171" /> 
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
       {/* recent posts */}
-      <View
-        className="py-2 my-2 ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
-        style={{ height: 582 * scaleFactor }}
-      >
-        <View className="w-full h-12 justify-end pl-5">
-          <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
-            RECENT POSTS
-          </TextScallingFalse>
-        </View>
-        <FlatList
-          data={posts || []}
-          keyExtractor={(item) => item._id}
-          initialNumToRender={5}
-          removeClippedSubviews={isAndroid}
-          windowSize={11}
-          renderItem={renderItem}
-          ListEmptyComponent={memoizedEmptyComponent}
-          bounces={false}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={postWidth + gap} // Snap to each post plus the gap
-          decelerationRate="normal" // Smooth snapping
-          contentContainerStyle={{
-            paddingRight: (screenWidth - postWidth) / 1.5,
-          }} // Spacer for last post alignment
-        />
-        <View className="w-auto h-[15%] justify-center items-center">
-          <View className="h-[1px] w-[90%] bg-gray-500" />
-          <TouchableOpacity activeOpacity={0.3} className="pt-4">
-            <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
-              See all posts...
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <RecentPostsSection
+        posts={posts}
+        onSeeAllPress={() =>  router.push("/(app)/(tabs)/profile/activity/posts")}
+        scaleFactor={scaleFactor}
+      />
     </ScrollView>
   );
 };
@@ -445,3 +396,156 @@ const styles = StyleSheet.create({
     fontWeight: 500,
   },
 });
+
+
+const textColor = '#FFFFFF';
+const secondaryTextColor = '#A9A9A9';
+const dividerColor = '#A9A9A9';
+
+const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const TeamEntry = ({ team } : any) => {
+  console.log(team);
+  return (
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap:10}}>
+    {/* Team Logo */}
+    <Image
+      // source={{uri: team.team.logo.url}}
+      source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
+      style={{
+        width: 60 * scaleFactor,
+        height: 60 * scaleFactor,
+        borderRadius: 100,
+        // marginRight: 10,
+        marginBottom:18
+      }}
+    />
+    {/* Team Details */}
+    <View className="flex flex-col ml-5 items-center justify-between gap-2 py-3">
+      <View className="flex flex-col gap-0.5">
+        <Text
+          style={{
+            color: textColor,
+            fontSize: 16,
+            fontWeight: '700', // Bold
+          }}
+        >
+          {/* {team.team.name} */}
+          Kolkata Knight Riders
+        </Text>
+        <Text
+          style={{
+            color: secondaryTextColor,
+            fontSize: 10,
+            fontWeight: '400', // Regular
+          }}
+        >
+          {/* {team.location || "Location Not Available"} */}
+          Kolkata, West Bengal, India
+        </Text>
+      </View>
+      <View
+        style={{
+          flex:1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          // justifyContent:"space-evenly",
+          // gap:20,
+          marginTop: 5,
+        }}
+      >
+        <View style={{ flex:1, flexDirection:"column", gap:2, paddingRight:10}}>
+          <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>Joined: </Text>
+          <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
+            {team.creationDate || team.joiningDate
+            ? `${month[new Date(
+                team.creationDate || team.joiningDate
+              ).getMonth()]}, ${new Date(
+                team.creationDate || team.joiningDate
+              ).getFullYear()}`
+            : "Joining Date Not Available"}
+          </Text>
+        </View>
+        <View
+          style={{
+            width: 1,
+            height: 30,
+            backgroundColor: dividerColor,
+            marginHorizontal: 5,
+          }}
+        />
+        <View style={{flex:1, flexDirection:"column", gap:2, paddingLeft:10}}>
+          <Text style={{ color: textColor, fontSize: 12, fontWeight: "700"}}>Role: </Text>
+          <Text style={{ color: secondaryTextColor, fontSize: 12 }}>{team.role}</Text>
+        </View>
+      </View>
+    </View>
+  </View>
+)};
+
+// {sport.teams.map((team: any, index: any) => (
+//   <View
+//     key={team._id || index}
+//     className="flex-row justify-between items-center py-3 border-b border-gray-800"
+//   >
+//     {/* Left Column - Team Info */}
+//     <View className="flex-row items-center gap-x-3 w-[50%]">
+//       {/* Team Logo */}
+//       <Image
+//         source={{ uri: team.team.logo?.url }}
+//         style={{
+//           width: 45 * scaleFactor,
+//           height: 45 * scaleFactor,
+//           borderRadius: 100,
+//         }}
+//       />
+//       <View>
+//         <TextScallingFalse
+//           className="text-white font-bold"
+//           style={{
+//             fontSize: responsiveFontSize(1.76),
+//             fontWeight: "bold",
+//           }}
+//         >
+//           {team.team.name}
+//         </TextScallingFalse>
+//         <TextScallingFalse
+//           className="text-gray-400"
+//           style={{ fontSize: 13 * scaleFactor }}
+//         >
+//           {team.location || "Location Not Available"}
+//         </TextScallingFalse>
+//       </View>
+//     </View>
+
+//     {/* Right Column - Quick Info */}
+//     <View className="w-[50%] flex items-end">
+//       <TextScallingFalse
+//         className="text-white font-medium"
+//         style={{ fontSize: 13 * scaleFactor }}
+//       >
+//         Position:{" "}
+//         <TextScallingFalse className="font-light">
+//           {team.position || team.role || "Not Specified"}
+//         </TextScallingFalse>
+//       </TextScallingFalse>
+
+//       <TextScallingFalse
+//         className="text-white font-light pt-2"
+//         style={{ fontSize: 13 * scaleFactor }}
+//       >
+//         {team.creationDate || team.joiningDate
+//           ? `${new Date(
+//               team.creationDate || team.joiningDate
+//             ).getFullYear()} - Present`
+//           : "Joining Date Not Available"}
+//       </TextScallingFalse>
+
+//       <TextScallingFalse
+//         className="text-gray-400 pt-2"
+//         style={{ fontSize: 13 * scaleFactor }}
+//       >
+//         Present:
+//       </TextScallingFalse>
+//     </View>
+//   </View>
+// ))}

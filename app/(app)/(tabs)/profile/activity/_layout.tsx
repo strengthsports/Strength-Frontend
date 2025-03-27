@@ -10,12 +10,12 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
-import Posts from "./posts";
-import Images from "./images";
 import Comments from "./comments";
 import WrittenPost from "./writtenpost";
 import { MotiView } from "moti";
 import Polls from "./polls";
+import All from "./posts";
+import Posts from "./images";
 
 const ActivityLayout = () => {
   const router = useRouter();
@@ -25,16 +25,15 @@ const ActivityLayout = () => {
   const { width: screenWidth2 } = Dimensions.get("window");
   const scaleFactor = screenWidth2 / 410;
 
-  const [activeTab, setActiveTab] = useState("Posts");
+  const [activeTab, setActiveTab] = useState("All");
 
   // Define the available tabs.
   const tabs = useMemo(
     () => [
+      { name: "All" },
       { name: "Posts" },
-      { name: "Images" },
-      { name: "Comments" },
-      { name: "Polls" },
       { name: "Thoughts" },
+      { name: "Polls" },
     ],
     []
   );
@@ -42,18 +41,16 @@ const ActivityLayout = () => {
   // Memoized function to render the current tab's content.
   const renderContent = useCallback(() => {
     switch (activeTab) {
+      case "All":
+        return <All />;
       case "Posts":
         return <Posts />;
-      case "Images":
-        return <Images />;
-      case "Comments":
-        return <Comments />;
       case "Polls":
         return <Polls />;
       case "Thoughts":
         return <WrittenPost />;
       default:
-        return <Posts />;
+        return <All />;
     }
   }, [activeTab]);
 

@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 
-const Boost = () => {
+const media = () => {
   return (
     <View>
-      <Text>Boost</Text>
+      <Text>Media</Text>
     </View>
   );
 };
 
-export default Boost;
+export default media;
 
 const styles = StyleSheet.create({});

@@ -27,7 +27,6 @@ import { dateFormatter } from "~/utils/dateFormatter";
 import { MotiView } from "moti";
 import Overview from ".";
 import Activity from "./activity/_layout";
-import Teams from "./teams";
 import PicModal from "~/components/profilePage/PicModal";
 import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
@@ -35,7 +34,8 @@ import { AppDispatch } from "~/reduxStore";
 import { removePic } from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
-import Boost from "./boost";
+import Tags from "./tags";
+import Media from "./media";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -54,8 +54,8 @@ const ProfileLayout = () => {
     () => [
       { name: "Overview" },
       { name: "Activity" },
-      { name: "Teams" },
-      { name: "Boost" },
+      { name: "Tags" },
+      { name: "Media" },
     ],
     []
   );
@@ -67,10 +67,10 @@ const ProfileLayout = () => {
         return <Overview />;
       case "Activity":
         return <Activity />;
-      case "Teams":
-        return <Teams />;
-      case "Boost":
-        return <Boost />;
+      case "Tags":
+        return <Tags />;
+      case "Media":
+        return <Media />;
       default:
         return <Overview />;
     }
@@ -99,8 +99,14 @@ const ProfileLayout = () => {
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[5]}
       >
-        <Header username={user?.username} isBackButtonVisible={false} />
-
+        <View 
+          // style={{
+          //   backgroundColor: "black",
+          //   zIndex: -1,
+          // }}
+        >
+          <Header username={user?.username} isBackButtonVisible={false} />
+        </View>
         {/* profile pic and cover image */}
         <View
           className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-yellow-300 relative"

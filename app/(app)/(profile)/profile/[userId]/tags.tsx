@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const teams = () => {
+const tags = () => {
   return (
     <View>
-      <Text>teams</Text>
+      <Text>Tags</Text>
     </View>
   )
 }
 
-export default teams
+export default tags;
 
 const styles = StyleSheet.create({})

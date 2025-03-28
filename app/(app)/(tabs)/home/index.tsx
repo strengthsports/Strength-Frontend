@@ -1,5 +1,12 @@
 // Home.tsx
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   FlatList,
@@ -25,6 +32,7 @@ import { Post } from "~/types/post";
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "~/components/CentralText";
 import { Platform } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -33,15 +41,47 @@ const Home = () => {
   const { loading, error, hasMore, currentPage } = useSelector(selectFeedState);
   const posts = useSelector(selectAllPosts);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  // console.log("Current page : ", currentPage);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const flatListRef = useRef<FlatList>(null);
+  const navigation = useNavigation();
 
+  // Listener for tab press event to scroll to top and refresh posts
+  useEffect(() => {
+    const parentNavigation = navigation.getParent();
+    let refetchStartTimeout: NodeJS.Timeout;
+
+    const onTabPress = () => {
+      if (navigation.isFocused()) {
+        if (flatListRef.current) {
+          flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+        }
+
+        setIsRefreshing(true);
+
+        refetchStartTimeout = setTimeout(() => {
+          handleRefresh();
+        }, 1000);
+      }
+    };
+
+    const unsubscribe = parentNavigation?.addListener("tabPress", onTabPress);
+
+    return () => {
+      unsubscribe?.();
+      clearTimeout(refetchStartTimeout);
+    };
+  }, [navigation]);
+
+  // Fetch posts on mount
   useEffect(() => {
     dispatch(fetchFeedPosts({ page: 1 }));
   }, [dispatch]);
 
+  // Fetch posts on refresh
   const handleRefresh = useCallback(() => {
     dispatch(resetFeed());
     dispatch(fetchFeedPosts({ page: 1 }));
+    setIsRefreshing(false);
   }, [dispatch]);
 
   const handleLoadMore = useCallback(async () => {
@@ -74,6 +114,7 @@ const Home = () => {
     );
   }, [posts]);
 
+  // render post and discover people
   const renderItem = useCallback(
     ({ item }: { item: { type: string; data?: Post; id?: string } }) => {
       if (item.type === "post" && item.data) {
@@ -157,6 +198,7 @@ const Home = () => {
     <View className="flex-1 bg-black">
       <GestureHandlerRootView>
         <FlatList
+          ref={flatListRef}
           data={interleavedData}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
@@ -165,7 +207,7 @@ const Home = () => {
           windowSize={21}
           refreshControl={
             <RefreshControl
-              refreshing={loading && currentPage === 1}
+              refreshing={isRefreshing || (loading && currentPage === 1)}
               onRefresh={handleRefresh}
               colors={["#12956B", "#6E7A81"]}
               tintColor="#6E7A81"

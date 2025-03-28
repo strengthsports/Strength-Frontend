@@ -20,7 +20,9 @@ import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useSelector } from "react-redux";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+import { TeamEntry } from "~/app/(app)/(tabs)/profile";
 
 // const posts = [
 //   {
@@ -298,8 +300,7 @@ const Overview = () => {
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
                       <TextScallingFalse
-                        className="text-white font-bold"
-                        style={styles.HeadingText}
+                        className="text-[#808080] font-bold"
                       >
                         CURRENT TEAMS
                       </TextScallingFalse>
@@ -312,73 +313,45 @@ const Overview = () => {
                     </View>
 
                     {/* Teams Mapping */}
-                    {sport.teams.map((team: any, index: any) => (
-                      <View
-                        key={team._id || index}
-                        className="flex-row justify-between items-center py-3 border-b border-gray-800"
-                      >
-                        {/* Left Column - Team Info */}
-                        <View className="flex-row items-center gap-x-3 w-[50%]">
-                          {/* Team Logo */}
-                          <Image
-                            source={{ uri: team.team.logo?.url }}
-                            style={{
-                              width: 45 * scaleFactor,
-                              height: 45 * scaleFactor,
-                              borderRadius: 100,
-                            }}
-                          />
-                          <View>
-                            <TextScallingFalse
-                              className="text-white font-bold"
-                              style={{
-                                fontSize: responsiveFontSize(1.76),
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {team.team.name}
-                            </TextScallingFalse>
-                            <TextScallingFalse
-                              className="text-gray-400"
-                              style={{ fontSize: 13 * scaleFactor }}
-                            >
-                              {team.location || "Location Not Available"}
-                            </TextScallingFalse>
-                          </View>
-                        </View>
-
-                        {/* Right Column - Quick Info */}
-                        <View className="w-[50%] flex items-end">
-                          <TextScallingFalse
-                            className="text-white font-medium"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            Position:{" "}
-                            <TextScallingFalse className="font-light">
-                              {team.position || team.role || "Not Specified"}
-                            </TextScallingFalse>
-                          </TextScallingFalse>
-
-                          <TextScallingFalse
-                            className="text-white font-light pt-2"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            {team.creationDate || team.joiningDate
-                              ? `${new Date(
-                                  team.creationDate || team.joiningDate
-                                ).getFullYear()} - Present`
-                              : "Joining Date Not Available"}
-                          </TextScallingFalse>
-
-                          <TextScallingFalse
-                            className="text-gray-400 pt-2"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            Present:
-                          </TextScallingFalse>
-                        </View>
+                    {sport.teams.map((team:any, index:any) => (
+                      <View key={index} style={{ marginVertical: 1}}>
+                        <TeamEntry team={team} />
+                        <View
+                          style={{
+                            height: 0.5,
+                            backgroundColor: "#717171",
+                            marginVertical: 16,
+                          }}
+                        />
                       </View>
                     ))}
+                    <TouchableOpacity
+                      activeOpacity={0.3}
+                      onPress={() => console.log('Navigate to Full Insights')}
+                      style={{
+                        flex:1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent:"center",
+                        marginVertical: 6,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#808080",
+                          fontSize: 15,
+                          fontWeight: '700', // Bold
+                        }}
+                      >
+                        Full Insights
+                      </Text>
+                      <Feather
+                        name="arrow-right"
+                        size={20}
+                        color={"#808080"}
+                        style={{ marginLeft: 5 }}
+                      />
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>

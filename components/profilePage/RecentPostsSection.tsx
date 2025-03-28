@@ -24,6 +24,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
 
 
   const postsWithImages = useMemo(() => posts?.filter(post => post.assets.length > 0) || [], [posts]);
+  const displayedPosts = useMemo(() => postsWithImages.slice(0, 5), [postsWithImages]);
 
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 50,
@@ -54,14 +55,15 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
   );
 
 
-  const ListFooterComponent = () => {
+  const ListFooterComponent = useCallback(() => {
+    if (postsWithImages.length < 1) return null;
     return (
         <View style={{alignItems:"center", flex:1, justifyContent:"center", flexDirection:"row", marginLeft:15}}>
           <View 
             style={{flex:1, flexDirection:"row", width: 'auto', padding: 75, marginTop:55 , marginBottom:35 ,justifyContent:'center', alignItems:'center',height:360*scaleFactor}}
             className="border-[#494949] border-[0.3px] rounded-[20px]"
           >
-            <TouchableOpacity activeOpacity={0.3} style={{flex:1, flexDirection:"row", gap:5 ,}}>
+            <TouchableOpacity activeOpacity={0.3} style={{flex:1, flexDirection:"row", gap:5 ,}} onPress={onSeeAllPress}>
               <TextScallingFalse style={{color:"green", paddingLeft:15,}}>
                 View more
               </TextScallingFalse>
@@ -70,7 +72,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
           </View>
         </View>
     )
-  }
+  }, []);
 
   return (
     <View
@@ -87,7 +89,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
       {/* Posts List */}
       <View style={{ flex: 1 }}>
         <FlatList
-          data={postsWithImages}
+          data={displayedPosts}
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
           ListEmptyComponent={ListEmptyComponent}
@@ -115,9 +117,9 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
           ListFooterComponent={ListFooterComponent}
         />
         {/* dot carousel */}
-        {postsWithImages.length > 0 && (
+        {displayedPosts.length > 0 && (
           <View className="flex-row justify-center my-2">
-            {postsWithImages.map((_, index) => (
+            {displayedPosts.map((_, index) => (
               <View
                 key={index}
                 className={`w-2 h-2 rounded-full mx-1 ${

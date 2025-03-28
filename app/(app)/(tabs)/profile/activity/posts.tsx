@@ -14,7 +14,7 @@ import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 
-const All = () => {
+const Posts = () => {
   const { posts, error, loading } = useSelector((state: any) => state?.profile);
   console.log("\n\n\nPosts : ", posts);
   const dispatch = useDispatch<AppDispatch>();
@@ -71,6 +71,6 @@ const All = () => {
   );
 };
 
-export default All;
+export default Posts;
 
 const styles = StyleSheet.create({});

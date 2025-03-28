@@ -26,12 +26,22 @@ import nopic from "@/assets/images/nopic.jpg";
 import { Colors } from "~/constants/Colors";
 import { RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
+import { useLocalSearchParams } from "expo-router";
+import { selectPostById } from "~/reduxStore/slices/feed/feedSlice";
+// import { selectPostById } from "~/reduxStore/slices/post/postSlice";
 
 const PostDetailsPage = () => {
-  const { currentPost: postDetails, user } = useSelector(
-    (state: RootState) => state.profile
-  );
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const postId = params?.postId as string; // Extract postId from URL params
+  // console.log("Post ID : ", postId);
+  const { user } = useSelector((state: RootState) => state.profile);
+  const post = useSelector((state: RootState) => selectPostById(state, postId));
+  // console.log(post);
+
+  if (!post) {
+    return <TextScallingFalse>Post not found</TextScallingFalse>;
+  }
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -50,27 +60,9 @@ const PostDetailsPage = () => {
     error: fetchError,
     isLoading: isFetching,
     refetch: refetchComments,
-  } = useFetchCommentsQuery({ targetId: postDetails?._id, targetType: "Post" });
+  } = useFetchCommentsQuery({ targetId: post?._id, targetType: "Post" });
 
   const [postComment, { isLoading: isPosting }] = usePostCommentMutation();
-
-  // const handlePostComment = async () => {
-  //   if (!commentText.trim()) return;
-  //   const commentData = {
-  //     targetId,
-  //     targetType: "Post",
-  //     text: commentText,
-  //   };
-  //   setCommentCount((prevCount) => prevCount + 1);
-  //   try {
-  //     await postComment(commentData).unwrap(); // Post the comment
-  //     setCommentText("");
-  //     refetchComments(); // Refetch comments to update the list
-  //   } catch (error) {
-  //     setCommentCount((prevCount) => prevCount - 1);
-  //     console.log("Failed to post comment:", error);
-  //   }
-  // };
 
   useEffect(() => {
     if (fetchError) {
@@ -82,18 +74,18 @@ const PostDetailsPage = () => {
     ({ item }: { item: Comment }) => (
       <CommenterCard
         comment={item}
-        targetId={postDetails?._id as string}
+        targetId={post?._id as string}
         targetType="Post"
       />
     ),
-    [postDetails?._id]
+    [post?._id]
   );
 
   // ListHeaderComponent combining the TopBar, PostContainer and "Comments" title
   const ListHeader = () => (
     <View>
-      <TopBar heading="" backHandler={() => router.push("/")} />
-      <PostContainer item={postDetails as Post} isFeedPage={false} />
+      <TopBar heading="" backHandler={() => router.back()} />
+      <PostContainer item={post as Post} isFeedPage={false} />
       <View className="px-4 py-4">
         <View className="relative">
           <TextScallingFalse className="text-white text-5xl mb-2">

@@ -1,10 +1,8 @@
 import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import { Platform, View, Text } from "react-native";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
-import { HapticTab } from "~/components/common/HapticTab";
 import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
 import HomeIcon from "~/components/SvgIcons/navbar/HomeIcon";
 import CommunityIcon from "~/components/SvgIcons/navbar/CommunityIcon";

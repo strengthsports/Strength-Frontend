@@ -19,6 +19,9 @@ import profileReducer from "./slices/user/profileSlice";
 import feedReducer from "./slices/feed/feedSlice"; // Your feed slice
 import { communityApi } from "./api/community/communityApi";
 import { likerApi } from "./api/feed/features/feedApi.getLiker";
+import { handleCommentApi } from "./api/feed/features/feedApi.comment";
+import { feedApi } from "./api/feed/services/feedApi";
+import { profileApi } from "./api/profile/profileApi";
 
 // Persist configuration
 const persistConfig = {
@@ -33,7 +36,8 @@ const rootReducer = combineReducers({
   feed: feedReducer,
   profile: profileReducer,
   [communityApi.reducerPath]: communityApi.reducer,
-  [likerApi.reducerPath]: likerApi.reducer,
+  [feedApi.reducerPath]: feedApi.reducer,
+  [profileApi.reducerPath]: profileApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -45,7 +49,11 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(communityApi.middleware, likerApi.middleware),
+    }).concat(
+      communityApi.middleware,
+      feedApi.middleware,
+      profileApi.middleware
+    ),
 });
 
 export const persistor = persistStore(store);

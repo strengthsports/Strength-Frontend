@@ -144,7 +144,11 @@ const Home = () => {
   });
 
   if (loading && currentPage === 1) {
-    return <ActivityIndicator size="large" color={Colors.themeColor} />;
+    return (
+      <View className="flex-1 bg-black flex justify-center">
+        <ActivityIndicator size="large" color={Colors.themeColor} />;
+      </View>
+    );
   }
 
   const isAndroid = Platform.OS === "android";
@@ -169,7 +173,7 @@ const Home = () => {
             />
           }
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.8}
+          onEndReachedThreshold={2}
           ListEmptyComponent={<MemoizedEmptyComponent error={error} />}
           ListFooterComponent={<ListFooterComponent />}
         />

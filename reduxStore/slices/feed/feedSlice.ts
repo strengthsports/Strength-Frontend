@@ -2,6 +2,7 @@
 import {
   createAsyncThunk,
   createEntityAdapter,
+  createSelector,
   createSlice,
   PayloadAction,
 } from "@reduxjs/toolkit";
@@ -73,12 +74,19 @@ export const fetchFeedPosts = createAsyncThunk<
   }
 });
 
+// Fetch specific user's posts
+
+// Fetch own posts
+
 // Like-Unlike
 export const toggleLike = createAsyncThunk(
   "feed/toggleLike",
-  async (postId: string, { getState, dispatch }) => {
+  async (
+    { targetId, targetType }: { targetId: string; targetType: string },
+    { getState, dispatch }
+  ) => {
     const state = getState() as RootState;
-    const post = selectPostById(state, postId);
+    const post = selectPostById(state, targetId);
 
     if (!post) throw new Error("Post not found");
 
@@ -92,9 +100,25 @@ export const toggleLike = createAsyncThunk(
     // Update Redux state immediately
     dispatch(updatePost(updatedPost));
 
+    let reqType = post.isLiked ? "DELETE" : "POST";
+
     try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+      console.log("Token : ", token);
       // Actual API call
-      await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/like`,
+        {
+          method: reqType,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({ targetId, targetType }),
+        }
+      );
+      console.log(response);
       return updatedPost;
     } catch (error) {
       // Rollback on error
@@ -103,6 +127,10 @@ export const toggleLike = createAsyncThunk(
     }
   }
 );
+
+// Post Comment
+
+// Delete Comment
 
 const feedSlice = createSlice({
   name: "feed",
@@ -113,6 +141,9 @@ const feedSlice = createSlice({
         id: action.payload._id,
         changes: action.payload,
       });
+    },
+    mergePosts: (state, action: PayloadAction<Post[]>) => {
+      postsAdapter.upsertMany(state.posts, action.payload);
     },
     resetFeed: () => initialState,
   },
@@ -142,7 +173,7 @@ const feedSlice = createSlice({
   },
 });
 
-export const { updatePost, resetFeed } = feedSlice.actions;
+export const { updatePost, mergePosts, resetFeed } = feedSlice.actions;
 
 export const { selectAll: selectAllPosts, selectById: selectPostById } =
   postsAdapter.getSelectors((state: RootState) => state.feed.posts);

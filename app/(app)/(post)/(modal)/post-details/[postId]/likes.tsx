@@ -2,20 +2,19 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
 import { useSelector } from "react-redux";
-import { RootState } from "@reduxjs/toolkit/query";
-import { useRouter } from "expo-router";
+import { RootState } from "~/reduxStore";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { FlatList } from "react-native";
 import { LikerCard } from "~/components/feedPage/LikerModal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
 
 const Likes = () => {
-  const postDetails = useSelector(
-    (state: RootState) => state.profile.currentPost
-  );
+  const { postId } = useLocalSearchParams();
+  console.log(postId);
   const router = useRouter();
   const { data, error, isLoading, refetch } = useFetchLikersQuery({
-    targetId: postDetails?._id,
+    targetId: postId.toString(),
     targetType: "Post",
   });
 

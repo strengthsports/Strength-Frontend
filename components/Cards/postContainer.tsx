@@ -4,6 +4,7 @@ import React, {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import {
   View,
@@ -21,10 +22,6 @@ import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
-import {
-  useLikeContentMutation,
-  useUnLikeContentMutation,
-} from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
 import nopic from "@/assets/images/nopic.jpg";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
@@ -33,6 +30,7 @@ import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
+import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 
 type TaggedUser = {
   _id: string;
@@ -59,66 +57,78 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
-    // State for individual post
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [showSeeMore, setShowSeeMore] = useState(false);
-    const [isLiked, setIsLiked] = useState(item?.isLiked);
-    const [likeCount, setLikeCount] = useState(item?.likesCount);
-    const [likePost, message] = useLikeContentMutation();
-    const [unlikePost] = useUnLikeContentMutation();
-    const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
-    const [activeIndex, setActiveIndex] = useState<any>(0);
     // State to hold the selected data from the button press
     const [isBottomSheetOpen, setBottomSheetOpen] = useState<any>({
       type: "",
       status: false,
     });
+    // State for individual post
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [showSeeMore, setShowSeeMore] = useState(false);
+    const [activeIndex, setActiveIndex] = useState<any>(0);
 
     // Ref for the bottom sheet
     const likeBottomSheetRef = useRef(null);
     const settingsBottomSheetRef = useRef(null);
 
-    const handleSetActiveIndex = (index: any) => {
-      setActiveIndex(index);
-    };
-
+    // Ref for the like animation
     const scaleAnim = useRef(new Animated.Value(0)).current;
 
-    const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-      const { lines } = e.nativeEvent;
-      const shouldShowSeeMore =
-        lines.length > 2 || (lines as any).some((line: any) => line.truncated);
-      setShowSeeMore(shouldShowSeeMore);
+    // To open bottom sheet
+    const handleOpenBottomSheet = ({ type }: { type: string }) => {
+      console.log(`${type} Bottom sheet opens...`);
+      handleBottomSheet && handleBottomSheet(true);
+      setBottomSheetOpen({ type, status: true });
+      type === "like"
+        ? likeBottomSheetRef.current?.scrollTo(-550)
+        : type === "settings"
+        ? settingsBottomSheetRef.current?.scrollTo(-220)
+        : null;
     };
 
-    const handleLikeAction = async () => {
-      try {
-        // Optimistic update
-        setIsLiked(!isLiked);
-        setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
-
-        // API call
-        const action = isLiked ? unlikePost : likePost;
-        await action({
-          targetId: item?._id,
-          targetType: "Post",
-        }).unwrap();
-        // console.log("Message", message);
-        // console.log(message?.data?.message);
-      } catch (error) {
-        // Rollback on error
-        setIsLiked(isLiked);
-        setLikeCount(likeCount);
-        console.error("Like action failed:", error);
-      }
+    // To close bottom sheet
+    const handleCloseBottomSheet = ({ type }: { type: string }) => {
+      console.log("Called");
+      console.log(type);
+      console.log(likeBottomSheetRef);
+      type === "like"
+        ? likeBottomSheetRef.current?.scrollTo(0)
+        : type === "settings"
+        ? settingsBottomSheetRef.current?.scrollTo(0)
+        : null;
+      setBottomSheetOpen({ type, status: false });
+      handleBottomSheet && handleBottomSheet(false);
     };
 
+    // Expose the handleCloseBottomSheet function to the parent
+    useImperativeHandle(ref, () => ({
+      closeBottomSheet: (params: { type: string }) =>
+        handleCloseBottomSheet(params),
+    }));
+
+    // Handle hardware back press
+    useEffect(() => {
+      const handleBackPress = () => {
+        if (isBottomSheetOpen.status) {
+          handleCloseBottomSheet({ type: isBottomSheetOpen.type });
+          return true; // Prevent default back behavior
+        }
+        return false; // Default back behavior
+      };
+
+      BackHandler.addEventListener("hardwareBackPress", handleBackPress);
+
+      // Cleanup on component unmount
+      return () => {
+        BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
+      };
+    }, [isBottomSheetOpen]);
+
+    // Handle like on double tap on post
     const handleDoubleTap = () => {
-      if (!isLiked) {
+      if (!item.isLiked) {
         // setIsLiked(true);
         // setLikeCount(prev => prev + 1);
-
-        handleLikeAction();
       }
       scaleAnim.setValue(0);
       Animated.sequence([
@@ -134,6 +144,24 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           useNativeDriver: true,
         }),
       ]).start();
+    };
+
+    // Handle like on button press
+    const handleLike = () => {
+      dispatch(toggleLike({ targetId: item._id, targetType: "Post" }));
+    };
+
+    // Set slider active index
+    const handleSetActiveIndex = (index: any) => {
+      setActiveIndex(index);
+    };
+
+    // Caption expanding
+    const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
+      const { lines } = e.nativeEvent;
+      const shouldShowSeeMore =
+        lines.length > 2 || (lines as any).some((line: any) => line.truncated);
+      setShowSeeMore(shouldShowSeeMore);
     };
 
     // Function to render caption with clickable hashtags and mention tags
@@ -190,66 +218,18 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         });
     };
 
-    const handleDeletePost = () => {
-      console.log(`Post ${item._id} deleted successfully.`);
-      setIsMoreModalVisible(false);
-    };
-
-    // To open bottom sheet
-    const handleOpenBottomSheet = ({ type }: { type: string }) => {
-      console.log(`${type} Bottom sheet opens...`);
-      handleBottomSheet && handleBottomSheet(true);
-      setBottomSheetOpen({ type, status: true });
-      type === "like"
-        ? likeBottomSheetRef.current?.scrollTo(-550)
-        : type === "settings"
-        ? settingsBottomSheetRef.current?.scrollTo(-220)
-        : null;
-    };
-
-    // To close bottom sheet
-    const handleCloseBottomSheet = ({ type }: { type: string }) => {
-      console.log("Called");
-      console.log(type);
-      console.log(likeBottomSheetRef);
-      type === "like"
-        ? likeBottomSheetRef.current?.scrollTo(0)
-        : type === "settings"
-        ? settingsBottomSheetRef.current?.scrollTo(0)
-        : null;
-      setBottomSheetOpen({ type, status: false });
-      handleBottomSheet && handleBottomSheet(false);
-    };
-
-    // Expose the handleCloseBottomSheet function to the parent
-    useImperativeHandle(ref, () => ({
-      closeBottomSheet: (params: { type: string }) =>
-        handleCloseBottomSheet(params),
-    }));
-
-    // Handle hardware back press
-    useEffect(() => {
-      const handleBackPress = () => {
-        if (isBottomSheetOpen.status) {
-          handleCloseBottomSheet({ type: isBottomSheetOpen.type });
-          return true; // Prevent default back behavior
-        }
-        return false; // Default back behavior
-      };
-
-      BackHandler.addEventListener("hardwareBackPress", handleBackPress);
-
-      // Cleanup on component unmount
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
-      };
-    }, [isBottomSheetOpen]);
+    // Memoized Caption
+    const memoizedCaption = useMemo(
+      () => renderCaptionWithTags(item.caption, item.taggedUsers || []),
+      [item.caption, item.taggedUsers]
+    );
 
     return (
       <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
         <View className="flex">
           {/* Profile Section */}
           <View className="relative ml-[5%] flex flex-row gap-2 z-20 pb-0">
+            {/* Profile Picture */}
             <TouchableOpacity
               activeOpacity={0.5}
               className="w-[14%] h-[14%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-700"
@@ -273,8 +253,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
-            <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[5px] ml-[0px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />
+            <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[6px] ml-[1px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />
 
+            {/* Name, Headline, post date */}
             <View className="w-64 flex flex-col justify-between">
               <TouchableOpacity
                 activeOpacity={0.8}
@@ -317,12 +298,12 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[40px] rounded-tr-[16px] pb-3 bg-neutral-900">
+          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-22] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
             <TouchableOpacity
-              className="absolute right-4 p-2 z-30"
+              className="absolute right-8 p-2 pt-1.5 z-30"
               onPress={() => handleOpenBottomSheet({ type: "settings" })}
             >
-              <MaterialIcons name="more-horiz" size={18} color="white" />
+              <MaterialIcons name="more-horiz" size={20} color="white" />
               <CustomBottomSheet
                 ref={settingsBottomSheetRef}
                 onClose={() => handleCloseBottomSheet({ type: "settings" })}
@@ -345,22 +326,22 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             </TouchableOpacity>
 
             <View
-              className={`${isExpanded ? "pl-8" : "pl-12"} pr-6 pt-12 pb-4`}
+              className={`${isExpanded ? "pl-6" : "pl-10"} pr-8 pt-12 pb-4`}
             >
               <Text
                 onPress={() => {
                   isFeedPage &&
                     router.push({
-                      pathname: "/post-details/1" as RelativePathString,
+                      pathname:
+                        `/post-details/${item._id}` as RelativePathString,
                     });
-                  dispatch(setCurrentPost(item));
                 }}
                 className="text-xl leading-5 text-neutral-200"
                 numberOfLines={isExpanded ? undefined : 2}
                 ellipsizeMode="tail"
                 onTextLayout={handleTextLayout}
               >
-                {renderCaptionWithTags(item.caption, item.taggedUsers || [])}
+                {memoizedCaption}
               </Text>
               {showSeeMore && !isExpanded && (
                 <TouchableOpacity
@@ -385,7 +366,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   aspectRatio={item.aspectRatio || [3, 2]}
                   images={imageUrls}
                   isFeedPage={true}
-                  postDetails={item}
+                  postId={item._id}
                   setIndex={handleSetActiveIndex}
                   onDoubleTap={handleDoubleTap}
                 />
@@ -411,13 +392,15 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
           {/* Interaction Bar */}
           <InteractionBar
-            commentCount={item.commentsCount}
-            likeCount={item.likesCount}
+            postId={item._id}
+            onPressLike={handleLike}
             isLiked={item.isLiked}
-            post={item}
+            likesCount={item.likesCount}
+            commentsCount={item.commentsCount}
+            assetsCount={item.assets?.length || 0}
             activeSlideIndex={activeIndex}
-            handleLikeAction={handleLikeAction}
             isPostContainer={true}
+            isFeedPage={isFeedPage}
           />
         </View>
       </View>

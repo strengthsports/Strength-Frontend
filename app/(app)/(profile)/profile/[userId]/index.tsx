@@ -18,162 +18,55 @@ import { ThemedText } from "~/components/ThemedText";
 import { ProfileContext } from "./_layout";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { TeamEntry } from "~/app/(app)/(tabs)/profile";
-
-// const posts = [
-//   {
-//     id: 1,
-//     firstName: "Sebastian",
-//     lastName: "Cilb",
-//     profilepic:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-//     headline:
-//       "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-//     caption:
-//       "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-//     image:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
-//     likes: ["harshal_123", "Miraj_123"],
-//     comments: [
-//       {
-//         id: 1,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "amazing",
-//       },
-//       {
-//         id: 2,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "agg laga deya",
-//       },
-//     ],
-//   },
-//   {
-//     id: 2,
-//     firstName: "Sebastian",
-//     lastName: "Cilb",
-//     profilepic:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-//     headline:
-//       "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-//     caption:
-//       "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-//     image:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-//     likes: ["harshal_123", "Miraj_123"],
-//     comments: [
-//       {
-//         id: 1,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "amazing",
-//       },
-//       {
-//         id: 2,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "agg laga deya",
-//       },
-//     ],
-//   },
-//   {
-//     id: 3,
-//     firstName: "Sebastian",
-//     lastName: "Cilb",
-//     profilepic:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-//     headline:
-//       "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-//     caption:
-//       "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-//     image:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-//     likes: ["harshal_123", "Miraj_123"],
-//     comments: [
-//       {
-//         id: 1,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "amazing",
-//       },
-//       {
-//         id: 2,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "agg laga deya",
-//       },
-//     ],
-//   },
-//   {
-//     id: 4,
-//     firstName: "Sebastian",
-//     lastName: "Cilb",
-//     profilepic:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-//     headline:
-//       "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-//     caption:
-//       "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-//     image:
-//       "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-//     likes: ["harshal_123", "Miraj_123"],
-//     comments: [
-//       {
-//         id: 1,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "amazing",
-//       },
-//       {
-//         id: 2,
-//         firstName: "harshl",
-//         lastName: "mishra",
-//         description: "kjaskjdashdkasjndjansjndjan",
-//         comment: "agg laga deya",
-//       },
-//     ],
-//   },
-// ];
+// import {
+//   addUserPosts,
+//   clearUserPosts,
+//   userPostsSelectors,
+// } from "~/reduxStore/slices/post/postSlice";
+import { AppDispatch } from "~/reduxStore";
+import { mergePosts } from "~/reduxStore/slices/feed/feedSlice";
 
 const Overview = () => {
   const params = useLocalSearchParams();
-  
-    const fetchedUserId = useMemo(() => {
-      return params.userId
-        ? JSON.parse(decodeURIComponent(params?.userId as string))
-        : null;
-    }, [params.userId]);
-  const [getUserSpecificPost, { data: posts }] =
-    useLazyGetSpecificUserPostQuery();
-  
-    useEffect(() => {
-      getUserSpecificPost({
-        postedBy: fetchedUserId?.id,
-        postedByType: fetchedUserId?.type,
-        limit: 10,
-        skip: 0,
-        // lastTimestamp: null,
-      });
-    }, []);
-  
-    // console.log("\n\n\nPosts : ", posts);
+  const dispatch = useDispatch<AppDispatch>();
 
+  const fetchedUserId = useMemo(() => {
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params?.userId as string))
+      : null;
+  }, [params.userId]);
+
+  const [getUserSpecificPost, { data: fetchedPosts }] =
+    useLazyGetSpecificUserPostQuery();
+
+  useEffect(() => {
+    const fetchAndMerge = async () => {
+      if (fetchedUserId) {
+        getUserSpecificPost({
+          postedBy: fetchedUserId?.id,
+          postedByType: fetchedUserId?.type,
+          limit: 10,
+          skip: 0,
+          // lastTimestamp: null,
+        });
+      }
+
+      // Merge into existing feed state
+      dispatch(mergePosts(fetchedPosts));
+    };
+
+    fetchAndMerge();
+  }, [fetchedUserId, getUserSpecificPost, dispatch]);
+
+  // console.log("\n\n\nPosts in specific user page : ", posts);
 
   const { width: screenWidth2 } = useWindowDimensions();
   const scaleFactor = screenWidth2 / 410;
-
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -299,9 +192,7 @@ const Overview = () => {
                   <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl mt-2">
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
-                      <TextScallingFalse
-                        className="text-[#808080] font-bold"
-                      >
+                      <TextScallingFalse className="text-[#808080] font-bold">
                         CURRENT TEAMS
                       </TextScallingFalse>
                       <TextScallingFalse
@@ -313,8 +204,8 @@ const Overview = () => {
                     </View>
 
                     {/* Teams Mapping */}
-                    {sport.teams.map((team:any, index:any) => (
-                      <View key={index} style={{ marginVertical: 1}}>
+                    {sport.teams.map((team: any, index: any) => (
+                      <View key={index} style={{ marginVertical: 1 }}>
                         <TeamEntry team={team} />
                         <View
                           style={{
@@ -327,12 +218,12 @@ const Overview = () => {
                     ))}
                     <TouchableOpacity
                       activeOpacity={0.3}
-                      onPress={() => console.log('Navigate to Full Insights')}
+                      onPress={() => console.log("Navigate to Full Insights")}
                       style={{
-                        flex:1,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent:"center",
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
                         marginVertical: 6,
                       }}
                     >
@@ -340,7 +231,7 @@ const Overview = () => {
                         style={{
                           color: "#808080",
                           fontSize: 15,
-                          fontWeight: '700', // Bold
+                          fontWeight: "700", // Bold
                         }}
                       >
                         Full Insights
@@ -399,8 +290,8 @@ const Overview = () => {
 
       {/* recent posts */}
       <RecentPostsSection
-        posts={posts}
-        onSeeAllPress={() =>  {}}
+        posts={fetchedPosts}
+        onSeeAllPress={() => {}}
         scaleFactor={scaleFactor}
       />
 

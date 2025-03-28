@@ -49,7 +49,7 @@ const ActivityLayout = () => {
           contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
         >
           <TabsList className="flex-row gap-x-2 w-[100%]">
-            {["posts", "images", "comments", "polls", "thoughts"].map(
+            {["posts", "thoughts", "polls", "comments", "clips", "articles"].map(
               (tab, index) => (
                 <Pressable
                   key={index}

@@ -197,7 +197,7 @@ const Overview = () => {
                         <TeamEntry team={team} />
                         <View
                           style={{
-                            height: 0.2,
+                            height: 0.5,
                             backgroundColor: "#717171",
                             marginVertical: 16,
                           }}
@@ -403,14 +403,14 @@ const secondaryTextColor = '#A9A9A9';
 const dividerColor = '#A9A9A9';
 
 const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const TeamEntry = ({ team } : any) => {
+export const TeamEntry = ({ team } : any) => {
   console.log(team);
   return (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap:10}}>
     {/* Team Logo */}
     <Image
-      // source={{uri: team.team.logo.url}}
-      source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
+      source={{uri: team.team.logo.url}}
+      // source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
       style={{
         width: 60 * scaleFactor,
         height: 60 * scaleFactor,
@@ -420,7 +420,7 @@ const TeamEntry = ({ team } : any) => {
       }}
     />
     {/* Team Details */}
-    <View className="flex flex-col ml-5 items-center justify-between gap-2 py-3">
+    <View className="flex flex-col ml-5 items-start justify-between gap-2 py-3">
       <View className="flex flex-col gap-0.5">
         <Text
           style={{
@@ -429,8 +429,8 @@ const TeamEntry = ({ team } : any) => {
             fontWeight: '700', // Bold
           }}
         >
-          {/* {team.team.name} */}
-          Kolkata Knight Riders
+          {team.team.name}
+          {/* Kolkata Knight Riders */}
         </Text>
         <Text
           style={{
@@ -439,8 +439,8 @@ const TeamEntry = ({ team } : any) => {
             fontWeight: '400', // Regular
           }}
         >
-          {/* {team.location || "Location Not Available"} */}
-          Kolkata, West Bengal, India
+          {team.location || "Location Not Available"}
+          {/* Kolkata, West Bengal, India */}
         </Text>
       </View>
       <View
@@ -448,12 +448,12 @@ const TeamEntry = ({ team } : any) => {
           flex:1,
           flexDirection: 'row',
           alignItems: 'center',
-          // justifyContent:"space-evenly",
+          justifyContent:"space-between",
           // gap:20,
           marginTop: 5,
         }}
       >
-        <View style={{ flex:1, flexDirection:"column", gap:2, paddingRight:10}}>
+        <View style={{ flexDirection:"column", gap:2, alignItems: 'flex-start'}}>
           <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>Joined: </Text>
           <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
             {team.creationDate || team.joiningDate
@@ -462,7 +462,7 @@ const TeamEntry = ({ team } : any) => {
               ).getMonth()]}, ${new Date(
                 team.creationDate || team.joiningDate
               ).getFullYear()}`
-            : "Joining Date Not Available"}
+            : "NA"}
           </Text>
         </View>
         <View
@@ -470,82 +470,15 @@ const TeamEntry = ({ team } : any) => {
             width: 1,
             height: 30,
             backgroundColor: dividerColor,
-            marginHorizontal: 5,
+            marginHorizontal: 20,
           }}
         />
-        <View style={{flex:1, flexDirection:"column", gap:2, paddingLeft:10}}>
+        <View style={{ flexDirection:"column", gap:2, alignItems: 'flex-start'}}>
           <Text style={{ color: textColor, fontSize: 12, fontWeight: "700"}}>Role: </Text>
-          <Text style={{ color: secondaryTextColor, fontSize: 12 }}>{team.role}</Text>
+          <Text style={{ color: secondaryTextColor, fontSize: 12 }}>{team.role || "NA"}</Text>
         </View>
       </View>
     </View>
   </View>
 )};
 
-// {sport.teams.map((team: any, index: any) => (
-//   <View
-//     key={team._id || index}
-//     className="flex-row justify-between items-center py-3 border-b border-gray-800"
-//   >
-//     {/* Left Column - Team Info */}
-//     <View className="flex-row items-center gap-x-3 w-[50%]">
-//       {/* Team Logo */}
-//       <Image
-//         source={{ uri: team.team.logo?.url }}
-//         style={{
-//           width: 45 * scaleFactor,
-//           height: 45 * scaleFactor,
-//           borderRadius: 100,
-//         }}
-//       />
-//       <View>
-//         <TextScallingFalse
-//           className="text-white font-bold"
-//           style={{
-//             fontSize: responsiveFontSize(1.76),
-//             fontWeight: "bold",
-//           }}
-//         >
-//           {team.team.name}
-//         </TextScallingFalse>
-//         <TextScallingFalse
-//           className="text-gray-400"
-//           style={{ fontSize: 13 * scaleFactor }}
-//         >
-//           {team.location || "Location Not Available"}
-//         </TextScallingFalse>
-//       </View>
-//     </View>
-
-//     {/* Right Column - Quick Info */}
-//     <View className="w-[50%] flex items-end">
-//       <TextScallingFalse
-//         className="text-white font-medium"
-//         style={{ fontSize: 13 * scaleFactor }}
-//       >
-//         Position:{" "}
-//         <TextScallingFalse className="font-light">
-//           {team.position || team.role || "Not Specified"}
-//         </TextScallingFalse>
-//       </TextScallingFalse>
-
-//       <TextScallingFalse
-//         className="text-white font-light pt-2"
-//         style={{ fontSize: 13 * scaleFactor }}
-//       >
-//         {team.creationDate || team.joiningDate
-//           ? `${new Date(
-//               team.creationDate || team.joiningDate
-//             ).getFullYear()} - Present`
-//           : "Joining Date Not Available"}
-//       </TextScallingFalse>
-
-//       <TextScallingFalse
-//         className="text-gray-400 pt-2"
-//         style={{ fontSize: 13 * scaleFactor }}
-//       >
-//         Present:
-//       </TextScallingFalse>
-//     </View>
-//   </View>
-// ))}

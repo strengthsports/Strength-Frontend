@@ -10,12 +10,13 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
-import Comments from "./comments";
 import WrittenPost from "./writtenpost";
 import { MotiView } from "moti";
 import Polls from "./polls";
-import All from "./posts";
-import Posts from "./images";
+import Posts from "./posts";
+import Comments from "./comments";
+import Clips from "./clips";
+import Articles from "./articles";
 
 const ActivityLayout = () => {
   const router = useRouter();
@@ -25,15 +26,17 @@ const ActivityLayout = () => {
   const { width: screenWidth2 } = Dimensions.get("window");
   const scaleFactor = screenWidth2 / 410;
 
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState("Posts");
 
   // Define the available tabs.
   const tabs = useMemo(
     () => [
-      { name: "All" },
       { name: "Posts" },
       { name: "Thoughts" },
       { name: "Polls" },
+      { name: "Comments" },
+      { name: "Clips" },
+      { name: "Articles" },
     ],
     []
   );
@@ -41,16 +44,20 @@ const ActivityLayout = () => {
   // Memoized function to render the current tab's content.
   const renderContent = useCallback(() => {
     switch (activeTab) {
-      case "All":
-        return <All />;
       case "Posts":
         return <Posts />;
       case "Polls":
         return <Polls />;
       case "Thoughts":
         return <WrittenPost />;
+      case "Comments" :
+        return <Comments />;
+      case "Clips":
+        return <Clips />;
+      case "Articles":
+        return <Articles />;
       default:
-        return <All />;
+        return <Posts />;
     }
   }, [activeTab]);
 

@@ -78,7 +78,7 @@ export default function ExploreMainLayout() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="">
+      <View className="border-b-[0.5px] border-b-[#505050]">
         <SearchBar />
       </View>
       <CategoryComponent />

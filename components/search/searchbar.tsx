@@ -20,7 +20,7 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
   };
 
   return (
-    <View className="flex-row my-3.5 px-5">
+    <View className="flex-row my-3 px-5">
       <TouchableOpacity
         activeOpacity={0.8}
         className="flex-row bg-[#212121] rounded-3xl px-4 py-2 items-center flex-1"

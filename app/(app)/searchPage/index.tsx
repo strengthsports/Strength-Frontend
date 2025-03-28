@@ -120,7 +120,7 @@ const SearchPage: React.FC = () => {
     <SafeAreaView>
       {/* Header Section */}
       <View
-        className="flex-row items-center my-4 gap-x-2 max-w-[640px] w-[90%] mx-auto"
+        className="flex-row items-center my-3 gap-x-4 max-w-[640px] w-[95%] mx-auto"
         onLayout={(event) => {
           const { height } = event.nativeEvent.layout;
           setSearchBarHeight(height); // 🟢 Store search bar height dynamically
@@ -130,11 +130,12 @@ const SearchPage: React.FC = () => {
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
         <SearchInput searchText={searchText} setSearchText={setSearchText} />
+        <View className="w-3" />
       </View>
 
       {/* Live Search Results Dropdown */}
       {searchText.length > 0 && (
-        <View className="px-5">
+        <View className="px-5 mt-3">
           {isLoading ? (
             <ActivityIndicator size="small" color="white" />
           ) : (

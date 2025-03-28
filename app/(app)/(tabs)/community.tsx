@@ -7,9 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import SuggestionCard from "@/components/Cards/SuggestionCard";
 import { Divider } from "react-native-elements";
+import { useRouter } from "expo-router";
 import {
   useGetPopularUsersQuery,
   useGetUsersBasedOnActivityQuery,
@@ -17,8 +18,11 @@ import {
   useLazyGetUsersOfSpecificCityQuery,
 } from "~/reduxStore/api/community/communityApi";
 import { SafeAreaView } from "react-native-safe-area-context";
+import TextScallingFalse from "~/components/CentralText";
+
 
 const Community = () => {
+  const router = useRouter();
   // Fetch different types of suggestions
   const { data: similarSportsUsers, isLoading: loadingSimilarSportsUsers } =
     useGetUsersOfSimilarSportsQuery({ limit: 10 });
@@ -147,15 +151,15 @@ const Community = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0B0B0B] pt-4 px-4">
+    <SafeAreaView className="flex-1 bg-black pt-3 px-4">
       {/* Search Bar */}
-      <View className="flex-row items-center bg-[#1E1E1E] px-3  rounded-full mb-3">
-        <Ionicons name="search" size={20} color="gray" className="ml-2" />
-        <TextInput
-          placeholder="Search..."
-          placeholderTextColor="gray"
-          className="text-white flex-1 ml-2 p-3"
-        />
+      <View style={{width:'100%', paddingHorizontal: 3}}>
+      <TouchableOpacity onPress={() => router.push("/(app)/searchPage")} activeOpacity={0.9} className="flex-row items-center bg-[#1E1E1E] px-4 rounded-full mb-3">
+        <Feather name="search" size={22} color="grey" />
+        <TextScallingFalse
+          className="text-[#808080] flex-1 ml-1 p-3 px-1 text-3xl"
+        >Search...</TextScallingFalse>
+      </TouchableOpacity>
       </View>
 
       <Divider width={3} color="#1e1e1e" />

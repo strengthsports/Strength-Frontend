@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Image } from "react-native";
+import { View } from "react-native";
+import { Image } from "expo-image";
 import Swiper from "react-native-swiper";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "~/constants/Colors"; // Ensure this path is correct
@@ -31,8 +32,8 @@ const SwiperTop = () => {
         <View key={index} className="flex-1">
           <Image
             source={{ uri: item.url }}
-            className="w-full h-72"
-            resizeMode="cover"
+            style={{ width: "100%", height: 250 }}
+            contentFit="cover"
           />
           <LinearGradient
             colors={["transparent", "rgba(0, 0, 0, 0.8)"]}

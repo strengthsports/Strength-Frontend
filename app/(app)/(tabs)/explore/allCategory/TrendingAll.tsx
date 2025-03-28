@@ -1,5 +1,5 @@
 import React from "react";
-import { View, FlatList, ActivityIndicator, Image } from "react-native";
+import { View, FlatList, ActivityIndicator} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Swiper from "react-native-swiper";
 import TextScallingFalse from "~/components/CentralText";

@@ -39,7 +39,7 @@ export default function TabLayout() {
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
             overflow: "hidden",
-            backgroundColor: "#000", // Ensure consistent background
+            backgroundColor: "black", // Ensure consistent background
             elevation: 0, // Remove shadow on Android
             borderTopWidth: 0, // Remove top border shadow
           },

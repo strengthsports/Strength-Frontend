@@ -12,7 +12,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import "../global.css";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import store, { persistor } from "@/reduxStore";
+import { store, persistor } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/configs/toastConfig";
 import { GestureHandlerRootView } from "react-native-gesture-handler";

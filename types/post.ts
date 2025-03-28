@@ -25,3 +25,14 @@ export type Post = {
   isReported: boolean;
   [key: string]: any;
 };
+
+export interface FeedResponse {
+  data: {
+    posts: Post[];
+    lastTimestamp: string | null;
+    nextPage: number;
+  };
+  message: string;
+  statusCode: number;
+  success: boolean;
+}

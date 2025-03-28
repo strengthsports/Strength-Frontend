@@ -72,7 +72,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
           </View>
         </View>
     )
-  }, []);
+  }, [postsWithImages.length,scaleFactor,onSeeAllPress]);
 
   return (
     <View

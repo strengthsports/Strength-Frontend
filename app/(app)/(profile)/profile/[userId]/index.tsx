@@ -11,7 +11,6 @@ import {
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
-import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
@@ -19,17 +18,14 @@ import { ProfileContext } from "./_layout";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useDispatch, useSelector } from "react-redux";
-import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { TeamEntry } from "~/app/(app)/(tabs)/profile";
 import { AppDispatch, RootState } from "~/reduxStore";
 import {
   fetchUserPosts,
-  mergePosts,
   selectPostsByUserId,
 } from "~/reduxStore/slices/feed/feedSlice";
-import { Post } from "~/types/post";
 
 const Overview = () => {
   const params = useLocalSearchParams();

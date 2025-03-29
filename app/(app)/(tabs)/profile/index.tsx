@@ -15,24 +15,21 @@ import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import { Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "expo-router";
-import { AppDispatch } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { Platform } from "react-native";
 import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
 import { FlatList } from "react-native";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
+import {
+  fetchUserPosts,
+  selectPostsByUserId,
+} from "~/reduxStore/slices/feed/feedSlice";
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
-  const {
-    posts,
-    error: recentPostsError,
-    loading: recentPostLoading,
-  } = useSelector((state: any) => state?.profile);
-  // console.log("\n\n\nPosts : ", posts);
   const dispatch = useDispatch<AppDispatch>();
-  const isAndroid = Platform.OS === "android";
 
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -49,23 +46,22 @@ const Overview = () => {
     sports[0]?.sport?.name
   );
 
-  useEffect(() => {
-    if (!posts || posts.length === 0) {
-      dispatch(getOwnPosts(null));
-    }
-  }, [dispatch, posts]);
+  // Get filtered posts from Redux
+  const userPosts = useSelector((state: RootState) =>
+    selectPostsByUserId(state.feed.posts as any, user._id)
+  );
 
-  // const renderItem = useCallback(
-  //   ({ item }: { item: Post }) => (
-  //     <View style={{ width: postWidth, marginRight: gap }}>
-  //       <PostContainer item={item} />
-  //     </View>
-  //   ),
-  //   [postWidth, gap]
-  // );
-  // const memoizedEmptyComponent = memo(() => (
-  //   <Text className="text-white text-center p-4">No new posts available</Text>
-  // ));
+  // Fetch initial posts
+  useEffect(() => {
+    dispatch(
+      fetchUserPosts({
+        postedBy: user._id,
+        postedByType: user.type,
+        limit: 10,
+        skip: 0,
+      })
+    );
+  }, [user._id, dispatch]);
 
   //toggle see more
   const handleToggle = () => {
@@ -168,18 +164,25 @@ const Overview = () => {
                   <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl mt-2">
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
-                      <TextScallingFalse
-                        className="text-[#808080] font-bold"
-                      >
+                      <TextScallingFalse className="text-[#808080] font-bold">
                         CURRENT TEAMS
                       </TextScallingFalse>
                       <View className="flex items-center justify-center flex-row gap-2">
                         <TouchableOpacity
                           className="flex items-center justify-center"
-                          style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
-                          onPress={() => router.push("/(app)/(profile)/edit-overview")}
+                          style={{
+                            width: 36 * scaleFactor,
+                            height: 36 * scaleFactor,
+                          }}
+                          onPress={() =>
+                            router.push("/(app)/(profile)/edit-overview")
+                          }
                         >
-                          <Feather name="plus" size={20 * scaleFactor} color="#717171" />
+                          <Feather
+                            name="plus"
+                            size={20 * scaleFactor}
+                            color="#717171"
+                          />
                         </TouchableOpacity>
                         <TouchableOpacity>
                           <Feather
@@ -192,7 +195,7 @@ const Overview = () => {
                     </View>
 
                     {/* Teams Mapping */}
-                    {sport.teams.map((team:any, index:any) => (
+                    {sport.teams.map((team: any, index: any) => (
                       <View key={index} style={{ marginVertical: 1 }}>
                         <TeamEntry team={team} />
                         <View
@@ -206,12 +209,12 @@ const Overview = () => {
                     ))}
                     <TouchableOpacity
                       activeOpacity={0.3}
-                      onPress={() => console.log('Navigate to Full Insights')}
+                      onPress={() => console.log("Navigate to Full Insights")}
                       style={{
-                        flex:1,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent:"center",
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
                         marginVertical: 6,
                       }}
                     >
@@ -219,7 +222,7 @@ const Overview = () => {
                         style={{
                           color: "#808080",
                           fontSize: 15,
-                          fontWeight: '700', // Bold
+                          fontWeight: "700", // Bold
                         }}
                       >
                         Full Insights
@@ -285,7 +288,7 @@ const Overview = () => {
                 router.push("/(app)/(profile)/edit-overview?about=true")
               }
             >
-              <Feather name="edit" size={18 * scaleFactor} color="#717171" /> 
+              <Feather name="edit" size={18 * scaleFactor} color="#717171" />
             </TouchableOpacity>
           </View>
         </View>
@@ -293,8 +296,10 @@ const Overview = () => {
 
       {/* recent posts */}
       <RecentPostsSection
-        posts={posts}
-        onSeeAllPress={() =>  router.push("/(app)/(tabs)/profile/activity/posts")}
+        posts={userPosts}
+        onSeeAllPress={() =>
+          router.push("/(app)/(tabs)/profile/activity/posts")
+        }
         scaleFactor={scaleFactor}
       />
     </ScrollView>
@@ -397,88 +402,120 @@ const styles = StyleSheet.create({
   },
 });
 
+const textColor = "#FFFFFF";
+const secondaryTextColor = "#A9A9A9";
+const dividerColor = "#A9A9A9";
 
-const textColor = '#FFFFFF';
-const secondaryTextColor = '#A9A9A9';
-const dividerColor = '#A9A9A9';
-
-const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-export const TeamEntry = ({ team } : any) => {
+const month = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+export const TeamEntry = ({ team }: any) => {
   console.log(team);
   return (
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap:10}}>
-    {/* Team Logo */}
-    <Image
-      source={{uri: team.team.logo.url}}
-      // source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
-      style={{
-        width: 60 * scaleFactor,
-        height: 60 * scaleFactor,
-        borderRadius: 100,
-        // marginRight: 10,
-        marginBottom:18
-      }}
-    />
-    {/* Team Details */}
-    <View className="flex flex-col ml-5 items-start justify-between gap-2 py-3">
-      <View className="flex flex-col gap-0.5">
-        <Text
-          style={{
-            color: textColor,
-            fontSize: 16,
-            fontWeight: '700', // Bold
-          }}
-        >
-          {team.team.name}
-          {/* Kolkata Knight Riders */}
-        </Text>
-        <Text
-          style={{
-            color: secondaryTextColor,
-            fontSize: 10,
-            fontWeight: '400', // Regular
-          }}
-        >
-          {team.location || "Location Not Available"}
-          {/* Kolkata, West Bengal, India */}
-        </Text>
-      </View>
-      <View
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      {/* Team Logo */}
+      <Image
+        source={{ uri: team.team.logo.url }}
+        // source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
         style={{
-          flex:1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent:"space-between",
-          // gap:20,
-          marginTop: 5,
+          width: 60 * scaleFactor,
+          height: 60 * scaleFactor,
+          borderRadius: 100,
+          // marginRight: 10,
+          marginBottom: 18,
         }}
-      >
-        <View style={{ flexDirection:"column", gap:2, alignItems: 'flex-start'}}>
-          <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>Joined: </Text>
-          <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
-            {team.creationDate || team.joiningDate
-            ? `${month[new Date(
-                team.creationDate || team.joiningDate
-              ).getMonth()]}, ${new Date(
-                team.creationDate || team.joiningDate
-              ).getFullYear()}`
-            : "NA"}
+      />
+      {/* Team Details */}
+      <View className="flex flex-col ml-5 items-start justify-between gap-2 py-3">
+        <View className="flex flex-col gap-0.5">
+          <Text
+            style={{
+              color: textColor,
+              fontSize: 16,
+              fontWeight: "700", // Bold
+            }}
+          >
+            {team.team.name}
+            {/* Kolkata Knight Riders */}
+          </Text>
+          <Text
+            style={{
+              color: secondaryTextColor,
+              fontSize: 10,
+              fontWeight: "400", // Regular
+            }}
+          >
+            {team.location || "Location Not Available"}
+            {/* Kolkata, West Bengal, India */}
           </Text>
         </View>
         <View
           style={{
-            width: 1,
-            height: 30,
-            backgroundColor: dividerColor,
-            marginHorizontal: 20,
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            // gap:20,
+            marginTop: 5,
           }}
-        />
-        <View style={{ flexDirection:"column", gap:2, alignItems: 'flex-start'}}>
-          <Text style={{ color: textColor, fontSize: 12, fontWeight: "700"}}>Role: </Text>
-          <Text style={{ color: secondaryTextColor, fontSize: 12 }}>{team.role || "NA"}</Text>
+        >
+          <View
+            style={{
+              flexDirection: "column",
+              gap: 2,
+              alignItems: "flex-start",
+            }}
+          >
+            <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>
+              Joined:{" "}
+            </Text>
+            <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
+              {team.creationDate || team.joiningDate
+                ? `${
+                    month[
+                      new Date(team.creationDate || team.joiningDate).getMonth()
+                    ]
+                  }, ${new Date(
+                    team.creationDate || team.joiningDate
+                  ).getFullYear()}`
+                : "NA"}
+            </Text>
+          </View>
+          <View
+            style={{
+              width: 1,
+              height: 30,
+              backgroundColor: dividerColor,
+              marginHorizontal: 20,
+            }}
+          />
+          <View
+            style={{
+              flexDirection: "column",
+              gap: 2,
+              alignItems: "flex-start",
+            }}
+          >
+            <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>
+              Role:{" "}
+            </Text>
+            <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
+              {team.role || "NA"}
+            </Text>
+          </View>
         </View>
       </View>
     </View>
-  </View>
-)};
-
+  );
+};

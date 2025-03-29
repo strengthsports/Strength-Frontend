@@ -80,6 +80,9 @@ export default function ExploreMainLayout() {
     <SafeAreaView className="flex-1">
       <View className="">
         <SearchBar />
+
+        {/* Border */}
+        <View className="h-[0.8] bg-[#454545]" />
       </View>
       <CategoryComponent />
     </SafeAreaView>

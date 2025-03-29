@@ -8,14 +8,6 @@ import { Colors } from "~/constants/Colors";
 
 // Lazy loading for sports categories
 const TrendingAll = lazy(() => import("./TrendingAll"));
-const CricketAll = lazy(() => import("./CricketAll"));
-const FootballAll = lazy(() => import("./FootballAll"));
-const BadmintonAll = lazy(() => import("./BadmintonAll"));
-const HockeyAll = lazy(() => import("./HockeyAll"));
-const AllBasketball = lazy(() => import("./BasketballAll"));
-const KabaddiAll = lazy(() => import("./KabaddiAll"));
-// const TennisAll = lazy(() => import("./TennisAll"));
-const TableTennisAll = lazy(() => import("./TableTennisAll"));
 
 const DefaultContent = () => <ComingSoon text="More" />;
 
@@ -39,14 +31,14 @@ const componentMap: Record<
   React.LazyExoticComponent<() => JSX.Element>
 > = {
   Trending: TrendingAll,
-  Cricket: CricketAll,
-  Football: FootballAll,
-  Badminton: BadmintonAll,
-  Hockey: HockeyAll,
-  Basketball: AllBasketball,
-  Kabbadi: KabaddiAll,
-  Tennis: TableTennisAll,
-  "Table Tennis": TableTennisAll,
+  Cricket: TrendingAll,
+  Football: TrendingAll,
+  Badminton: TrendingAll,
+  Hockey: TrendingAll,
+  Basketball: TrendingAll,
+  Kabbadi: TrendingAll,
+  Tennis: TrendingAll,
+  "Table Tennis": TrendingAll,
   "More \u2193": DefaultContent,
   Default: DefaultContent,
 };

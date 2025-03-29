@@ -43,8 +43,6 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
         onPress={() => setModalVisible(true)}
         className="justify-center items-center ml-3"
       >
-        {/* <MaterialCommunityIcons name="plus" size={20} color="white" /> */}
-        {/* <FontAwesome5 name="sliders-h" size={24} color="white" /> */}
         <FilterIcon />
         <FilterModal
           visible={modalVisible}

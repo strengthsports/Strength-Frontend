@@ -26,11 +26,13 @@ import nopic from "@/assets/images/nopic.jpg";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import CustomBottomSheet from "../ui/CustomBottomSheet";
-import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
 import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import { FollowUser } from "~/types/user";
+import { useFollow } from "~/hooks/useFollow";
+import { showFeedback } from "~/utils/feedbackToast";
 
 type TaggedUser = {
   _id: string;
@@ -57,6 +59,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
+
+    const { followUser, unFollowUser } = useFollow();
+
     // State to hold the selected data from the button press
     const [isBottomSheetOpen, setBottomSheetOpen] = useState<any>({
       type: "",
@@ -68,7 +73,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const [activeIndex, setActiveIndex] = useState<any>(0);
 
     // Ref for the bottom sheet
-    const likeBottomSheetRef = useRef(null);
     const settingsBottomSheetRef = useRef(null);
 
     // Ref for the like animation
@@ -79,23 +83,14 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       console.log(`${type} Bottom sheet opens...`);
       handleBottomSheet && handleBottomSheet(true);
       setBottomSheetOpen({ type, status: true });
-      type === "like"
-        ? likeBottomSheetRef.current?.scrollTo(-550)
-        : type === "settings"
+      type === "settings"
         ? settingsBottomSheetRef.current?.scrollTo(-220)
         : null;
     };
 
     // To close bottom sheet
     const handleCloseBottomSheet = ({ type }: { type: string }) => {
-      console.log("Called");
-      console.log(type);
-      console.log(likeBottomSheetRef);
-      type === "like"
-        ? likeBottomSheetRef.current?.scrollTo(0)
-        : type === "settings"
-        ? settingsBottomSheetRef.current?.scrollTo(0)
-        : null;
+      type === "settings" ? settingsBottomSheetRef.current?.scrollTo(0) : null;
       setBottomSheetOpen({ type, status: false });
       handleBottomSheet && handleBottomSheet(false);
     };
@@ -127,8 +122,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     // Handle like on double tap on post
     const handleDoubleTap = () => {
       if (!item.isLiked) {
-        // setIsLiked(true);
-        // setLikeCount(prev => prev + 1);
+        dispatch(toggleLike({ targetId: item._id, targetType: "Post" }));
       }
       scaleAnim.setValue(0);
       Animated.sequence([
@@ -149,6 +143,27 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     // Handle like on button press
     const handleLike = () => {
       dispatch(toggleLike({ targetId: item._id, targetType: "Post" }));
+    };
+
+    // Handle Follow
+    const handleFollow = async () => {
+      const followData: FollowUser = {
+        followingId: item.postedBy._id,
+        followingType: item.postedBy.type,
+      };
+
+      showFeedback(`You are now following ${item.postedBy.firstName}`);
+      await followUser(followData);
+    };
+
+    // Handle Unfollow
+    const handleUnfollow = async () => {
+      const unfollowData: FollowUser = {
+        followingId: item.postedBy._id,
+        followingType: item.postedBy.type,
+      };
+
+      await unFollowUser(unfollowData);
     };
 
     // Set slider active index
@@ -288,7 +303,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             {user?._id !== item.postedBy?._id && !item.isFollowing && (
               <TouchableOpacity
                 className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
-                // onPress={handleFollow}
+                onPress={handleFollow}
+                activeOpacity={0.6}
               >
                 <TextScallingFalse className="text-white text-sm">
                   + Follow
@@ -316,10 +332,12 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   isBottomSheetOpen.status && (
                     <MoreModal
                       firstName={item.postedBy.firstName}
-                      followingStatus={item.followingStatus}
+                      followingStatus={item.isFollowing}
                       isOwnPost={item.postedBy._id === item.currUser}
                       postId={item._id}
                       isReported={item.isReported}
+                      handleFollow={handleFollow}
+                      handleUnfollow={handleUnfollow}
                     />
                   )}
               </CustomBottomSheet>

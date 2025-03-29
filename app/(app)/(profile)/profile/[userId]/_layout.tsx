@@ -148,12 +148,6 @@ const ProfileLayout = () => {
     try {
       setFollowingStatus(true);
       setFollowerCount((prev) => prev + 1);
-      dispatch(
-        updateAllPostsFollowStatus({
-          userId: profileData._id,
-          isFollowing: true,
-        })
-      );
       const followData: FollowUser = {
         followingId: profileData._id,
         followingType: profileData.type,
@@ -163,12 +157,6 @@ const ProfileLayout = () => {
     } catch (err) {
       setFollowingStatus(false);
       setFollowerCount((prev) => prev - 1);
-      dispatch(
-        updateAllPostsFollowStatus({
-          userId: profileData._id,
-          isFollowing: false,
-        })
-      );
       console.error("Follow error:", err);
     }
   };
@@ -179,12 +167,6 @@ const ProfileLayout = () => {
     try {
       setFollowingStatus(false);
       setFollowerCount((prev) => prev - 1);
-      dispatch(
-        updateAllPostsFollowStatus({
-          userId: profileData._id,
-          isFollowing: false,
-        })
-      );
       const unfollowData: FollowUser = {
         followingId: profileData._id,
         followingType: profileData.type,
@@ -194,12 +176,6 @@ const ProfileLayout = () => {
     } catch (err) {
       setFollowingStatus(true);
       setFollowerCount((prev) => prev + 1);
-      dispatch(
-        updateAllPostsFollowStatus({
-          userId: profileData._id,
-          isFollowing: true,
-        })
-      );
       console.error("Unfollow error:", err);
     }
   };

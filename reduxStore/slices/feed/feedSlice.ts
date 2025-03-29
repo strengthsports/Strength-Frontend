@@ -279,6 +279,28 @@ const feedSlice = createSlice({
         postsAdapter.updateMany(state.posts, updates);
       }
     },
+    updateAllPostsReportStatus: (
+      state,
+      action: PayloadAction<{
+        postId: string;
+        isReported: boolean;
+      }>
+    ) => {
+      const { postId, isReported } = action.payload;
+
+      // Find all posts by this postId
+      const updates = Object.values(state.posts.entities)
+        .filter((post) => post?._id === postId)
+        .map((post) => ({
+          id: post._id,
+          changes: { isReported },
+        }));
+
+      // Update all matching posts
+      if (updates.length > 0) {
+        postsAdapter.updateMany(state.posts, updates);
+      }
+    },
     resetFeed: () => initialState,
   },
   extraReducers: (builder) => {
@@ -329,8 +351,13 @@ const feedSlice = createSlice({
   },
 });
 
-export const { updatePost, mergePosts, updateAllPostsFollowStatus, resetFeed } =
-  feedSlice.actions;
+export const {
+  updatePost,
+  mergePosts,
+  updateAllPostsFollowStatus,
+  updateAllPostsReportStatus,
+  resetFeed,
+} = feedSlice.actions;
 
 export const { selectAll: selectAllPosts, selectById: selectPostById } =
   postsAdapter.getSelectors((state: RootState) => state.feed.posts);

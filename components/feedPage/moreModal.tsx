@@ -11,15 +11,12 @@ import {
   Platform,
   ToastAndroid,
 } from "react-native";
-import { Divider } from "react-native-elements";
 import { useDeletePostMutation } from "~/reduxStore/api/feed/features/feedApi.DeletePost";
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "../CentralText";
 import Toast from "react-native-toast-message";
 import { ReportPost } from "~/types/post";
-import { useFollow } from "~/hooks/useFollow";
 import { useReport } from "~/hooks/useReport";
-import { FollowUser } from "~/types/user";
 
 const modalText = "text-white ml-4 text-4xl";
 const modalOption = "flex-row items-center py-3 px-2 rounded-lg";
@@ -31,12 +28,16 @@ const MoreModal = memo(
     isReported,
     isOwnPost,
     postId,
+    handleFollow,
+    handleUnfollow,
   }: {
     firstName: string;
     followingStatus: boolean;
     isReported: boolean;
     isOwnPost: boolean;
     postId: string;
+    handleFollow?: () => void;
+    handleUnfollow?: () => void;
   }) => {
     const isAndroid = Platform.OS === "android";
     const [deletePost, { isLoading }] = useDeletePostMutation(); // Use the delete mutation
@@ -44,10 +45,7 @@ const MoreModal = memo(
     const [isReportModalOpen, setReportModalOpen] = useState(false);
     const [isOptionsVisible, setOptionsVisible] = useState(false);
     const [selectedOption, setSelectedOption] = useState("");
-    const [isPostReported, setIsReported] = useState<boolean>(isReported);
-    const [currfollowingStatus, setFollowingStatus] = useState<boolean>(false);
 
-    const { followUser, unFollowUser } = useFollow();
     const { reportPost } = useReport();
 
     const handleDeletePost = async () => {
@@ -69,41 +67,41 @@ const MoreModal = memo(
       setOptionsVisible(false);
     };
 
-    //handle follow
-    const handleFollow = async () => {
-      try {
-        setFollowingStatus(true);
-        const followData: FollowUser = {
-          followingId: item.postedBy?._id,
-          followingType: item.postedBy?.type,
-        };
+    // //handle follow
+    // const handleFollow = async () => {
+    //   try {
+    //     setFollowingStatus(true);
+    //     const followData: FollowUser = {
+    //       followingId: item.postedBy?._id,
+    //       followingType: item.postedBy?.type,
+    //     };
 
-        await followUser(followData);
-      } catch (err) {
-        setFollowingStatus(false);
-        console.error("Follow error:", err);
-      }
-    };
+    //     await followUser(followData);
+    //   } catch (err) {
+    //     setFollowingStatus(false);
+    //     console.error("Follow error:", err);
+    //   }
+    // };
 
-    //handle unfollow
-    const handleUnfollow = async () => {
-      try {
-        setFollowingStatus(false);
-        const unfollowData: FollowUser = {
-          followingId: item.postedBy?._id,
-          followingType: item.postedBy?.type,
-        };
+    // //handle unfollow
+    // const handleUnfollow = async () => {
+    //   try {
+    //     setFollowingStatus(false);
+    //     const unfollowData: FollowUser = {
+    //       followingId: item.postedBy?._id,
+    //       followingType: item.postedBy?.type,
+    //     };
 
-        await unFollowUser(unfollowData);
-      } catch (err) {
-        setFollowingStatus(true);
-        console.error("Unfollow error:", err);
-      }
-    };
+    //     await unFollowUser(unfollowData);
+    //   } catch (err) {
+    //     setFollowingStatus(true);
+    //     console.error("Unfollow error:", err);
+    //   }
+    // };
 
     //handle report
     const handleReport = async () => {
-      setIsReported((prev) => !prev);
+      // setIsReported((prev) => !prev);
       const reportData: ReportPost = {
         targetId: postId,
         targetType: "Post",
@@ -139,20 +137,20 @@ const MoreModal = memo(
             <>
               <TouchableOpacity
                 className={modalOption}
-                onPress={() => isPostReported || setReportModalOpen(true)}
-                disabled={isPostReported}
+                onPress={() => isReported || setReportModalOpen(true)}
+                disabled={isReported}
               >
                 <MaterialIcons
                   name="report-problem"
                   size={22}
-                  color={isPostReported ? "#808080" : "white"}
+                  color={isReported ? "#808080" : "white"}
                 />
                 <Text
                   className={`${
-                    isPostReported ? "text-[#808080]" : "text-white"
+                    isReported ? "text-[#808080]" : "text-white"
                   } ml-4 text-4xl`}
                 >
-                  {isPostReported ? "Reported" : "Report"}
+                  {isReported ? "Reported" : "Report"}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity

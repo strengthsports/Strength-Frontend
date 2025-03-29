@@ -152,7 +152,7 @@ const PostDetailsPage = () => {
           keyExtractor={(item) => item._id}
           ListHeaderComponent={ListHeader}
           renderItem={({ item }) => (
-            <View className="px-4">{renderItem({ item })}</View>
+            <View className="px-2">{renderItem({ item })}</View>
           )}
           inverted={false}
           ListEmptyComponent={

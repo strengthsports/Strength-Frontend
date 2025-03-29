@@ -1,43 +1,47 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
 import { useRouter } from "expo-router";
 import PostContainer from "~/components/Cards/postContainer";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
-  Platform,
   View,
+  Animated,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import {
-  useFetchCommentsQuery,
-  usePostCommentMutation,
-} from "~/reduxStore/api/feed/features/feedApi.comment";
+import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 import { CommenterCard } from "~/components/feedPage/CommentModal";
+import { Divider } from "react-native-elements";
+import { AppDispatch, RootState } from "~/reduxStore";
+import { Post } from "~/types/post";
+import { useLocalSearchParams } from "expo-router";
+import {
+  postComment,
+  selectPostById,
+} from "~/reduxStore/slices/feed/feedSlice";
+import { Platform } from "react-native";
+import { Colors } from "~/constants/Colors";
+import { Image } from "react-native";
 import { TextInput } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Divider } from "react-native-elements";
-import { Image } from "react-native";
 import nopic from "@/assets/images/nopic.jpg";
-import { Colors } from "~/constants/Colors";
-import { RootState } from "~/reduxStore";
-import { Post } from "~/types/post";
-import { useLocalSearchParams } from "expo-router";
-import { selectPostById } from "~/reduxStore/slices/feed/feedSlice";
-// import { selectPostById } from "~/reduxStore/slices/post/postSlice";
 
 const PostDetailsPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const params = useLocalSearchParams();
-  const postId = params?.postId as string; // Extract postId from URL params
-  // console.log("Post ID : ", postId);
+  const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
   const post = useSelector((state: RootState) => selectPostById(state, postId));
-  // console.log(post);
+  // Animated value for progress bar
+  const progress = useRef(new Animated.Value(0)).current;
+
+  const [commentText, setCommentText] = useState<string>("");
+  const [isPosting, setIsPosting] = useState<boolean>(false);
 
   if (!post) {
     return <TextScallingFalse>Post not found</TextScallingFalse>;
@@ -60,9 +64,7 @@ const PostDetailsPage = () => {
     error: fetchError,
     isLoading: isFetching,
     refetch: refetchComments,
-  } = useFetchCommentsQuery({ targetId: post?._id, targetType: "Post" });
-
-  const [postComment, { isLoading: isPosting }] = usePostCommentMutation();
+  } = useFetchCommentsQuery({ targetId: post._id, targetType: "Post" });
 
   useEffect(() => {
     if (fetchError) {
@@ -80,6 +82,35 @@ const PostDetailsPage = () => {
     ),
     [post?._id]
   );
+
+  // Handle post comment
+  const handlePostComment = async () => {
+    if (!commentText.trim()) return;
+    setIsPosting(true);
+    setCommentText("");
+    await dispatch(
+      postComment({
+        targetId: post._id,
+        targetType: "Post", // or 'comment' etc.
+        text: commentText,
+      })
+    ).unwrap();
+    await refetchComments();
+    setIsPosting(false);
+  };
+
+  // Loading while posting comment
+  useEffect(() => {
+    if (isPosting) {
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      progress.setValue(0);
+    }
+  }, [isPosting, progress]);
 
   // ListHeaderComponent combining the TopBar, PostContainer and "Comments" title
   const ListHeader = () => (
@@ -100,6 +131,12 @@ const PostDetailsPage = () => {
     </View>
   );
 
+  // Interpolate progress into a width percentage string.
+  const widthInterpolated = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0%", "100%"],
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-black">
       <KeyboardAvoidingView
@@ -108,7 +145,10 @@ const PostDetailsPage = () => {
       >
         <FlatList
           ref={flatListRef}
-          data={comments?.data}
+          data={[...(comments?.data || [])].sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )}
           keyExtractor={(item) => item._id}
           ListHeaderComponent={ListHeader}
           renderItem={({ item }) => (
@@ -136,10 +176,21 @@ const PostDetailsPage = () => {
         {/* Sticky comment input bar */}
         <View className="absolute left-0 right-0 bottom-0">
           <View className="bg-black">
+            {/* Static divider as background */}
             <Divider
               className="w-full rounded-full bg-neutral-700 mb-[1px]"
               width={0.3}
             />
+            {/* Progress bar */}
+            {isPosting && (
+              <Animated.View
+                style={{
+                  height: 4,
+                  width: widthInterpolated,
+                  backgroundColor: "#12956B",
+                }}
+              />
+            )}
             <View className="bg-black p-2">
               <View className="w-full flex-row items-center justify-around rounded-full bg-neutral-900 px-4 py-1.5">
                 <Image
@@ -153,9 +204,25 @@ const PostDetailsPage = () => {
                   className="flex-1 px-4 bg-neutral-900 text-white"
                   placeholderTextColor="grey"
                   cursorColor={Colors.themeColor}
+                  value={commentText}
+                  onChangeText={setCommentText}
                 />
-                <TouchableOpacity disabled={isPosting}>
-                  <MaterialIcons name="send" size={22} color="grey" />
+                <TouchableOpacity
+                  onPress={handlePostComment}
+                  disabled={isPosting}
+                >
+                  <MaterialIcons
+                    className="p-2"
+                    name="send"
+                    size={22}
+                    color={
+                      isPosting
+                        ? "#292A2D"
+                        : commentText
+                        ? Colors.themeColor
+                        : "grey"
+                    }
+                  />
                 </TouchableOpacity>
               </View>
             </View>

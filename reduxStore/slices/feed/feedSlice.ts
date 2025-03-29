@@ -133,14 +133,12 @@ export const fetchUserPosts = createAsyncThunk<
   }
 });
 
-// Fetch own posts
-
 // Like-Unlike
 export const toggleLike = createAsyncThunk(
   "feed/toggleLike",
   async (
     { targetId, targetType }: { targetId: string; targetType: string },
-    { getState, dispatch }
+    { getState, dispatch, rejectWithValue }
   ) => {
     const state = getState() as RootState;
     const post = selectPostById(state, targetId);
@@ -175,17 +173,74 @@ export const toggleLike = createAsyncThunk(
           body: JSON.stringify({ targetId, targetType }),
         }
       );
-      console.log(response);
+
+      if (!response.ok) throw new Error("Failed to like post");
+
       return updatedPost;
     } catch (error) {
       // Rollback on error
       dispatch(updatePost(post));
-      throw error;
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to like post"
+      );
     }
   }
 );
 
 // Post Comment
+export const postComment = createAsyncThunk(
+  "feed/postComment",
+  async (
+    {
+      targetId,
+      targetType,
+      text,
+    }: { targetId: string; targetType: string; text: string },
+    { getState, dispatch, rejectWithValue }
+  ) => {
+    console.log("Called");
+    const state = getState() as RootState;
+    const post = selectPostById(state, targetId);
+
+    // Optimistic update
+    const updatedPost = {
+      ...post,
+      commentsCount: post.commentsCount + 1,
+    };
+
+    // Update Redux state immediately
+    dispatch(updatePost(updatedPost));
+
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Authorization token not found");
+      console.log("Token : ", token);
+
+      // Actual API call
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/comment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ targetId, targetType, text }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to post comment");
+
+      return updatedPost;
+    } catch (error: any) {
+      // Rollback on error
+      dispatch(updatePost(post));
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to comment on post"
+      );
+    }
+  }
+);
 
 // Delete Comment
 
@@ -248,6 +303,7 @@ const feedSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
+    // Add
   },
 });
 

@@ -23,6 +23,7 @@ import { likerApi } from "./api/feed/features/feedApi.getLiker";
 import { handleCommentApi } from "./api/feed/features/feedApi.comment";
 import { feedApi } from "./api/feed/services/feedApi";
 import { profileApi } from "./api/profile/profileApi";
+import { notificationApi } from "./api/notificationApi";
 
 // Persist configuration
 const persistConfig = {
@@ -40,6 +41,7 @@ const rootReducer = combineReducers({
   [communityApi.reducerPath]: communityApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  [notificationApi.reducerPath]: notificationApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -54,7 +56,8 @@ export const store = configureStore({
     }).concat(
       communityApi.middleware,
       feedApi.middleware,
-      profileApi.middleware
+      profileApi.middleware,
+      notificationApi.middleware
     ),
 });
 

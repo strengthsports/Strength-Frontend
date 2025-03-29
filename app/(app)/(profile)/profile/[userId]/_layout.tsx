@@ -41,20 +41,17 @@ import { useLazyGetUserProfileQuery } from "~/reduxStore/api/profile/profileApi.
 import flag from "@/assets/images/IN.png";
 import nocoverpic from "@/assets/images/nocover.png";
 import nopic from "@/assets/images/nopic.jpg";
-import {
-  useBlockUserMutation,
-  useUnblockUserMutation,
-} from "~/reduxStore/api/profile/profileApi.block";
+import { useBlockUserMutation } from "~/reduxStore/api/profile/profileApi.block";
 import { Divider } from "react-native-elements";
 import { useReport } from "~/hooks/useReport";
 import { FollowUser, ReportUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
-import { pushFollowings } from "~/reduxStore/slices/user/profileSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "~/reduxStore";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 import PicModal from "~/components/profilePage/PicModal";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
+import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
 
 // Define the context type
 interface ProfileContextType {
@@ -79,16 +76,10 @@ const ProfileLayout = () => {
       ? JSON.parse(decodeURIComponent(params.userId as string))
       : null;
   }, [params.userId]);
-  // console.log(userId);
-  const isFollowing = useSelector((state: RootState) =>
-    state.profile.followings.includes(userId.id)
-  );
-  console.log("Id : ", userId, "Following : ", isFollowing);
   // RTK Querys
   const [getUserProfile, { data: profileData, isLoading, error }] =
     useLazyGetUserProfileQuery();
   const [blockUser] = useBlockUserMutation();
-  const [unblockUser] = useUnblockUserMutation();
 
   // Custom hooks
   const { reportUser, undoReportUser } = useReport();
@@ -103,15 +94,9 @@ const ProfileLayout = () => {
     status: false,
     message: "",
   });
-  const [followingStatus, setFollowingStatus] = useState<boolean>(
-    isFollowing as boolean
-  );
-  const [followerCount, setFollowerCount] = useState<number>(
-    profileData?.followerCount
-  );
-  const [isReported, setIsReported] = useState<boolean>(
-    profileData?.reportingStatus
-  );
+  const [followingStatus, setFollowingStatus] = useState<boolean>();
+  const [followerCount, setFollowerCount] = useState<number>();
+  const [isReported, setIsReported] = useState<boolean>();
 
   // Fetch user profile when the component mounts
   useEffect(() => {
@@ -125,12 +110,11 @@ const ProfileLayout = () => {
 
   useEffect(() => {
     if (profileData) {
-      console.log(profileData.followingStatus);
-      profileData?.followingStatus &&
-        !isFollowing &&
-        dispatch(pushFollowings(userId.id));
+      setFollowingStatus(profileData.followingStatus);
+      setFollowerCount(profileData.followerCount);
+      setIsReported(profileData.reportingStatus);
     }
-  }, [profileData, dispatch]);
+  }, [profileData]);
 
   //close modal on back button press
   useEffect(() => {
@@ -164,6 +148,12 @@ const ProfileLayout = () => {
     try {
       setFollowingStatus(true);
       setFollowerCount((prev) => prev + 1);
+      dispatch(
+        updateAllPostsFollowStatus({
+          userId: profileData._id,
+          isFollowing: true,
+        })
+      );
       const followData: FollowUser = {
         followingId: profileData._id,
         followingType: profileData.type,
@@ -173,6 +163,12 @@ const ProfileLayout = () => {
     } catch (err) {
       setFollowingStatus(false);
       setFollowerCount((prev) => prev - 1);
+      dispatch(
+        updateAllPostsFollowStatus({
+          userId: profileData._id,
+          isFollowing: false,
+        })
+      );
       console.error("Follow error:", err);
     }
   };
@@ -183,6 +179,12 @@ const ProfileLayout = () => {
     try {
       setFollowingStatus(false);
       setFollowerCount((prev) => prev - 1);
+      dispatch(
+        updateAllPostsFollowStatus({
+          userId: profileData._id,
+          isFollowing: false,
+        })
+      );
       const unfollowData: FollowUser = {
         followingId: profileData._id,
         followingType: profileData.type,
@@ -192,13 +194,19 @@ const ProfileLayout = () => {
     } catch (err) {
       setFollowingStatus(true);
       setFollowerCount((prev) => prev + 1);
+      dispatch(
+        updateAllPostsFollowStatus({
+          userId: profileData._id,
+          isFollowing: true,
+        })
+      );
       console.error("Unfollow error:", err);
     }
   };
 
   //handle message
   const handleMessage = () => {
-    if (!profileData?.followingStatus) {
+    if (!followingStatus) {
       setSettingsModalVisible({ status: true, message: "Message" });
     } else {
       router.push("/");
@@ -229,22 +237,6 @@ const ProfileLayout = () => {
     }
   };
 
-  //handle unblock
-  const handleUnblock = async () => {
-    if (userId) {
-      try {
-        // Perform the block action via mutation
-        await unblockUser({
-          blockedId: userId?.id,
-          blockedType: userId?.type,
-        }).unwrap();
-        console.log("Unblocked Successfully!");
-      } catch (err) {
-        console.error("Unblocking error:", err);
-      }
-    }
-  };
-
   //handle report
   const handleReport = async () => {
     setIsReported((prev) => !prev);
@@ -255,13 +247,6 @@ const ProfileLayout = () => {
     };
 
     await reportUser(reportData);
-  };
-
-  //handle undo report
-  const handleUndoReport = async () => {
-    setIsReported((prev) => !prev);
-    const payload = { targetId: profileData._id, targetType: profileData.type };
-    await undoReportUser(payload);
   };
 
   // Error component
@@ -718,25 +703,19 @@ const ProfileLayout = () => {
                 <TouchableOpacity
                   className="items-center flex-row gap-x-3"
                   onPress={handleReport}
-                  disabled={isReported || profileData?.reportingStatus}
+                  disabled={isReported}
                 >
                   <MaterialIcons
                     name="report-problem"
                     size={22}
-                    color={
-                      isReported || profileData?.reportingStatus
-                        ? "#808080"
-                        : "white"
-                    }
+                    color={isReported ? "#808080" : "white"}
                   />
                   <TextScallingFalse
                     className={`${
-                      isReported || profileData?.reportingStatus
-                        ? "text-[#808080]"
-                        : "text-white"
+                      isReported ? "text-[#808080]" : "text-white"
                     } font-normal text-3xl`}
                   >
-                    {isReported || profileData?.reportingStatus
+                    {isReported
                       ? "Reported this profile"
                       : "Report this profile"}
                   </TextScallingFalse>

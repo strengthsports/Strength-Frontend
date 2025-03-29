@@ -10,6 +10,7 @@ export const profileEndpoints = profileApi.injectEndpoints({
         body,
       }),
       transformResponse: (response: { data: any }) => response.data,
+      keepUnusedDataFor: 30,
       providesTags: (result, error, arg) =>
         result ? [{ type: "UserProfile", id: arg.targetUserId }] : [],
     }),

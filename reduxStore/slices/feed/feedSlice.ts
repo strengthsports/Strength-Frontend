@@ -257,6 +257,28 @@ const feedSlice = createSlice({
     mergePosts: (state, action: PayloadAction<Post[]>) => {
       postsAdapter.upsertMany(state.posts, action.payload);
     },
+    updateAllPostsFollowStatus: (
+      state,
+      action: PayloadAction<{
+        userId: string;
+        isFollowing: boolean;
+      }>
+    ) => {
+      const { userId, isFollowing } = action.payload;
+
+      // Find all posts by this user
+      const updates = Object.values(state.posts.entities)
+        .filter((post) => post?.postedBy._id === userId)
+        .map((post) => ({
+          id: post._id,
+          changes: { isFollowing },
+        }));
+
+      // Update all matching posts
+      if (updates.length > 0) {
+        postsAdapter.updateMany(state.posts, updates);
+      }
+    },
     resetFeed: () => initialState,
   },
   extraReducers: (builder) => {
@@ -307,7 +329,8 @@ const feedSlice = createSlice({
   },
 });
 
-export const { updatePost, mergePosts, resetFeed } = feedSlice.actions;
+export const { updatePost, mergePosts, updateAllPostsFollowStatus, resetFeed } =
+  feedSlice.actions;
 
 export const { selectAll: selectAllPosts, selectById: selectPostById } =
   postsAdapter.getSelectors((state: RootState) => state.feed.posts);

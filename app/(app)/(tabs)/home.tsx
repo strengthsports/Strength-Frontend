@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Text,
+  Animated,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
@@ -33,6 +34,9 @@ import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "~/components/CentralText";
 import { Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useScroll } from "~/context/ScrollContext";
+import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -44,6 +48,7 @@ const Home = () => {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
   const navigation = useNavigation();
+  const { scrollY } = useScroll();
 
   // Listener for tab press event to scroll to top and refresh posts
   useEffect(() => {
@@ -177,7 +182,7 @@ const Home = () => {
             did it!
           </TextScallingFalse>
           <TextScallingFalse className="text-4xl text-neutral-400">
-            Crafted with &#10084; in Kolkata, IN{" "}
+            Crafted with &#10084; in Kolkata, IN
           </TextScallingFalse>
         </View>
       );
@@ -195,12 +200,18 @@ const Home = () => {
   const isAndroid = Platform.OS === "android";
 
   return (
-    <View className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
+      <CustomHomeHeader />
       <GestureHandlerRootView>
-        <FlatList
+        <Animated.FlatList
           ref={flatListRef}
           data={interleavedData}
           keyExtractor={keyExtractor}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16}
           renderItem={renderItem}
           initialNumToRender={5}
           removeClippedSubviews={isAndroid}
@@ -218,9 +229,10 @@ const Home = () => {
           onEndReachedThreshold={2}
           ListEmptyComponent={<MemoizedEmptyComponent error={error} />}
           ListFooterComponent={<ListFooterComponent />}
+          contentContainerStyle={{ paddingTop: 60 }}
         />
       </GestureHandlerRootView>
-    </View>
+    </SafeAreaView>
   );
 };
 

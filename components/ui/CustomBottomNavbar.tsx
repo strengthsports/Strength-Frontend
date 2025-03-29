@@ -11,6 +11,7 @@ import { useScroll } from "@/context/ScrollContext";
 import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
 
+const BOTTOM_NAVBAR_HEIGHT = 65;
 interface CustomBottomNavbarProps {
   hasNewNotification: boolean;
   setHasNewNotification: (value: boolean) => void;
@@ -24,24 +25,34 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
   const segments = useSegments();
   const { scrollY } = useScroll();
 
-  // New animation logic
-  const translateY = scrollY.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: [0, 0, 1],
+  // // New animation logic
+  // const translateY = scrollY.interpolate({
+  //   inputRange: [-1, 0, 1],
+  //   outputRange: [0, 0, 1],
+  //   extrapolate: "clamp",
+  // });
+
+  // const navbarTranslate = Animated.add(
+  //   scrollY.interpolate({
+  //     inputRange: [0, 100],
+  //     outputRange: [0, Platform.OS === "ios" ? 80 : 60],
+  //     extrapolate: "clamp",
+  //   }),
+  //   translateY.interpolate({
+  //     inputRange: [0, 1],
+  //     outputRange: [0, -1],
+  //   })
+  // );
+
+  // Clamp the scroll value between 0 and HEADER_HEIGHT.
+  const clampedScrollY = Animated.diffClamp(scrollY, 0, BOTTOM_NAVBAR_HEIGHT);
+
+  // Interpolate to get a translateY value that moves the header up as you scroll down.
+  const headerTranslateY = clampedScrollY.interpolate({
+    inputRange: [0, BOTTOM_NAVBAR_HEIGHT],
+    outputRange: [0, BOTTOM_NAVBAR_HEIGHT],
     extrapolate: "clamp",
   });
-
-  const navbarTranslate = Animated.add(
-    scrollY.interpolate({
-      inputRange: [0, 100],
-      outputRange: [0, Platform.OS === "ios" ? 80 : 60],
-      extrapolate: "clamp",
-    }),
-    translateY.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, -1],
-    })
-  );
 
   // Combine segments to create current route string
   let activeRoute = segments.join("/");
@@ -71,7 +82,7 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
     <Animated.View
       style={[
         styles.container,
-        { transform: [{ translateY: navbarTranslate }] },
+        { transform: [{ translateY: headerTranslateY }] },
       ]}
     >
       {navItems.map((item, index) => {
@@ -125,7 +136,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.2,
     borderColor: "#808080",
     overflow: "hidden",
-    height: 65,
+    height: BOTTOM_NAVBAR_HEIGHT,
   },
   navItem: {
     alignItems: "center",

@@ -240,7 +240,7 @@ export default function Home() {
   if (isFetching && page === 1) {
     // Show a full-screen loader on the initial fetch.
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center bg-black">
         {/* <ActivityIndicator size="large" color={Colors.themeColor} /> */}
         <FeedSkeletonLoader />
       </View>

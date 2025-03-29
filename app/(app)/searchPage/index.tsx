@@ -23,6 +23,7 @@ import SearchInput from "~/components/search/searchInput";
 import SearchHistoryText from "~/components/search/searchHistoryText";
 import SearchHistoryProfile from "~/components/search/searchHistoryProfile";
 import nopic from "@/assets/images/nopic.jpg";
+import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
@@ -120,17 +121,18 @@ const SearchPage: React.FC = () => {
     <SafeAreaView>
       {/* Header Section */}
       <View
-        className="flex-row items-center my-3 gap-x-4 max-w-[640px] w-[95%] mx-auto"
+        className="flex-row items-center my-3 gap-x-2 max-w-[640px] w-[95%] mx-auto"
         onLayout={(event) => {
           const { height } = event.nativeEvent.layout;
           setSearchBarHeight(height); // 🟢 Store search bar height dynamically
         }}
       >
-        <TouchableOpacity onPress={() => router.back()}>
-          <AntDesign name="arrowleft" size={24} color="white" />
+        <TouchableOpacity style={{width: 30, height: 20, justifyContent:'center', alignItems:'center'}} onPress={() => router.back()}>
+          {/* <AntDesign name="arrowleft" size={24} color="white" /> */}
+          <BackIcon2 />
         </TouchableOpacity>
         <SearchInput searchText={searchText} setSearchText={setSearchText} />
-        <View className="w-3" />
+        <View className=" h-[2px] bg-purple-500"  />
       </View>
 
       {/* Live Search Results Dropdown */}

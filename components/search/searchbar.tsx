@@ -8,7 +8,7 @@ import {
 import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
 import { FilterModal } from "../explorePage/filter";
-import FilterIcon from "@/components/SvgIcons/filtericon";
+import SearchIcon from "../SvgIcons/Common_Icons/SearchIcon";
 
 const SearchBar = ({ searchText }: { searchText?: string }) => {
   const router = useRouter();
@@ -23,34 +23,19 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
     <View className="flex-row my-3 px-5">
       <TouchableOpacity
         activeOpacity={0.8}
-        className="flex-row bg-[#212121] rounded-3xl px-4 py-2 items-center flex-1"
+        className="flex-row bg-[#1E1E1E] rounded-3xl px-4 py-[10.2px] items-center flex-1"
         onPress={() => router.push("/(app)/searchPage")}
       >
-        <Feather name="search" size={22} color="grey" />
+        {/* <Feather name="search" size={22} color="grey" /> */}
+        <SearchIcon />
         <TextScallingFalse
-          className={`text-3xl pl-2 ${
+          className={`text-3xl pl-3 ${
             searchText ? "text-white" : "text-[#808080]"
           }`}
           aria-disabled={true}
         >
           {searchText || "Search..."}
         </TextScallingFalse>
-      </TouchableOpacity>
-
-      {/* Plus Icon */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => setModalVisible(true)}
-        className="justify-center items-center ml-3"
-      >
-        {/* <MaterialCommunityIcons name="plus" size={20} color="white" /> */}
-        {/* <FontAwesome5 name="sliders-h" size={24} color="white" /> */}
-        <FilterIcon />
-        <FilterModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onApplyFilters={applyFilters}
-        />
       </TouchableOpacity>
     </View>
   );

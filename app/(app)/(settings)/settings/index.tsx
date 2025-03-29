@@ -104,7 +104,7 @@ const index = () => {
   };
 
   return (
-    <SafeAreaView>
+    <PageThemeView>
       <View style={styles.TopBarView}>
         <TouchableOpacity
           activeOpacity={0.5}
@@ -612,7 +612,7 @@ const index = () => {
           </View>
         </PageThemeView>
       </Modal>
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

@@ -19,6 +19,9 @@ import {
 } from "~/reduxStore/api/community/communityApi";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextScallingFalse from "~/components/CentralText";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
+import SearcHeader from "~/components/search/SearchHeader";
+import SearchHeader from "~/components/search/SearchHeader";
 
 
 const Community = () => {
@@ -151,19 +154,14 @@ const Community = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black pt-3 px-4">
+    <SafeAreaView className="flex-1 bg-black">
       {/* Search Bar */}
-      <View style={{width:'100%', paddingHorizontal: 3}}>
-      <TouchableOpacity onPress={() => router.push("/(app)/searchPage")} activeOpacity={0.9} className="flex-row items-center bg-[#1E1E1E] px-4 rounded-full mb-3">
-        <Feather name="search" size={22} color="grey" />
-        <TextScallingFalse
-          className="text-[#808080] flex-1 ml-1 p-3 px-1 text-3xl"
-        >Search...</TextScallingFalse>
-      </TouchableOpacity>
+      <View style={{width:'100%'}}>
+      <SearchHeader />
       </View>
 
-      <Divider width={3} color="#1e1e1e" />
-
+      <Divider width={0.8} color="#181818" />
+       <View className="px-4">
       {/* Suggestions List */}
       {loadingSimilarSportsUsers ||
       loadingCitywiseUsers ||
@@ -180,6 +178,7 @@ const Community = () => {
           showsVerticalScrollIndicator={false}
         />
       )}
+      </View>
     </SafeAreaView>
   );
 };

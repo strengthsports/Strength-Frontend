@@ -6,6 +6,8 @@ import SearchBar from "~/components/search/searchbar";
 import { RootState } from "~/reduxStore";
 import TrendingAll from "./allCategory";
 import TrendingNews from "./newsCategory/TrendingNews";
+import SearcHeader from "~/components/search/SearchHeader";
+import SearchHeader from "~/components/search/SearchHeader";
 
 // Define the Category components
 
@@ -78,8 +80,9 @@ export default function ExploreMainLayout() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="border-b-[0.5px] border-b-[#505050]">
-        <SearchBar />
+      <View className="border-b-[0.5px] bg-black border-b-[#505050]">
+        {/* <SearchBar /> */}
+        <SearchHeader />
       </View>
       <CategoryComponent />
     </SafeAreaView>

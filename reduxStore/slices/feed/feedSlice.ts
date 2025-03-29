@@ -200,16 +200,19 @@ export const postComment = createAsyncThunk(
   ) => {
     console.log("Called");
     const state = getState() as RootState;
-    const post = selectPostById(state, targetId);
+    let post;
+    let updatedPost;
+    if (targetType === "Post") {
+      post = selectPostById(state, targetId);
+      // Optimistic update
+      updatedPost = {
+        ...post,
+        commentsCount: post.commentsCount + 1,
+      };
 
-    // Optimistic update
-    const updatedPost = {
-      ...post,
-      commentsCount: post.commentsCount + 1,
-    };
-
-    // Update Redux state immediately
-    dispatch(updatePost(updatedPost));
+      // Update Redux state immediately
+      dispatch(updatePost(updatedPost));
+    }
 
     try {
       const token = await getToken("accessToken");
@@ -234,7 +237,9 @@ export const postComment = createAsyncThunk(
       return updatedPost;
     } catch (error: any) {
       // Rollback on error
-      dispatch(updatePost(post));
+      if (targetType === "Post" && post) {
+        dispatch(updatePost(post));
+      }
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to comment on post"
       );

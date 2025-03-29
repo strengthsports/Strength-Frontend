@@ -36,3 +36,19 @@ export interface FeedResponse {
   statusCode: number;
   success: boolean;
 }
+
+export interface Comment {
+  _id: string;
+  postedBy: {
+    _id: string;
+    type: string;
+    profilePic: string;
+    firstName: string;
+    lastName: string;
+    headline: string;
+  };
+  text: string;
+  commentsCount: number;
+  likesCount: number;
+  [key: string]: any;
+}

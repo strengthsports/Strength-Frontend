@@ -26,6 +26,7 @@ import {
   usePostCommentMutation,
 } from "~/reduxStore/api/feed/features/feedApi.comment";
 import nopic from "@/assets/images/nopic.jpg";
+import { Comment } from "~/types/post";
 
 interface ReportModalProps {
   commentId: string;
@@ -104,43 +105,44 @@ const ReportModal = memo(
   }
 );
 
+interface CommenterCardProps {
+  comment: Comment;
+  targetId: string;
+  targetType: string;
+  onReply?: (comment: Comment) => void;
+  parent?: Comment;
+}
+
 export const CommenterCard = memo(
-  ({
-    comment,
-    targetId,
-    targetType,
-  }: {
-    comment: Comment;
-    targetId: string;
-    targetType: string;
-  }) => {
+  ({ comment, targetId, targetType, onReply, parent }: CommenterCardProps) => {
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
-    //check id match
-    const currentUserId = useSelector(
-      (state: RootState) => state.auth.user?._id
-    );
-    console.log("Comments : ", comment);
-    const commenterId = comment?.postedBy?._id;
-
     return (
-      <View className="pl-12 pr-1 py-2 my-2 relative ">
-        <TouchableOpacity className="w-14 h-14 absolute left-4 top-0 z-10 aspect-square rounded-full bg-slate-400">
+      <View className="pl-12 pr-1 py-2 my-2 relative">
+        <TouchableOpacity
+          className={`${
+            targetType === "Comment" ? "size-12 top-2" : "size-14 top-0"
+          } absolute left-4 z-10 aspect-square rounded-full bg-slate-400`}
+        >
           <Image
             className="w-full h-full rounded-full"
             source={
               comment?.postedBy?.profilePic
-                ? {
-                    uri: comment.postedBy.profilePic,
-                  }
+                ? { uri: comment.postedBy.profilePic }
                 : nopic
             }
           />
         </TouchableOpacity>
-        <View className="relative w-full bg-neutral-900 rounded-xl py-2 px-10">
-          <View className="absolute right-3 top-2 flex flex-row items-center gap-2 ">
+        <View
+          className={`relative ${
+            targetType === "Comment"
+              ? "ml-6 rounded-xl rounded-tl-none px-5"
+              : "w-full rounded-xl px-10"
+          } bg-neutral-900 py-2`}
+        >
+          <View className="absolute right-3 top-2 flex flex-row items-center gap-2">
             <TextScallingFalse className="text-xs text-neutral-300">
-              1w{" "}
+              1w
             </TextScallingFalse>
             <TouchableOpacity onPress={() => setIsReportModalVisible(true)}>
               <MaterialIcons name="more-horiz" size={16} color="white" />
@@ -151,17 +153,7 @@ export const CommenterCard = memo(
                   animationType="slide"
                   onRequestClose={() => setIsReportModalVisible(false)}
                 >
-                  <TouchableOpacity
-                    className="flex-1 justify-end bg-black/50"
-                    activeOpacity={1}
-                    onPress={() => setIsReportModalVisible(false)}
-                  ></TouchableOpacity>
-                  <ReportModal
-                    commentId={comment._id}
-                    targetId={targetId}
-                    targetType={targetType} //='Post'
-                    showDelete={commenterId === currentUserId}
-                  />
+                  {/* Report modal code here */}
                 </Modal>
               )}
             </TouchableOpacity>
@@ -171,7 +163,7 @@ export const CommenterCard = memo(
               {comment?.postedBy?.firstName} {comment?.postedBy?.lastName}
             </TextScallingFalse>
             <TextScallingFalse
-              className="text-xs w-4/5 text-neutral-200"
+              className="text-xs w-4/5 text-[#EAEAEA]"
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -179,41 +171,39 @@ export const CommenterCard = memo(
             </TextScallingFalse>
           </View>
           <TextScallingFalse className="text-xl text-white mt-4 mb-3">
+            <TextScallingFalse className="text-[#12956B] font-medium">
+              {targetType === "Comment" &&
+                parent?.postedBy.firstName +
+                  " " +
+                  parent?.postedBy.lastName +
+                  " "}
+            </TextScallingFalse>
             {comment?.text}
           </TextScallingFalse>
         </View>
         <View className="flex-row gap-2 items-center ml-10 mt-1">
           <TouchableOpacity>
-            <TextScallingFalse className="text-white text-lg">
+            <TextScallingFalse className="text-white text-lg font-medium">
               Like
             </TextScallingFalse>
           </TouchableOpacity>
-          <TextScallingFalse className="text-xs text-white">
+          <TextScallingFalse className="text-2xl text-[#939393]">
             |
           </TextScallingFalse>
-          <TouchableOpacity>
-            <TextScallingFalse className="text-white text-lg">
-              Reply
+          <TouchableOpacity onPress={() => onReply && onReply(comment)}>
+            <TextScallingFalse className="text-white text-lg font-medium">
+              Reply{" "}
             </TextScallingFalse>
           </TouchableOpacity>
+          <TextScallingFalse className="mt-1 text-xl text-[#939393] font-normal">
+            {comment.commentsCount > 0 && `• ${comment.commentsCount} replies`}
+          </TextScallingFalse>
         </View>
       </View>
     );
   }
 );
 
-interface Comment {
-  _id: string;
-  text: string;
-  createdAt: string;
-  postedBy: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    headline?: string;
-    profilePic?: string;
-  };
-}
 interface CommentModalProps {
   autoFocusKeyboard?: boolean;
   targetId: string;
@@ -262,11 +252,6 @@ const CommentModal = memo(
         console.error("Failed to fetch comments:", fetchError);
       }
     }, [fetchError]);
-    // const sortedComments = useMemo(() => {
-    //     return comments?.data?.slice().sort((a, b) => {
-    //         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    //     });
-    // }, [comments]) as Comment[] | undefined;
 
     const renderItem = useCallback(
       ({ item }: { item: Comment }) => (
@@ -290,20 +275,22 @@ const CommentModal = memo(
           {isFetching ? (
             <ActivityIndicator size="large" color={Colors.themeColor} />
           ) : (
-            <FlatList
-              data={comments?.data}
-              keyExtractor={(item) => item._id}
-              renderItem={renderItem}
-              initialNumToRender={5}
-              maxToRenderPerBatch={10}
-              inverted={true}
-              windowSize={5} // Controls how many items outside the visible area are kept in memory
-              ListEmptyComponent={
-                <TextScallingFalse className="text-white text-center">
-                  No Comments Found!
-                </TextScallingFalse>
-              }
-            />
+            <>
+              <FlatList
+                data={comments?.data}
+                keyExtractor={(item) => item._id}
+                renderItem={renderItem}
+                initialNumToRender={5}
+                maxToRenderPerBatch={10}
+                inverted={true}
+                windowSize={5} // Controls how many items outside the visible area are kept in memory
+                ListEmptyComponent={
+                  <TextScallingFalse className="text-white text-center">
+                    No Comments Found!
+                  </TextScallingFalse>
+                }
+              />
+            </>
           )}
         </View>
         <View className="absolute bottom-0 self-center w-full">

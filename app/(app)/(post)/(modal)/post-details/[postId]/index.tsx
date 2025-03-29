@@ -1,3 +1,4 @@
+// PostDetailsPage.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
@@ -10,25 +11,26 @@ import {
   KeyboardAvoidingView,
   View,
   Animated,
+  Platform,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Text,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 import { CommenterCard } from "~/components/feedPage/CommentModal";
 import { Divider } from "react-native-elements";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { Post } from "~/types/post";
+import { Comment, Post } from "~/types/post";
 import { useLocalSearchParams } from "expo-router";
 import {
   postComment,
   selectPostById,
 } from "~/reduxStore/slices/feed/feedSlice";
-import { Platform } from "react-native";
 import { Colors } from "~/constants/Colors";
-import { Image } from "react-native";
-import { TextInput } from "react-native";
-import { TouchableOpacity } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import nopic from "@/assets/images/nopic.jpg";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const PostDetailsPage = () => {
   const router = useRouter();
@@ -37,28 +39,36 @@ const PostDetailsPage = () => {
   const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
   const post = useSelector((state: RootState) => selectPostById(state, postId));
-  // Animated value for progress bar
-  const progress = useRef(new Animated.Value(0)).current;
 
+  // Animated progress bar
+  const progress = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef<FlatList>(null);
+  const textInputRef = useRef<TextInput>(null);
+
+  // The additional comment text (excludes the fixed reply tag)
   const [commentText, setCommentText] = useState<string>("");
   const [isPosting, setIsPosting] = useState<boolean>(false);
+
+  // Reply context: when replying, store the parent comment's id and name.
+  const [replyingTo, setReplyingTo] = useState<{
+    commentId: string;
+    name: string;
+  } | null>(null);
 
   if (!post) {
     return <TextScallingFalse>Post not found</TextScallingFalse>;
   }
 
-  const flatListRef = useRef<FlatList>(null);
-
-  // On mount, scroll to the end (which, if inverted, scrolls to the top of the list)
+  // Scroll to end on mount (if needed)
   useEffect(() => {
-    // Delay to allow layout to settle
     const timeout = setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
     return () => clearTimeout(timeout);
   }, []);
 
-  // Fetch comments for the target
+  // Fetch comments for the post. The backend now returns nested replies
+  // as an array on each comment (if any).
   const {
     data: comments,
     error: fetchError,
@@ -72,34 +82,79 @@ const PostDetailsPage = () => {
     }
   }, [fetchError]);
 
+  // When the Reply button is tapped, store the reply context.
+  const handleReply = (comment: Comment) => {
+    const replyTag = `${comment.postedBy.firstName} ${comment.postedBy.lastName}`;
+    setReplyingTo({
+      commentId: comment._id,
+      name: replyTag,
+    });
+    // Focus the input so the user can type their reply.
+    textInputRef.current?.focus();
+  };
+
+  // Render top-level comment and its nested replies.
   const renderItem = useCallback(
-    ({ item }: { item: Comment }) => (
-      <CommenterCard
-        comment={item}
-        targetId={post?._id as string}
-        targetType="Post"
-      />
+    ({ item }: { item: Comment & { replies?: Comment[] } }) => (
+      <View className="px-2">
+        <CommenterCard
+          comment={item}
+          targetId={post._id}
+          targetType="Post"
+          onReply={handleReply}
+        />
+        {item.replies && item.replies.length > 0 && (
+          <View className="ml-8 mt-2">
+            {item.replies.map((reply) => (
+              <CommenterCard
+                key={reply._id}
+                parent={item}
+                comment={reply}
+                targetId={item._id} // reply's parent id
+                targetType="Comment"
+                onReply={handleReply}
+              />
+            ))}
+          </View>
+        )}
+      </View>
     ),
-    [post?._id]
+    [post._id]
   );
 
-  // Handle post comment
+  // Update text input state. If user clears the input, remove the reply context.
+  const handleTextChange = (text: string) => {
+    setCommentText(text);
+    if (text === "" && replyingTo) {
+      setReplyingTo(null);
+    }
+  };
+
+  // Handle posting a new comment or reply.
   const handlePostComment = async () => {
     if (!commentText.trim()) return;
     setIsPosting(true);
+    const isReply = replyingTo !== null;
+    const textToPost = commentText;
+    // Clear the input and reply context.
     setCommentText("");
-    await dispatch(
-      postComment({
-        targetId: post._id,
-        targetType: "Post", // or 'comment' etc.
-        text: commentText,
-      })
-    ).unwrap();
-    await refetchComments();
+    if (isReply) setReplyingTo(null);
+    try {
+      await dispatch(
+        postComment({
+          targetId: isReply ? replyingTo!.commentId : post._id,
+          targetType: isReply ? "Comment" : "Post",
+          text: textToPost,
+        })
+      ).unwrap();
+      await refetchComments();
+    } catch (error) {
+      console.log("Failed to post comment:", error);
+    }
     setIsPosting(false);
   };
 
-  // Loading while posting comment
+  // Animate the progress bar while posting.
   useEffect(() => {
     if (isPosting) {
       Animated.timing(progress, {
@@ -112,7 +167,6 @@ const PostDetailsPage = () => {
     }
   }, [isPosting, progress]);
 
-  // ListHeaderComponent combining the TopBar, PostContainer and "Comments" title
   const ListHeader = () => (
     <View>
       <TopBar heading="" backHandler={() => router.back()} />
@@ -131,7 +185,6 @@ const PostDetailsPage = () => {
     </View>
   );
 
-  // Interpolate progress into a width percentage string.
   const widthInterpolated = progress.interpolate({
     inputRange: [0, 1],
     outputRange: ["0%", "100%"],
@@ -151,9 +204,7 @@ const PostDetailsPage = () => {
           )}
           keyExtractor={(item) => item._id}
           ListHeaderComponent={ListHeader}
-          renderItem={({ item }) => (
-            <View className="px-2">{renderItem({ item })}</View>
-          )}
+          renderItem={({ item }) => renderItem({ item })}
           inverted={false}
           ListEmptyComponent={
             isFetching ? (
@@ -176,12 +227,10 @@ const PostDetailsPage = () => {
         {/* Sticky comment input bar */}
         <View className="absolute left-0 right-0 bottom-0">
           <View className="bg-black">
-            {/* Static divider as background */}
             <Divider
               className="w-full rounded-full bg-neutral-700 mb-[1px]"
               width={0.3}
             />
-            {/* Progress bar */}
             {isPosting && (
               <Animated.View
                 style={{
@@ -192,20 +241,40 @@ const PostDetailsPage = () => {
               />
             )}
             <View className="bg-black p-2">
-              <View className="w-full flex-row items-center justify-around rounded-full bg-neutral-900 px-4 py-1.5">
+              <View className="w-full flex-row items-center rounded-full bg-neutral-900 px-4 py-1.5">
                 <Image
                   source={user?.profilePic ? { uri: user.profilePic } : nopic}
                   className="w-10 h-10 rounded-full"
                   resizeMode="cover"
                 />
+                {/* Fixed reply tag (if replying) */}
+                {replyingTo && (
+                  <View
+                    style={{
+                      backgroundColor: "#333",
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      marginLeft: 8,
+                    }}
+                  >
+                    <Text
+                      style={{ color: Colors.themeColor, fontWeight: "600" }}
+                    >
+                      {replyingTo.name}
+                    </Text>
+                  </View>
+                )}
+                {/* The text input holds only the additional comment text */}
                 <TextInput
+                  ref={textInputRef}
                   autoFocus={true}
                   placeholder="Type your comment here"
                   className="flex-1 px-4 bg-neutral-900 text-white"
                   placeholderTextColor="grey"
                   cursorColor={Colors.themeColor}
                   value={commentText}
-                  onChangeText={setCommentText}
+                  onChangeText={handleTextChange}
                 />
                 <TouchableOpacity
                   onPress={handlePostComment}

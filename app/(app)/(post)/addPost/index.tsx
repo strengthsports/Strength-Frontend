@@ -30,6 +30,10 @@ import CustomImageSlider from "~/components/Cards/imageSlideContainer";
 import AlertModal from "~/components/modals/AlertModal";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
+import PageThemeView from "~/components/PageThemeView";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
+import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -94,6 +98,7 @@ const ImageRatioModal = React.memo(
 
 export default function AddPostContainer() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const { text } = useLocalSearchParams();
   const placeholderText = text.toString();
   const [postText, setPostText] = useState("");
@@ -137,8 +142,10 @@ export default function AddPostContainer() {
   );
 
   // Use callbacks for event handlers to prevent unnecessary re-renders
-  const handlePostSubmit = useCallback(async () => {
+  const handlePostSubmit = useCallback(() => {
     if (!isPostButtonEnabled) return;
+    router.push("/(app)/(tabs)/home");
+    dispatch(setPostProgressOn(true));
 
     try {
       const formData = new FormData();
@@ -155,13 +162,19 @@ export default function AddPostContainer() {
       });
 
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
-
       formData.append("taggedUsers", JSON.stringify([]));
 
-      await addPost(formData).unwrap();
       setPostText("");
       setPickedImageUris([]);
-      router.push("/(app)/(tabs)/home");
+      addPost(formData)
+        .unwrap()
+        .finally(() => {
+          dispatch(setPostProgressOn(false));
+        })
+        .catch((error) => {
+          console.error("Failed to add post:", error);
+          alert("Failed to add post. Please try again.");
+        });
     } catch (error) {
       console.error("Failed to add post:", error);
       alert("Failed to add post. Please try again.");
@@ -173,6 +186,7 @@ export default function AddPostContainer() {
     postText,
     router,
     selectedAspectRatio,
+    dispatch,
   ]);
 
   // For selecting the first image with aspect ratio
@@ -267,14 +281,7 @@ export default function AddPostContainer() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{
-        flex: 1,
-        // backgroundColor: "black",
-      }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 5 : 0}
-    >
+    <PageThemeView>
       <View className="h-full">
         <View className="flex flex-row items-center justify-between p-4">
           <AddPostHeader onBackPress={navigateBack} />
@@ -446,6 +453,6 @@ export default function AddPostContainer() {
           discardAction: () => setAlertModalOpen(false),
         }}
       />
-    </KeyboardAvoidingView>
+    </PageThemeView>
   );
 }

@@ -15,6 +15,7 @@ import {
 } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./slices/user/authSlice";
+import postReducer from "./slices/post/postSlice";
 import profileReducer from "./slices/user/profileSlice";
 import feedReducer from "./slices/feed/feedSlice"; // Your feed slice
 import { communityApi } from "./api/community/communityApi";
@@ -27,7 +28,7 @@ import { profileApi } from "./api/profile/profileApi";
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "feed", "profile"],
+  whitelist: ["auth", "feed", "profile", "post"],
   blacklist: [], // Add any API reducers here
 };
 
@@ -35,6 +36,7 @@ const rootReducer = combineReducers({
   auth: authReducer,
   feed: feedReducer,
   profile: profileReducer,
+  post: postReducer,
   [communityApi.reducerPath]: communityApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,

@@ -23,13 +23,13 @@ import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profil
 import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { TeamEntry } from "~/app/(app)/(tabs)/profile";
-// import {
-//   addUserPosts,
-//   clearUserPosts,
-//   userPostsSelectors,
-// } from "~/reduxStore/slices/post/postSlice";
-import { AppDispatch } from "~/reduxStore";
-import { mergePosts } from "~/reduxStore/slices/feed/feedSlice";
+import { AppDispatch, RootState } from "~/reduxStore";
+import {
+  fetchUserPosts,
+  mergePosts,
+  selectPostsByUserId,
+} from "~/reduxStore/slices/feed/feedSlice";
+import { Post } from "~/types/post";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -41,29 +41,22 @@ const Overview = () => {
       : null;
   }, [params.userId]);
 
-  const [getUserSpecificPost, { data: fetchedPosts }] =
-    useLazyGetSpecificUserPostQuery();
+  // Get filtered posts from Redux
+  const userPosts = useSelector((state: RootState) =>
+    selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
+  );
 
+  // Fetch initial posts
   useEffect(() => {
-    const fetchAndMerge = async () => {
-      if (fetchedUserId) {
-        getUserSpecificPost({
-          postedBy: fetchedUserId?.id,
-          postedByType: fetchedUserId?.type,
-          limit: 10,
-          skip: 0,
-          // lastTimestamp: null,
-        });
-      }
-
-      // Merge into existing feed state
-      dispatch(mergePosts(fetchedPosts));
-    };
-
-    fetchAndMerge();
-  }, [fetchedUserId, getUserSpecificPost, dispatch]);
-
-  // console.log("\n\n\nPosts in specific user page : ", posts);
+    dispatch(
+      fetchUserPosts({
+        postedBy: fetchedUserId.id,
+        postedByType: fetchedUserId.type,
+        limit: 10,
+        skip: 0,
+      })
+    );
+  }, [fetchedUserId, dispatch]);
 
   const { width: screenWidth2 } = useWindowDimensions();
   const scaleFactor = screenWidth2 / 410;
@@ -188,7 +181,7 @@ const Overview = () => {
                   </View>
                 )}
 
-                {sport.teams?.length > 0 && (
+                {sport.teams.length > 0 && (
                   <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl mt-2">
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
@@ -290,7 +283,7 @@ const Overview = () => {
 
       {/* recent posts */}
       <RecentPostsSection
-        posts={fetchedPosts}
+        posts={userPosts}
         onSeeAllPress={() => {}}
         scaleFactor={scaleFactor}
       />

@@ -75,6 +75,63 @@ export const fetchFeedPosts = createAsyncThunk<
 });
 
 // Fetch specific user's posts
+export const fetchUserPosts = createAsyncThunk<
+  { posts: Post[]; lastTimestamp: string | null; nextPage: number },
+  {
+    postedBy: string;
+    postedByType: string;
+    limit?: number;
+    skip?: number;
+    lastTimestamp?: string | null;
+  },
+  { state: RootState; dispatch: AppDispatch }
+>("feed/fetchUserPosts", async (params, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Authorization token not found");
+
+    // Destructure parameters
+    const {
+      postedBy,
+      postedByType,
+      limit = 10,
+      skip = 0,
+      lastTimestamp = null,
+    } = params;
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/other-user?skip=${skip}&limit=${limit}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postedBy,
+          postedByType,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // console.log("Posts : ", data.data);
+
+    return {
+      posts: data.data.formattedPosts,
+      lastTimestamp: data.data.lastTimestamp,
+      nextPage: data.data.nextPage,
+    };
+  } catch (err: any) {
+    return rejectWithValue(
+      err instanceof Error ? err.message : "Failed to fetch user's posts"
+    );
+  }
+});
 
 // Fetch own posts
 
@@ -149,6 +206,7 @@ const feedSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Fetch feed posts
       .addCase(fetchFeedPosts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -169,6 +227,26 @@ const feedSlice = createSlice({
       .addCase(fetchFeedPosts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Fetch user specific posts
+      .addCase(fetchUserPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserPosts.fulfilled, (state, action) => {
+        const { posts, lastTimestamp, nextPage } = action.payload;
+        console.log("\n\nPosts : ", posts);
+
+        postsAdapter.upsertMany(state.posts, posts);
+
+        state.lastTimestamp = lastTimestamp;
+        // state.currentPage = nextPage;
+        // state.hasMore = !!lastTimestamp;
+        state.loading = false;
+      })
+      .addCase(fetchUserPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -177,6 +255,16 @@ export const { updatePost, mergePosts, resetFeed } = feedSlice.actions;
 
 export const { selectAll: selectAllPosts, selectById: selectPostById } =
   postsAdapter.getSelectors((state: RootState) => state.feed.posts);
+
+export const selectPostsByUserId = createSelector(
+  [
+    postsAdapter.getSelectors().selectAll,
+    (state: RootState, userId: string) => userId,
+  ],
+  (allPosts, userId) => {
+    return allPosts.filter((post) => post.postedBy._id === userId);
+  }
+);
 
 export const selectFeedState = (state: RootState) => ({
   loading: state.feed.loading,

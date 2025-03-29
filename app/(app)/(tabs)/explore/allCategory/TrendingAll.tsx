@@ -15,6 +15,8 @@ import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi
 import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import SwiperTop from "~/components/explorePage/SwiperTop"
+import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const TrendingAll = () => {
   const renderSwiper = () => (
@@ -59,13 +61,14 @@ const TrendingAll = () => {
               className="-mb-1"
             />
           </View>
+          <TouchableOpacity activeOpacity={0.7} onPress={refetchLiveCricket} style={{width: 40, height: 20, justifyContent:'center', alignItems:'flex-end'}}>
           <MaterialCommunityIcons
             name="reload"
             size={22}
             color="grey"
             className="-mb-1"
-            onPress={refetchLiveCricket}
           />
+          </TouchableOpacity>
         </View>
         <FlatList
           data={liveCricketMatches}
@@ -77,7 +80,8 @@ const TrendingAll = () => {
             <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
               {isCricketFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
-                  <ActivityIndicator size="large" color={Colors.themeColor} />
+                  {/* <ActivityIndicator size="large" color={Colors.themeColor} /> */}
+                  <ScoresSkeletonLoader />
                 </View>
               ) : (
                 <MatchCard match={item} isLive={true} />

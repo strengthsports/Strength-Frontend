@@ -3,6 +3,7 @@ import React, { memo } from "react";
 import { RelativePathString, useRouter } from "expo-router";
 import { AntDesign, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { Platform } from "react-native";
+import TextScallingFalse from "../CentralText";
 
 const interactionBtn = `flex flex-row justify-between items-center gap-2 bg-black px-4 py-[6px] rounded-3xl`;
 const shadowStyle = Platform.select({
@@ -67,9 +68,9 @@ const InteractionBar = ({
           }}
         >
           <AntDesign name="like1" size={16} color="#fbbf24" />
-          <Text className="text-base text-white font-light">
+          <TextScallingFalse className="text-base text-white font-light">
             {likesCount} {likesCount > 1 ? "Likes" : "Like"}
-          </Text>
+          </TextScallingFalse>
         </TouchableOpacity>
 
         {isPostContainer && assetsCount && assetsCount > 1 ? (
@@ -99,9 +100,9 @@ const InteractionBar = ({
               });
           }}
         >
-          <Text className="text-base text-white font-light">
+          <TextScallingFalse className="text-base text-white font-light">
             {commentsCount} Comments
-          </Text>
+          </TextScallingFalse>
         </TouchableOpacity>
       </View>
 
@@ -121,13 +122,13 @@ const InteractionBar = ({
               size={16}
               color={isLiked ? "#FABE25" : "white"}
             />
-            <Text
+            <TextScallingFalse
               className={`text-base ${
                 isLiked ? "text-amber-400" : "text-white"
               }`}
             >
               {isLiked ? "Liked" : "Like"}
-            </Text>
+            </TextScallingFalse>
           </View>
         </TouchableOpacity>
         {/* comment now */}
@@ -142,7 +143,9 @@ const InteractionBar = ({
         >
           <View className={interactionBtn} style={shadowStyle}>
             <Feather name="message-square" size={16} color="white" />
-            <Text className="text-base text-white">Comment</Text>
+            <TextScallingFalse className="text-base text-white">
+              Comment
+            </TextScallingFalse>
           </View>
         </TouchableOpacity>
         {/* share */}
@@ -150,7 +153,9 @@ const InteractionBar = ({
           {/* The main button */}
           <View className={interactionBtn} style={shadowStyle}>
             <FontAwesome5 name="location-arrow" size={16} color="white" />
-            <Text className="text-base text-white">Share</Text>
+            <TextScallingFalse className="text-base text-white">
+              Share
+            </TextScallingFalse>
           </View>
         </TouchableOpacity>
       </View>

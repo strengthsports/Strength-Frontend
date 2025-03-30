@@ -8,7 +8,7 @@ import {
   Text,
   useWindowDimensions,
 } from "react-native";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
@@ -16,11 +16,6 @@ import { Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "expo-router";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { Platform } from "react-native";
-import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
-import { FlatList } from "react-native";
-import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import {
   fetchUserPosts,

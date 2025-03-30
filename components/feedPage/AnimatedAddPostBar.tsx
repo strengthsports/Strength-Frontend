@@ -54,6 +54,7 @@ const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
           onPress={() => router.push(`/addPost?text=${suggestionText}`)}
         >
           <Animated.Text
+            allowFontScaling={false}
             style={{
               color: "grey",
               fontSize: 14,

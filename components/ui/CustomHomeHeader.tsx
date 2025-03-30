@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import defaultPic from "../../assets/images/nopic.jpg";
 import { useScroll } from "~/context/ScrollContext";
 import { Animated } from "react-native";
+import { useDrawer } from "~/context/DrawerContext";
 
 const HEADER_HEIGHT = 60;
 
@@ -43,10 +44,12 @@ const CustomHomeHeader = () => {
   //   extrapolate: "clamp",
   // });
 
+  const { handleOpenDrawer } = useDrawer();
+
   return (
     <View style={[styles.headerContainer]}>
       {/* Avatar Profile Picture */}
-      <TouchableOpacity>
+      <TouchableOpacity onPress={handleOpenDrawer}>
         <Image
           source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
           style={{ width: 36, height: 36, borderRadius: 18 }}

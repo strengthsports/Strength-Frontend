@@ -165,9 +165,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#12956B",
   },
   label: {
-    color: "white",
+    color: "#000",
     fontSize: 10,
     marginTop: 4,
+    fontFamily: "Inter",
   },
 });
 

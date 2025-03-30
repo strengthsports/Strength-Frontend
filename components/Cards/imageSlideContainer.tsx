@@ -25,6 +25,7 @@ interface CustomImageSliderProps {
   aspectRatio: [number, number];
   onRemoveImage: (index: number) => void;
   isFeedPage?: boolean;
+  isMyActivity?: boolean;
   postId?: string;
   setIndex: (index: any) => any;
   onDoubleTap?: () => any;
@@ -47,6 +48,7 @@ const ImageSlide = memo(
     isFirstSlide,
     totalSlides,
     isFeedPage,
+    isMyActivity,
     postId,
     onDoubleTap,
   }: {
@@ -56,6 +58,7 @@ const ImageSlide = memo(
     isFirstSlide: boolean;
     totalSlides: number;
     isFeedPage?: boolean;
+    isMyActivity?: boolean;
     postId?: string;
     onDoubleTap?: () => any;
   }) => {
@@ -65,7 +68,7 @@ const ImageSlide = memo(
     return (
       <TouchableWithDoublePress
         className={`flex-1 relative overflow-hidden ${
-          isFirstSlide ? "ml-2" : ""
+          !isMyActivity && isFirstSlide ? "ml-2" : ""
         }`}
         activeOpacity={0.95}
         onSinglePress={() => {

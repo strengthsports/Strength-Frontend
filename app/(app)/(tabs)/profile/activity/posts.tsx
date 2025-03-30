@@ -29,7 +29,7 @@ const Posts = () => {
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View className="w-screen pl-3">
-        <PostContainer item={item} />
+        <PostContainer item={item} isMyActivity={true} />
       </View>
     ),
     [] // Empty dependency array ensures the function is memoized and doesn't re-create

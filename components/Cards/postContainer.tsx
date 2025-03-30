@@ -194,7 +194,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         .map((word, index) => {
           if (word.startsWith("#")) {
             return (
-              <Text
+              <TextScallingFalse
                 key={index}
                 onPress={() =>
                   router.push(`/(app)/(post)/hashtag/${word.split("#")[1]}`)
@@ -205,7 +205,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 }`}
               >
                 {word}
-              </Text>
+              </TextScallingFalse>
             );
           } else if (word.startsWith("@")) {
             // Find the tagged user by username
@@ -219,7 +219,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             );
             // console.log(serializedUser);
             return (
-              <Text
+              <TextScallingFalse
                 key={index}
                 onPress={() =>
                   serializedUser &&
@@ -228,12 +228,12 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 className="text-xl text-[#12956B]"
               >
                 {word}
-              </Text>
+              </TextScallingFalse>
             );
           }
 
           // Return regular text for non-tag parts
-          return <Text key={index}>{word}</Text>;
+          return <TextScallingFalse key={index}>{word}</TextScallingFalse>;
         });
     };
 
@@ -350,7 +350,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             <View
               className={`${isExpanded ? "pl-6" : "pl-10"} pr-8 pt-12 pb-4`}
             >
-              <Text
+              <TextScallingFalse
                 onPress={() => {
                   isFeedPage &&
                     router.push({
@@ -364,14 +364,16 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onTextLayout={handleTextLayout}
               >
                 {memoizedCaption}
-              </Text>
+              </TextScallingFalse>
               {showSeeMore && !isExpanded && (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => setIsExpanded(true)}
                   className="mt-1"
                 >
-                  <Text className="text-theme text-sm">See more</Text>
+                  <TextScallingFalse className="text-theme text-sm">
+                    See more
+                  </TextScallingFalse>
                 </TouchableOpacity>
               )}
             </View>

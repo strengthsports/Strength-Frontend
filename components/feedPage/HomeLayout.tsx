@@ -35,6 +35,7 @@ import EdgeSwipe from "../ui/EdgeSwipe";
 import CustomDivider from "../ui/CustomDivider";
 import { opacity } from "react-native-reanimated/lib/typescript/Colors";
 import AnimatedAddPostBar from "./AnimatedAddPostBar";
+import { resetFeed } from "~/reduxStore/slices/feed/feedSlice";
 
 interface MenuItem {
   label: string;
@@ -81,6 +82,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
     const randomIndex = Math.floor(Math.random() * possibleMessages.length);
     setMessage(possibleMessages[randomIndex]);
   }, []);
+
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
     try {
@@ -93,6 +95,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
             visibilityTime: 1500,
             autoHide: true,
           });
+      dispatch(resetFeed());
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
@@ -165,46 +168,6 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
         </TouchableOpacity>
 
         {/* Add Post Section */}
-        {/* <TouchableOpacity
-          style={{
-            position: "relative",
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#141414",
-            padding: 6,
-            borderRadius: 12,
-            width: "75%",
-            height: 37,
-            justifyContent: "space-between",
-            paddingHorizontal: 6,
-          }}
-          // onPress={() => setAddPostContainerOpen(true)}
-          onPress={() => router.push("/addPost")}
-        >
-          <Text
-            style={{
-              color: "grey",
-              fontSize: 14,
-              fontWeight: "400",
-              marginLeft: 6,
-            }}
-          >
-            What's on your mind...
-          </Text>
-          <Animated.View
-            style={{
-              width: 25,
-              height: 25,
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 2,
-              borderColor: "grey",
-              borderRadius: 7,
-            }}
-          >
-            <Feather name="plus" size={15} color="grey" />
-          </Animated.View>
-        </TouchableOpacity> */}
         <View style={{ flex: 1 }}>
           <AnimatedAddPostBar suggestionText={message} />
         </View>

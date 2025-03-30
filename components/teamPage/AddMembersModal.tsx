@@ -48,7 +48,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
         return prevMembers.map((member) =>
           member._id === memberId
             ? { ...member, selected: !member.selected }
-            : member,
+            : member
         );
       } else {
         // Allow only single selection

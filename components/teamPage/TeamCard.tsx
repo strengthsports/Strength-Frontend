@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
 import { ThemedText } from "~/components/ThemedText";
+import img from "@/assets/images/teams/Vector 64.png";
 
 type TeamCardProps = {
   teamName: string;
@@ -26,10 +27,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
         <View className="flex flex-row py-4 w-64 max-w-84">
           <Image source={{ uri: teamLogo }} className="w-32 h-30 ml-8" />
           <View className="flex flex-row items-center pl-10">
-            <Image
-              source={require("../../../../../assets/images/teams/Vector 64.png")}
-              className="mr-2 h-[108px]"
-            />
+            <Image source={img} className="mr-2 h-[108px]" />
             <View className="flex flex-col pl-4">
               <Text className="text-white font-bold  items-center text-6xl">
                 {teamName}

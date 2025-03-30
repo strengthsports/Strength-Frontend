@@ -82,7 +82,6 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
     setMessage(possibleMessages[randomIndex]);
   }, []);
 
-  
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
     try {
@@ -113,7 +112,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const check = async () => {
     try {
       const fetchedTeamsData = await dispatch(getTeams()).unwrap();
-  
+
       const teamsList = fetchedTeamsData.createdTeams
         .concat(fetchedTeamsData.joinedTeams)
         .map((teamEntry) => {
@@ -129,10 +128,10 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
             return null;
           }
         })
-        .filter(team => team !== null); // Filter out any null entries
-  
+        .filter((team) => team !== null); // Filter out any null entries
+
       console.log(teamsList); // Logs an array of team names and URLs
-  
+
       setTeamDetails(teamsList);
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -195,7 +194,6 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Render the custom drawer */}
       <CustomDrawer ref={drawerRef} onClose={() => setDrawerOpen(false)}>
-        
         <SafeAreaView
           className="w-full h-full bg-black pt-6"
           onStartShouldSetResponder={() => true}
@@ -271,7 +269,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
                 <View className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center">
                   <TouchableOpacity
                     onPress={() => {
-                      router.push("/(app)/(team)/teams/InitiateCreateTeam");
+                      router.push("/(app)/(team)/teams");
                       handleCloseDrawer();
                     }}
                   >

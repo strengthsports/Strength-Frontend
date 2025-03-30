@@ -12,17 +12,17 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { NavigationProp } from "@react-navigation/native";
-import AddMembersModal from "./addMembersModal";
+import AddMembersModal from "@/components/teamPage/AddMembersModal";
 import { router } from "expo-router";
 import Icon from "react-native-vector-icons/AntDesign";
 import EntypoIcon from "react-native-vector-icons/Entypo";
 import { useLocalSearchParams } from "expo-router";
-import MemberCard from "./components/member";
+import MemberCard from "@/components/teamPage/Member";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import TeamCreatedPage from "./teamCreationDone";
-import LocationModal from "./components/locationModal";
+import TeamCreatedPage from "./team-creation-success";
+import LocationModal from "@/components/teamPage/LocationModal";
 // import { useSelector } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
@@ -138,14 +138,20 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const params = useLocalSearchParams();
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState({name:"Select Sports",_id:"123",logo:"12345"});
+  const [selectedGame, setSelectedGame] = useState({
+    name: "Select Sports",
+    _id: "123",
+    logo: "12345",
+  });
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
   const [suggestedMembers, setSuggestedMembers] = useState([]);
 
-  const { sports, loading, error } = useSelector((state: RootState) => state.sports);
+  const { sports, loading, error } = useSelector(
+    (state: RootState) => state.sports
+  );
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
@@ -154,7 +160,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   }, [dispatch]);
 
   console.log("Total sports is", { sports, loading, error });
-  
+
   const { user } = useSelector((state: RootState) => state?.profile);
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   useEffect(() => {
@@ -174,10 +180,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
         sportsData: ["67cd0bb8970c518cc730d485"],
         limit: 20,
         page: 1,
-      }),
+      })
     );
-  }, [dispatch, formData?.sport]); 
-  
+  }, [dispatch, formData?.sport]);
 
   const [formData, setFormData] = useState<FormData>({
     logo: null,
@@ -202,22 +207,30 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const getGameIcon = (game: string) => {
     switch (game) {
       case "Cricket":
-        return require("../../../../assets/images/Sports Icons/okcricket.png");
+        return require("@/assets/images/Sports Icons/okcricket.png");
       case "Kabaddi":
-        return require("../../../../assets/images/Sports Icons/okkabaddi.png");
+        return require("@/assets/images/Sports Icons/okkabaddi.png");
       case "Basketball":
-        return require("../../../../assets/images/Sports Icons/okbasketball.png");
+        return require("@/assets/images/Sports Icons/okbasketball.png");
       case "Hockey":
-        return require("../../../../assets/images/Sports Icons/okhockey.png");
+        return require("@/assets/images/Sports Icons/okhockey.png");
       case "Volleyball":
-        return require("../../../../assets/images/Sports Icons/okvollyball.png");
+        return require("@/assets/images/Sports Icons/okvollyball.png");
     }
   };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  const handleSelectGame = ({name,_id,logo}:{name:string;_id:string;logo:string}) => {
-    setSelectedGame({name,_id,logo});
+  const handleSelectGame = ({
+    name,
+    _id,
+    logo,
+  }: {
+    name: string;
+    _id: string;
+    logo: string;
+  }) => {
+    setSelectedGame({ name, _id, logo });
     setFormData((prevFormData) => ({ ...prevFormData, sport: _id }));
     setIsDropdownOpen(false); // Close the dropdown after selection
   };
@@ -227,9 +240,8 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     const city = data.city;
     const state = data.state;
     const coordinates = data.coordinates;
-    
+
     if (country && city && state) {
-    
       setFormData((prevFormData) => ({
         ...prevFormData,
         address: {
@@ -319,11 +331,11 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       alert("Please fill all required fields.");
       return;
     }
-    console.log("Sport is ",formData.sport);
+    console.log("Sport is ", formData.sport);
     const response = await dispatch(createTeam(formData));
     // console.log("Response", response);
     if (response.payload.success) {
-      router.push("../teams/teamCreationDone");
+      router.push("../teams/team-creation-success");
     }
   };
 
@@ -422,7 +434,11 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   >
                     <View className="flex-row items-center">
                       <Image
-                        source={selectedGame.name === "Select Game" ? " " : {uri:selectedGame.logo}}
+                        source={
+                          selectedGame.name === "Select Game"
+                            ? " "
+                            : { uri: selectedGame.logo }
+                        }
                         className="w-6 h-6 mr-2"
                       />
                       <Text
@@ -446,21 +462,30 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   {/* Dropdown Games List */}
                   {isDropdownOpen && (
                     <View className="mt-2 border border-[#515151] rounded-lg p-4">
-                      {sports.length > 0 && sports.map((sport, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          onPress={() => handleSelectGame({name:sport.name,_id:sport._id,logo:sport.logo})}
-                          className="py-2 border-b border-[#515151]"
-                        >
-                          <View className="flex-row items-center">
-                            <Image
-                              source={{uri:sport.logo}}
-                              className="w-8 h-8 mr-2"
-                            />
-                            <Text className="text-white ml-2">{sport.name}</Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
+                      {sports.length > 0 &&
+                        sports.map((sport, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() =>
+                              handleSelectGame({
+                                name: sport.name,
+                                _id: sport._id,
+                                logo: sport.logo,
+                              })
+                            }
+                            className="py-2 border-b border-[#515151]"
+                          >
+                            <View className="flex-row items-center">
+                              <Image
+                                source={{ uri: sport.logo }}
+                                className="w-8 h-8 mr-2"
+                              />
+                              <Text className="text-white ml-2">
+                                {sport.name}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
                     </View>
                   )}
                 </View>
@@ -488,12 +513,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
                 <SafeAreaView>
-                <LocationModal
-                  visible={locationModal}
-                  onClose={() => setLocationModal(false)}
-                  onSave={handleSaveLocation}
-                />
-</SafeAreaView>
+                  <LocationModal
+                    visible={locationModal}
+                    onClose={() => setLocationModal(false)}
+                    onSave={handleSaveLocation}
+                  />
+                </SafeAreaView>
                 {/*Established */}
                 <View>
                   <Text className="text-white text-2xl mt-2 mb-1">

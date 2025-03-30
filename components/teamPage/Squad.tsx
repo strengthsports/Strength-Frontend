@@ -6,24 +6,22 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import TeamMember from "./teamMember";
+import TeamMember from "./TeamMember";
 import Icon from "react-native-vector-icons/Entypo";
 import { useFonts } from "expo-font";
-import AddMembersModal from "../addMembersModal";
+import AddMembersModal from "@/components/teamPage/AddMembersModal";
 import { useSelector } from "react-redux";
-import Nopic from "@/assets/images/pro.jpg"
+import Nopic from "@/assets/images/pro.jpg";
 
 interface SquadProps {
   teamDetails: any;
 }
 
-
-
 const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   console.log("Console Form Squad side");
   console.log(teamDetails);
   const [fontsLoaded] = useFonts({
-    "Sansation-Regular": require("../../../../../assets/fonts/Sansation_Bold_Italic.ttf"),
+    "Sansation-Regular": require("../../assets/fonts/Sansation_Bold_Italic.ttf"),
   });
   const { user } = useSelector((state: any) => state?.profile);
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -32,7 +30,9 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
 
   useEffect(() => {
     if (teamDetails && teamDetails.admin) {
-      const adminCheck = teamDetails.admin.some((admin) => admin._id === userId);
+      const adminCheck = teamDetails.admin.some(
+        (admin) => admin._id === userId
+      );
       setIsAdmin(adminCheck);
     }
   }, [teamDetails]);
@@ -51,14 +51,22 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   }
 
   const categorizeMembers = (playerType: string) => {
-    return teamDetails.members?.filter((member: any) => 
-      member.role.toLowerCase().includes(playerType.toLowerCase())
-    ) || [];
+    return (
+      teamDetails.members?.filter((member: any) =>
+        member.role.toLowerCase().includes(playerType.toLowerCase())
+      ) || []
+    );
   };
 
   const renderMemberSection = (title: string, members: any[]) => (
     <View className="mb-4">
-      <Text style={{ fontFamily: "Sansation-Regular", color: "white", fontSize: 20 }}>
+      <Text
+        style={{
+          fontFamily: "Sansation-Regular",
+          color: "white",
+          fontSize: 20,
+        }}
+      >
         {title}
       </Text>
       <View className="flex flex-row flex-wrap">
@@ -66,10 +74,15 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           members.map((member: any) => {
             const user = member.user;
             return (
-              <View key={user?._id || member._id || Math.random().toString()} className="w-1/2 p-2">
+              <View
+                key={user?._id || member._id || Math.random().toString()}
+                className="w-1/2 p-2"
+              >
                 <TeamMember
-                  imageUrl={user?.profilePic }
-                  name={`${user?.firstName || "Unknown"} ${user?.lastName || ""}`}
+                  imageUrl={user?.profilePic}
+                  name={`${user?.firstName || "Unknown"} ${
+                    user?.lastName || ""
+                  }`}
                   description={user?.headline || "No description available"}
                   isAdmin={isAdmin}
                   onRemove={() => console.log("Remove user:", user?._id)}
@@ -79,13 +92,27 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           })
         ) : (
           <View>
-          <TouchableOpacity className="w-1/2 p-2" onPress={() => setShowMembersModal(true)}>
-          <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
-            <Text style={{ color: "white", fontSize: 30, fontFamily: "Sansation-Regular" }}>+</Text>
-            <Text style={{ color: "white", fontFamily: "Sansation-Regular" }}>Add Member</Text>
-          </View>
-        </TouchableOpacity>
-          
+            <TouchableOpacity
+              className="w-1/2 p-2"
+              onPress={() => setShowMembersModal(true)}
+            >
+              <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 30,
+                    fontFamily: "Sansation-Regular",
+                  }}
+                >
+                  +
+                </Text>
+                <Text
+                  style={{ color: "white", fontFamily: "Sansation-Regular" }}
+                >
+                  Add Member
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -95,17 +122,19 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   return (
     <ScrollView className="flex-1 max-w-screen-lg px-4">
       <View className="flex flex-row justify-between items-center px-4 mt-2">
-        <Text style={{ fontFamily: "Sansation-Regular", color: "white", fontSize: 24 }}>
-         
-        </Text>
+        <Text
+          style={{
+            fontFamily: "Sansation-Regular",
+            color: "white",
+            fontSize: 24,
+          }}
+        ></Text>
         <Icon name="dots-three-horizontal" size={30} color="white" />
       </View>
 
-      {teamDetails.sport.playerTypes.map((playerType: any) => (
+      {teamDetails.sport.playerTypes.map((playerType: any) =>
         renderMemberSection(playerType.name, categorizeMembers(playerType.name))
-      ))}
-
-     
+      )}
 
       <AddMembersModal
         onInvite={(selectedUsers: any) => {

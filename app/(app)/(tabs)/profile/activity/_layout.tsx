@@ -86,7 +86,7 @@ const ActivityLayout = () => {
               onPress={() => {
                 setActiveTab(tab.name);
               }}
-              className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-full ${
+              className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-lg ${
                 isActive ? "bg-[#12956B]" : "bg-black border-gray-600"
               } border`}
             >

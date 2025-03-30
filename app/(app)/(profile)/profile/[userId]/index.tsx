@@ -304,12 +304,6 @@ const Overview = () => {
                       >
                         CURRENT TEAMS
                       </TextScallingFalse>
-                      <TextScallingFalse
-                        className="text-white font-bold"
-                        style={styles.HeadingText}
-                      >
-                        QUICK INFO
-                      </TextScallingFalse>
                     </View>
 
                     {/* Teams Mapping */}

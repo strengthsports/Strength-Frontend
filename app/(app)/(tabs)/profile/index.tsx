@@ -165,7 +165,7 @@ const Overview = () => {
                 )}
 
                 {sport.teams?.length > 0 && (
-                  <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl mt-2">
+                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-xl mt-2">
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
                       <TextScallingFalse
@@ -406,7 +406,7 @@ const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov"
 export const TeamEntry = ({ team } : any) => {
   console.log(team);
   return (
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap:10}}>
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap:10,}}>
     {/* Team Logo */}
     <Image
       source={{uri: team.team.logo.url}}

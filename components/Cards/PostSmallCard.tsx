@@ -34,13 +34,13 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
   const imageUrls = post.assets.filter(asset => asset.url).map(asset => asset.url);
   // console.log(imageUrls)
 
-  const handleNext = () => {
-    swiperRef.current?.scrollBy(1);
-  };
+  // const handleNext = () => {
+  //   swiperRef.current?.scrollBy(1);
+  // };
 
-  const handlePrev = () => {
-    swiperRef.current?.scrollBy(-1);
-  };
+  // const handlePrev = () => {
+  //   swiperRef.current?.scrollBy(-1);
+  // };
 
   const renderCaptionWithHashtags = (caption: string) => {
       return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
@@ -75,8 +75,8 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
         <View style={{height: 10}} />
          <Image source={{uri: post.postedBy?.profilePic}} style={{width: 50*scaleFactor, height: 50*scaleFactor, borderRadius:100, backgroundColor:'white'}} />
          </View>
-         <View style={{ width: '60%', flex: 1, flexDirection:"column", gap:1.5}}>
-         <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.64), fontWeight:'500'}}>{post.postedBy?.firstName} {post.postedBy?.lastName}</TextScallingFalse>
+         <View style={{ width: '60%', flex: 1, flexDirection:"column", gap:2}}>
+         <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.64), fontWeight:'500', marginTop:8}}>{post.postedBy?.firstName} {post.postedBy?.lastName}</TextScallingFalse>
          <View style={{ position:'relative', top:-2*scaleFactor, width: '100%',}}>
          <TextScallingFalse numberOfLines={1} style={{color:'white', fontSize: responsiveFontSize(1.19), fontWeight:'200'}}>{post.postedBy?.headline}</TextScallingFalse>
          </View>
@@ -87,9 +87,10 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
          </View>
         </View>
 
-        <View style={{ alignItems:'flex-end'}}>
-        <View style={{width: '94%', backgroundColor:'#151515', padding: 10, justifyContent:'center', alignItems:'center', borderTopLeftRadius: 70, borderTopRightRadius: 15}}>
-            <View style={{ width: '80.98%', paddingLeft: '1%', paddingTop: '10%'}}>
+        {/* <View style={{ alignItems:'flex-end'}}>
+        <View style={{width: '94%', backgroundColor:'#151515', paddingVertical: 15, paddingLeft:5, justifyContent:'center', alignItems:'center', borderTopLeftRadius: 45, borderTopRightRadius: 15}}>
+            <View style={{ width: '85%', paddingLeft: '1%', paddingTop: '10%'}}>
+              <MaterialIcons className="absolute right-0 top-0" name="more-horiz" size={18} color="#a3a3a3" />
               <TextScallingFalse
                 style={{color:'white', fontSize: responsiveFontSize(1.29), fontWeight:'400'}}
                 numberOfLines={isExpanded ? undefined : 2}
@@ -98,6 +99,7 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
               >
                 {renderCaptionWithHashtags(post.caption)}
               </TextScallingFalse>
+              
             
               {showSeeMore && !isExpanded && (
                 <TouchableOpacity
@@ -110,10 +112,27 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
               )}
             </View>
         </View>
+        </View> */}
+
+        
+        <View className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515]`}>
+          <MaterialIcons className="absolute right-5 top-2" name="more-horiz" size={18} color="#a3a3a3" />
+          <TextScallingFalse className=" pl-10 pr-6 pt-10 pb-3 text-sm text-white ">
+            {renderCaptionWithHashtags(post.caption)}
+          </TextScallingFalse>
+          {showSeeMore && !isExpanded && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setIsExpanded(true)}
+              className="mt-1"
+            >
+              <TextScallingFalse style={styles.seeMore}>See more</TextScallingFalse>
+            </TouchableOpacity>
+          )}
         </View>
         
 
-        <View style={{height: 210 * scaleFactor,}}>
+        <View style={{height: 240 * scaleFactor,}}>
         {imageUrls.length > 0 && (
           <View style={{ position: "absolute" }}>
             <Swiper
@@ -121,7 +140,7 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
               loop={true}
               onIndexChanged={setCurrentSlide}
               showsPagination={false}
-              style={{ height: 210 * scaleFactor }}
+              style={{ height: 240 * scaleFactor, }}
             >
               {imageUrls.map((uri) => (
                 <Image
@@ -129,7 +148,7 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
                   source={{ uri }}
                   style={{
                     width: '100%',
-                    height: 210 * scaleFactor,
+                    height: 240 * scaleFactor,
                     backgroundColor: 'white',
                     borderTopLeftRadius: 22,
                     borderBottomLeftRadius: 22
@@ -167,11 +186,11 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
         )}
         </View>
 
-        <View style={{ width: '100%', alignItems:'flex-end'}}>
+        <View style={{ width: '100%', alignItems:'flex-end',}}>
             <View style={{backgroundColor:'#151515', height: 30*scaleFactor, width:'94%', flexDirection:'row', alignItems:'center', justifyContent:'space-between', paddingHorizontal: 12}}>
             <TouchableOpacity activeOpacity={0.7} style={{flexDirection:'row'}}>
-            <AntDesign name="like1" size={14 * scaleFactor} color="#FFC436" />
-            <TextScallingFalse style={{fontSize: responsiveFontSize(1.41), color:'white', fontWeight:'300', paddingLeft: '2%'}}>{post.likesCount} Likes</TextScallingFalse>
+            <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
+            <TextScallingFalse style={{fontSize: responsiveFontSize(1.25), color:'white', fontWeight:'300', paddingLeft: '2%'}}>{post.likesCount} Likes</TextScallingFalse>
             </TouchableOpacity>
             
             {/* <View style={{ width: '15%'}}></View> */}
@@ -193,25 +212,25 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
             </View>
 
             <TouchableOpacity activeOpacity={0.7}>
-            <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.41), fontWeight:'300'}}>{post.commentsCount} Comments</TextScallingFalse>
+            <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.25), fontWeight:'300'}}>{post.commentsCount} Comments</TextScallingFalse>
             </TouchableOpacity>
             </View>
             <View style={{width: '94%', justifyContent:'center', alignItems:'center'}}>
             <View style={{backgroundColor:'#505050', height: 0.5, width: '85%'}}></View>
             </View>
-            <View style={{width: '94%', gap: '4%', backgroundColor:'#151515', height: 57*scaleFactor, borderBottomLeftRadius: 75, borderBottomRightRadius: 50, flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
-                <View style={{width: '1.5%',}} />
+            <View style={{width: '94%', gap: '6%', backgroundColor:'#151515', height: 57*scaleFactor, borderBottomLeftRadius: 45, borderBottomRightRadius: 15, flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+                <View style={{width: '0.8%',}} />
                 <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
-                <AntDesign name="like1" size={16*scaleFactor} color="#FFC436" />
-                <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.41), fontWeight:'300'}}>Like</TextScallingFalse>
+                <AntDesign name="like1" size={12*scaleFactor} color="#FFC436" />
+                <TextScallingFalse style={{color:'white', fontSize: 10, fontWeight:'300'}}>Like</TextScallingFalse>
                 </TouchableOpacity>
                 <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
-                <Feather name="message-square" size={16*scaleFactor} color="white" />
-                <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.41), fontWeight:'300'}}>Comment</TextScallingFalse>
+                <Feather name="message-square" size={12*scaleFactor} color="white" />
+                <TextScallingFalse style={{color:'white', fontSize: 10, fontWeight:'300'}}>Comment</TextScallingFalse>
                 </TouchableOpacity>
                 <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
-                <FontAwesome5  name="location-arrow" size={12*scaleFactor} color="white" />
-                <TextScallingFalse style={{color:'white', fontSize: responsiveFontSize(1.41), fontWeight:'300'}}>Share</TextScallingFalse>
+                <FontAwesome5  name="location-arrow" size={10*scaleFactor} color="white" />
+                <TextScallingFalse style={{color:'white', fontSize: 10, fontWeight:'300'}}>Share</TextScallingFalse>
                 </TouchableOpacity>
             </View>
             </View>
@@ -225,11 +244,13 @@ export default PostSmallCard
 const styles = StyleSheet.create({
     ButtonsContainer:{
         backgroundColor:'black',
-        padding: 7,
-        borderRadius: 15,
+        paddingVertical:5,
+        paddingHorizontal:8,
+        // padding: 8,
+        borderRadius: 25,
         width: "auto",
         flexDirection:"row",
-        gap:8,
+        gap:5,
         justifyContent:'center',
         alignItems:'center',
     },

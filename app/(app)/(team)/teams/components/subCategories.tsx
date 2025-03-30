@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import Squad from "./Squad";
+import { SafeAreaView } from "react-native-safe-area-context";
+import About from './About';
 
 interface SubCategoriesProps {
   // teamId: string | string[];
@@ -16,9 +18,10 @@ const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
       return <Squad teamDetails={teamDetails.teamDetails} />;
     } else if (selectedTab === "ABOUT") {
       return (
-        <Text className="text-white text-lg">
-          {teamDetails.teamDetails.description}
-        </Text>
+      
+          <About teamDetails = {teamDetails.teamDetails.description} />
+  
+       
       );
     }
   };
@@ -27,6 +30,14 @@ const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
     <View className="flex-1">
       {/* Tab Buttons */}
       <View className="flex-row  p-2 px-4 bg-[#191919]">
+      <TouchableOpacity
+          className={`px-6 py-2 rounded-[10px] ${
+            selectedTab === "ABOUT" ? "bg-[#12956B]" : "bg-[#191919]"
+          }`}
+          onPress={() => setSelectedTab("ABOUT")}
+        >
+          <Text className="text-white font-bold text-3xl">ABOUT</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           className={`px-6 py-2 rounded-[10px] ${
             selectedTab === "SQUAD" ? "bg-[#12956B]" : "bg-[#191919]"
@@ -36,14 +47,7 @@ const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
           <Text className="text-white  text-3xl font-bold">SQUAD</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          className={`px-6 py-2 rounded-[10px] ${
-            selectedTab === "ABOUT" ? "bg-[#12956B]" : "bg-[#191919]"
-          }`}
-          onPress={() => setSelectedTab("ABOUT")}
-        >
-          <Text className="text-white font-bold text-3xl">ABOUT</Text>
-        </TouchableOpacity>
+        
       </View>
 
       {/* Render Content */}

@@ -29,6 +29,7 @@ import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { cricketApi } from "./api/explore/cricketApi";
 import { searchApi } from "./api/explore/searchApi";
+import  sportsReducer  from "./slices/team/sportSlice";
 
 // Single feedApi
 import { feedApi } from "./api/feed/services/feedApi";
@@ -52,6 +53,7 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   hashtagPage: hashtagReducer,
   team: teamReducer,
+  sports: sportsReducer, 
   search:searchReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,

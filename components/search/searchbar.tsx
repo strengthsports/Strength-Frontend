@@ -8,7 +8,7 @@ import {
 import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
 import { FilterModal } from "../explorePage/filter";
-import FilterIcon from "@/components/SvgIcons/filtericon";
+import FilterIcon from "@/components/SvgIcons/filterIcon";
 
 const SearchBar = ({ searchText }: { searchText?: string }) => {
   const router = useRouter();

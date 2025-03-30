@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Entypo";
+import Nopic from "@/assets/images/nopic.jpg";
 
 type TeamMemberProps = {
   imageUrl?: string; // URL for the profile image (optional)
@@ -30,14 +31,12 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         justifyContent: "space-between",
       }}
     >
-      {/* Profile Image */}
-      {imageUrl && (
-        <Image
-          source={{ uri: imageUrl }}
-          className="h-16 w-16 rounded-full mb-2"
-          resizeMode="cover"
-        />
-      )}
+      {/* Profile Image (Always Rendered with Default Fallback) */}
+      <Image
+        source={imageUrl ? { uri: imageUrl } : Nopic}
+        className="h-16 w-16 mt-2 rounded-full mb-2"
+        resizeMode="cover"
+      />
 
       {/* Captain or Vice-Captain Badge */}
       {(isCaptain || isViceCaptain) && (
@@ -48,7 +47,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         </View>
       )}
 
-      {/* Name - with numberOfLines to prevent overflow */}
+      {/* Name */}
       <Text
         className="text-white text-3xl font-semibold text-center"
         numberOfLines={1}
@@ -57,7 +56,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         {name}
       </Text>
 
-      {/* Description - with numberOfLines to prevent overflow */}
+      {/* Description */}
       <Text
         className="text-gray-400 text-lg text-center"
         numberOfLines={3}
@@ -66,7 +65,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         {description}
       </Text>
 
-      {/* Remove Button */}
+      {/* Remove Button (Only for Admins) */}
       {isAdmin && onRemove && (
         <TouchableOpacity
           onPress={onRemove}

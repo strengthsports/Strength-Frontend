@@ -50,7 +50,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible}>
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 mt-8 bg-black">
         {/* Header */}
         <View className="flex flex-row items-center justify-between px-5 py-4">
           {/* Close Button */}

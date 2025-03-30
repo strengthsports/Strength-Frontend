@@ -23,11 +23,13 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import TeamCreatedPage from "./teamCreationDone";
 import LocationModal from "./components/locationModal";
+// import { useSelector } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import { createTeam } from "~/reduxStore/slices/team/teamSlice";
 import { AppDispatch } from "~/reduxStore";
 import { fetchUserSuggestions } from "~/reduxStore/slices/user/onboardingSlice";
+import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -57,7 +59,7 @@ interface FormData {
   description: string;
   members: Member[];
   admin: string[];
-  createdBy: string | null;
+  createdBy: string;
 }
 const dummyMembers: PotentialMember[] = [
   {
@@ -136,13 +138,23 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const params = useLocalSearchParams();
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState("Select Game");
+  const [selectedGame, setSelectedGame] = useState({name:"Select Sports",_id:"123",logo:"12345"});
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
   const [suggestedMembers, setSuggestedMembers] = useState([]);
+
+  const { sports, loading, error } = useSelector((state: RootState) => state.sports);
   const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    console.log("Component mounted, dispatching fetchSports...");
+    dispatch(fetchSports());
+  }, [dispatch]);
+
+  console.log("Total sports is", { sports, loading, error });
+  
   const { user } = useSelector((state: RootState) => state?.profile);
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   useEffect(() => {
@@ -156,20 +168,21 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   }, [user]);
 
   useEffect(() => {
-    console.log("Fetching user suggestions...");
+    // console.log("Fetching user suggestions...");
     dispatch(
       fetchUserSuggestions({
         sportsData: ["67cd0bb8970c518cc730d485"],
-        limit: 10,
+        limit: 20,
         page: 1,
       }),
     );
-  }, [dispatch, formData?.sport]); // Add dependencies to avoid unnecessary re-renders
+  }, [dispatch, formData?.sport]); 
+  
 
   const [formData, setFormData] = useState<FormData>({
     logo: null,
     name: "",
-    sport: "Cricket",
+    sport: selectedGame._id,
     address: {
       city: "Kolkata",
       state: "West Bengal",
@@ -179,9 +192,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     establishedOn: "",
     gender: "male",
     description: "",
-    admin: [user?.id],
+    admin: [user?.id as string],
     members: [],
-    createdBy: user?.id,
+    createdBy: user?.id as string,
   });
 
   const games = ["Cricket", "Kabaddi", "Basketball", "Hockey", "Volleyball"];
@@ -203,8 +216,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  const handleSelectGame = (game: string) => {
-    setSelectedGame(game);
+  const handleSelectGame = ({name,_id,logo}:{name:string;_id:string;logo:string}) => {
+    setSelectedGame({name,_id,logo});
+    setFormData((prevFormData) => ({ ...prevFormData, sport: _id }));
     setIsDropdownOpen(false); // Close the dropdown after selection
   };
 
@@ -213,15 +227,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     const city = data.city;
     const state = data.state;
     const coordinates = data.coordinates;
-    console.log("Coordinates", coordinates);
-    // const formattedAddress = data.formattedAddress;
-    // console.log("Formmatted Address", formattedAddress);
+    
     if (country && city && state) {
-      console.log("formatted address", `${city}, ${country}`);
-      // setFormData((prevFormData) => ({
-      //   ...prevFormData,
-      //   address: `${city}, ${country}`,
-      // }));
+    
       setFormData((prevFormData) => ({
         ...prevFormData,
         address: {
@@ -235,10 +243,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
           },
         },
       }));
-      console.log(
-        "Form data address:",
-        JSON.stringify(formData.address, null, 2),
-      );
     }
   };
 
@@ -270,7 +274,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.5,
     });
 
     if (!result.canceled) {
@@ -280,7 +284,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
         type: "image/jpeg",
       };
 
-      console.log("File object :", file);
+      // console.log("File object :", file);
       setFormData((prevData) => ({
         ...prevData,
         logo: file, // Only updating logo
@@ -298,8 +302,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   };
 
   const handleInviteMembers = (selectedMembers: Member[]) => {
-    // console.log(fetchedUsers);
-    console.log("Selected members:", selectedMembers);
     setFormData({
       ...formData,
       members: [...formData.members, ...selectedMembers],
@@ -317,9 +319,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       alert("Please fill all required fields.");
       return;
     }
-    console.log("Create team", formData);
+    console.log("Sport is ",formData.sport);
     const response = await dispatch(createTeam(formData));
-    console.log("Response", response);
+    // console.log("Response", response);
     if (response.payload.success) {
       router.push("../teams/teamCreationDone");
     }
@@ -420,17 +422,17 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   >
                     <View className="flex-row items-center">
                       <Image
-                        source={getGameIcon(selectedGame)}
+                        source={selectedGame.name === "Select Game" ? " " : {uri:selectedGame.logo}}
                         className="w-6 h-6 mr-2"
                       />
                       <Text
                         className={`${
-                          selectedGame === "Select Game"
+                          selectedGame.name === "Select Game"
                             ? "text-gray-400"
                             : "text-white"
                         }`}
                       >
-                        {selectedGame}
+                        {selectedGame.name}
                       </Text>
                     </View>
 
@@ -444,18 +446,18 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   {/* Dropdown Games List */}
                   {isDropdownOpen && (
                     <View className="mt-2 border border-[#515151] rounded-lg p-4">
-                      {games.map((game, index) => (
+                      {sports.length > 0 && sports.map((sport, index) => (
                         <TouchableOpacity
                           key={index}
-                          onPress={() => handleSelectGame(game)}
+                          onPress={() => handleSelectGame({name:sport.name,_id:sport._id,logo:sport.logo})}
                           className="py-2 border-b border-[#515151]"
                         >
                           <View className="flex-row items-center">
                             <Image
-                              source={getGameIcon(game)}
+                              source={{uri:sport.logo}}
                               className="w-8 h-8 mr-2"
                             />
-                            <Text className="text-white ml-2">{game}</Text>
+                            <Text className="text-white ml-2">{sport.name}</Text>
                           </View>
                         </TouchableOpacity>
                       ))}
@@ -485,12 +487,13 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     <EntypoIcon name="location-pin" size={20} color="#b0b0b0" />
                   </TouchableOpacity>
                 </View>
+                <SafeAreaView>
                 <LocationModal
                   visible={locationModal}
                   onClose={() => setLocationModal(false)}
                   onSave={handleSaveLocation}
                 />
-
+</SafeAreaView>
                 {/*Established */}
                 <View>
                   <Text className="text-white text-2xl mt-2 mb-1">

@@ -22,20 +22,20 @@ const LocationPage = () => {
   return (
     <SafeAreaView className="flex-1 bg-black">
       {/* Header */}
-      <View className="flex flex-row items-center justify-between px-5 py-4">
+      <SafeAreaView className="flex flex-row items-center justify-between px-5 py-4">
         {/* Back Button */}
         <TouchableOpacity onPress={() => console.log("Back Button Clicked")}>
           <Icon name="arrowleft" size={30} color="white" />
         </TouchableOpacity>
 
         {/* Title */}
-        <Text className="text-white text-5xl font-semibold">Location</Text>
+        <Text className="text-white  top-10 text-5xl font-semibold">Location</Text>
 
         {/* Done Button */}
         <TouchableOpacity onPress={() => handleDone()}>
           <Text className="text-[#12956B] text-4xl font-semibold">Done</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
 
       {/* Location Selection */}
       <View className="px-8 mt-6">

@@ -20,7 +20,7 @@ interface PotentialMember {
   selected?: boolean;
 }
 
-const TeamCreatedPage: React.FC = () => {
+const TeamCreatedPage: React.FC = (formData) => {
   const teamMembers: TeamMember[] = [
     {
       id: 1,

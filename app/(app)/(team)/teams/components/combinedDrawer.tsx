@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface MenuItem {
   label: string;
@@ -60,7 +61,8 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
   });
 
   return (
-    <View className="flex-1">
+    
+    <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
         className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
@@ -109,7 +111,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
       >
         {children}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

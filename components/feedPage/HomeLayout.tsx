@@ -81,6 +81,8 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
     const randomIndex = Math.floor(Math.random() * possibleMessages.length);
     setMessage(possibleMessages[randomIndex]);
   }, []);
+
+  
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
     try {
@@ -108,25 +110,38 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
-
+  const check = async () => {
+    try {
+      const fetchedTeamsData = await dispatch(getTeams()).unwrap();
+  
+      const teamsList = fetchedTeamsData.createdTeams
+        .concat(fetchedTeamsData.joinedTeams)
+        .map((teamEntry) => {
+          // Check if the team exists before accessing its properties
+          if (teamEntry.team) {
+            return {
+              name: teamEntry.team.name,
+              url: teamEntry.team.logo?.url, // Add optional chaining to avoid errors if 'logo' is null
+              id: teamEntry.team._id,
+            };
+          } else {
+            // Return null or some fallback if the team is null
+            return null;
+          }
+        })
+        .filter(team => team !== null); // Filter out any null entries
+  
+      console.log(teamsList); // Logs an array of team names and URLs
+  
+      setTeamDetails(teamsList);
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      // Optionally, handle the error (e.g., show an error message or fallback UI)
+    }
+  };
   useEffect(() => {
     check();
   }, []);
-
-  const check = async () => {
-    const fetchedTeamsData = await dispatch(getTeams()).unwrap();
-    const teamsList = fetchedTeamsData.createdTeams
-      .concat(fetchedTeamsData.joinedTeams)
-      .map((teamEntry) => ({
-        name: teamEntry.team.name, // Assuming 'name' exists in team object
-        url: teamEntry.team.logo.url, // Assuming 'url' exists in team object
-        id: teamEntry.team._id,
-      }));
-
-    console.log(teamsList); // Logs an array of team names and URLs
-
-    setTeamDetails(teamsList);
-  };
 
   const drawerRef = useRef<DrawerRefProps>(null);
   const [isDrawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -164,47 +179,6 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
           />
         </TouchableOpacity>
 
-        {/* Add Post Section */}
-        {/* <TouchableOpacity
-          style={{
-            position: "relative",
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#141414",
-            padding: 6,
-            borderRadius: 12,
-            width: "75%",
-            height: 37,
-            justifyContent: "space-between",
-            paddingHorizontal: 6,
-          }}
-          // onPress={() => setAddPostContainerOpen(true)}
-          onPress={() => router.push("/addPost")}
-        >
-          <Text
-            style={{
-              color: "grey",
-              fontSize: 14,
-              fontWeight: "400",
-              marginLeft: 6,
-            }}
-          >
-            What's on your mind...
-          </Text>
-          <Animated.View
-            style={{
-              width: 25,
-              height: 25,
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 2,
-              borderColor: "grey",
-              borderRadius: 7,
-            }}
-          >
-            <Feather name="plus" size={15} color="grey" />
-          </Animated.View>
-        </TouchableOpacity> */}
         <View style={{ flex: 1 }}>
           <AnimatedAddPostBar suggestionText={message} />
         </View>
@@ -221,7 +195,8 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Render the custom drawer */}
       <CustomDrawer ref={drawerRef} onClose={() => setDrawerOpen(false)}>
-        <View
+        
+        <SafeAreaView
           className="w-full h-full bg-black pt-6"
           onStartShouldSetResponder={() => true}
         >
@@ -368,7 +343,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
               <Text className="text-white text-4xl font-medium">Settings</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </CustomDrawer>
 
       {/* Render the edge swipe detector */}

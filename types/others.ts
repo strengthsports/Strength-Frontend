@@ -31,3 +31,8 @@ export type Notification = {
   isNotificationRead: boolean;
   [key: string]: any;
 };
+
+export type Target = {
+  targetId: string;
+  targetType: string;
+};

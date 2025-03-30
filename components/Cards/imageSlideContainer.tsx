@@ -25,7 +25,7 @@ interface CustomImageSliderProps {
   aspectRatio: [number, number];
   onRemoveImage: (index: number) => void;
   isFeedPage?: boolean;
-  postDetails?: Post;
+  postId?: string;
   setIndex: (index: any) => any;
   onDoubleTap?: () => any;
 }
@@ -47,7 +47,7 @@ const ImageSlide = memo(
     isFirstSlide,
     totalSlides,
     isFeedPage,
-    postDetails,
+    postId,
     onDoubleTap,
   }: {
     uri: string;
@@ -56,7 +56,7 @@ const ImageSlide = memo(
     isFirstSlide: boolean;
     totalSlides: number;
     isFeedPage?: boolean;
-    postDetails?: Post;
+    postId?: string;
     onDoubleTap?: () => any;
   }) => {
     const router = useRouter();
@@ -71,9 +71,8 @@ const ImageSlide = memo(
         onSinglePress={() => {
           isFeedPage &&
             router.push({
-              pathname: "/post-view/1" as RelativePathString,
+              pathname: `/post-view/${postId}` as RelativePathString,
             });
-          dispatch(setCurrentPost(postDetails));
         }}
         onDoublePress={onDoubleTap}
       >
@@ -124,7 +123,7 @@ const CustomImageSlider = ({
   aspectRatio,
   onRemoveImage,
   isFeedPage,
-  postDetails,
+  postId,
   setIndex,
   onDoubleTap,
 }: // renderPagination
@@ -245,7 +244,7 @@ CustomImageSliderProps) => {
               isFirstSlide={index === 0}
               totalSlides={images.length}
               isFeedPage={isFeedPage}
-              postDetails={postDetails}
+              postId={postId}
               onDoubleTap={onDoubleTap}
             />
           ))}

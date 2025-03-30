@@ -70,7 +70,7 @@ const NotificationPage = () => {
   const debouncedRefresh = debounce(handleRefresh, 1000);
 
   return (
-    <SafeAreaView className="flex-1 p-6 bg-black">
+    <SafeAreaView className="flex-1 p-6 pb-16 bg-black">
       <Text className="text-6xl font-normal text-white mb-4">
         Notifications
       </Text>

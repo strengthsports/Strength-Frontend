@@ -72,7 +72,7 @@ const InteractionBar = ({
           </Text>
         </TouchableOpacity>
 
-        {isPostContainer && assetsCount && assetsCount > 1 && (
+        {isPostContainer && assetsCount && assetsCount > 1 ? (
           <View className="flex-row justify-center">
             {Array.from({ length: assetsCount }).map((_, i) => (
               <View
@@ -85,6 +85,8 @@ const InteractionBar = ({
               />
             ))}
           </View>
+        ) : (
+          <View />
         )}
 
         {/* comment count */}

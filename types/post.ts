@@ -16,6 +16,7 @@ export type Post = {
     firstName: string;
     lastName: string;
     headline: string;
+    username: string;
   };
   createdAt: string;
   likesCount: number;
@@ -46,6 +47,7 @@ export interface Comment {
     firstName: string;
     lastName: string;
     headline: string;
+    username: string;
   };
   text: string;
   commentsCount: number;

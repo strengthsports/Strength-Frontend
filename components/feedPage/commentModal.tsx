@@ -167,16 +167,13 @@ export const CommenterCard = memo(
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {comment?.postedBy?.headline}
+              @{comment?.postedBy?.username} | {comment?.postedBy?.headline}
             </TextScallingFalse>
           </View>
           <TextScallingFalse className="text-xl text-white mt-4 mb-3">
             <TextScallingFalse className="text-[#12956B] font-medium">
               {targetType === "Comment" &&
-                parent?.postedBy.firstName +
-                  " " +
-                  parent?.postedBy.lastName +
-                  " "}
+                "@" + parent?.postedBy?.username + " "}
             </TextScallingFalse>
             {comment?.text}
           </TextScallingFalse>

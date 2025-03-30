@@ -84,7 +84,7 @@ const PostDetailsPage = () => {
 
   // When the Reply button is tapped, store the reply context.
   const handleReply = (comment: Comment) => {
-    const replyTag = `${comment.postedBy.firstName} ${comment.postedBy.lastName}`;
+    const replyTag = `@${comment.postedBy.username}`;
     setReplyingTo({
       commentId: comment._id,
       name: replyTag,

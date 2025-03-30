@@ -81,7 +81,7 @@ const signupEnterLocation4 = () => {
       feedback("Please enter a location or use the current location.", "error");
       return;
     }
-    feedback("Address Successfully Set");
+    feedback("Address Successfully Set", "success");
     router.push("/Signup/signupSetPassword5");
   };
 

@@ -44,6 +44,7 @@ interface PostContainerProps {
   item: Post;
   highlightedHashtag?: string;
   isFeedPage?: boolean;
+  isMyActivity?: boolean;
   handleBottomSheet?: (state: boolean) => void;
 }
 
@@ -152,7 +153,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         followingType: item.postedBy.type,
       };
 
-      showFeedback(`You are now following ${item.postedBy.firstName}`);
+      showFeedback(
+        `You are now following ${item.postedBy.firstName}`,
+        "success"
+      );
       await followUser(followData);
     };
 

@@ -10,6 +10,7 @@ import ProfileIcon from "~/components/SvgIcons/navbar/ProfileIcon";
 import { useScroll } from "@/context/ScrollContext";
 import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
+import eventBus from "~/utils/eventBus";
 
 const BOTTOM_NAVBAR_HEIGHT = 65;
 interface CustomBottomNavbarProps {
@@ -98,6 +99,14 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
             onPress={() => {
               if (item.label === "Notification") {
                 setHasNewNotification(false);
+              }
+              if (item.label === "Home") {
+                // Check if already on Home route
+                if (activeRoute.includes(item.route)) {
+                  // Emit event to trigger scroll and refresh
+                  eventBus.emit("scrollToTop");
+                  return;
+                }
               }
               router.push(item.route as RelativePathString);
             }}

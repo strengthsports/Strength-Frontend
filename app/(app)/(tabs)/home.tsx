@@ -38,6 +38,8 @@ import { useScroll } from "~/context/ScrollContext";
 import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
 import { SafeAreaView } from "react-native-safe-area-context";
 import debounce from "lodash.debounce";
+import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
+import eventBus from "~/utils/eventBus";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -87,6 +89,14 @@ const Home = () => {
   const flatListRef = useRef<FlatList>(null);
   const { scrollY } = useScroll();
 
+  // Refresh posts handler
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    dispatch(resetFeed());
+    dispatch(fetchFeedPosts({ page: 1 }));
+    setIsRefreshing(false);
+  }, [dispatch]);
+
   // Animated progress value for the progress bar
   const progress = useRef(new Animated.Value(0)).current;
   const widthInterpolated = useMemo(
@@ -105,45 +115,43 @@ const Home = () => {
         toValue: 1,
         duration: 3000,
         useNativeDriver: false,
-      }).start();
+      }).start(() => {
+        console.log("Progress completed!");
+        onProgressComplete();
+      });
     } else {
       progress.setValue(0);
     }
-  }, [isPostProgressOn, progress]);
+  }, [isPostProgressOn]);
+
+  // On progress complete show feedback and refresh
+  const onProgressComplete = useCallback(() => {
+    showFeedback("Post uploaded successfully!");
+    handleRefresh();
+    // Dispatch an action to update isPostProgressOn to false
+    dispatch(setPostProgressOn(false));
+  }, [dispatch, handleRefresh]);
 
   // Listener for tab press to scroll to top and refresh posts
   useEffect(() => {
-    const parentNavigation = navigation.getParent();
-    let refetchStartTimeout: NodeJS.Timeout;
-
-    const onTabPress = () => {
-      if (navigation.isFocused()) {
-        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-        setIsRefreshing(true);
-        refetchStartTimeout = setTimeout(() => {
-          debouncedRefresh();
-        }, 1000);
-      }
+    const scrollListener = () => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+      setIsRefreshing(true);
+      // You can add a slight delay if needed before refreshing
+      setTimeout(() => {
+        handleRefresh();
+      }, 1000);
     };
 
-    const unsubscribe = parentNavigation?.addListener("tabPress", onTabPress);
-
+    eventBus.addListener("scrollToTop", scrollListener);
     return () => {
-      unsubscribe?.();
-      clearTimeout(refetchStartTimeout);
+      eventBus.removeListener("scrollToTop", scrollListener);
     };
-  }, [navigation]);
+  }, [handleRefresh]);
 
   // Fetch posts on mount
   useEffect(() => {
     dispatch(fetchFeedPosts({ page: 1 }));
-  }, [dispatch]);
-
-  // Refresh posts handler
-  const handleRefresh = useCallback(() => {
-    dispatch(resetFeed());
-    dispatch(fetchFeedPosts({ page: 1 }));
-    setIsRefreshing(false);
   }, [dispatch]);
 
   // Debounced refresh to avoid multiple rapid calls
@@ -213,13 +221,14 @@ const Home = () => {
 
   const isAndroid = Platform.OS === "android";
 
-  if (isLoading && currentPage === 1) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.themeColor} />
-      </View>
-    );
-  }
+  // if (loading && currentPage === 1) {
+  //   console.log("\n\nLOADING...", currentPage);
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color={Colors.themeColor} />
+  //     </View>
+  //   );
+  // }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -229,37 +238,41 @@ const Home = () => {
           style={[styles.progressBar, { width: widthInterpolated }]}
         />
       )}
-      <GestureHandlerRootView>
-        <Animated.FlatList
-          ref={flatListRef}
-          data={interleavedData}
-          keyExtractor={keyExtractor}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )}
-          scrollEventThrottle={16}
-          renderItem={renderItem}
-          initialNumToRender={5}
-          removeClippedSubviews={isAndroid}
-          windowSize={21}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing || (loading && currentPage === 1)}
-              onRefresh={debouncedRefresh}
-              colors={["#12956B", "#6E7A81"]}
-              tintColor="#6E7A81"
-              progressViewOffset={60}
-              progressBackgroundColor="#181A1B"
-            />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={2}
-          ListEmptyComponent={<EmptyComponent error={error} />}
-          ListFooterComponent={<ListFooterComponent isLoading={isLoading} />}
-          contentContainerStyle={styles.contentContainer}
-        />
-      </GestureHandlerRootView>
+      {loading && currentPage === 1 ? (
+        <ActivityIndicator size="large" color={Colors.themeColor} />
+      ) : (
+        <GestureHandlerRootView>
+          <Animated.FlatList
+            ref={flatListRef}
+            data={interleavedData}
+            keyExtractor={keyExtractor}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
+            renderItem={renderItem}
+            initialNumToRender={5}
+            removeClippedSubviews={isAndroid}
+            windowSize={21}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing || (loading && currentPage === 1)}
+                onRefresh={debouncedRefresh}
+                colors={["#12956B", "#6E7A81"]}
+                tintColor="#6E7A81"
+                progressViewOffset={60}
+                progressBackgroundColor="#181A1B"
+              />
+            }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={2}
+            ListEmptyComponent={<EmptyComponent error={error} />}
+            ListFooterComponent={<ListFooterComponent isLoading={isLoading} />}
+            contentContainerStyle={styles.contentContainer}
+          />
+        </GestureHandlerRootView>
+      )}
     </SafeAreaView>
   );
 };

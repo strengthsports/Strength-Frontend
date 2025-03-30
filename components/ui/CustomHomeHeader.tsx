@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import { Image } from "react-native";
 import AnimatedAddPostBar from "../feedPage/AnimatedAddPostBar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -11,20 +11,24 @@ import { Animated } from "react-native";
 const HEADER_HEIGHT = 60;
 
 const CustomHomeHeader = () => {
-  const { error, loading, user } = useSelector((state: any) => state?.profile);
+  const { user } = useSelector((state: any) => state?.profile);
   const possibleMessages = [
     "What's going on...",
     "What's on your mind...",
     "Share your sports moment...",
   ];
 
-  // Select a random message each time the component mounts
-  const [message, setMessage] = React.useState("");
+  const [message, setMessage] = React.useState(possibleMessages[0]); // Set default message
 
   React.useEffect(() => {
     const randomIndex = Math.floor(Math.random() * possibleMessages.length);
     setMessage(possibleMessages[randomIndex]);
   }, []);
+
+  // Memoized AnimatedAddPostBar to avoid unnecessary re-renders
+  const memoizedAddPostBar = useMemo(() => {
+    return <AnimatedAddPostBar suggestionText={message} />;
+  }, [message]);
 
   // Get the shared scrollY animated value
   const { scrollY } = useScroll();
@@ -55,9 +59,7 @@ const CustomHomeHeader = () => {
       </TouchableOpacity>
 
       {/* Add Post Section */}
-      <View style={{ flex: 1 }}>
-        <AnimatedAddPostBar suggestionText={message} />
-      </View>
+      <View style={{ flex: 1 }}>{memoizedAddPostBar}</View>
 
       {/* Message Icon */}
       <TouchableOpacity>

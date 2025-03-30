@@ -83,7 +83,9 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
     <Animated.View
       style={[
         styles.container,
-        { transform: [{ translateY: headerTranslateY }] },
+        activeRoute === "(app)/(tabs)/home"
+          ? { transform: [{ translateY: headerTranslateY }] }
+          : {},
       ]}
     >
       {navItems.map((item, index) => {
@@ -97,9 +99,9 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
           <TouchableOpacity
             key={index}
             onPress={() => {
-              if (item.label === "Notification") {
-                setHasNewNotification(false);
-              }
+              // if (item.label === "Notification") {
+              //   setHasNewNotification(false);
+              // }
               if (item.label === "Home") {
                 // Check if already on Home route
                 if (activeRoute.includes(item.route)) {

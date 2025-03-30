@@ -1,5 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useMemo } from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Modal as RNModal,
+} from "react-native";
+import React, { useMemo, useState } from "react";
 import { Image } from "react-native";
 import AnimatedAddPostBar from "../feedPage/AnimatedAddPostBar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -8,11 +14,14 @@ import defaultPic from "../../assets/images/nopic.jpg";
 import { useScroll } from "~/context/ScrollContext";
 import { Animated } from "react-native";
 import { useDrawer } from "~/context/DrawerContext";
+import AddPostContainer from "../modals/AddPostContainer";
 
 const HEADER_HEIGHT = 60;
 
 const CustomHomeHeader = () => {
   const { user } = useSelector((state: any) => state?.profile);
+  const [isAddPostContainerOpen, setAddPostContainerOpen] =
+    useState<boolean>(false);
   const possibleMessages = [
     "What's going on...",
     "What's on your mind...",
@@ -28,7 +37,12 @@ const CustomHomeHeader = () => {
 
   // Memoized AnimatedAddPostBar to avoid unnecessary re-renders
   const memoizedAddPostBar = useMemo(() => {
-    return <AnimatedAddPostBar suggestionText={message} />;
+    return (
+      <AnimatedAddPostBar
+        suggestionText={message}
+        setAddPostContainerOpen={setAddPostContainerOpen}
+      />
+    );
   }, [message]);
 
   // Get the shared scrollY animated value
@@ -47,27 +61,47 @@ const CustomHomeHeader = () => {
   const { handleOpenDrawer } = useDrawer();
 
   return (
-    <View style={[styles.headerContainer]}>
-      {/* Avatar Profile Picture */}
-      <TouchableOpacity onPress={handleOpenDrawer}>
-        <Image
-          source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
-          style={{ width: 36, height: 36, borderRadius: 18 }}
-        />
-      </TouchableOpacity>
+    <>
+      <View style={[styles.headerContainer]}>
+        {/* Avatar Profile Picture */}
+        <TouchableOpacity onPress={handleOpenDrawer}>
+          <Image
+            source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
+            style={{ width: 36, height: 36, borderRadius: 18 }}
+          />
+        </TouchableOpacity>
 
-      {/* Add Post Section */}
-      <View style={{ flex: 1 }}>{memoizedAddPostBar}</View>
+        {/* Add Post Section */}
+        <View style={{ flex: 1 }}>{memoizedAddPostBar}</View>
 
-      {/* Message Icon */}
-      <TouchableOpacity>
-        <MaterialCommunityIcons
-          name="message-reply-text-outline"
-          size={27.5}
-          color="white"
-        />
-      </TouchableOpacity>
-    </View>
+        {/* Message Icon */}
+        <TouchableOpacity>
+          <MaterialCommunityIcons
+            name="message-reply-text-outline"
+            size={27.5}
+            color="white"
+          />
+        </TouchableOpacity>
+      </View>
+
+      <RNModal
+        visible={isAddPostContainerOpen}
+        animationType="slide"
+        onRequestClose={() => setAddPostContainerOpen(false)}
+        transparent={true}
+      >
+        <TouchableOpacity
+          className="flex-1"
+          activeOpacity={1}
+          onPress={() => setAddPostContainerOpen(false)}
+        >
+          <AddPostContainer
+            text={message}
+            setAddPostContainerOpen={setAddPostContainerOpen}
+          />
+        </TouchableOpacity>
+      </RNModal>
+    </>
   );
 };
 

@@ -1,11 +1,14 @@
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
+import { View, TouchableOpacity, Animated, Easing } from "react-native";
 
-const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
-  const router = useRouter();
-
+const AnimatedAddPostBar = ({
+  suggestionText = "What's on your mind...",
+  setAddPostContainerOpen,
+}: {
+  suggestionText: string;
+  setAddPostContainerOpen: (state: boolean) => void;
+}) => {
   // Use layout animation approach instead of mixing native and JS drivers
   const containerWidthAnim = useRef(new Animated.Value(37)).current;
   const textOpacityAnim = useRef(new Animated.Value(0)).current;
@@ -31,6 +34,10 @@ const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
     ]).start();
   }, []); // Empty dependency array ensures this runs only once
 
+  const handleOpenAddPostContainer = () => {
+    setAddPostContainerOpen(true);
+  };
+
   return (
     <View style={{ alignItems: "center" }}>
       <Animated.View
@@ -51,7 +58,7 @@ const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
             justifyContent: "space-between",
             paddingHorizontal: 6,
           }}
-          onPress={() => router.push(`/addPost?text=${suggestionText}`)}
+          onPress={handleOpenAddPostContainer}
         >
           <Animated.Text
             allowFontScaling={false}

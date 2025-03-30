@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Dimensions } from 'react-native';
+import { Image } from "expo-image";
 import calm from "@/assets/images/calm.gif";
 
-// Get screen height for responsive height
 const { height: screenHeight } = Dimensions.get('window');
 
 const UnderDevelopmentModal = () => {
-  // State to control modal visibility
+  //state to control modal visibility
   const [isVisible, setIsVisible] = useState(true);
 
   return (
@@ -23,7 +23,7 @@ const UnderDevelopmentModal = () => {
             <Image
               source={calm}
               style={styles.illustration}
-              resizeMode="contain"
+              contentFit='cover'
             />
           </View>
 
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   card: {
-    width: '80%',
+    width: '90%',
     height: screenHeight * 0.5,
     backgroundColor: '#1C2526',
     borderRadius: 10,

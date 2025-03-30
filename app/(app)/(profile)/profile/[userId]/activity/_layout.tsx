@@ -61,7 +61,7 @@ const ActivityLayout = () => {
                         : (`/profile/${params?.userId}/activity/${tab}` as any)
                     );
                   }}
-                  className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-full ${
+                  className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-lg ${
                     activeSubSection === tab
                       ? "bg-[#12956B]"
                       : "bg-black border-gray-600"

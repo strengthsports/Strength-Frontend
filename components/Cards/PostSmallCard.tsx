@@ -146,51 +146,59 @@ const PostSmallCard = ({
         </View>
       </View>
 
-      <View style={{ alignItems: "flex-end" }}>
-        <View
-          style={{
-            width: "94%",
-            backgroundColor: "#151515",
-            padding: 10,
-            justifyContent: "center",
-            alignItems: "center",
-            borderTopLeftRadius: 70,
-            borderTopRightRadius: 15,
-          }}
-        >
-          <Pressable
-            onPress={() => router.push(`/post-details/${post._id}`)}
-            style={{ width: "80.98%", paddingLeft: "1%", paddingTop: "10%" }}
-          >
-            <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: responsiveFontSize(1.29),
-                fontWeight: "400",
-              }}
-              numberOfLines={isExpanded ? undefined : 2}
-              ellipsizeMode="tail"
-              onTextLayout={handleTextLayout}
-            >
-              {renderCaptionWithHashtags(post.caption)}
-            </TextScallingFalse>
-
-            {showSeeMore && !isExpanded && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsExpanded(true)}
-                className="mt-1"
+      {/* <View style={{ alignItems:'flex-end'}}>
+        <View style={{width: '94%', backgroundColor:'#151515', paddingVertical: 15, paddingLeft:5, justifyContent:'center', alignItems:'center', borderTopLeftRadius: 45, borderTopRightRadius: 15}}>
+            <View style={{ width: '85%', paddingLeft: '1%', paddingTop: '10%'}}>
+              <MaterialIcons className="absolute right-0 top-0" name="more-horiz" size={18} color="#a3a3a3" />
+              <TextScallingFalse
+                style={{color:'white', fontSize: responsiveFontSize(1.29), fontWeight:'400'}}
+                numberOfLines={isExpanded ? undefined : 2}
+                ellipsizeMode="tail"
+                onTextLayout={handleTextLayout}
               >
-                <TextScallingFalse style={styles.seeMore}>
-                  See more
-                </TextScallingFalse>
-              </TouchableOpacity>
-            )}
-          </Pressable>
+                {renderCaptionWithHashtags(post.caption)}
+              </TextScallingFalse>
+              
+            
+              {showSeeMore && !isExpanded && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setIsExpanded(true)}
+                  className="mt-1"
+                >
+                  <TextScallingFalse style={styles.seeMore}>See more</TextScallingFalse>
+                </TouchableOpacity>
+              )}
+            </View>
         </View>
+        </View> */}
+
+      <View
+        className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515]`}
+      >
+        <MaterialIcons
+          className="absolute right-5 top-2"
+          name="more-horiz"
+          size={18}
+          color="#a3a3a3"
+        />
+        <TextScallingFalse className=" pl-10 pr-6 pt-10 pb-3 text-sm text-white ">
+          {renderCaptionWithHashtags(post.caption)}
+        </TextScallingFalse>
+        {showSeeMore && !isExpanded && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setIsExpanded(true)}
+            className="mt-1"
+          >
+            <TextScallingFalse style={styles.seeMore}>
+              See more
+            </TextScallingFalse>
+          </TouchableOpacity>
+        )}
       </View>
 
-      <View style={{ height: 210 * scaleFactor }}>
+      <View style={{ height: 240 * scaleFactor }}>
         {imageUrls.length > 0 && (
           <TouchableOpacity
             onPress={() => router.push(`/post-view/${post._id}`)}
@@ -202,7 +210,7 @@ const PostSmallCard = ({
               loop={true}
               onIndexChanged={setCurrentSlide}
               showsPagination={false}
-              style={{ height: 210 * scaleFactor }}
+              style={{ height: 240 * scaleFactor }}
             >
               {imageUrls.map((uri) => (
                 <Image
@@ -210,7 +218,7 @@ const PostSmallCard = ({
                   source={{ uri }}
                   style={{
                     width: "100%",
-                    height: 210 * scaleFactor,
+                    height: 240 * scaleFactor,
                     backgroundColor: "white",
                     borderTopLeftRadius: 22,
                     borderBottomLeftRadius: 22,
@@ -263,10 +271,10 @@ const PostSmallCard = ({
             style={{ flexDirection: "row" }}
             onPress={() => router.push(`/post-details/${post._id}/likes`)}
           >
-            <AntDesign name="like1" size={14 * scaleFactor} color="#FFC436" />
+            <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
             <TextScallingFalse
               style={{
-                fontSize: responsiveFontSize(1.41),
+                fontSize: responsiveFontSize(1.25),
                 color: "white",
                 fontWeight: "300",
                 paddingLeft: "2%",
@@ -401,11 +409,13 @@ export default PostSmallCard;
 const styles = StyleSheet.create({
   ButtonsContainer: {
     backgroundColor: "black",
-    padding: 7,
-    borderRadius: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    // padding: 8,
+    borderRadius: 25,
     width: "auto",
     flexDirection: "row",
-    gap: 8,
+    gap: 5,
     justifyContent: "center",
     alignItems: "center",
   },

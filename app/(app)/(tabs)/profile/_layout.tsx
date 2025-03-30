@@ -102,7 +102,7 @@ const ProfileLayout = () => {
         <View 
           // style={{
           //   backgroundColor: "black",
-          //   zIndex: -1,
+          //   zIndex: 999,
           // }}
         >
           <Header username={user?.username} isBackButtonVisible={false} />
@@ -124,7 +124,7 @@ const ProfileLayout = () => {
               style={{ width: "100%", height: "100%" }}
             />
           </TouchableOpacity>
-          <View className="absolute h-full z-50 flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]">
+          <View className="absolute h-full flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]" style={{zIndex:1}}>
             <View
               style={{
                 width: responsiveWidth(31),
@@ -461,7 +461,7 @@ const ProfileLayout = () => {
         ></View>
         {/* Tabs Header */}
         <View
-          className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600"
+          className="flex-row justify-evenly mt-2 border-b-[0.5px] border-gray-600"
           style={{
             backgroundColor: "black",
             zIndex: 1,

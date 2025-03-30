@@ -3,7 +3,7 @@ import { View, FlatList, TouchableOpacity, useWindowDimensions, Platform, Text }
 import TextScallingFalse from "~/components/CentralText";
 import PostSmallCard from "components/Cards/PostSmallCard";
 import { Post } from '~/types/post';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import PostContainerSmall from '../Cards/postContainerSmall';
 
 
@@ -60,8 +60,8 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
     return (
         <View style={{alignItems:"center", flex:1, justifyContent:"center", flexDirection:"row", marginLeft:15}}>
           <View 
-            style={{flex:1, flexDirection:"row", width: 'auto', padding: 75, marginTop:55 , marginBottom:35 ,justifyContent:'center', alignItems:'center',height:360*scaleFactor}}
-            className="border-[#494949] border-[0.3px] rounded-[20px]"
+            style={{flex:1, flexDirection:"row", width: 'auto', padding: 75, marginTop:104 , marginBottom:60 ,justifyContent:'center', alignItems:'center',height:392*scaleFactor}}
+            className="border-[#2C2C2C] border-[0.3px] rounded-[15px] bg-[#0B0B0B]"
           >
             <TouchableOpacity activeOpacity={0.3} style={{flex:1, flexDirection:"row", gap:5 ,}} onPress={onSeeAllPress}>
               <TextScallingFalse style={{color:"green", paddingLeft:15,}}>
@@ -77,11 +77,11 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
   return (
     <View
       className="py-2 my-2 ml-4 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
-      style={{ height: 630 * scaleFactor }}
+      style={{ height: 650 * scaleFactor }}
     >
       {/* Header */}
       <View className="w-full h-12 justify-end pl-5">
-        <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
+        <TextScallingFalse className="text-[#8A8A8A] text-[18px] font-bold">
           POSTS
         </TextScallingFalse>
       </View>
@@ -115,11 +115,11 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
           scrollEventThrottle={16}
           style={{ flex: 1 }}
           ListFooterComponent={ListFooterComponent}
-        />
+        />                      
         {/* dot carousel */}
         {displayedPosts.length > 0 && (
-          <View className="flex-row justify-center my-2">
-            {displayedPosts.map((_, index) => (
+          <View className="flex-row justify-center my-6">
+            {Array.from({ length: displayedPosts.length + 1 }).map((_, index) => (
               <View
                 key={index}
                 className={`w-2 h-2 rounded-full mx-1 ${
@@ -132,12 +132,34 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
       </View>
 
       {/* Footer */}
-      <View className="w-auto h-[15%] justify-center items-center">
-        <View className="h-[1px] w-[90%] bg-gray-500" />
-        <TouchableOpacity activeOpacity={0.3} className="pt-4" onPress={onSeeAllPress}>
-          <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
-            See all posts...
-          </TextScallingFalse>
+      <View className="w-auto h-[8%] justify-center items-center">
+        <View className="h-[0.5px] w-[90%] bg-gray-500" />
+        <TouchableOpacity
+          activeOpacity={0.3}
+          onPress={() => console.log('Navigate to Full Insights')}
+          style={{
+            flex:1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent:"center",
+            marginVertical: 6,
+          }}
+        >
+          <Text
+            style={{
+              color: "#808080",
+              fontSize: 15,
+              fontWeight: '700', // Bold
+            }}
+          >
+            See all posts
+          </Text>
+          <Feather 
+            name="arrow-right"
+            size={20}
+            color={"#808080"}
+            style={{ marginLeft: 5 }}
+          />
         </TouchableOpacity>
       </View>
     </View>

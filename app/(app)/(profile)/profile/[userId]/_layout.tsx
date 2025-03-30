@@ -244,8 +244,14 @@ const ProfileLayout = () => {
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[0]}
         >
-          <Header username={profileData?.username} isBackButtonVisible={true} />
+          <View style={{
+            backgroundColor: "black",
+            zIndex: 999,
+          }}>
+            <Header username={profileData?.username} isBackButtonVisible={true} />
+          </View>
 
           {/* profile pic and cover image */}
           <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
@@ -271,7 +277,7 @@ const ProfileLayout = () => {
                 paddingHorizontal: "4.87%",
                 position: "relative",
                 top: "-45%",
-                zIndex: 100,
+                zIndex: 1,
               }}
             >
               <View
@@ -722,11 +728,11 @@ const ProfileLayout = () => {
             ) : isSettingsModalVisible.message === "Unfollow" ? (
               <View>
                 <TextScallingFalse className="text-white text-xl font-semibold">
-                  Unfollow {profileData?.firstName}
+                  Unfollow {profileData?.firstName || ''}
                 </TextScallingFalse>
                 <TextScallingFalse className="text-white mt-1 font-light text-sm">
-                  Stop seeing posts from {profileData?.firstName} on your feed.{" "}
-                  {profileData?.firstName} won't be notified that you've
+                  Stop seeing posts from {profileData?.firstName || ''} on your feed.{" "}
+                  {profileData?.firstName || ''} won't be notified that you've
                   unfollowed
                 </TextScallingFalse>
                 <View className="items-center justify-evenly flex-row mt-5">

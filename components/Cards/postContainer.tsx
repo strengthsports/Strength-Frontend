@@ -284,11 +284,11 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   {item.postedBy?.firstName} {item.postedBy?.lastName}
                 </TextScallingFalse>
                 <TextScallingFalse
-                  className="text-neutral-300 text-sm"
+                  className="text-[#EAEAEA] text-sm"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.postedBy?.headline}
+                  @{item.postedBy.username} | {item.postedBy?.headline}
                 </TextScallingFalse>
               </TouchableOpacity>
               <View className="flex flex-row items-center">

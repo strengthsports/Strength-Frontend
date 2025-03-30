@@ -12,7 +12,7 @@ import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
 import eventBus from "~/utils/eventBus";
 
-const BOTTOM_NAVBAR_HEIGHT = 65;
+const BOTTOM_NAVBAR_HEIGHT = 70;
 interface CustomBottomNavbarProps {
   hasNewNotification: boolean;
   setHasNewNotification: (value: boolean) => void;
@@ -52,7 +52,7 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
   const headerTranslateY = clampedScrollY.interpolate({
     inputRange: [0, BOTTOM_NAVBAR_HEIGHT],
     outputRange: [0, BOTTOM_NAVBAR_HEIGHT],
-    extrapolate: "clamp",
+    // extrapolate: "",
   });
 
   // Combine segments to create current route string
@@ -144,8 +144,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    borderTopWidth: 0.2,
-    borderColor: "#808080",
     overflow: "hidden",
     height: BOTTOM_NAVBAR_HEIGHT,
   },

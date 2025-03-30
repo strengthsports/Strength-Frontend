@@ -40,6 +40,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import debounce from "lodash.debounce";
 import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 import eventBus from "~/utils/eventBus";
+import PageThemeView from "~/components/PageThemeView";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -136,18 +137,18 @@ const Home = () => {
   useEffect(() => {
     const scrollListener = () => {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-      setIsRefreshing(true);
-      // You can add a slight delay if needed before refreshing
-      setTimeout(() => {
-        handleRefresh();
-      }, 1000);
+      // setIsRefreshing(true);
+      // // You can add a slight delay if needed before refreshing
+      // setTimeout(() => {
+      //   handleRefresh();
+      // }, 1000);
     };
 
     eventBus.addListener("scrollToTop", scrollListener);
     return () => {
       eventBus.removeListener("scrollToTop", scrollListener);
     };
-  }, [handleRefresh]);
+  }, []);
 
   // Fetch posts on mount
   useEffect(() => {
@@ -231,7 +232,7 @@ const Home = () => {
   // }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <PageThemeView>
       <CustomHomeHeader />
       {isPostProgressOn && (
         <Animated.View
@@ -273,7 +274,7 @@ const Home = () => {
           />
         </GestureHandlerRootView>
       )}
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

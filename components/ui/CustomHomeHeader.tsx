@@ -31,25 +31,20 @@ const CustomHomeHeader = () => {
   }, [message]);
 
   // Get the shared scrollY animated value
-  const { scrollY } = useScroll();
+  // const { scrollY } = useScroll();
 
   // Clamp the scroll value between 0 and HEADER_HEIGHT.
-  const clampedScrollY = Animated.diffClamp(scrollY, 0, HEADER_HEIGHT);
+  // const clampedScrollY = Animated.diffClamp(scrollY, 0, HEADER_HEIGHT);
 
   // Interpolate to get a translateY value that moves the header up as you scroll down.
-  const headerTranslateY = clampedScrollY.interpolate({
-    inputRange: [0, HEADER_HEIGHT],
-    outputRange: [0, -HEADER_HEIGHT],
-    extrapolate: "clamp",
-  });
+  // const headerTranslateY = clampedScrollY.interpolate({
+  //   inputRange: [0, HEADER_HEIGHT],
+  //   outputRange: [0, -HEADER_HEIGHT],
+  //   extrapolate: "clamp",
+  // });
 
   return (
-    <Animated.View
-      style={[
-        styles.headerContainer,
-        { transform: [{ translateY: headerTranslateY }] },
-      ]}
-    >
+    <View style={[styles.headerContainer]}>
       {/* Avatar Profile Picture */}
       <TouchableOpacity>
         <Image
@@ -69,7 +64,7 @@ const CustomHomeHeader = () => {
           color="white"
         />
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 

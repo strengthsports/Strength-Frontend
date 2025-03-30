@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator } from "react-native";
+import { Image } from "expo-image";
 import Swiper from "react-native-swiper";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "~/constants/Colors"; // Ensure this path is correct

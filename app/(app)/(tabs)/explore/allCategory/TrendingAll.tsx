@@ -24,6 +24,7 @@ import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import SwiperTop from "~/components/explorePage/SwiperTop";
 import HashtagModal from "~/components/explorePage/hashtagModal";
+import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -83,13 +84,23 @@ const TrendingAll = () => {
               className="-mb-1"
             />
           </View>
-          <MaterialCommunityIcons
-            name="reload"
-            size={22}
-            color="grey"
-            className="-mb-1"
+          <TouchableOpacity
+            activeOpacity={0.7}
             onPress={refetchLiveCricket}
-          />
+            style={{
+              width: 40,
+              height: 20,
+              justifyContent: "center",
+              alignItems: "flex-end",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="reload"
+              size={22}
+              color="grey"
+              className="-mb-1"
+            />
+          </TouchableOpacity>
         </View>
         <FlatList
           data={liveCricketMatches}
@@ -98,10 +109,11 @@ const TrendingAll = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => (
-            <View className="h-48 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545] ">
+            <View className="h-52 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545] ">
               {isCricketFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
-                  <ActivityIndicator size="large" color={Colors.themeColor} />
+                  {/* <ActivityIndicator size="large" color={Colors.themeColor} /> */}
+                  <ScoresSkeletonLoader />
                 </View>
               ) : (
                 <MatchCard match={item} isLive={true} />

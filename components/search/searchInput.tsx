@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useRef } from "react";
 import { TextInput } from "react-native-gesture-handler";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import SearchIcon from "../SvgIcons/Common_Icons/SearchIcon";
 
 const SearchInput = ({ searchText, setSearchText }: { searchText: string; setSearchText: (text: string) => void }) => {
   const searchInputRef = useRef<TextInput>(null);
@@ -16,14 +17,14 @@ const SearchInput = ({ searchText, setSearchText }: { searchText: string; setSea
     }
   }, []);
   return (
-    <TouchableOpacity
+    <TouchableOpacity activeOpacity={0.5}
       onPress={() => {}}
-      className="flex-row bg-neutral-800 rounded-md px-3 items-center flex-1"
-    >
-      <MaterialCommunityIcons name="magnify" size={24} color="grey" />
+      className="flex-row bg-[#212121] rounded-3xl px-4 items-center flex-1">
+      {/* <Feather name="search" size={22} color="grey" /> */}
+      <SearchIcon />
       <TextInput
         ref={searchInputRef}
-        className="w-full h-full text-white"
+        className="w-full h-full px-3 text-[13px] text-white"
         placeholderTextColor="grey"
         placeholder="Search..."
         value={searchText}

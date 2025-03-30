@@ -236,7 +236,7 @@ const MatchCard = ({ match, isLive }: MatchCardProps) => {
         </View>
       </View>
       {/* Match Status */}
-      <TextScallingFalse className="ml-3 mt-3 text-neutral-400 text-base">
+      <TextScallingFalse className="p-1 ml-4 text-neutral-400 text-base">
         {match.status}
       </TextScallingFalse>
     </>

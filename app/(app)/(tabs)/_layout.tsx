@@ -24,7 +24,7 @@ export default function TabLayout() {
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
-            height: 100,
+            height: 80,
             paddingBottom: 15,
             paddingTop: 5,
             borderTopLeftRadius: 10,
@@ -39,7 +39,7 @@ export default function TabLayout() {
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
             overflow: "hidden",
-            backgroundColor: "#000", // Ensure consistent background
+            backgroundColor: "black", // Ensure consistent background
             elevation: 0, // Remove shadow on Android
             borderTopWidth: 0, // Remove top border shadow
           },
@@ -56,11 +56,11 @@ export default function TabLayout() {
             //   name={focused ? "home-outline" : "home-outline"}
             //   color={color}
             // />
-            <HomeIcon color={focused ? "#12956B" : "white"} />
+            <HomeIcon color={focused ? "#12956B" : "#cccccc"} />
           ),
           tabBarLabel: ({ focused }) => (
             <Text
-              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
             >
               Home
             </Text>
@@ -73,11 +73,11 @@ export default function TabLayout() {
           title: "Explore",
           href: "/(app)/(tabs)/explore/allCategory",
           tabBarIcon: ({ color, focused }) => (
-            <SearchIcon color={focused ? "#12956B" : "white"} />
+            <SearchIcon color={focused ? "#12956B" : "#cccccc"} />
           ),
           tabBarLabel: ({ focused }) => (
             <Text
-              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
             >
               Explore
             </Text>
@@ -89,11 +89,11 @@ export default function TabLayout() {
         options={{
           title: "Community",
           tabBarIcon: ({ color, focused }) => (
-            <CommunityIcon color={focused ? "#12956B" : "white"} />
+            <CommunityIcon color={focused ? "#12956B" : "#cccccc"} />
           ),
           tabBarLabel: ({ focused }) => (
             <Text
-              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
             >
               Community
             </Text>
@@ -110,7 +110,7 @@ export default function TabLayout() {
                 name={focused ? "bell" : "bell-outline"}
                 color={color}
               /> */}
-              <NotificationIcon color={focused ? "#12956B" : "white"} />
+              <NotificationIcon color={focused ? "#12956B" : "#cccccc"} />
               {hasNewNotification && (
                 <View
                   style={{
@@ -128,7 +128,7 @@ export default function TabLayout() {
           ),
           tabBarLabel: ({ focused }) => (
             <Text
-              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+              style={{ color: focused ? "#12956B" : "#cccccc", fontSize: 9 }}
             >
               Notification
             </Text>
@@ -155,11 +155,11 @@ export default function TabLayout() {
             //   }
             //   color={color}
             // />
-            <ProfileIcon color={focused ? "#12956B" : "white"} />
+            <ProfileIcon color={focused ? "#12956B" : "#CCCCCC"} />
           ),
           tabBarLabel: ({ focused }) => (
             <Text
-              style={{ color: focused ? "#12956B" : "white", fontSize: 10 }}
+              style={{ color: focused ? "#12956B" : "#CCCCCC", fontSize: 9 }}
             >
               Profile
             </Text>

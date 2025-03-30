@@ -7,9 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import SuggestionCard from "@/components/Cards/SuggestionCard";
 import { Divider } from "react-native-elements";
+import { useRouter } from "expo-router";
 import {
   useGetPopularUsersQuery,
   useGetUsersBasedOnActivityQuery,
@@ -17,8 +18,14 @@ import {
   useLazyGetUsersOfSpecificCityQuery,
 } from "~/reduxStore/api/community/communityApi";
 import { SafeAreaView } from "react-native-safe-area-context";
+import TextScallingFalse from "~/components/CentralText";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
+import SearcHeader from "~/components/search/SearchHeader";
+import SearchHeader from "~/components/search/SearchHeader";
+
 
 const Community = () => {
+  const router = useRouter();
   // Fetch different types of suggestions
   const { data: similarSportsUsers, isLoading: loadingSimilarSportsUsers } =
     useGetUsersOfSimilarSportsQuery({ limit: 10 });
@@ -147,19 +154,14 @@ const Community = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0B0B0B] pt-4 px-4">
+    <SafeAreaView className="flex-1 bg-black">
       {/* Search Bar */}
-      <View className="flex-row items-center bg-[#1E1E1E] px-3  rounded-full mb-3">
-        <Ionicons name="search" size={20} color="gray" className="ml-2" />
-        <TextInput
-          placeholder="Search..."
-          placeholderTextColor="gray"
-          className="text-white flex-1 ml-2 p-3"
-        />
+      <View style={{width:'100%'}}>
+      <SearchHeader />
       </View>
 
-      <Divider width={3} color="#1e1e1e" />
-
+      <Divider width={0.8} color="#181818" />
+       <View className="px-4">
       {/* Suggestions List */}
       {loadingSimilarSportsUsers ||
       loadingCitywiseUsers ||
@@ -176,6 +178,7 @@ const Community = () => {
           showsVerticalScrollIndicator={false}
         />
       )}
+      </View>
     </SafeAreaView>
   );
 };

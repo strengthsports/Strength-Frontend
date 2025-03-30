@@ -37,6 +37,7 @@ import MoreModal from "~/components/feedPage/MoreModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 import { Post } from "~/types/post";
+import FeedSkeletonLoader from "~/components/skeletonLoaders/FeedSkeletonLoader";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -239,8 +240,9 @@ export default function Home() {
   if (isFetching && page === 1) {
     // Show a full-screen loader on the initial fetch.
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color={Colors.themeColor} />
+      <View className="flex-1 justify-center items-center bg-black">
+        {/* <ActivityIndicator size="large" color={Colors.themeColor} /> */}
+        <FeedSkeletonLoader />
       </View>
     );
   }

@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { NavigationProp } from "@react-navigation/native";
@@ -21,7 +22,6 @@ import MemberCard from "@/components/teamPage/Member";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import TeamCreatedPage from "./team-creation-success";
 import LocationModal from "@/components/teamPage/LocationModal";
 // import { useSelector } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
@@ -155,14 +155,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    console.log("Component mounted, dispatching fetchSports...");
     dispatch(fetchSports());
   }, [dispatch]);
 
-  console.log("Total sports is", { sports, loading, error });
-
   const { user } = useSelector((state: RootState) => state?.profile);
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
+  const load = useSelector((state) => state.team.loading);
   useEffect(() => {
     if (user?.id) {
       setFormData((prevFormData) => ({
@@ -174,7 +172,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   }, [user]);
 
   useEffect(() => {
-    // console.log("Fetching user suggestions...");
     dispatch(
       fetchUserSuggestions({
         sportsData: ["67cd0bb8970c518cc730d485"],
@@ -201,8 +198,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     members: [],
     createdBy: user?.id as string,
   });
-
-  const games = ["Cricket", "Kabaddi", "Basketball", "Hockey", "Volleyball"];
 
   const getGameIcon = (game: string) => {
     switch (game) {
@@ -232,7 +227,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   }) => {
     setSelectedGame({ name, _id, logo });
     setFormData((prevFormData) => ({ ...prevFormData, sport: _id }));
-    setIsDropdownOpen(false); // Close the dropdown after selection
+    setIsDropdownOpen(false);
   };
 
   const handleSaveLocation = (data: any) => {
@@ -259,7 +254,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   };
 
   const onChange = (event: DateTimePickerEvent, selected?: Date) => {
-    setShow(Platform.OS === "ios"); // Hide picker after selection on Android
     if (selected) {
       const formattedDate = `${
         selected.getMonth() + 1
@@ -271,6 +265,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
         establishedOn: formattedDate,
       }));
     }
+
+    // Close the picker after selection for both iOS & Android
+    setShow(false);
   };
 
   const selectImage = async () => {
@@ -331,11 +328,11 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       alert("Please fill all required fields.");
       return;
     }
-    console.log("Sport is ", formData.sport);
+
     const response = await dispatch(createTeam(formData));
-    // console.log("Response", response);
+
     if (response.payload.success) {
-      router.push("../teams/team-creation-success");
+      router.push("./team-creation-success");
     }
   };
 
@@ -379,20 +376,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                           className="w-32 h-28 rounded"
                         />
                       </View>
-
-                      {/* Right side: Name + Size */}
-                      {/* <View className="ml-4 flex-1">
-                        <Text className="text-white truncate" numberOfLines={1}>
-                          {formData.logo.split("/").pop()}
-                        </Text>
-                        <Text className="text-gray-400 text-sm">
-                          {formData.logo
-                            ? `${(formData.logo.length / 1024).toFixed(2)} KB`
-                            : ""}
-                        </Text>
-                      </View> */}
-
-                      {/* Close button on the right */}
                     </View>
                   ) : (
                     <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
@@ -661,14 +644,18 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
               zIndex: 10,
             }}
           >
-            <TouchableOpacity
-              className="bg-[#12956B] rounded-lg p-4 mt-8 mb-6 absolute bottom-0 left-0 right-0"
-              onPress={handleCreateTeam}
-            >
-              <Text className="text-white text-center text-2xl">
-                Create team
-              </Text>
-            </TouchableOpacity>
+            {load ? (
+              <ActivityIndicator size="large" color="#fff" />
+            ) : (
+              <TouchableOpacity
+                className="bg-[#12956B] rounded-lg p-4 mt-8 mb-6 absolute bottom-0 left-0 right-0"
+                onPress={handleCreateTeam}
+              >
+                <Text className="text-white text-center text-2xl">
+                  Create team
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>

@@ -23,25 +23,23 @@ const shadowStyle = Platform.select({
 const InteractionBar = ({
   postId,
   onPressLike,
+  onPressComment,
   isLiked,
   likesCount,
   commentsCount,
   assetsCount,
   activeSlideIndex,
-  likePageRoute,
-  commentPageRoute,
   isPostContainer,
   isFeedPage,
 }: {
   postId: string;
   onPressLike: () => void;
+  onPressComment: () => void;
   isLiked: boolean;
   likesCount: number;
   commentsCount: number;
   assetsCount?: number;
   activeSlideIndex?: number;
-  likePageRoute?: string;
-  commentPageRoute?: string;
   isPostContainer?: boolean;
   isFeedPage?: boolean;
 }) => {
@@ -135,10 +133,11 @@ const InteractionBar = ({
         <TouchableOpacity
           className="flex flex-row items-center gap-2 relative"
           onPress={() => {
-            !isFeedPage &&
-              router.push({
-                pathname: `/post-details/${postId}` as RelativePathString,
-              });
+            !isFeedPage
+              ? router.push({
+                  pathname: `/post-details/${postId}` as RelativePathString,
+                })
+              : onPressComment();
           }}
         >
           <View className={interactionBtn} style={shadowStyle}>

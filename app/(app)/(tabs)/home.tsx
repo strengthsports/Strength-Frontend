@@ -16,6 +16,7 @@ import {
   Text,
   Animated,
   Platform,
+  Image,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
@@ -222,14 +223,25 @@ const Home = () => {
 
   const isAndroid = Platform.OS === "android";
 
-  // if (loading && currentPage === 1) {
-  //   console.log("\n\nLOADING...", currentPage);
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <ActivityIndicator size="large" color={Colors.themeColor} />
-  //     </View>
-  //   );
-  // }
+  if (loading && currentPage === 1) {
+    console.log("\n\nLOADING...", currentPage);
+    return (
+      <PageThemeView>
+        <CustomHomeHeader />
+        <Image
+          source={require("@/assets/images/logo2.png")}
+          style={{
+            width: 100,
+            height: 100,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: [{ translateX: -50 }, { translateY: -50 }],
+          }}
+        />
+      </PageThemeView>
+    );
+  }
 
   return (
     <PageThemeView>

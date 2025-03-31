@@ -19,7 +19,7 @@ import { ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
 
 const modalText = "text-white ml-4 text-4xl";
-const modalOption = "flex-row items-center py-3 px-2 rounded-lg";
+const modalOption = "flex-row items-center py-3 px-2 active:bg-neutral-900";
 
 const MoreModal = memo(
   ({
@@ -67,38 +67,6 @@ const MoreModal = memo(
       setOptionsVisible(false);
     };
 
-    // //handle follow
-    // const handleFollow = async () => {
-    //   try {
-    //     setFollowingStatus(true);
-    //     const followData: FollowUser = {
-    //       followingId: item.postedBy?._id,
-    //       followingType: item.postedBy?.type,
-    //     };
-
-    //     await followUser(followData);
-    //   } catch (err) {
-    //     setFollowingStatus(false);
-    //     console.error("Follow error:", err);
-    //   }
-    // };
-
-    // //handle unfollow
-    // const handleUnfollow = async () => {
-    //   try {
-    //     setFollowingStatus(false);
-    //     const unfollowData: FollowUser = {
-    //       followingId: item.postedBy?._id,
-    //       followingType: item.postedBy?.type,
-    //     };
-
-    //     await unFollowUser(unfollowData);
-    //   } catch (err) {
-    //     setFollowingStatus(true);
-    //     console.error("Unfollow error:", err);
-    //   }
-    // };
-
     //handle report
     const handleReport = async () => {
       // setIsReported((prev) => !prev);
@@ -121,68 +89,64 @@ const MoreModal = memo(
     };
 
     return (
-      <View
-        className={`w-full self-center p-4 h-40`}
-        onStartShouldSetResponder={() => true}
-      >
-        <View className="flex-1 justify-evenly">
-          <TouchableOpacity
-            className={modalOption}
-            onPress={() => showFeedback("Checking Share Post!", "success")}
-          >
-            <FontAwesome name="share" size={20} color="white" />
-            <Text className={modalText}>Share</Text>
-          </TouchableOpacity>
-          {!isOwnPost && (
-            <>
-              <TouchableOpacity
-                className={modalOption}
-                onPress={() => isReported || setReportModalOpen(true)}
-                disabled={isReported}
-              >
-                <MaterialIcons
-                  name="report-problem"
-                  size={22}
-                  color={isReported ? "#808080" : "white"}
-                />
-                <Text
-                  className={`${
-                    isReported ? "text-[#808080]" : "text-white"
-                  } ml-4 text-4xl`}
-                >
-                  {isReported ? "Reported" : "Report"}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={modalOption}
-                onPress={followingStatus ? handleUnfollow : handleFollow}
-              >
-                <FontAwesome name="user-plus" size={19} color="white" />
-                <Text className={modalText}>
-                  {followingStatus
-                    ? `Unfollow ${firstName}`
-                    : `Follow ${firstName}`}
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-          {isOwnPost && (
+      <View className="w-full" onStartShouldSetResponder={() => true}>
+        <TouchableOpacity
+          className={modalOption}
+          onPress={() => showFeedback("Checking Share Post!", "success")}
+          activeOpacity={0.5}
+        >
+          <FontAwesome name="share" size={20} color="white" />
+          <Text className={modalText}>Share</Text>
+        </TouchableOpacity>
+        {!isOwnPost && (
+          <>
             <TouchableOpacity
               className={modalOption}
-              onPress={handleDeletePost}
-              disabled={isLoading || isDeleting}
+              onPress={() => isReported || setReportModalOpen(true)}
+              disabled={isReported}
             >
-              {isLoading || isDeleting ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <>
-                  <MaterialIcons name="delete" size={22} color="white" />
-                  <Text className={modalText}>Delete Post</Text>
-                </>
-              )}
+              <MaterialIcons
+                name="report-problem"
+                size={22}
+                color={isReported ? "#808080" : "white"}
+              />
+              <Text
+                className={`${
+                  isReported ? "text-[#808080]" : "text-white"
+                } ml-4 text-4xl`}
+              >
+                {isReported ? "Reported" : "Report"}
+              </Text>
             </TouchableOpacity>
-          )}
-        </View>
+            <TouchableOpacity
+              className={modalOption}
+              onPress={followingStatus ? handleUnfollow : handleFollow}
+            >
+              <FontAwesome name="user-plus" size={19} color="white" />
+              <Text className={modalText}>
+                {followingStatus
+                  ? `Unfollow ${firstName}`
+                  : `Follow ${firstName}`}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+        {isOwnPost && (
+          <TouchableOpacity
+            className={modalOption}
+            onPress={handleDeletePost}
+            disabled={isLoading || isDeleting}
+          >
+            {isLoading || isDeleting ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <MaterialIcons name="delete" size={22} color="white" />
+                <Text className={modalText}>Delete Post</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
 
         {/**Report Modal */}
         <Modal

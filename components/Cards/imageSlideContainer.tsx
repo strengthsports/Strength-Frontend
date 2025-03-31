@@ -79,42 +79,31 @@ const ImageSlide = memo(
         }}
         onDoublePress={onDoubleTap}
       >
-        {isError ? (
-          <Image
-            source={require("../../assets/images/nocover.png")}
-            contentFit="cover"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              inset: 0,
-              borderTopLeftRadius: isFirstSlide ? 16 : 0,
-              borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-            }}
-          />
-        ) : (
-          <Image
-            source={{ uri }}
-            contentFit="cover"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              inset: 0,
-              borderTopLeftRadius: isFirstSlide ? 16 : 0,
-              borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-            }}
-            placeholder={require("../../assets/images/nocover.png")}
-            // placeholder={{ blurhash }}
-            placeholderContentFit="cover"
-            transition={500}
-            cachePolicy="memory-disk"
-            onError={(e) => {
-              setIsError(true);
-              console.log(e);
-            }}
-          />
-        )}
+        <Image
+          source={{ uri }}
+          contentFit="cover"
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            inset: 0,
+            borderTopLeftRadius: isFirstSlide ? 16 : 0,
+            borderBottomLeftRadius: isFirstSlide ? 16 : 0,
+            borderTopWidth: 0.3,
+            borderBottomWidth: 0.3,
+            borderLeftWidth: isFirstSlide ? 0.3 : 0,
+            borderColor: "#808080",
+          }}
+          placeholder={require("../../assets/images/nocover.png")}
+          // placeholder={{ blurhash }}
+          placeholderContentFit="cover"
+          transition={500}
+          cachePolicy="memory-disk"
+          onError={(e) => {
+            setIsError(true);
+            console.log(e);
+          }}
+        />
         {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
       </TouchableWithDoublePress>
     );

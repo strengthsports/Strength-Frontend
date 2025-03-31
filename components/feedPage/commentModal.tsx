@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useCallback,
   SetStateAction,
+  useRef,
 } from "react";
 import {
   View,
@@ -13,12 +14,13 @@ import {
   ActivityIndicator,
   Modal,
   TextInput,
+  Platform,
 } from "react-native";
 import { Divider } from "react-native-elements";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
-import { useSelector } from "react-redux";
-import { RootState } from "~/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
 import TextScallingFalse from "../CentralText";
 import {
   useDeleteCommentMutation,
@@ -27,6 +29,10 @@ import {
 } from "~/reduxStore/api/feed/features/feedApi.comment";
 import nopic from "@/assets/images/nopic.jpg";
 import { Comment } from "~/types/post";
+import { KeyboardAvoidingView } from "react-native";
+import { Animated } from "react-native";
+import { postComment } from "~/reduxStore/slices/feed/feedSlice";
+import { User } from "~/types/user";
 
 interface ReportModalProps {
   commentId: string;
@@ -204,7 +210,8 @@ export const CommenterCard = memo(
 interface CommentModalProps {
   autoFocusKeyboard?: boolean;
   targetId: string;
-  setCommentCount: React.Dispatch<React.SetStateAction<number>>;
+  setCommentCount?: React.Dispatch<React.SetStateAction<number>>;
+  containerHeight?: number;
 }
 
 // Memoized CommentModal component
@@ -213,8 +220,15 @@ const CommentModal = memo(
     autoFocusKeyboard = false,
     targetId,
     setCommentCount,
+    containerHeight,
   }: CommentModalProps) => {
-    const [commentText, setCommentText] = useState("");
+    const dispatch = useDispatch<AppDispatch>();
+    const { user } = useSelector(
+      (state: RootState) => state.profile.user as User
+    );
+    // The additional comment text (excludes the fixed reply tag)
+    const [commentText, setCommentText] = useState<string>("");
+    const [isPosting, setIsPosting] = useState<boolean>(false);
 
     // Fetch comments for the target
     const {
@@ -224,23 +238,56 @@ const CommentModal = memo(
       refetch: refetchComments,
     } = useFetchCommentsQuery({ targetId, targetType: "Post" });
 
-    const [postComment, { isLoading: isPosting }] = usePostCommentMutation();
+    // Animated progress bar
+    const progress = useRef(new Animated.Value(0)).current;
+    // Reply context: when replying, store the parent comment's id and name.
+    const flatListRef = useRef<FlatList>(null);
+    const textInputRef = useRef<TextInput>(null);
+    const [replyingTo, setReplyingTo] = useState<{
+      commentId: string;
+      name: string;
+    } | null>(null);
 
+    // Handle posting a new comment or reply.
     const handlePostComment = async () => {
       if (!commentText.trim()) return;
-      const commentData = {
-        targetId,
-        targetType: "Post",
-        text: commentText,
-      };
-      setCommentCount((prevCount) => prevCount + 1);
+      setIsPosting(true);
+      const isReply = replyingTo !== null;
+      const textToPost = commentText;
+      // Clear the input and reply context.
+      setCommentText("");
+      if (isReply) setReplyingTo(null);
       try {
-        await postComment(commentData).unwrap(); // Post the comment
-        setCommentText("");
-        refetchComments(); // Refetch comments to update the list
+        await dispatch(
+          postComment({
+            targetId: isReply ? replyingTo!.commentId : targetId,
+            targetType: isReply ? "Comment" : "Post",
+            text: textToPost,
+          })
+        ).unwrap();
+        await refetchComments();
       } catch (error) {
-        setCommentCount((prevCount) => prevCount - 1);
         console.log("Failed to post comment:", error);
+      }
+      setIsPosting(false);
+    };
+
+    // When the Reply button is tapped, store the reply context.
+    const handleReply = (comment: Comment) => {
+      const replyTag = `@${comment.postedBy.username}`;
+      setReplyingTo({
+        commentId: comment._id,
+        name: replyTag,
+      });
+      // Focus the input so the user can type their reply.
+      textInputRef.current?.focus();
+    };
+
+    // Update text input state. If user clears the input, remove the reply context.
+    const handleTextChange = (text: string) => {
+      setCommentText(text);
+      if (text === "" && replyingTo) {
+        setReplyingTo(null);
       }
     };
 
@@ -250,81 +297,169 @@ const CommentModal = memo(
       }
     }, [fetchError]);
 
+    // Render top-level comment and its nested replies.
     const renderItem = useCallback(
-      ({ item }: { item: Comment }) => (
-        <CommenterCard comment={item} targetId={targetId} targetType="Post" />
-      ),
+      ({ item }: { item: Comment & { replies?: Comment[] } }) => {
+        // Filter out any replies that do not have valid text
+        const validReplies = item.replies?.filter(
+          (reply) => reply.text && reply.text.trim() !== ""
+        );
+        return (
+          <View className="px-2">
+            <CommenterCard
+              comment={item}
+              targetId={targetId}
+              targetType="Post"
+              onReply={handleReply}
+            />
+            {validReplies && validReplies.length > 0 && (
+              <View className="ml-8 mt-2">
+                {validReplies.map((reply) => (
+                  <CommenterCard
+                    key={reply._id}
+                    parent={item}
+                    comment={reply}
+                    targetId={item._id} // reply's parent id
+                    targetType="Comment"
+                    onReply={handleReply}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        );
+      },
       [targetId]
     );
+
+    const widthInterpolated = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0%", "100%"],
+    });
+
     return (
-      <View
-        onStartShouldSetResponder={() => true}
-        className="h-[90%] w-[104%] self-center bg-black rounded-t-[40px] p-4 border-t border-x border-neutral-700"
-      >
-        <Divider
-          className="w-16 self-center rounded-full bg-neutral-700 my-1"
-          width={4}
-        />
-        <TextScallingFalse className="text-white self-center text-4xl my-4">
+      <View className="relative h-full flex-1">
+        <TextScallingFalse className="text-white self-center text-5xl my-4">
           Comments
         </TextScallingFalse>
-        <View className="mb-32">
-          {isFetching ? (
-            <ActivityIndicator size="large" color={Colors.themeColor} />
-          ) : (
-            <>
+
+        <KeyboardAvoidingView
+          className="flex-1"
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.select({
+            ios: 60, // Adjust this value based on your header height
+            android: 0,
+          })}
+        >
+          <View className="flex-1">
+            {isFetching ? (
+              <ActivityIndicator size="large" color={Colors.themeColor} />
+            ) : (
               <FlatList
-                data={comments?.data}
+                ref={flatListRef}
+                data={[...(comments?.data || [])].sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                )}
                 keyExtractor={(item) => item._id}
-                renderItem={renderItem}
-                initialNumToRender={5}
-                maxToRenderPerBatch={10}
-                inverted={true}
-                windowSize={5} // Controls how many items outside the visible area are kept in memory
+                renderItem={({ item }) => renderItem({ item })}
                 ListEmptyComponent={
-                  <TextScallingFalse className="text-white text-center">
-                    No Comments Found!
+                  <TextScallingFalse
+                    style={{
+                      color: "grey",
+                      textAlign: "center",
+                      paddingTop: 20,
+                    }}
+                  >
+                    Hey! Be the first one to comment here!
                   </TextScallingFalse>
                 }
+                contentContainerStyle={{
+                  flexGrow: 1,
+                  paddingBottom: Platform.select({
+                    ios: 100, // Extra padding for iOS keyboard
+                    android: 120,
+                  }),
+                }}
               />
-            </>
-          )}
-        </View>
-        <View className="absolute bottom-0 self-center w-full">
-          <Divider
-            className="w-full self-center rounded-full bg-neutral-900 mb-[1px]"
-            width={0.4}
-          />
-          <View className="bg-black p-2">
-            <View className="w-full self-center flex items-center flex-row justify-around rounded-full bg-neutral-900">
-              <TextInput
-                autoFocus={autoFocusKeyboard}
-                placeholder="Add a comment"
-                className="w-3/4 px-4 bg-neutral-900 border-0 color-white"
-                placeholderTextColor="grey"
-                value={commentText}
-                onChangeText={setCommentText}
+            )}
+          </View>
+
+          {/* Sticky comment input bar */}
+          <View className="absolute left-0 right-0 bottom-0">
+            <View className="bg-black">
+              <Divider
+                className="w-full rounded-full bg-neutral-700 mb-[1px]"
+                width={0.3}
               />
-              <TouchableOpacity
-                onPress={handlePostComment}
-                disabled={isPosting}
-              >
-                <MaterialIcons
-                  className="p-2"
-                  name="send"
-                  size={22}
-                  color={
-                    isPosting
-                      ? "#292A2D"
-                      : commentText
-                      ? Colors.themeColor
-                      : "grey"
-                  }
+              {isPosting && (
+                <Animated.View
+                  style={{
+                    height: 4,
+                    width: widthInterpolated,
+                    backgroundColor: "#12956B",
+                  }}
                 />
-              </TouchableOpacity>
+              )}
+              <View className="bg-black p-2">
+                <View className="w-full flex-row items-center rounded-full bg-neutral-900 px-4 py-1.5">
+                  <Image
+                    source={user?.profilePic ? { uri: user.profilePic } : nopic}
+                    className="w-10 h-10 rounded-full"
+                    resizeMode="cover"
+                  />
+                  {/* Fixed reply tag (if replying) */}
+                  {replyingTo && (
+                    <View
+                      style={{
+                        backgroundColor: "#333",
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        marginLeft: 8,
+                      }}
+                    >
+                      <TextScallingFalse
+                        style={{ color: Colors.themeColor, fontWeight: "600" }}
+                      >
+                        {replyingTo.name}
+                      </TextScallingFalse>
+                    </View>
+                  )}
+                  {/* The text input holds only the additional comment text */}
+                  <TextInput
+                    ref={textInputRef}
+                    autoFocus={true}
+                    placeholder="Type your comment here"
+                    className="flex-1 px-4 bg-neutral-900 text-white"
+                    placeholderTextColor="grey"
+                    cursorColor={Colors.themeColor}
+                    value={commentText}
+                    onChangeText={handleTextChange}
+                  />
+                  <TouchableOpacity
+                    onPress={handlePostComment}
+                    disabled={isPosting}
+                  >
+                    <MaterialIcons
+                      className="p-2"
+                      name="send"
+                      size={22}
+                      color={
+                        isPosting
+                          ? "#292A2D"
+                          : commentText
+                          ? Colors.themeColor
+                          : "grey"
+                      }
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     );
   }

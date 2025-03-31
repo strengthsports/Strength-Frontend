@@ -2,6 +2,8 @@ import { Text } from "react-native";
 import { Redirect, Stack } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
+import { BottomSheetProvider } from "~/context/BottomSheetContext";
+import AppBottomSheet from "~/components/ui/AppBottomSheet";
 
 export default function AppLayout() {
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
@@ -11,11 +13,14 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false, // Disable headers globally
-        animation: "none",
-      }}
-    />
+    <BottomSheetProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false, // Disable headers globally
+          animation: "none",
+        }}
+      />
+      <AppBottomSheet />
+    </BottomSheetProvider>
   );
 }

@@ -25,7 +25,6 @@ import { formatTimeAgo } from "~/utils/formatTime";
 import nopic from "@/assets/images/nopic.jpg";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
-import CustomBottomSheet from "../ui/CustomBottomSheet";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
@@ -33,6 +32,8 @@ import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
+import { useBottomSheet } from "~/context/BottomSheetContext";
+import CommentModal from "../feedPage/CommentModal";
 
 type TaggedUser = {
   _id: string;
@@ -63,53 +64,56 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
     const { followUser, unFollowUser } = useFollow();
 
-    // State to hold the selected data from the button press
-    const [isBottomSheetOpen, setBottomSheetOpen] = useState<any>({
-      type: "",
-      status: false,
-    });
     // State for individual post
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSeeMore, setShowSeeMore] = useState(false);
     const [activeIndex, setActiveIndex] = useState<any>(0);
+    // Get the openBottomSheet function from context
+    const { openBottomSheet, closeBottomSheet } = useBottomSheet();
 
-    // Ref for the bottom sheet
-    const settingsBottomSheetRef = useRef(null);
+    // Define the menu items for this specific post
+    const handleOpenBottomSheet = ({ type }: { type: string }) => {
+      // Open the bottom sheet with these items
+      if (type === "settings") {
+        openBottomSheet({
+          isVisible: true,
+          content: (
+            <MoreModal
+              firstName={item.postedBy.firstName}
+              followingStatus={item.isFollowing}
+              isOwnPost={item.postedBy._id === user?._id}
+              postId={item._id}
+              isReported={item.isReported}
+              handleFollow={handleFollow}
+              handleUnfollow={handleUnfollow}
+            />
+          ),
+          height: item.postedBy._id === user?._id ? "20%" : "25%",
+          bgcolor: "#151515", // Ensure bgcolor is always defined
+          border: false,
+        });
+      } else if (type === "comment") {
+        console.log("Comment sheet");
+        openBottomSheet({
+          isVisible: true,
+          content: (
+            <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+          ),
+          height: "80%",
+          bgcolor: "#000",
+          border: true,
+        });
+      }
+    };
 
     // Ref for the like animation
     const scaleAnim = useRef(new Animated.Value(0)).current;
 
-    // To open bottom sheet
-    const handleOpenBottomSheet = ({ type }: { type: string }) => {
-      console.log(`${type} Bottom sheet opens...`);
-      handleBottomSheet && handleBottomSheet(true);
-      setBottomSheetOpen({ type, status: true });
-      type === "settings"
-        ? settingsBottomSheetRef.current?.scrollTo(-220)
-        : null;
-    };
-
-    // To close bottom sheet
-    const handleCloseBottomSheet = ({ type }: { type: string }) => {
-      type === "settings" ? settingsBottomSheetRef.current?.scrollTo(0) : null;
-      setBottomSheetOpen({ type, status: false });
-      handleBottomSheet && handleBottomSheet(false);
-    };
-
-    // Expose the handleCloseBottomSheet function to the parent
-    useImperativeHandle(ref, () => ({
-      closeBottomSheet: (params: { type: string }) =>
-        handleCloseBottomSheet(params),
-    }));
-
     // Handle hardware back press
     useEffect(() => {
       const handleBackPress = () => {
-        if (isBottomSheetOpen.status) {
-          handleCloseBottomSheet({ type: isBottomSheetOpen.type });
-          return true; // Prevent default back behavior
-        }
-        return false; // Default back behavior
+        closeBottomSheet();
+        return true;
       };
 
       BackHandler.addEventListener("hardwareBackPress", handleBackPress);
@@ -118,7 +122,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       return () => {
         BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
       };
-    }, [isBottomSheetOpen]);
+    }, []);
 
     // Handle like on double tap on post
     const handleDoubleTap = () => {
@@ -324,27 +328,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               onPress={() => handleOpenBottomSheet({ type: "settings" })}
             >
               <MaterialIcons name="more-horiz" size={20} color="white" />
-              <CustomBottomSheet
-                ref={settingsBottomSheetRef}
-                onClose={() => handleCloseBottomSheet({ type: "settings" })}
-                animationSpeed={20}
-                controllerVisibility={true}
-                isFixed={true}
-                fixedHeight={220}
-              >
-                {isBottomSheetOpen.type === "settings" &&
-                  isBottomSheetOpen.status && (
-                    <MoreModal
-                      firstName={item.postedBy.firstName}
-                      followingStatus={item.isFollowing}
-                      isOwnPost={item.postedBy._id === item.currUser}
-                      postId={item._id}
-                      isReported={item.isReported}
-                      handleFollow={handleFollow}
-                      handleUnfollow={handleUnfollow}
-                    />
-                  )}
-              </CustomBottomSheet>
             </TouchableOpacity>
 
             <View
@@ -418,6 +401,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           <InteractionBar
             postId={item._id}
             onPressLike={handleLike}
+            onPressComment={() => handleOpenBottomSheet({ type: "comment" })}
             isLiked={item.isLiked}
             likesCount={item.likesCount}
             commentsCount={item.commentsCount}

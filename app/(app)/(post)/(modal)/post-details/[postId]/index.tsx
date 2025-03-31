@@ -95,30 +95,36 @@ const PostDetailsPage = () => {
 
   // Render top-level comment and its nested replies.
   const renderItem = useCallback(
-    ({ item }: { item: Comment & { replies?: Comment[] } }) => (
-      <View className="px-2">
-        <CommenterCard
-          comment={item}
-          targetId={post._id}
-          targetType="Post"
-          onReply={handleReply}
-        />
-        {item.replies && item.replies.length > 0 && (
-          <View className="ml-8 mt-2">
-            {item.replies.map((reply) => (
-              <CommenterCard
-                key={reply._id}
-                parent={item}
-                comment={reply}
-                targetId={item._id} // reply's parent id
-                targetType="Comment"
-                onReply={handleReply}
-              />
-            ))}
-          </View>
-        )}
-      </View>
-    ),
+    ({ item }: { item: Comment & { replies?: Comment[] } }) => {
+      // Filter out any replies that do not have valid text
+      const validReplies = item.replies?.filter(
+        (reply) => reply.text && reply.text.trim() !== ""
+      );
+      return (
+        <View className="px-2">
+          <CommenterCard
+            comment={item}
+            targetId={post._id}
+            targetType="Post"
+            onReply={handleReply}
+          />
+          {validReplies && validReplies.length > 0 && (
+            <View className="ml-8 mt-2">
+              {validReplies.map((reply) => (
+                <CommenterCard
+                  key={reply._id}
+                  parent={item}
+                  comment={reply}
+                  targetId={item._id} // reply's parent id
+                  targetType="Comment"
+                  onReply={handleReply}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+      );
+    },
     [post._id]
   );
 

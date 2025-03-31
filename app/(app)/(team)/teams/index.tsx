@@ -18,7 +18,7 @@ const InitiateCreateTeam = () => {
 
   const handleCreateTeam = () => {
     console.log("Join Team Link Clicked");
-    router.push("../teams/createTeam");
+    router.push("../teams/create-team");
   };
 
   return (

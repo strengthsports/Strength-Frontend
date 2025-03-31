@@ -7,14 +7,16 @@ interface TeamState {
   invited: TeamMember | null;
   error: any | null;
   loading: boolean;
+  user: any | null; // Add user field to store user data
 }
 
-// Initial State
+// Initial state
 const initialState: TeamState = {
   team: null,
   invited: null,
   error: null,
   loading: false,
+  user: null, // Initialize user to null
 };
 
 type TeamPayload = {
@@ -33,10 +35,10 @@ type TeamPayload = {
   gender: string;
   description: string;
 };
+
 function convertToDate(dateString: any) {
   // Validate input format (M/YYYY or MM/YYYY)
   if (!dateString || !/^\d{1,2}\/\d{4}$/.test(dateString)) {
-    throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
     throw new Error("Invalid date format. Use 'M/YYYY' or 'MM/YYYY'.");
   }
 
@@ -54,6 +56,7 @@ function convertToDate(dateString: any) {
   return dateObject.toISOString().split("T")[0]; // MongoDB will store this as ISODate
 }
 
+// Create a new team
 export const createTeam = createAsyncThunk<
   Team,
   TeamPayload,
@@ -61,22 +64,16 @@ export const createTeam = createAsyncThunk<
 >("team/createTeam", async (teamData: TeamPayload, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
-    console.log("Team Data:", teamData);
 
     const formData = new FormData();
     const datee = convertToDate(teamData.establishedOn);
-    console.log("datee", datee);
     formData.append("name", teamData.name);
-    formData.append("sport", "6771941c77a19c8141f2f1b7");
-
+    formData.append("sport", teamData.sport);
     formData.append("establishedOn", datee);
     formData.append("gender", teamData.gender);
     formData.append("description", teamData.description);
-    // formData.append("location",null);
-    formData.append("address", teamData.address);
+    formData.append("address", JSON.stringify(teamData.address)); // Address needs to be a string
     formData.append("assets", teamData.logo);
-
-    console.log("Sending FormData:", formData);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
@@ -85,27 +82,23 @@ export const createTeam = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formData, // FormData does not need JSON.stringify()
-      },
+        body: formData,
+      }
     );
 
     const data = await response.json();
-    console.log("redux data", data);
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Something went wrong!");
     }
 
-    return data; // Return the response data for the fulfilled state
+    return data;
   } catch (error: any) {
-    console.error("error:", error);
     return rejectWithValue(error.message || "Network error!");
   }
 });
 
-//edit team
-
-//fetch team details
+// Fetch team details
 export const fetchTeamDetails = createAsyncThunk<
   Team,
   string,
@@ -120,29 +113,26 @@ export const fetchTeamDetails = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      },
+      }
     );
 
     const data = await response.json();
-    const teamData = data.data;
-    console.log("Team Data:", teamData);
     if (!response.ok) {
       return rejectWithValue(data.message || "Something went wrong!");
     }
 
-    return data.data; // Return the response data for the fulfilled state
+    return data.data; // Return team data
   } catch (error: any) {
-    console.error("error:", error);
     return rejectWithValue(error.message || "Network error!");
   }
 });
 
-//fetch team/s
+// Fetch all teams
 export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
   "team/fetchTeams",
   async (_, { rejectWithValue }) => {
     try {
-      const token = await getToken("accessToken"); // Fetch token properly
+      const token = await getToken("accessToken");
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
@@ -152,7 +142,7 @@ export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       const data = await response.json();
@@ -161,41 +151,130 @@ export const getTeams = createAsyncThunk<Team[], void, { rejectValue: string }>(
         return rejectWithValue(data.message || "Failed to fetch teams");
       }
 
-      console.log("Teams:", data.data);
-      return data.data; // Return only the relevant data
+      return data.data;
     } catch (error: any) {
-      console.error("Error fetching teams:", error.message);
-      return rejectWithValue(error.message || "Network error!"); // Ensure proper error handling
+      return rejectWithValue(error.message || "Network error!");
     }
-  },
+  }
 );
 
-//invite member/s
+// Delete team
+export const deleteTeam = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("team/deleteTeam", async (teamId: string, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/${teamId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to delete team");
+    }
+
+    return data.message || "Team deleted successfully"; // Success message
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Network error!");
+  }
+});
+
+// Fetch user data
+export const fetchUser = createAsyncThunk<
+  any,  // You can replace 'any' with a specific type if you have one for user data
+  void, 
+  { rejectValue: string }
+>("team/fetchUser", async (_, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/user`, // Assuming the endpoint for fetching user data is "/api/v1/user"
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to fetch user data");
+    }
+
+    return data;  // Assuming the response contains the user data directly
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Network error!");
+  }
+});
 
 const teamSlice = createSlice({
-  name: "auth",
+  name: "team",
   initialState,
   reducers: {
     resetTeamState: (state) => {
       state.team = null;
       state.error = null;
       state.loading = false;
+      state.user = null;  // Clear user data on reset
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(createTeam.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(createTeam.fulfilled, (state, action) => {
-      state.loading = false;
-      state.team = action.payload;
-      state.error = null;
-    });
-    builder.addCase(createTeam.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+    builder
+      .addCase(createTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createTeam.fulfilled, (state, action) => {
+        state.loading = false;
+        state.team = action.payload;
+        state.error = null;
+      })
+      .addCase(createTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Handle delete team
+      .addCase(deleteTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteTeam.fulfilled, (state) => {
+        state.loading = false;
+        state.team = null; // Clear the team state after successful deletion
+        state.error = null;
+      })
+      .addCase(deleteTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Handle fetchUser
+      .addCase(fetchUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;  // Save the user data into state
+        state.error = null;
+      })
+      .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 

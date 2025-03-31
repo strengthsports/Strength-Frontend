@@ -7,7 +7,9 @@ import {
   Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
-import { useRouter } from "expo-router";
+import { RelativePathString, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface MenuItem {
   label: string;
@@ -16,12 +18,17 @@ interface MenuItem {
 
 interface DrawerProps {
   children: React.ReactNode;
-  menuItems: MenuItem[]; // Accepting menu items as an array of objects
+  menuItems: MenuItem[];
+  teamId: string; // Accepting menu items as an array of objects
 }
 
 const HEADER_HEIGHT = 60; // Adjust this height based on your drawer's height
 
-const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
+const CombinedDrawer: React.FC<DrawerProps> = ({
+  children,
+  menuItems,
+  teamId,
+}) => {
   const SIDEBAR_WIDTH = 250;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(SIDEBAR_WIDTH)).current;
@@ -60,7 +67,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
   });
 
   return (
-    <View className="flex-1">
+    <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
         className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
@@ -69,11 +76,26 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
         <TouchableOpacity onPress={() => router.back()}>
           <Icon name="arrowleft" size={30} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleSidebar}>
-          <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>
-            <Icon name="bars" size={30} color="white" />
-          </Animated.View>
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-x-5">
+          <TouchableOpacity
+            onPress={() =>
+              router.push(
+                `/(app)/(team)/teams/${teamId}/team-forum` as RelativePathString
+              )
+            }
+          >
+            <MaterialCommunityIcons
+              name="message-reply-text-outline"
+              size={27.5}
+              color="white"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleSidebar}>
+            <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>
+              <Icon name="bars" size={30} color="white" />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Sidebar Modal */}
@@ -109,7 +131,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({ children, menuItems }) => {
       >
         {children}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

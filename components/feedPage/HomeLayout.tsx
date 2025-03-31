@@ -111,25 +111,38 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
+  const check = async () => {
+    try {
+      const fetchedTeamsData = await dispatch(getTeams()).unwrap();
 
+      const teamsList = fetchedTeamsData.createdTeams
+        .concat(fetchedTeamsData.joinedTeams)
+        .map((teamEntry) => {
+          // Check if the team exists before accessing its properties
+          if (teamEntry.team) {
+            return {
+              name: teamEntry.team.name,
+              url: teamEntry.team.logo?.url, // Add optional chaining to avoid errors if 'logo' is null
+              id: teamEntry.team._id,
+            };
+          } else {
+            // Return null or some fallback if the team is null
+            return null;
+          }
+        })
+        .filter((team) => team !== null); // Filter out any null entries
+
+      console.log(teamsList); // Logs an array of team names and URLs
+
+      setTeamDetails(teamsList);
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      // Optionally, handle the error (e.g., show an error message or fallback UI)
+    }
+  };
   useEffect(() => {
     check();
   }, []);
-
-  const check = async () => {
-    const fetchedTeamsData = await dispatch(getTeams()).unwrap();
-    const teamsList = fetchedTeamsData.createdTeams
-      .concat(fetchedTeamsData.joinedTeams)
-      .map((teamEntry) => ({
-        name: teamEntry.team.name, // Assuming 'name' exists in team object
-        url: teamEntry.team.logo.url, // Assuming 'url' exists in team object
-        id: teamEntry.team._id,
-      }));
-
-    console.log(teamsList); // Logs an array of team names and URLs
-
-    setTeamDetails(teamsList);
-  };
 
   const drawerRef = useRef<DrawerRefProps>(null);
   const [isDrawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -184,7 +197,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Render the custom drawer */}
       <CustomDrawer ref={drawerRef} onClose={() => setDrawerOpen(false)}>
-        <View
+        <SafeAreaView
           className="w-full h-full bg-black pt-6"
           onStartShouldSetResponder={() => true}
         >
@@ -259,7 +272,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
                 <View className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center">
                   <TouchableOpacity
                     onPress={() => {
-                      router.push("/(app)/(team)/teams/InitiateCreateTeam");
+                      router.push("/(app)/(team)/teams");
                       handleCloseDrawer();
                     }}
                   >
@@ -331,7 +344,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
               <Text className="text-white text-4xl font-medium">Settings</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </CustomDrawer>
 
       {/* Render the edge swipe detector */}

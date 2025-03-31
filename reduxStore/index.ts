@@ -34,6 +34,7 @@ import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { cricketApi } from "./api/explore/cricketApi";
 import { searchApi } from "./api/explore/searchApi";
+import sportsReducer from "./slices/team/sportSlice";
 import { footballApi } from "./api/explore/footballApi";
 
 // Persist configuration
@@ -61,6 +62,7 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   hashtagPage: hashtagReducer,
   team: teamReducer,
+  sports: sportsReducer,
   search: searchReducer,
   feed: feedReducer,
   post: postReducer,

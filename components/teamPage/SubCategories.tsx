@@ -3,13 +3,9 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Squad from "./Squad";
 import { SafeAreaView } from "react-native-safe-area-context";
 import About from "@/components/teamPage/About";
+import { TeamPayload } from "~/reduxStore/slices/team/teamSlice";
 
-interface SubCategoriesProps {
-  // teamId: string | string[];
-  teamDetails: any;
-}
-
-const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
+const SubCategories = (teamDetails:TeamPayload) => {
   console.log("Checking", teamDetails);
   const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("SQUAD");
 
@@ -17,7 +13,7 @@ const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
     if (selectedTab === "SQUAD") {
       return <Squad teamDetails={teamDetails.teamDetails} />;
     } else if (selectedTab === "ABOUT") {
-      return <About teamDetails={teamDetails.teamDetails} />;
+      return <About teamDetails={teamDetails} />;
     }
   };
 

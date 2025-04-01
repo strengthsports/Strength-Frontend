@@ -100,12 +100,12 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
 
       {/* Sidebar Modal */}
       {isSidebarOpen && (
-        <View className="absolute top-0 right-0 bottom-0 w-[250px] bg-black bg-opacity-80 z-20">
+        <View className="absolute top-0 right-0  bottom-0 w-[200px] bg-black bg-opacity-80 z-20">
           <TouchableOpacity
             onPress={closeSidebar}
             className="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-5"
           ></TouchableOpacity>
-          <View className="flex-1 bg-black pt-[72px]">
+          <View className="flex-1 mt-10 bg-black pt-[72px]">
             {menuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
@@ -114,9 +114,9 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                   closeSidebar();
                   toggleSidebar();
                 }}
-                className="py-4 pl-5 border-b border-gray-600"
+                className="py-4 pl-5  border-b  border-gray-600"
               >
-                <Text className="text-white text-4xl">{item.label}</Text>
+               <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
               </TouchableOpacity>
             ))}
           </View>

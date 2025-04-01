@@ -19,10 +19,14 @@ const initialState: TeamState = {
   user: null, // Initialize user to null
 };
 
-type TeamPayload = {
+export type TeamPayload = {
   name: string;
-  logo: Blob | File | Object;
-  sport: string;
+  logo: Blob | File | Object | string;
+  sport: {
+    _id: string;
+    name: string;
+    logo:string;
+  };
   address: {
     city: string;
     state: string;
@@ -34,6 +38,9 @@ type TeamPayload = {
   establishedOn: Date;
   gender: string;
   description: string;
+  role:string;
+  position: string;
+  [key:string]: any;
 };
 
 function convertToDate(dateString: any) {
@@ -268,6 +275,21 @@ const teamSlice = createSlice({
         state.error = null;
       })
       .addCase(createTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      //fetch team data
+      .addCase(fetchTeamDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeamDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.team = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchTeamDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

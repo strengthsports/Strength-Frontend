@@ -8,21 +8,25 @@ import {
   useLocalSearchParams,
   RelativePathString,
 } from "expo-router";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   deleteTeam,
   fetchTeamDetails,
+  TeamPayload
 } from "~/reduxStore/slices/team/teamSlice";
+import { AppDispatch, RootState } from "~/reduxStore";
 // import { ThemedView } from "~/components/ThemedView";
 
 
 const TeamPage: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const params = useLocalSearchParams();
   const teamId = params.teamId ? String(params.teamId) : ""; 
-  const [team, setTeam] = useState<any>(null); 
-  
+  const [team, setTeam] = useState<any>(null);
+  const teamDetails = useSelector((state:RootState)=>state?.team.team)
+
+  console.log("Team Details",teamDetails);
 
   useEffect(() => {
     if (teamId) {
@@ -57,6 +61,8 @@ const TeamPage: React.FC = () => {
   const menuItems = [
     {
       label: "Settings",
+      logo:"",
+      color:"white",
       onPress: () =>
         router.push(
           `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
@@ -64,6 +70,8 @@ const TeamPage: React.FC = () => {
     },
     {
       label: "Members",
+      logo:"",
+      color:"white",
       onPress: () =>
         router.push(
           `/(app)/(team)/teams/${teamId}/members` as RelativePathString
@@ -71,10 +79,12 @@ const TeamPage: React.FC = () => {
     },
     {
       label: "Invite Members",
+      color:"white",
       onPress: () => console.log("Invite Members Modal Will Open"),
     },
     {
       label: "Leave Team",
+      color:"red",
       onPress: () => handleDeleteTeam(),
     },
   ];
@@ -83,19 +93,19 @@ const TeamPage: React.FC = () => {
     
       <CombinedDrawer menuItems={menuItems} teamId={teamId}>
         <TeamCard
-          teamName={team?.name || "Loading..."}
-          sportCategory={team?.sport?.name || "Loading..."}
-          captain={team?.captain || "Not Assigned"}
-          viceCapt={team?.viceCaptain || "Not Assigned"}
+          teamName={teamDetails?.name || "Loading..."}
+          sportCategory={teamDetails?.sport?.name || "Loading..."}
+          captain={teamDetails?.captain || "Not Assigned"}
+          viceCapt={teamDetails?.viceCaptain || "Not Assigned"}
           location={
-            team?.address
-              ? `${team.address.city}, ${team.address.country}`
+            teamDetails?.address
+              ? `${teamDetails.address.city}, ${teamDetails.address.country}`
               : "Unknown"
           }
-          teamLogo={team?.logo?.url || "https://picsum.photos/200/200"}
-          sportLogo={team?.sport?.logo || "https://picsum.photos/200/200"}
+          teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
+          sportLogo={teamDetails?.sport?.logo || "https://picsum.photos/200/200"}
         />
-        <SubCategories teamDetails={team} />
+        <SubCategories teamDetails={teamDetails} />
       </CombinedDrawer>
       
   

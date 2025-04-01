@@ -43,8 +43,8 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   };
 
   const handleTeamUniqueId = () => {
-    const name = teamDetails.name || ""; 
-    const id = teamDetails._id || ""; 
+    const name = teamDetails?.name || ""; 
+    const id = teamDetails?._id || ""; 
   
     const firstTwoLetters = name.substring(0, 2).toUpperCase(); 
     const lastFourDigits = id.slice(-4).toUpperCase(); 
@@ -82,13 +82,13 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
           className="text-white ml-1 text-lg"
           style={{ fontFamily: "Sansation-Regular" }}
         >
-          {teamDetails.description}
+          {teamDetails?.description}
         </Text>
       </View>
 
       <View className="ml-4 mt-10 flex flex-row ">
         <Members />
-        <Text className="text-white text-4xl mt-1 ml-1 "> Members - {teamDetails.members.length}</Text>
+        <Text className="text-white text-4xl mt-1 ml-1 "> Members - {teamDetails?.members?.length || 0}</Text>
       </View>
 
       <View className="ml-4 mt-3 flex flex-row ">

@@ -132,7 +132,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         <Icon name="dots-three-horizontal" size={30} color="white" />
       </View>
 
-      {teamDetails.sport.playerTypes.map((playerType: any) =>
+      {teamDetails?.sport?.playerTypes.map((playerType: any) =>
         renderMemberSection(playerType.name, categorizeMembers(playerType.name))
       )}
 

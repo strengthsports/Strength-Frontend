@@ -33,6 +33,7 @@ import { useLocalSearchParams } from "expo-router";
 import AddImageIcon from "~/components/SvgIcons/addpost/AddImageIcon";
 import TagsIcon from "~/components/SvgIcons/addpost/TagIcon";
 import PollsIcon from "~/components/SvgIcons/addpost/PollsIcon";
+import PollsContainer from "~/components/Cards/PollsContainer";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -269,6 +270,8 @@ export default function AddPostContainer() {
     }
   };
 
+  const [showPollInput, setShowPollInput] = useState(false);
+
   return (
     <KeyboardAvoidingView
       style={{
@@ -357,6 +360,9 @@ export default function AddPostContainer() {
             />
           </View>
 
+          {/* Only render PollsContainer when polls is selected */}
+          {showPollInput && <PollsContainer onClose={() => setShowPollInput(false)} />}
+
           {/* Only render CustomImageSlider when there are images */}
           {pickedImageUris.length > 0 && (
             <CustomImageSlider
@@ -403,15 +409,10 @@ export default function AddPostContainer() {
 
          {/* component a */}
           <View className="flex flex-row justify-between pt-2">
-          <TouchableOpacity style={{padding: 5}} activeOpacity={0.5} className="p-[0.5px" onPress={handlePickImageOrAddMore}>
+          <TouchableOpacity activeOpacity={0.5} className="p-[5px] w-[35px]">
               <TagsIcon />
-              {pickedImageUris.length > 0 && (
-                <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
-                  <FontAwesome6 name="add" size={12} color="#12956B" />
-                </View>
-              )}
             </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 5}} activeOpacity={0.5} onPress={handlePickImageOrAddMore}>
+            <TouchableOpacity className="p-[5px] w-[36px]" activeOpacity={0.5} onPress={handlePickImageOrAddMore}>
               <AddImageIcon />
               {pickedImageUris.length > 0 && (
                 <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
@@ -433,7 +434,7 @@ export default function AddPostContainer() {
                 <ImageRatioModal pickImage={selectFirstImage} />
               </TouchableOpacity>
             </Modal>
-            <TouchableOpacity style={{padding: 5}} activeOpacity={0.5}>
+            <TouchableOpacity onPress={() => setShowPollInput(true)} className="p-[5px]" activeOpacity={0.5}>
             <PollsIcon/>
             </TouchableOpacity>
           </View>

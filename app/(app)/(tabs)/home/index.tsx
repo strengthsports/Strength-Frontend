@@ -301,6 +301,7 @@ export default function Home() {
           contentContainerStyle={{ paddingBottom: 40, minHeight: "100%" }}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.7} // Adjust as needed
+          showsVerticalScrollIndicator={false}
         />
       </GestureHandlerRootView>
     </View>

@@ -88,10 +88,10 @@ const ImageSlide = memo(
             inset: 0,
             borderTopLeftRadius: isFirstSlide ? 16 : 0,
             borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-            borderTopWidth: isFirstSlide ? 0.15 : 0.28,
-            borderBottomWidth: isFirstSlide ? 0.15 : 0.28,
-            borderLeftWidth: isFirstSlide ? 0.15 : 0,
-            borderColor: "#808080",
+            borderTopWidth: isFirstSlide ? 0.5 : 0.4,
+            borderBottomWidth: isFirstSlide ? 0.5 : 0.4,
+            borderLeftWidth: isFirstSlide ? 0.5 : 0,
+            borderColor: "#2F2F2F",
           }}
           placeholder={require("../../assets/images/nocover.png")}
           // placeholder={{ blurhash }}

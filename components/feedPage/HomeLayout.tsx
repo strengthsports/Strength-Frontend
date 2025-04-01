@@ -163,7 +163,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-black">
       {isDrawerOpen && (
         <Pressable style={styles.overlay} onPress={handleCloseDrawer} />
       )}

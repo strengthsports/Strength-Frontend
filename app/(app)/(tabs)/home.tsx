@@ -42,6 +42,7 @@ import debounce from "lodash.debounce";
 import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 import eventBus from "~/utils/eventBus";
 import PageThemeView from "~/components/PageThemeView";
+import FeedSkeletonLoader from "~/components/skeletonLoaders/FeedSkeletonLoader";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -228,17 +229,11 @@ const Home = () => {
     return (
       <PageThemeView>
         <CustomHomeHeader />
-        <Image
-          source={require("@/assets/images/logo2.png")}
-          style={{
-            width: 100,
-            height: 100,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: [{ translateX: -50 }, { translateY: -50 }],
-          }}
-        />
+        <View className="flex-1 justify-center items-center bg-black">
+          <FeedSkeletonLoader />
+          <FeedSkeletonLoader />
+          <FeedSkeletonLoader />
+        </View>
       </PageThemeView>
     );
   }

@@ -5,14 +5,6 @@ import { useSelector } from "react-redux";
 import { ExploreAllSportsCategoryHeader } from "~/components/explorePage/exploreHeader";
 import { RootState } from "~/reduxStore";
 import TrendingNews from "./TrendingNews";
-import CricketAll from "./CricketAll";
-import FootballAll from "./FootballAll";
-import BadmintonAll from "./BadmintonAll";
-import HockeyAll from "./HockeyAll";
-import AllBasketball from "./BasketballAll";
-import KabaddiAll from "./KabaddiAll";
-import TennisAll from "./TennisAll";
-import TableTennisAll from "./TableTennisAll";
 import ComingSoon from "~/components/explorePage/comingSoon";
 
 // Define content components for each sports category

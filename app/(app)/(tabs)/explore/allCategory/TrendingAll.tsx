@@ -1,5 +1,13 @@
-import React from "react";
-import { View, FlatList, ActivityIndicator, Image } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  Image,
+  TouchableOpacity,
+  Text,
+  Modal,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Swiper from "react-native-swiper";
 import TextScallingFalse from "~/components/CentralText";
@@ -14,23 +22,40 @@ import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
 import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
-import SwiperTop from "~/components/explorePage/SwiperTop"
+import SwiperTop from "~/components/explorePage/SwiperTop";
+import HashtagModal from "~/components/explorePage/hashtagModal";
+import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
-  const renderSwiper = () => (
-    <SwiperTop/>
-  );
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const renderSwiper = () => <SwiperTop />;
 
   const renderHashtags = () => (
-    <View className="mt-7">
-      {hashtagData.map((item, index) => (
-        <Hashtag
-          key={index}
-          index={index + 1}
-          hashtag={item.hashtag}
-          postsCount={item.postsCount}
-        />
-      ))}
+    <View className="mt-10">
+      <Hashtag data={hashtagData.slice(0, 3)} />
+      <TouchableOpacity
+        className="bg-[#303030] my-5 py-3 px-14 w-full max-w-96 flex self-center rounded-full"
+        activeOpacity={0.6}
+        onPress={() => setModalVisible(true)}
+      >
+        <View className="flex-row items-center justify-center">
+          <Text className="text-[#E9E9E9] font-semibold">See more</Text>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={20}
+            color="#E9E9E9"
+            className="mt-1 ml-1.5"
+          />
+        </View>
+      </TouchableOpacity>
+
+      {/* Include HashtagModal */}
+      <HashtagModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        hashtagData={hashtagData}
+      />
     </View>
   );
 
@@ -42,7 +67,7 @@ const TrendingAll = () => {
   const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
     cricketData || {};
 
-  const renderTrendingLiveMatches = () => {}
+  const renderTrendingLiveMatches = () => {};
 
   const renderCricketLiveMatches = () => {
     return (
@@ -59,13 +84,23 @@ const TrendingAll = () => {
               className="-mb-1"
             />
           </View>
-          <MaterialCommunityIcons
-            name="reload"
-            size={22}
-            color="grey"
-            className="-mb-1"
+          <TouchableOpacity
+            activeOpacity={0.7}
             onPress={refetchLiveCricket}
-          />
+            style={{
+              width: 40,
+              height: 20,
+              justifyContent: "center",
+              alignItems: "flex-end",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="reload"
+              size={22}
+              color="grey"
+              className="-mb-1"
+            />
+          </TouchableOpacity>
         </View>
         <FlatList
           data={liveCricketMatches}
@@ -74,10 +109,11 @@ const TrendingAll = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => (
-            <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
+            <View className="h-52 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545] ">
               {isCricketFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
-                  <ActivityIndicator size="large" color={Colors.themeColor} />
+                  {/* <ActivityIndicator size="large" color={Colors.themeColor} /> */}
+                  <ScoresSkeletonLoader />
                 </View>
               ) : (
                 <MatchCard match={item} isLive={true} />
@@ -106,7 +142,7 @@ const TrendingAll = () => {
         </View>
         {nextCricketMatches ? (
           <View className="px-6">
-            <View className="h-56 w-full rounded-2xl bg-neutral-900 mr-5 border border-neutral-600 ">
+            <View className="h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545]">
               {isCricketFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
                   <ActivityIndicator size="large" color={Colors.themeColor} />
@@ -154,7 +190,7 @@ const TrendingAll = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => (
-            <View className="h-56 w-96 bg-transparent rounded-2xl mr-5 border border-neutral-600 ">
+            <View className="h-48 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545] ">
               {isFootballFetching ? (
                 <View className="h-full flex justify-center self-center items-center">
                   <ActivityIndicator size="large" color={Colors.themeColor} />

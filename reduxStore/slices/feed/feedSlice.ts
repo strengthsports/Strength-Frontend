@@ -377,12 +377,21 @@ export const selectPostsByUserId = createSelector(
   }
 );
 
-export const selectFeedState = (state: RootState) => ({
-  loading: state.feed.loading,
-  error: state.feed.error,
-  lastTimestamp: state.feed.lastTimestamp,
-  currentPage: state.feed.currentPage,
-  hasMore: state.feed.hasMore,
-});
+export const selectFeedState = createSelector(
+  [
+    (state: RootState) => state.feed.loading,
+    (state: RootState) => state.feed.error,
+    (state: RootState) => state.feed.lastTimestamp,
+    (state: RootState) => state.feed.currentPage,
+    (state: RootState) => state.feed.hasMore,
+  ],
+  (loading, error, lastTimestamp, currentPage, hasMore) => ({
+    loading,
+    error,
+    lastTimestamp,
+    currentPage,
+    hasMore,
+  })
+);
 
 export default feedSlice.reducer;

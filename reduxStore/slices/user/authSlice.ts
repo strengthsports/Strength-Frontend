@@ -1,6 +1,13 @@
-import { getToken, removeToken, saveToken } from "@/utils/secureStore";
+import {
+  getToken,
+  removeToken,
+  removeUserId,
+  saveToken,
+  saveUserId,
+} from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { User, AuthState } from "@/types/user";
+import { disconnectSocket } from "~/utils/socket";
 
 // Initial State
 const initialState: AuthState = {
@@ -49,9 +56,10 @@ export const loginUser = createAsyncThunk<
     }
 
     // Convert tokens to strings and save in Secure Store
-    console.log("saving accessToken");
-    // console.log("accessToken", data.data.accessToken);
+    console.log("saving accessToken and user id");
     saveToken("accessToken", data.data.accessToken);
+    console.log("user id ", data.data.user._id);
+    saveUserId("user_id", data.data.user._id);
 
     return { user: data.data.user, message: data.message };
   } catch (err: any) {
@@ -84,8 +92,12 @@ export const logoutUser = createAsyncThunk(
         );
       }
 
+      // Disconnect socket connection
+      disconnectSocket();
+
       // Clear Secure Store
       removeToken("accessToken");
+      removeUserId("user_id");
       console.log("From Redux - Logged out successfully!");
 
       return;

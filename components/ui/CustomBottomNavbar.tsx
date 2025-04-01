@@ -16,11 +16,15 @@ const BOTTOM_NAVBAR_HEIGHT = 70;
 interface CustomBottomNavbarProps {
   hasNewNotification: boolean;
   setHasNewNotification: (value: boolean) => void;
+  notificationCount: number;
+  setNotificationCount: (value: number) => void;
 }
 
 const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
   hasNewNotification,
   setHasNewNotification,
+  notificationCount,
+  setNotificationCount,
 }) => {
   const router = useRouter();
   const segments = useSegments();
@@ -99,9 +103,10 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
           <TouchableOpacity
             key={index}
             onPress={() => {
-              // if (item.label === "Notification") {
-              //   setHasNewNotification(false);
-              // }
+              if (item.label === "Notification") {
+                setHasNewNotification(false);
+                setNotificationCount(0);
+              }
               if (item.label === "Home") {
                 // Check if already on Home route
                 if (activeRoute.includes(item.route)) {
@@ -113,12 +118,19 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
               router.push(item.route as RelativePathString);
             }}
             style={styles.navItem}
+            className="active:bg-neutral-800"
             activeOpacity={0.5}
           >
             <View style={styles.iconContainer}>
               <item.Icon color={iconColor} />
               {item.label === "Notification" && hasNewNotification && (
-                <View style={styles.notificationDot} />
+                <View style={styles.notificationDot}>
+                  {notificationCount > 0 && (
+                    <TextScallingFalse className="text-white text-xs">
+                      {notificationCount}
+                    </TextScallingFalse>
+                  )}
+                </View>
               )}
             </View>
             <TextScallingFalse style={[styles.label, { color: iconColor }]}>
@@ -157,12 +169,15 @@ const styles = StyleSheet.create({
   },
   notificationDot: {
     position: "absolute",
-    top: 0,
-    right: -2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -2,
+    right: -4,
+    width: 12,
+    height: 12,
+    borderRadius: "100%",
     backgroundColor: "#12956B",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     color: "#000",

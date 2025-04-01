@@ -17,6 +17,7 @@ import {
   Animated,
   Platform,
   Image,
+  ScrollView,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
@@ -42,7 +43,7 @@ import debounce from "lodash.debounce";
 import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 import eventBus from "~/utils/eventBus";
 import PageThemeView from "~/components/PageThemeView";
-import FeedSkeletonLoader from "~/components/skeletonLoaders/FeedSkeletonLoader";
+import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -229,11 +230,20 @@ const Home = () => {
     return (
       <PageThemeView>
         <CustomHomeHeader />
-        <View className="flex-1 justify-center items-center bg-black">
-          <FeedSkeletonLoader />
-          <FeedSkeletonLoader />
-          <FeedSkeletonLoader />
-        </View>
+        <ScrollView
+          contentContainerStyle={{
+            marginTop: 65,
+            alignItems: "flex-start",
+            justifyContent: "flex-start",
+            width: "100%",
+            flex: 1,
+            backgroundColor: "#000",
+          }}
+        >
+          <PostSkeletonLoader1 />
+          <PostSkeletonLoader1 />
+          <PostSkeletonLoader1 />
+        </ScrollView>
       </PageThemeView>
     );
   }

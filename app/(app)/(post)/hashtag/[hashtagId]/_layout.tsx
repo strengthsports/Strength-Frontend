@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import SearchBar from "~/components/search/searchbar";
+import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 import { Colors } from "~/constants/Colors";
 
 // Lazy-load heavy content components
@@ -36,9 +37,19 @@ const tabs = [
 
 // Memoized loader component
 const Loader = React.memo(() => (
-  <View className="flex-1 justify-center bg-black items-center">
-    <ActivityIndicator size="large" color={Colors.themeColor} />
-  </View>
+  <ScrollView
+    contentContainerStyle={{
+      alignItems: "flex-start",
+      justifyContent: "flex-start",
+      width: "100%",
+      flex: 1,
+      backgroundColor: "#000",
+    }}
+  >
+    <PostSkeletonLoader1 />
+    <PostSkeletonLoader1 />
+    <PostSkeletonLoader1 />
+  </ScrollView>
 ));
 
 interface CustomNavigationProps {

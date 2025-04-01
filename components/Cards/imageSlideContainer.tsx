@@ -63,7 +63,6 @@ const ImageSlide = memo(
     onDoubleTap?: () => any;
   }) => {
     const router = useRouter();
-    const dispatch = useDispatch<AppDispatch>();
     const [isError, setIsError] = useState(false);
     return (
       <TouchableWithDoublePress
@@ -89,9 +88,9 @@ const ImageSlide = memo(
             inset: 0,
             borderTopLeftRadius: isFirstSlide ? 16 : 0,
             borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-            borderTopWidth: 0.3,
-            borderBottomWidth: 0.3,
-            borderLeftWidth: isFirstSlide ? 0.3 : 0,
+            borderTopWidth: isFirstSlide ? 0.15 : 0.28,
+            borderBottomWidth: isFirstSlide ? 0.15 : 0.28,
+            borderLeftWidth: isFirstSlide ? 0.15 : 0,
             borderColor: "#808080",
           }}
           placeholder={require("../../assets/images/nocover.png")}

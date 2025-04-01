@@ -231,7 +231,7 @@ const Overview = () => {
                   className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
                     activeSubSection === sport.sport?.name
                       ? "bg-[#12956B]"
-                      : "bg-black border-gray-600"
+                      : "bg-black border-[0.5px] border-[#686868]"
                   } border`}
                   style={{
                     borderRadius:
@@ -247,18 +247,25 @@ const Overview = () => {
                     resizeMode="contain"
                   />
                   <TextScallingFalse
-                    className={`text-sm font-medium ${
+                    className={`text-lg font-medium ${
                       activeSubSection === sport.sport?.name
                         ? "text-white"
-                        : "text-gray-400"
+                        : "text-[#CCCCCC]"
                     }`}
-                    style={styles.buttonText}
+                    // style={styles.buttonText}
                   >
                     {sport.sport?.name.charAt(0).toUpperCase() +
                       sport.sport?.name.slice(1)}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
+              <TouchableOpacity
+                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center"
+                style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
+                onPress={() => router.push("/(app)/(profile)/edit-overview")}
+              >
+                <Feather name="chevron-right" size={20 * scaleFactor} color="#CCCCCC" />
+              </TouchableOpacity>
             </TabsList>
           </ScrollView>
 
@@ -266,9 +273,9 @@ const Overview = () => {
           {validSports.map((sport: any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
               {/* Sports Overview */}
-              <View className="w-full flex-1 items-center p-2">
+              <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
-                  <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl">
+                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-[15px]">
                     <View className="flex-row justify-start flex-wrap gap-y-4">
                       {Object.entries(sport.details).map(
                         ([key, value], idx) => (
@@ -300,7 +307,8 @@ const Overview = () => {
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
                       <TextScallingFalse
-                        className="text-[#808080] font-bold"
+                        className="text-[#8A8A8A]"
+                        style={{fontFamily: "Montserrat", fontWeight:700, fontSize: responsiveFontSize(1.8),}}
                       >
                         CURRENT TEAMS
                       </TextScallingFalse>
@@ -313,7 +321,7 @@ const Overview = () => {
                         <View
                           style={{
                             height: 0.5,
-                            backgroundColor: "#717171",
+                            backgroundColor: "#3B3B3B",
                             marginVertical: 16,
                           }}
                         />
@@ -330,7 +338,7 @@ const Overview = () => {
                         marginVertical: 6,
                       }}
                     >
-                      <Text
+                      <TextScallingFalse
                         style={{
                           color: "#808080",
                           fontSize: 15,
@@ -338,7 +346,7 @@ const Overview = () => {
                         }}
                       >
                         Full Insights
-                      </Text>
+                      </TextScallingFalse>
                       <Feather
                         name="arrow-right"
                         size={20}
@@ -361,22 +369,19 @@ const Overview = () => {
             <View style={{ padding: 2 }}>
               <TextScallingFalse
                 style={{
-                  color: "grey",
-                  fontSize: responsiveFontSize(2.23),
+                  color: "#808080",
+                  fontSize: responsiveFontSize(1.9),
                   fontWeight: "bold",
                 }}
               >
-                About
+                ABOUT
               </TextScallingFalse>
               <TextScallingFalse
+                className="text-white font-light pt-4 leading-5"
                 style={{
-                  fontSize: responsiveFontSize(1.52),
-                  color: "white",
-                  fontWeight: "300",
-                  paddingTop: "3%",
-                  lineHeight: 17.5,
+                  fontSize: responsiveFontSize(1.6),
                 }}
-                numberOfLines={isExpanded ? undefined : 3}
+                numberOfLines={isExpanded ? undefined : 2}
               >
                 {profileData?.about}
               </TextScallingFalse>
@@ -427,13 +432,13 @@ const styles = StyleSheet.create({
     padding: "2%",
   },
   HeadingText: {
-    fontSize: responsiveFontSize(1.41),
+    fontSize: responsiveFontSize(1.3),
     color: "white",
     fontWeight: "bold",
   },
   DetailText: {
-    fontSize: responsiveFontSize(1.52),
-    color: "white",
+    fontSize: responsiveFontSize(1.5),
+    color: "#C1C1C1",
     fontWeight: "300",
     paddingTop: 2,
   },

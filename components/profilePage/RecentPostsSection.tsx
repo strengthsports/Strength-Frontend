@@ -5,6 +5,7 @@ import PostSmallCard from "components/Cards/PostSmallCard";
 import { Post } from '~/types/post';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import PostContainerSmall from '../Cards/postContainerSmall';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
 
 
 
@@ -60,7 +61,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
     return (
         <View style={{alignItems:"center", flex:1, justifyContent:"center", flexDirection:"row", marginLeft:15}}>
           <View 
-            style={{flex:1, flexDirection:"row", width: 'auto', padding: 75, marginTop:104 , marginBottom:60 ,justifyContent:'center', alignItems:'center',height:392*scaleFactor}}
+            style={{flex:1, flexDirection:"row", width: 'auto', padding: 75, marginTop:95 , marginBottom:60 ,justifyContent:'center', alignItems:'center',height:390*scaleFactor}}
             className="border-[#2C2C2C] border-[0.3px] rounded-[15px] bg-[#0B0B0B]"
           >
             <TouchableOpacity activeOpacity={0.3} style={{flex:1, flexDirection:"row", gap:5 ,}} onPress={onSeeAllPress}>
@@ -76,12 +77,14 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
 
   return (
     <View
-      className="py-2 my-2 ml-4 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
+      className="py-2 my-2 ml-4 w-auto border-[#2E2E2E] border-[1px] rounded-l-[20px] border-r-0"
       style={{ height: 650 * scaleFactor }}
     >
       {/* Header */}
-      <View className="w-full h-12 justify-end pl-5">
-        <TextScallingFalse className="text-[#8A8A8A] text-[18px] font-bold">
+      <View className="w-full h-8 justify-end pl-5">
+        <TextScallingFalse className="text-[#8A8A8A] font-bold"
+          style={{fontSize: responsiveFontSize(1.9),}}
+        >
           POSTS
         </TextScallingFalse>
       </View>

@@ -34,6 +34,10 @@ import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
+import AddImageIcon from "~/components/SvgIcons/addpost/AddImageIcon";
+import TagsIcon from "~/components/SvgIcons/addpost/TagIcon";
+import PollsIcon from "~/components/SvgIcons/addpost/PollsIcon";
+import PollsContainer from "~/components/Cards/PollsContainer";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -280,22 +284,28 @@ export default function AddPostContainer() {
     }
   };
 
+  const [showPollInput, setShowPollInput] = useState(false);
+
   return (
     <PageThemeView>
       <View className="h-full">
         <View className="flex flex-row items-center justify-between p-4">
           <AddPostHeader onBackPress={navigateBack} />
           <TouchableOpacity
-            className={`px-5 py-1 rounded-full ${
-              isPostButtonEnabled ? "bg-theme" : "bg-neutral-600"
+            className={`px-6 py-1 rounded-full ${
+              isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
             }`}
             onPress={handlePostSubmit}
             disabled={!isPostButtonEnabled}
           >
             {isLoading ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color={"white"} />
             ) : (
-              <TextScallingFalse className="text-white text-3xl">
+              <TextScallingFalse
+                className={`${
+                  isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                } text-3xl font-semibold`}
+              >
                 Post
               </TextScallingFalse>
             )}
@@ -361,6 +371,11 @@ export default function AddPostContainer() {
             />
           </View>
 
+          {/* Only render PollsContainer when polls is selected */}
+          {showPollInput && (
+            <PollsContainer onClose={() => setShowPollInput(false)} />
+          )}
+
           {/* Only render CustomImageSlider when there are images */}
           {pickedImageUris.length > 0 && (
             <CustomImageSlider
@@ -388,30 +403,34 @@ export default function AddPostContainer() {
           )}
         </ScrollView>
 
-        <View className="flex flex-row justify-between items-center p-5">
-          <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+        <View className="flex flex-row justify-between items-center px-3 p-2">
+          <TouchableOpacity className="flex flex-row gap-2 items-center pl-3 py-1 border border-theme rounded-lg">
             <MaterialCommunityIcons
               name="earth"
-              size={20}
+              size={19}
               color={Colors.themeColor}
             />
-            <TextScallingFalse className="text-theme text-3xl">
+            <TextScallingFalse className="text-theme text-2xl">
               Public
             </TextScallingFalse>
             <MaterialCommunityIcons
               name="menu-down"
-              size={24}
+              size={22}
               color={Colors.themeColor}
             />
           </TouchableOpacity>
 
-          <View className="flex flex-row justify-between gap-2 ">
-            <TouchableOpacity onPress={handlePickImageOrAddMore}>
-              <MaterialCommunityIcons
-                name="image-outline"
-                size={24}
-                color={Colors.themeColor}
-              />
+          {/* component a */}
+          <View className="flex flex-row justify-between pt-2">
+            <TouchableOpacity activeOpacity={0.5} className="p-[5px] w-[35px]">
+              <TagsIcon />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="p-[5px] w-[36px]"
+              activeOpacity={0.5}
+              onPress={handlePickImageOrAddMore}
+            >
+              <AddImageIcon />
               {pickedImageUris.length > 0 && (
                 <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
                   <FontAwesome6 name="add" size={12} color="#12956B" />
@@ -432,11 +451,13 @@ export default function AddPostContainer() {
                 <ImageRatioModal pickImage={selectFirstImage} />
               </TouchableOpacity>
             </Modal>
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={24}
-              color={Colors.themeColor}
-            />
+            <TouchableOpacity
+              onPress={() => setShowPollInput(true)}
+              className="p-[5px]"
+              activeOpacity={0.5}
+            >
+              <PollsIcon />
+            </TouchableOpacity>
           </View>
         </View>
       </View>

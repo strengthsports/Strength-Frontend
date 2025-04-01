@@ -159,7 +159,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   }, [dispatch]);
 
   const { user } = useSelector((state: RootState) => state?.profile);
+
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
+
+
+
+
   const load = useSelector((state) => state.team.loading);
   useEffect(() => {
     if (user?.id) {
@@ -199,21 +204,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     createdBy: user?.id as string,
   });
 
-  const getGameIcon = (game: string) => {
-    switch (game) {
-      case "Cricket":
-        return require("@/assets/images/Sports Icons/okcricket.png");
-      case "Kabaddi":
-        return require("@/assets/images/Sports Icons/okkabaddi.png");
-      case "Basketball":
-        return require("@/assets/images/Sports Icons/okbasketball.png");
-      case "Hockey":
-        return require("@/assets/images/Sports Icons/okhockey.png");
-      case "Volleyball":
-        return require("@/assets/images/Sports Icons/okvollyball.png");
-    }
-  };
-
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleSelectGame = ({
@@ -246,7 +236,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
           country: country,
           location: {
             ...prevFormData.address.location,
-            coordinates: coordinates, // New coordinates for Mumbai
+            coordinates: coordinates,
           },
         },
       }));
@@ -318,23 +308,45 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   };
 
   const handleCreateTeam = async () => {
-    if (
-      !formData.name ||
-      !formData.sport ||
-      !formData.address ||
-      !formData.establishedOn ||
-      !formData.description
-    ) {
-      alert("Please fill all required fields.");
-      return;
-    }
+  if (
+    !formData.name ||
+    !formData.sport ||
+    !formData.address ||
+    !formData.establishedOn ||
+    !formData.description
+  ) {
+    alert("Please fill all required fields.");
+    return;
+  }
 
+  // First navigate to the success page with the form data
+  router.push({
+    pathname: "./team-creation-success",
+    params: { 
+      teamData: JSON.stringify({
+        logo: formData.logo,
+        name: formData.name,
+        sport: sports.find(s => s._id === formData.sport)?.name || formData.sport,
+        establishedOn: formData.establishedOn,
+        address: formData.address,
+        gender: formData.gender,
+        description: formData.description,
+        members: formData.members,
+      }) 
+    }
+  });
+
+  // Then submit to your backend
+  try {
     const response = await dispatch(createTeam(formData));
-
-    if (response.payload.success) {
-      router.push("./team-creation-success");
+    if (!response.payload.success) {
+      // Optionally handle error case
+      console.error("Team creation failed on backend");
     }
-  };
+  } catch (error) {
+    console.error("Error creating team:", error);
+  }
+};
 
   return (
     <SafeAreaView className="flex-1 bg-black px-2">

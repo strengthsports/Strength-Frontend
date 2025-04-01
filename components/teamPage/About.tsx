@@ -10,18 +10,18 @@ import TeamId from "~/components/SvgIcons/teams/TeamId";
 import CopyCode from "./CopyCode";
 
 interface AboutProps {
-  teamDetails: string;
+  teamDetails: any;
 }
 
 const About: React.FC<AboutProps> = ({ teamDetails }) => {
   const [supportersCount, setSupportersCount] = useState(4123);
   const [isSupporting, setIsSupporting] = useState(false);
+  
   // const [fontsLoaded] = useFonts({
   //   "Sansation-Regular": require("../../../../../assets/fonts/Sansation_Bold_Italic.ttf"),
   // });
 
   const handleButtonPress = () => {
-    // Toggles support and increases count correctly
     setIsSupporting((prevIsSupporting) => {
       const newIsSupporting = !prevIsSupporting;
       setSupportersCount((prevCount) =>
@@ -31,11 +31,28 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
     });
   };
 
-  // if (!fontsLoaded) {
-  //   return <ActivityIndicator size="large" color="white" />;
-  // }
+  const handleEstablished = () => {
+    const date = new Date(teamDetails.establishedOn);
+    const formattedDate = date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  
+    return formattedDate; 
+  };
 
-  // Redux state (If needed, you can manage user data here)
+  const handleTeamUniqueId = () => {
+    const name = teamDetails.name || ""; 
+    const id = teamDetails._id || ""; 
+  
+    const firstTwoLetters = name.substring(0, 2).toUpperCase(); 
+    const lastFourDigits = id.slice(-4).toUpperCase(); 
+  
+    return `${firstTwoLetters}${lastFourDigits}`;
+  };
+  
+
   const { error, loading, user } = useSelector((state: any) => state?.profile);
 
   return (
@@ -65,19 +82,19 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
           className="text-white ml-1 text-lg"
           style={{ fontFamily: "Sansation-Regular" }}
         >
-          {teamDetails}
+          {teamDetails.description}
         </Text>
       </View>
 
       <View className="ml-4 mt-10 flex flex-row ">
         <Members />
-        <Text className="text-white text-4xl mt-1 ml-1 "> Members - 16</Text>
+        <Text className="text-white text-4xl mt-1 ml-1 "> Members - {teamDetails.members.length}</Text>
       </View>
 
       <View className="ml-4 mt-3 flex flex-row ">
         <EstabilishedOn />
         <Text className="text-white text-4xl mt-1 ml-1 ">
-          Established on - April, 2024
+          Established on - {handleEstablished()}
         </Text>
       </View>
 
@@ -85,7 +102,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
         <TeamId />
         <Text className="text-white text-4xl mt-1 ml-1 ">
           {" "}
-          Team unique ID - RKR1421
+          Team unique ID - {handleTeamUniqueId()}
         </Text>
         <CopyCode />
       </View>

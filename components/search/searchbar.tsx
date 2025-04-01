@@ -8,7 +8,7 @@ import {
 import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
 import { FilterModal } from "../explorePage/filter";
-import FilterIcon from "@/components/SvgIcons/filtericon";
+// import FilterIcon from "@/components/SvgIcons/filtericon";
 
 const SearchBar = ({ searchText }: { searchText?: string }) => {
   const router = useRouter();
@@ -45,7 +45,7 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
       >
         {/* <MaterialCommunityIcons name="plus" size={20} color="white" /> */}
         {/* <FontAwesome5 name="sliders-h" size={24} color="white" /> */}
-        <FilterIcon />
+        {/* <FilterIcon /> */}
         <FilterModal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}

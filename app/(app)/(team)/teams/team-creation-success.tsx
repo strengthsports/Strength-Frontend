@@ -2,52 +2,41 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
-import { useRouter } from "expo-router";
-import showTeam from "./[teamId]";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { RootState } from "~/reduxStore";
+import { useSelector } from "react-redux";
 
 interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  image: string;
+  id: string;
+  firstName: string;
+  profilePic: string;
+  headline?: string;
 }
 
-interface PotentialMember {
-  id: number;
+interface TeamData {
+  _id?: string; 
+  logo?: { uri: string };
   name: string;
-  role: string;
-  image: string;
-  selected?: boolean;
+  sport: string;
+  establishedOn: string;
+  address: {
+    city: string;
+    state: string;
+    country: string;
+  };
+  gender: "male" | "female";
+  description: string;
+  members: TeamMember[];
 }
 
-const TeamCreatedPage: React.FC = (formData) => {
-  const teamMembers: TeamMember[] = [
-    {
-      id: 1,
-      name: "Prathik Jha",
-      role: "Cricketer | Ranji trophy player",
-      image: "https://picsum.photos/200/200",
-    },
-    {
-      id: 2,
-      name: "Rohan Deb Nath",
-      role: "Cricketer | Right hand Batsman",
-      image: "https://picsum.photos/200/200",
-    },
-    {
-      id: 3,
-      name: "Prathik Jha",
-      role: "Cricketer | Ranji trophy player",
-      image: "https://picsum.photos/200/200",
-    },
-  ];
-
-  const [members, setMembers] = useState<PotentialMember[]>(teamMembers);
+const TeamCreatedPage: React.FC = () => {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const teamData: TeamData = params.teamData ? JSON.parse(params.teamData as string) : null;
+  const team = useSelector((state:RootState)=>state.team.team);
+  
+  const translateY = new Animated.Value(30);
 
-  const translateY = new Animated.Value(30); // Start offscreen
-
-  // Trigger animation when the component mounts
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: 0,
@@ -56,27 +45,16 @@ const TeamCreatedPage: React.FC = (formData) => {
     }).start();
   }, []);
 
-  // Toggle the 'selected' state of a member
-  const toggleSelectMember = (id: number) => {
-    setMembers((prevMembers) =>
-      prevMembers.map((member) =>
-        member.id === id ? { ...member, selected: !member.selected } : member,
-      ),
-    );
+  const handleSubmit = () => {
+    console.log(team?._id);
+    router.push({
+      pathname: `/(team)/teams/${team?._id}`,
+    });
   };
 
-  const handleSubmit = () => {
-    router.replace("../teams/67cd0bb8970c518cc730d485");
-  };
   return (
     <SafeAreaView className="flex-1 bg-black pt-2">
-      {/* Main container with animation */}
-      <Animated.View
-        style={{
-          flex: 1,
-          transform: [{ translateY }],
-        }}
-      >
+      <Animated.View style={{ flex: 1, transform: [{ translateY }] }}>
         {/* Image Section */}
         <View className="flex items-center mt-8 px-16">
           <Image
@@ -84,33 +62,33 @@ const TeamCreatedPage: React.FC = (formData) => {
             className="rounded-full h-40 w-40"
           />
         </View>
+
         <View className="flex items-center mt-4">
           <Text className="text-white text-6xl font-semibold">
             Team Created!
           </Text>
         </View>
+
         <View className="flex items-center justify-center mt-2">
           <Text className="text-[#A5A5A5] text-3xl text-center px-12">
             Your team is now live! Bring your squad together and start the game.
           </Text>
         </View>
-
+        
         {/* Team Details Section */}
-        <View className="flex flex-row items-center py-4 w-72 max-w-84 mt-8 pl-6">
+        <View className="flex flex-row items-center py-4 w-full mt-8 pl-6">
           <Image
-            source={require("../../../../assets/images/teams/dummyteam.png")}
+            source={teamData?.logo ? { uri: teamData.logo.uri } : require("../../../../assets/images/teams/dummyteam.png")}
             className="w-36 h-36"
           />
-          <View className="flex flex-row items-center ml-9">
-            <Image
-              source={require("../../../../assets/images/teams/Vector 64.png")}
-              className="mr-2 h-[108px]"
-            />
-            <View className="flex flex-col ml-8">
-              <Text className="text-white text-[25px] font-bold">
-                Kolkata Night Riders
-              </Text>
-            </View>
+          <Image
+            source={require("../../../../assets/images/teams/Vector 64.png")}
+            className="mr-4 ml-7 h-[108px]"
+          />
+          <View className="flex flex-col ml-2">
+            <Text className="text-white text-[25px] font-bold">
+              {teamData?.name || "Team Name"}
+            </Text>
           </View>
         </View>
 
@@ -122,23 +100,21 @@ const TeamCreatedPage: React.FC = (formData) => {
 
         {/* Team Members List */}
         <ScrollView className="flex-1 px-10">
-          {members.map((member) => (
-            <TouchableOpacity
-              key={member.id}
-              onPress={() => toggleSelectMember(member.id)}
-              className="flex-row items-center py-4"
-            >
+          {teamData?.members?.map((member) => (
+            <View key={member.id} className="flex-row items-center py-4">
               <Image
-                source={{ uri: member.image }}
+                source={{ uri: member.profilePic || "https://picsum.photos/200/200" }}
                 className="w-14 h-14 rounded-full mr-4"
               />
               <View className="flex-1 border-b border-[#5C5C5C] pb-4">
                 <Text className="text-white text-3xl font-semibold">
-                  {member.name}
+                  {member.firstName}
                 </Text>
-                <Text className="text-[#9CA3AF] text-2xl">{member.role}</Text>
+                <Text className="text-[#9CA3AF] text-2xl">
+                  {member.headline || "Team Member"}
+                </Text>
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </ScrollView>
       </Animated.View>
@@ -147,7 +123,7 @@ const TeamCreatedPage: React.FC = (formData) => {
       <View className="p-6 border-t border-[#363636] bg-black">
         <TouchableOpacity
           className="bg-[#12956B] p-4 rounded-2xl"
-          onPress={() => handleSubmit()}
+          onPress={handleSubmit}
         >
           <Text className="text-white text-3xl font-semibold text-center">
             Go to Teams Page

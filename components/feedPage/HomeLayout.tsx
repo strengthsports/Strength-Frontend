@@ -62,6 +62,8 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [teamDetails, setTeamDetails] = useState<any>([]);
   const { error, loading, user } = useSelector((state: any) => state?.profile);
+  const [showAll, setShowAll] = useState(false);
+  const visibleTeams = showAll ? teamDetails : teamDetails.slice(0, 4);
 
   const navigation = useNavigation();
 
@@ -230,86 +232,78 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
             />
 
             {/* Teams section */}
+           
             <View className="mt-2 w-[90%] mx-auto">
-              <Text className="text-white text-4xl font-bold">
-                Manage Teams
-              </Text>
-
-              {teamDetails.map((team: any, index: any) => (
-                <View
-                  className={
-                    index === teamDetails.length - 1 ? "mb-4 mx-2" : "mb-2 mx-2"
-                  }
-                  key={index}
-                >
-                  {/* Replace teamDetails mapping with your data */}
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      router.push(`../(team)/teams/${team.id}`);
-                      handleCloseDrawer();
-                    }}
-                  >
-                    <View className="flex-row items-center mt-4">
-                      <Image
-                        source={{ uri: team.url }}
-                        className="w-10 h-10 rounded-full"
-                        resizeMode="cover"
-                      />
-                      <Text className="text-white text-3xl font-medium ml-4">
-                        {team.name}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              <View className="flex-row mb-4 px-3">
-                {/* Create Team Button */}
-                <View className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center">
-                  <TouchableOpacity
-                    onPress={() => {
-                      router.push("/(app)/(team)/teams");
-                      handleCloseDrawer();
-                    }}
-                  >
-                    <Text className="text-[#12956B] text-base font-semibold">
-                      Create Team
-                    </Text>
-                  </TouchableOpacity>
-                  <AntDesign
-                    className="ml-1"
-                    name="plus"
-                    size={10}
-                    color="#12956B"
-                  />
-                </View>
-
-                {/* Join Team Button */}
-                <TouchableOpacity
-                  onPress={() => {
-                    // your join team logic here
-                  }}
-                  className="ml-4"
-                >
-                  <View className="bg-[#12956B] px-4 py-2 rounded-md items-center">
-                    <Text className="text-white text-base font-semibold">
-                      Join Team
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              <CustomDivider
-                color="#5C5C5C"
-                thickness={0.2}
-                style={{
-                  marginHorizontal: "auto",
-                  width: "100%",
-                  opacity: 0.5,
-                }}
+      <Text className="text-white text-4xl font-bold">Manage Teams</Text>
+<ScrollView>
+      {visibleTeams.map((team: any, index: number) => (
+        <View
+          className={index === visibleTeams.length - 1 ? "mb-4 mx-2" : "mb-2 mx-2"}
+          key={team.id}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              router.push(`../(team)/teams/${team.id}`);
+              handleCloseDrawer();
+            }}
+          >
+            <View className="flex-row items-center mt-4">
+              <Image
+                source={{ uri: team.url }}
+                className="w-10 h-10 rounded-full"
+                resizeMode="cover"
               />
+              <Text className="text-white text-3xl font-medium ml-4">
+                {team.name}
+              </Text>
             </View>
+          </TouchableOpacity>
+        </View>
+      ))}
+      </ScrollView>
+
+      {teamDetails.length > 4 && (
+        <TouchableOpacity onPress={() => setShowAll(!showAll)} className="mt-2">
+          <Text className="text-[#0ff] text-2xl font-semibold ">
+            {showAll ? "See Less" : "See More"}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      <View className="flex-row mb-4 mt-7 px-3">
+        {/* Create Team Button */}
+        <View className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center">
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/(app)/(team)/teams");
+              handleCloseDrawer();
+            }}
+          >
+            <Text className="text-[#12956B] text-base font-semibold">Create Team</Text>
+          </TouchableOpacity>
+          <AntDesign name="plus" size={10} color="#12956B" className="ml-1" />
+        </View>
+
+        {/* Join Team Button */}
+        <TouchableOpacity onPress={() => { /* your join team logic here */ }} className="ml-4">
+          <View className="bg-[#12956B] px-4 py-2 rounded-md items-center">
+            <Text className="text-white text-base font-semibold">Join Team</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <CustomDivider
+        color="#5C5C5C"
+        thickness={0.2}
+        style={{ marginHorizontal: "auto", width: "100%", opacity: 0.5 }}
+      />
+    </View>
+  
+
+
+
+
+
             <TouchableOpacity
               onPress={handleLogout}
               className="mb-2 w-[90%] mx-auto"

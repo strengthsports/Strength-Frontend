@@ -188,36 +188,62 @@ export const deleteTeam = createAsyncThunk<
   }
 });
 
-// Fetch user data
-export const fetchUser = createAsyncThunk<
-  any,  // You can replace 'any' with a specific type if you have one for user data
-  void, 
+
+
+
+
+// Update the fetchUserSuggestion action
+export const fetchUserSuggestion = createAsyncThunk<
+  any,
+  { 
+    teamId: string;
+    userId: string;
+    page?: number;
+    limit?: number;
+  },
   { rejectValue: string }
->("team/fetchUser", async (_, { rejectWithValue }) => {
+>("team/fetchUserSuggestion", async (params, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
 
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/user`, // Assuming the endpoint for fetching user data is "/api/v1/user"
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/player-suggestions`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          teamId: params.teamId,
+          userId: params.userId,
+          page: params.page ?? 1,   
+          limit: params.limit ?? 10,
+        
+        }),
       }
     );
 
     const data = await response.json();
 
     if (!response.ok) {
-      return rejectWithValue(data.message || "Failed to fetch user data");
+      return rejectWithValue(data.message || "Failed to fetch user suggestions");
     }
 
-    return data;  // Assuming the response contains the user data directly
+    return data;
   } catch (error: any) {
     return rejectWithValue(error.message || "Network error!");
   }
 });
+
+
+
+
+
+
+
+
+
 
 const teamSlice = createSlice({
   name: "team",
@@ -262,16 +288,17 @@ const teamSlice = createSlice({
       })
 
       // Handle fetchUser
-      .addCase(fetchUser.pending, (state) => {
+      // Handle fetchUserSuggestion
+      .addCase(fetchUserSuggestion.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUser.fulfilled, (state, action) => {
+      .addCase(fetchUserSuggestion.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;  // Save the user data into state
+        state.user = action.payload; // Or use a separate state field for suggestions
         state.error = null;
       })
-      .addCase(fetchUser.rejected, (state, action) => {
+      .addCase(fetchUserSuggestion.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

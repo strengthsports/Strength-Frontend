@@ -17,7 +17,7 @@ const SubCategories: React.FC<SubCategoriesProps> = (teamDetails) => {
     if (selectedTab === "SQUAD") {
       return <Squad teamDetails={teamDetails.teamDetails} />;
     } else if (selectedTab === "ABOUT") {
-      return <About teamDetails={teamDetails.teamDetails.description} />;
+      return <About teamDetails={teamDetails.teamDetails} />;
     }
   };
 

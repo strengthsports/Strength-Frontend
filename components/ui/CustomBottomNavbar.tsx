@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect, useState} from "react";
 import {
   Animated,
   TouchableOpacity,
@@ -33,11 +33,13 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
   const router = useRouter();
   const segments = useSegments();
   const { scrollY } = useScroll();
+  const [activeRoute, setActiveRoute] = useState("/(app)/(tabs)/home");
 
   // Compute the active route only once.
-  const computedActiveRoute = useMemo(() => {
-    return segments.length ? "/" + segments.join("/") : "/(app)/(tabs)/home";
+  useEffect(() => {
+    setActiveRoute(segments.length ? "/" + segments.join("/") : "/(app)/(tabs)/home");
   }, [segments]);
+  const computedActiveRoute = useMemo(() => activeRoute, [activeRoute]);
 
   // Compute the clamped scroll value.
   const clampedScrollY = useMemo(
@@ -101,6 +103,7 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
     [computedActiveRoute, router, setHasNewNotification, setNotificationCount]
   );
 
+
   return (
     <View
       style={[
@@ -111,7 +114,7 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
       ]}
     >
       {navItems.map((item, index) => {
-        const isActive = computedActiveRoute === item.route;
+        const isActive = computedActiveRoute.startsWith(item.route);
         const iconColor = isActive ? "#12956B" : "#cccccc";
 
         return (

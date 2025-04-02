@@ -12,7 +12,7 @@ import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
 import eventBus from "~/utils/eventBus";
 
-const BOTTOM_NAVBAR_HEIGHT = 70;
+const BOTTOM_NAVBAR_HEIGHT = Platform.OS === "ios" ? 80 : 60;
 interface CustomBottomNavbarProps {
   hasNewNotification: boolean;
   setHasNewNotification: (value: boolean) => void;
@@ -84,12 +84,12 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
   ];
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.container,
-        activeRoute === "(app)/(tabs)/home"
-          ? { transform: [{ translateY: headerTranslateY }] }
-          : {},
+        // activeRoute === "(app)/(tabs)/home"
+        //   ? { transform: [{ translateY: headerTranslateY }] }
+        //   : {},
       ]}
     >
       {navItems.map((item, index) => {
@@ -132,14 +132,14 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
                   )}
                 </View>
               )}
-            </View>
-            <TextScallingFalse style={[styles.label, { color: iconColor }]}>
+               <TextScallingFalse style={[styles.label, { color: iconColor }]}>
               {item.label}
             </TextScallingFalse>
+            </View>
           </TouchableOpacity>
         );
       })}
-    </Animated.View>
+    </View>
   );
 };
 
@@ -151,21 +151,22 @@ const styles = StyleSheet.create({
     right: 0, // Add this
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingTop: 15,
-    paddingBottom: 15,
-    backgroundColor: "#000000",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    backgroundColor: "black",
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
     overflow: "hidden",
     height: BOTTOM_NAVBAR_HEIGHT,
   },
   navItem: {
     alignItems: "center",
+    borderRadius: '35%',
+    height: '100%',
     flex: 1,
   },
   iconContainer: {
     position: "relative",
     alignItems: "center",
+    paddingVertical: 15,
   },
   notificationDot: {
     position: "absolute",
@@ -181,8 +182,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#000",
-    fontSize: 10,
-    marginTop: 4,
+    fontSize: 9,
+    marginTop: 2,
     fontFamily: "Inter",
   },
 });

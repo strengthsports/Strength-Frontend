@@ -34,6 +34,7 @@ import { Animated } from "react-native";
 import { postComment } from "~/reduxStore/slices/feed/feedSlice";
 import { User } from "~/types/user";
 import { StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 
 interface ReportModalProps {
   commentId: string;
@@ -123,8 +124,14 @@ interface CommenterCardProps {
 // Memoized CommenterCard component
 export const CommenterCard = memo(
   ({ comment, targetId, targetType, onReply, parent }: CommenterCardProps) => {
+    const router = useRouter();
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
-
+    const serializedUser = encodeURIComponent(
+      JSON.stringify({
+        id: comment?.postedBy?._id,
+        type: comment?.postedBy?.type,
+      })
+    );
     return (
       <View className="pl-12 pr-1 py-2 my-2 relative">
         <TouchableOpacity
@@ -178,13 +185,21 @@ export const CommenterCard = memo(
               @{comment?.postedBy?.username} | {comment?.postedBy?.headline}
             </TextScallingFalse>
           </View>
-          <TextScallingFalse className="text-xl text-white mt-4 mb-3">
-            <TextScallingFalse className="text-[#12956B] font-medium">
-              {targetType === "Comment" &&
-                "@" + parent?.postedBy?.username + " "}
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={() =>
+                router.push(`/(app)/(profile)/profile/${serializedUser}`)
+              }
+            >
+              <TextScallingFalse className="text-[#12956B] font-medium">
+                {targetType === "Comment" &&
+                  "@" + parent?.postedBy?.username + " "}
+              </TextScallingFalse>
+            </TouchableOpacity>
+            <TextScallingFalse className="text-xl text-white mt-4 mb-3">
+              {comment?.text}
             </TextScallingFalse>
-            {comment?.text}
-          </TextScallingFalse>
+          </View>
         </View>
         <View className="flex-row gap-2 items-center ml-10 mt-1">
           <TouchableOpacity>

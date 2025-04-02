@@ -1,18 +1,21 @@
 // AppLayout.tsx
 import { View } from "react-native";
 import { Redirect, Stack } from "expo-router";
-import { useSelector } from "react-redux";
-import { RootState } from "@/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
 import CustomBottomNavbar from "@/components/ui/CustomBottomNavbar";
 import { ScrollProvider } from "@/context/ScrollContext";
 import React, { useEffect, useState } from "react";
 import { DrawerProvider } from "~/context/DrawerContext";
 import { connectSocket } from "~/utils/socket";
+import {
+  incrementCount,
+  setHasNewNotification,
+} from "~/reduxStore/slices/notification/notificationSlice";
 
 export default function AppLayout() {
+  const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
-  const [hasNewNotification, setHasNewNotification] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
 
   // Called when an edge swipe is detected
   // const handleEdgeSwipe = () => {
@@ -34,9 +37,9 @@ export default function AppLayout() {
       }
       // Listen for incoming notifications
       socket.on("newNotification", (data) => {
-        setNotificationCount(
-          (prevCount) => prevCount + data.newNotificationCount
-        );
+        console.log("Notification Data : ", data);
+        dispatch(setHasNewNotification(true));
+        dispatch(incrementCount(1));
         console.log("Notification got !");
       });
 
@@ -58,12 +61,7 @@ export default function AppLayout() {
         <View style={{ flex: 1 }}>
           <Stack screenOptions={{ headerShown: false, animation: "none" }} />
           <View style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
-            <CustomBottomNavbar
-              hasNewNotification={hasNewNotification}
-              setHasNewNotification={setHasNewNotification}
-              notificationCount={notificationCount}
-              setNotificationCount={setNotificationCount}
-            />
+            <CustomBottomNavbar />
           </View>
         </View>
       </ScrollProvider>

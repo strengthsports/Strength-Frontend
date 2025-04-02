@@ -1,122 +1,114 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import React from "react";
-import TextScallingFalse from "../CentralText";
+import React, { useCallback, useMemo } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import nopic from "@/assets/images/nopic.jpg";
 import { formatTimeAgo } from "~/utils/formatTime";
-import { useRouter } from "expo-router";
+import { RelativePathString, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
+import TextScallingFalse from "../CentralText";
+import { NotificationType } from "~/types/others";
 
-const NotificationCardLayout = ({
-  type,
-  date,
-  sender,
-  target,
-}: {
-  type: string;
-  date: Date;
+type NotificationCardProps = {
+  type: NotificationType;
+  date?: Date;
   sender: any;
   target: any;
-}) => {
-  const router = useRouter();
-  const userId = useSelector((state: any) => state.profile.user._id);
+  isNew: boolean;
+  count?: number;
+};
 
-  const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: sender._id, type: sender.type })
-  );
+// Static configuration objects
+const NOTIFICATION_TEXTS: Record<NotificationType, string> = {
+  Like: "liked your post",
+  Comment: "commented on your post",
+  Follow: "started following you",
+  TeamInvitation: "is inviting you to join",
+  JoinTeamRequest: "is requesting to join team",
+  Report: "You are reported",
+  Tag: "tagged you",
+};
 
-  const renderTextsOnTypes = (type: string) => {
-    switch (type) {
-      case "Like":
-        return "liked your post";
-      case "Comment":
-        return "commented on your post";
-      case "Follow":
-        return "started following you";
-      case "TeamInvitation":
-        return "is inviting you to join";
-      case "JoinTeamRequest":
-        return "is requesting to join team";
-      case "Report":
-        return "You are reported";
-      default:
-        return "";
-    }
-  };
+const POST_PREVIEW_TYPES = new Set([
+  "Like",
+  "Comment",
+  "JoinTeamRequest",
+  "TeamInvitation",
+]);
 
-  return (
-    <View className="flex-row w-full min-w-[320px] lg:min-w-[400px] max-w-[600px] rounded-lg py-3">
-      {/* Profile Image */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() =>
-          userId === sender._id
-            ? router.push("/(app)/(tabs)/profile")
-            : router.push(`../(profile)/profile/${serializedUser}`)
-        }
-        className="w-12 h-12 rounded-full justify-center items-center flex-shrink-0"
-      >
-        <Image
-          source={sender.profilePic ? { uri: sender.profilePic } : nopic}
-          className="w-10 h-10 rounded-full"
-          style={{
-            maxWidth: 50,
-            maxHeight: 50,
-          }}
-        />
-      </TouchableOpacity>
+const NotificationCardLayout = React.memo(
+  ({ type, date, sender, target, isNew, count }: NotificationCardProps) => {
+    const router = useRouter();
+    const userId = useSelector((state: any) => state.profile.user._id);
 
-      {/* Notification Content */}
-      <View className="flex-1 pl-3 justify-center">
-        {/* Top Section: Notification Text + Options */}
-        <View className="flex-row justify-between items-center">
-          <TextScallingFalse className="text-white text-lg flex-1">
-            {sender.firstName} {sender.lastName}{" "}
-            <TextScallingFalse className="font-bold">
-              {renderTextsOnTypes(type)}
-            </TextScallingFalse>{" "}
-            {formatTimeAgo(date)}
-          </TextScallingFalse>
-          {type !== "Follow" ? (
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={18}
-              color="#808080"
-            />
-          ) : (
-            <TouchableOpacity className="px-3 py-1 rounded-md bg-[#12956B]">
-              <TextScallingFalse className="text-white text-base">
-                Follow
-              </TextScallingFalse>
-            </TouchableOpacity>
-          )}
-        </View>
+    // Memoized values
+    const serializedUser = useMemo(
+      () =>
+        encodeURIComponent(
+          JSON.stringify({ id: sender._id, type: sender.type })
+        ),
+      [sender._id, sender.type]
+    );
 
-        {/* Post Preview (For Like, Comment, JoinTeamRequest, TeamInvitation) */}
-        {["Like", "Comment", "JoinTeamRequest", "TeamInvitation"].includes(
-          type
-        ) && (
+    const profileImageSource = useMemo(
+      () => (sender.profilePic ? { uri: sender.profilePic } : nopic),
+      [sender.profilePic]
+    );
+
+    const timeAgo = useMemo(() => (date ? formatTimeAgo(date) : ""), [date]);
+
+    const hasPostPreview = useMemo(() => POST_PREVIEW_TYPES.has(type), [type]);
+
+    // Handlers
+    const handleProfilePress = useCallback(() => {
+      const route =
+        userId === sender._id
+          ? "/(app)/(tabs)/profile"
+          : `../(profile)/profile/${serializedUser}`;
+      router.push(route as RelativePathString);
+    }, [userId, sender._id, serializedUser]);
+
+    const handlePostPress = useCallback(() => {
+      router.push(`/(app)/(post)/(modal)/post-details/${target._id}`);
+    }, [target?._id]);
+
+    // Rendered components
+    const OptionsButton = useMemo(
+      () =>
+        type === "Follow" ? (
           <TouchableOpacity
-            activeOpacity={0.3}
-            onPress={() => router.push("/")}
-            className="flex-row mt-1.5 items-center bg-[#121212] rounded-md overflow-hidden w-full"
+            className="px-3 py-1 rounded-md bg-[#12956B]"
+            activeOpacity={0.7}
           >
-            {/* Post Image (Now Responsive on Web & Mobile) */}
+            <TextScallingFalse className="text-white text-base">
+              Follow
+            </TextScallingFalse>
+          </TouchableOpacity>
+        ) : (
+          <MaterialCommunityIcons
+            name="dots-horizontal"
+            size={18}
+            color="#808080"
+          />
+        ),
+      [type]
+    );
+
+    const PostPreview = useMemo(
+      () =>
+        hasPostPreview && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handlePostPress}
+            className="flex-row mt-1.5 items-center h-auto bg-[#121212] rounded-lg overflow-hidden w-full"
+          >
             {target?.assets?.length > 0 && (
               <Image
                 source={{ uri: target.assets[0].url }}
                 resizeMode="cover"
-                className="rounded-l-md flex-shrink-0"
-                style={{
-                  width: 50,
-                  height: 50,
-                  maxWidth: 64,
-                  maxHeight: 64,
-                }}
+                className="rounded-l-lg flex-shrink-0"
+                style={postStyle}
               />
             )}
-
-            {/* Text Container (Adjustable Width) */}
             <View className="flex-1 ml-3 p-3">
               <Text
                 className="text-[#808080] text-sm"
@@ -127,10 +119,85 @@ const NotificationCardLayout = ({
               </Text>
             </View>
           </TouchableOpacity>
-        )}
+        ),
+      [hasPostPreview, target, handlePostPress]
+    );
+
+    return (
+      <View style={{ backgroundColor: isNew ? "rgba(29, 155, 240, 0.1)" : "" }}>
+        <View className="flex-row w-full min-w-[320px] lg:min-w-[400px] max-w-[600px] rounded-lg py-3">
+          <ProfileImage
+            source={profileImageSource}
+            onPress={handleProfilePress}
+          />
+
+          <View className="flex-1 pl-3 justify-center">
+            <View className="flex-row justify-between items-center">
+              <NotificationText
+                sender={sender}
+                count={count}
+                typeText={NOTIFICATION_TEXTS[type]}
+                timeAgo={timeAgo}
+              />
+              {OptionsButton}
+            </View>
+            {PostPreview}
+          </View>
+        </View>
       </View>
-    </View>
-  );
+    );
+  }
+);
+
+// Sub-components for better readability and reusability
+const ProfileImage = React.memo(
+  ({ source, onPress }: { source: any; onPress: () => void }) => (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={onPress}
+      className="w-12 h-12 rounded-full justify-center items-center flex-shrink-0"
+    >
+      <Image source={source} className="w-10 h-10 rounded-full" />
+    </TouchableOpacity>
+  )
+);
+
+const NotificationText = React.memo(
+  ({
+    sender,
+    count,
+    typeText,
+    timeAgo,
+  }: {
+    sender: any;
+    count?: number;
+    typeText: string;
+    timeAgo: string;
+  }) => {
+    const countText = useMemo(() => {
+      if (!count || count < 2) return " ";
+      return count <= 2 ? ` and ${count - 1} other ` : ` and ${count} others `;
+    }, [count]);
+
+    return (
+      <TextScallingFalse className="text-white text-lg font-light flex-1">
+        {sender.firstName} {sender.lastName}
+        {countText}
+        <TextScallingFalse className="font-bold">
+          {typeText}
+        </TextScallingFalse>{" "}
+        {timeAgo}
+      </TextScallingFalse>
+    );
+  }
+);
+
+// Static styles
+const postStyle = {
+  width: 70,
+  height: 70,
+  maxWidth: 90,
+  maxHeight: 90,
 };
 
 export default NotificationCardLayout;

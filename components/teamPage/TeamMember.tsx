@@ -40,7 +40,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
 
       {/* Captain or Vice-Captain Badge */}
       {(isCaptain || isViceCaptain) && (
-        <View className="absolute top-2 left-2 bg-[#303030] px-2 py-1 rounded-lg">
+        <View className="absolute left-2 bg-[#303030] px-2 py-1 rounded-lg">
           <Text className="text-white text-xs font-bold">
             {isCaptain ? "C" : "VC"}
           </Text>

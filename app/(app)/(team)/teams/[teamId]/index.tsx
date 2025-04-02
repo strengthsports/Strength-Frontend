@@ -15,6 +15,9 @@ import {
   TeamPayload
 } from "~/reduxStore/slices/team/teamSlice";
 import { AppDispatch, RootState } from "~/reduxStore";
+import SettingsIcon from "~/components/SvgIcons/teams/SettingsIcon";
+import InviteMembers from "~/components/SvgIcons/teams/InviteMembers";
+import LeaveTeam from "~/components/SvgIcons/teams/LeaveTeam";
 // import { ThemedView } from "~/components/ThemedView";
 
 
@@ -61,7 +64,7 @@ const TeamPage: React.FC = () => {
   const menuItems = [
     {
       label: "Settings",
-      logo:"",
+      logo:SettingsIcon,
       color:"white",
       onPress: () =>
         router.push(
@@ -79,11 +82,13 @@ const TeamPage: React.FC = () => {
     },
     {
       label: "Invite Members",
+      logo:InviteMembers,
       color:"white",
       onPress: () => console.log("Invite Members Modal Will Open"),
     },
     {
       label: "Leave Team",
+      logo:LeaveTeam,
       color:"red",
       onPress: () => handleDeleteTeam(),
     },

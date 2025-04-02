@@ -116,7 +116,12 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                 }}
                 className="py-4 pl-5  border-b  border-gray-600"
               >
-               <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
+              <View className="flex flex-row justify-between mr-4">
+              <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
+              {item?.logo && <item.logo width={24} height={24} fill="white" className="mr-2" />}
+             
+
+              </View>
               </TouchableOpacity>
             ))}
           </View>

@@ -10,28 +10,28 @@ import TeamMember from "./TeamMember";
 import Icon from "react-native-vector-icons/Entypo";
 import { useFonts } from "expo-font";
 import AddMembersModal from "@/components/teamPage/AddMembersModal";
+import DownwardDrawer from "@/components/teamPage/DownwardDrawer"; // Import new component
 import { useSelector } from "react-redux";
-import Nopic from "@/assets/images/pro.jpg";
 
 interface SquadProps {
   teamDetails: any;
 }
 
 const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
-  console.log("Console Form Squad side");
-  console.log(teamDetails);
   const [fontsLoaded] = useFonts({
     "Sansation-Regular": require("../../assets/fonts/Sansation_Bold_Italic.ttf"),
   });
+
   const { user } = useSelector((state: any) => state?.profile);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const userId = user?._id;
+  const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
 
   useEffect(() => {
     if (teamDetails && teamDetails.admin) {
       const adminCheck = teamDetails.admin.some(
-        (admin) => admin._id === userId
+        (admin) => admin._id === user?._id
       );
       setIsAdmin(adminCheck);
     }
@@ -64,7 +64,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         style={{
           fontFamily: "Sansation-Regular",
           color: "white",
-          fontSize: 20,
+          fontSize: 26,
         }}
       >
         {title}
@@ -78,15 +78,22 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                 key={user?._id || member._id || Math.random().toString()}
                 className="w-1/2 p-2"
               >
-                <TeamMember
-                  imageUrl={user?.profilePic}
-                  name={`${user?.firstName || "Unknown"} ${
-                    user?.lastName || ""
-                  }`}
-                  description={user?.headline || "No description available"}
-                  isAdmin={isAdmin}
-                  onRemove={() => console.log("Remove user:", user?._id)}
-                />
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedMember(member);
+                    setShowDownwardDrawer(true);
+                  }}
+                >
+                  <TeamMember
+                    imageUrl={user?.profilePic}
+                    name={`${user?.firstName || "Unknown"} ${
+                      user?.lastName || ""
+                    }`}
+                    description={user?.headline || "No description available"}
+                    isAdmin={isAdmin}
+                    onRemove={() => console.log("Remove user:", user?._id)}
+                  />
+                </TouchableOpacity>
               </View>
             );
           })
@@ -146,6 +153,12 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         buttonName="Invite"
         multiselect={true}
         player={teamDetails.members || []}
+      />
+
+      <DownwardDrawer
+        visible={showDownwardDrawer}
+        onClose={() => setShowDownwardDrawer(false)}
+        member={selectedMember}
       />
     </ScrollView>
   );

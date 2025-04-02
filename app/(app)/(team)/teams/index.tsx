@@ -33,9 +33,9 @@ const InitiateCreateTeam = () => {
       <View style={{ paddingHorizontal: 16 }}>
         <TouchableOpacity onPress={() => router.back()}>
           <Icon
-            name="arrow-back" // Ionicons back arrow icon
-            size={30} // Icon size
-            color="white" // Icon color
+            name="arrow-back" 
+            size={30} 
+            color="white"
           />
         </TouchableOpacity>
       </View>

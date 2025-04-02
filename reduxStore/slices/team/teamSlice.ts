@@ -7,7 +7,7 @@ interface TeamState {
   invited: TeamMember | null;
   error: any | null;
   loading: boolean;
-  user: any | null; // Add user field to store user data
+  user: any | null; 
 }
 
 // Initial state
@@ -16,7 +16,7 @@ const initialState: TeamState = {
   invited: null,
   error: null,
   loading: false,
-  user: null, // Initialize user to null
+  user: null, 
 };
 
 export type TeamPayload = {
@@ -127,7 +127,7 @@ export const fetchTeamDetails = createAsyncThunk<
     if (!response.ok) {
       return rejectWithValue(data.message || "Something went wrong!");
     }
-
+    console.log("data.data--",data.data);
     return data.data; // Return team data
   } catch (error: any) {
     return rejectWithValue(error.message || "Network error!");

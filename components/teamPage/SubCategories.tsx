@@ -13,7 +13,7 @@ const SubCategories = (teamDetails:TeamPayload) => {
     if (selectedTab === "SQUAD") {
       return <Squad teamDetails={teamDetails.teamDetails} />;
     } else if (selectedTab === "ABOUT") {
-      return <About teamDetails={teamDetails} />;
+      return <About teamDetails={teamDetails.teamDetails} />;
     }
   };
 

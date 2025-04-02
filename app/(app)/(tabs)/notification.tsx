@@ -1,126 +1,125 @@
-import React, { useState } from "react";
-import { View, Text, SectionList, ActivityIndicator } from "react-native";
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  SectionList,
+  ActivityIndicator,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import moment from "moment";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
-import { RefreshControl } from "react-native";
 import { Notification } from "~/types/others";
 
-type Grouped = {
+type GroupedNotification = {
   title: string;
   data: Notification[];
 };
 
+const TIME_CATEGORIES = {
+  TODAY: "Today",
+  YESTERDAY: "Yesterday",
+  ONE_WEEK_AGO: "1 Week Ago",
+  TWO_WEEKS_AGO: "2 Weeks Ago",
+} as const;
+
 const NotificationPage = () => {
-  // RTK Query hook that now subscribes to real-time notifications via Socket.IO
-  const { data, isLoading, isError, refetch } = useGetNotificationsQuery(null);
-  console.log("Notifications:", data);
+  const { data = [], isLoading, isError, refetch } = useGetNotificationsQuery(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastTimestamp, setLastTimestamp] = useState(Date.now().toString());
 
-  // Group notifications by time periods: Today, Yesterday, 1 Week Ago, 2 Weeks Ago
-  const groupNotificationsByTime = (notifications = []) => {
-    const grouped: Grouped[] = [
-      { title: "Today", data: [] },
-      { title: "Yesterday", data: [] },
-      { title: "1 Week Ago", data: [] },
-      { title: "2 Weeks Ago", data: [] },
-    ];
-
+  const groupNotificationsByTime = (notifications: Notification[]): GroupedNotification[] => {
     const now = moment();
-    notifications.forEach((notification: Notification) => {
+    const grouped: Record<string, Notification[]> = {
+      [TIME_CATEGORIES.TODAY]: [],
+      [TIME_CATEGORIES.YESTERDAY]: [],
+      [TIME_CATEGORIES.ONE_WEEK_AGO]: [],
+      [TIME_CATEGORIES.TWO_WEEKS_AGO]: [],
+    };
+
+    notifications.forEach((notification) => {
       const createdAt = moment(notification.createdAt);
       const daysDiff = now.diff(createdAt, "days");
 
-      if (daysDiff === 0) {
-        grouped[0].data.push(notification);
-      } else if (daysDiff === 1) {
-        grouped[1].data.push(notification);
-      } else if (daysDiff <= 7) {
-        grouped[2].data.push(notification);
-      } else if (daysDiff <= 14) {
-        grouped[3].data.push(notification);
-      }
+      if (daysDiff === 0) grouped[TIME_CATEGORIES.TODAY].push(notification);
+      else if (daysDiff === 1) grouped[TIME_CATEGORIES.YESTERDAY].push(notification);
+      else if (daysDiff <= 7) grouped[TIME_CATEGORIES.ONE_WEEK_AGO].push(notification);
+      else if (daysDiff <= 14) grouped[TIME_CATEGORIES.TWO_WEEKS_AGO].push(notification);
     });
 
-    // Remove empty sections
-    return grouped.filter((section) => section.data.length > 0);
+    return Object.entries(grouped)
+      .filter(([_, data]) => data.length > 0)
+      .map(([title, data]) => ({ title, data }));
   };
 
-  const notificationsData = data || [];
-  const groupedNotifications = groupNotificationsByTime(notificationsData);
+  const handleRefresh = useCallback(
+    debounce(async () => {
+      if (refreshing) return;
+      setRefreshing(true);
+      try {
+        await refetch();
+      } finally {
+        setRefreshing(false);
+      }
+    }, 1000),
+    [refreshing]
+  );
 
-  // Handler to refresh the list (pull-to-refresh)
-  const handleRefresh = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    try {
-      setLastTimestamp(Date.now().toString());
-      // dispatch(feedPostApi.util.invalidateTags(["FeedPost"]));
-      console.log("Refetching feed data on refresh...");
-      await refetch();
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const renderNotificationItem = ({ item }: { item: Notification }) => (
+    <NotificationCardLayout
+      _id={item._id}
+      type={item.type}
+      date={item.createdAt}
+      sender={item.sender}
+      target={item.target}
+    />
+  );
 
-  const debouncedRefresh = debounce(handleRefresh, 1000);
+  const renderSectionHeader = ({ section }: { section: GroupedNotification }) => (
+    <Text style={styles.sectionHeader}>
+      {section.title} {section.data.length === 0 ? "(No notifications)" : ""}
+    </Text>
+  );
 
-  return (
-    <SafeAreaView className="flex-1 p-6 bg-black">
-      <Text className="text-6xl font-normal text-white mb-4">
-        Notifications
-      </Text>
+  const groupedNotifications = groupNotificationsByTime(data);
 
-      {isLoading && (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
+  if (isLoading && data.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.themeColor} />
         </View>
-      )}
+      </SafeAreaView>
+    );
+  }
 
-      {isError && (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={{ color: "red" }}>Failed to load notifications.</Text>
+  if (isError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Failed to load notifications.</Text>
         </View>
-      )}
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Notifications</Text>
 
       {groupedNotifications.length > 0 ? (
         <SectionList
           sections={groupedNotifications}
-          keyExtractor={(item: Notification) => item._id}
-          renderItem={({ item }) => {
-            return (
-              <NotificationCardLayout
-                date={item.createdAt}
-                type={item.type}
-                sender={item.sender}
-                target={item.target}
-              />
-            );
-          }}
-          renderSectionHeader={({ section: { title } }) => (
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "bold",
-                color: "#808080",
-                marginVertical: 8,
-              }}
-            >
-              {title}
-            </Text>
-          )}
+          keyExtractor={(item) => item._id}
+          renderItem={renderNotificationItem}
+          renderSectionHeader={renderSectionHeader}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={debouncedRefresh}
+              onRefresh={handleRefresh}
               colors={["#12956B", "#6E7A81"]}
               tintColor="#6E7A81"
               title="Refreshing Your Feed..."
@@ -128,17 +127,56 @@ const NotificationPage = () => {
               progressBackgroundColor="#181A1B"
             />
           }
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.listContent}
+          stickySectionHeadersEnabled={false}
         />
       ) : (
-        !isLoading && (
-          <Text style={{ color: "#808080", textAlign: "center", fontSize: 16 }}>
-            No notifications found
-          </Text>
-        )
+        <Text style={styles.emptyText}>No notifications found</Text>
       )}
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop:-40,
+    flex: 1,
+    padding: 24,
+    backgroundColor: Colors.black,
+  },
+  title: {
+    fontSize: 48,
+    fontWeight: "400",
+    color: Colors.white,
+    marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: Colors.red500,
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.gray500,
+    marginVertical: 8,
+  },
+  emptyText: {
+    color: Colors.gray500,
+    textAlign: "center",
+    fontSize: 18,
+  },
+});
 
 export default NotificationPage;

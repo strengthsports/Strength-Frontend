@@ -12,6 +12,7 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./slices/user/authSlice";
 import signupReducer from "./slices/user/signupSlice";

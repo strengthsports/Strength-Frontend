@@ -32,6 +32,8 @@ import { Colors } from "~/constants/Colors";
 import nopic from "@/assets/images/nopic.jpg";
 import { MaterialIcons } from "@expo/vector-icons";
 
+const MAX_HEIGHT = 80;
+
 const PostDetailsPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -48,6 +50,7 @@ const PostDetailsPage = () => {
   // The additional comment text (excludes the fixed reply tag)
   const [commentText, setCommentText] = useState<string>("");
   const [isPosting, setIsPosting] = useState<boolean>(false);
+  const [inputHeight, setInputHeight] = useState(40);
 
   // Reply context: when replying, store the parent comment's id and name.
   const [replyingTo, setReplyingTo] = useState<{
@@ -247,7 +250,13 @@ const PostDetailsPage = () => {
               />
             )}
             <View className="bg-black p-2">
-              <View className="w-full flex-row items-center rounded-full bg-neutral-900 px-4 py-1.5">
+              <View
+                className={`w-full flex-row ${
+                  inputHeight <= 40
+                    ? "items-center rounded-full"
+                    : "items-end rounded-2xl"
+                } bg-neutral-900 px-4 py-1.5`}
+              >
                 <Image
                   source={user?.profilePic ? { uri: user.profilePic } : nopic}
                   className="w-10 h-10 rounded-full"
@@ -271,12 +280,19 @@ const PostDetailsPage = () => {
                     </Text>
                   </View>
                 )}
-                {/* The text input holds only the additional comment text */}
+                {/* The text input auto-grows vertically */}
                 <TextInput
                   ref={textInputRef}
                   autoFocus={true}
                   placeholder="Type your comment here"
                   className="flex-1 px-4 bg-neutral-900 text-white"
+                  style={{ height: Math.max(40, inputHeight) }}
+                  multiline={true}
+                  textAlignVertical="top"
+                  onContentSizeChange={(event) =>
+                    setInputHeight(event.nativeEvent.contentSize.height)
+                  }
+                  scrollEnabled={inputHeight >= MAX_HEIGHT}
                   placeholderTextColor="grey"
                   cursorColor={Colors.themeColor}
                   value={commentText}

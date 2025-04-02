@@ -33,6 +33,7 @@ import { KeyboardAvoidingView } from "react-native";
 import { Animated } from "react-native";
 import { postComment } from "~/reduxStore/slices/feed/feedSlice";
 import { User } from "~/types/user";
+import { StyleSheet } from "react-native";
 
 interface ReportModalProps {
   commentId: string;
@@ -41,7 +42,7 @@ interface ReportModalProps {
   showDelete: boolean;
 }
 
-// Memoized CommenterCard component
+// Memoized ReportModal component
 const ReportModal = memo(
   ({ commentId, targetId, targetType, showDelete }: ReportModalProps) => {
     const [deleteComment, { isLoading: isDeleting }] =
@@ -119,6 +120,7 @@ interface CommenterCardProps {
   parent?: Comment;
 }
 
+// Memoized CommenterCard component
 export const CommenterCard = memo(
   ({ comment, targetId, targetType, onReply, parent }: CommenterCardProps) => {
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
@@ -210,25 +212,14 @@ export const CommenterCard = memo(
 interface CommentModalProps {
   autoFocusKeyboard?: boolean;
   targetId: string;
-  setCommentCount?: React.Dispatch<React.SetStateAction<number>>;
-  containerHeight?: number;
 }
 
-// Memoized CommentModal component
 const CommentModal = memo(
-  ({
-    autoFocusKeyboard = false,
-    targetId,
-    setCommentCount,
-    containerHeight,
-  }: CommentModalProps) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { user } = useSelector(
-      (state: RootState) => state.profile.user as User
-    );
-    // The additional comment text (excludes the fixed reply tag)
-    const [commentText, setCommentText] = useState<string>("");
-    const [isPosting, setIsPosting] = useState<boolean>(false);
+  ({ autoFocusKeyboard = false, targetId }: CommentModalProps) => {
+    const [replyingTo, setReplyingTo] = useState<{
+      commentId: string;
+      name: string;
+    } | null>(null);
 
     // Fetch comments for the target
     const {
@@ -238,66 +229,22 @@ const CommentModal = memo(
       refetch: refetchComments,
     } = useFetchCommentsQuery({ targetId, targetType: "Post" });
 
-    // Animated progress bar
-    const progress = useRef(new Animated.Value(0)).current;
-    // Reply context: when replying, store the parent comment's id and name.
-    const flatListRef = useRef<FlatList>(null);
-    const textInputRef = useRef<TextInput>(null);
-    const [replyingTo, setReplyingTo] = useState<{
-      commentId: string;
-      name: string;
-    } | null>(null);
-
-    // Handle posting a new comment or reply.
-    const handlePostComment = async () => {
-      if (!commentText.trim()) return;
-      setIsPosting(true);
-      const isReply = replyingTo !== null;
-      const textToPost = commentText;
-      // Clear the input and reply context.
-      setCommentText("");
-      if (isReply) setReplyingTo(null);
-      try {
-        await dispatch(
-          postComment({
-            targetId: isReply ? replyingTo!.commentId : targetId,
-            targetType: isReply ? "Comment" : "Post",
-            text: textToPost,
-          })
-        ).unwrap();
-        await refetchComments();
-      } catch (error) {
-        console.log("Failed to post comment:", error);
-      }
-      setIsPosting(false);
-    };
-
-    // When the Reply button is tapped, store the reply context.
-    const handleReply = (comment: Comment) => {
-      const replyTag = `@${comment.postedBy.username}`;
-      setReplyingTo({
-        commentId: comment._id,
-        name: replyTag,
-      });
-      // Focus the input so the user can type their reply.
-      textInputRef.current?.focus();
-    };
-
-    // Update text input state. If user clears the input, remove the reply context.
-    const handleTextChange = (text: string) => {
-      setCommentText(text);
-      if (text === "" && replyingTo) {
-        setReplyingTo(null);
-      }
-    };
-
     useEffect(() => {
       if (fetchError) {
         console.error("Failed to fetch comments:", fetchError);
       }
     }, [fetchError]);
 
-    // Render top-level comment and its nested replies.
+    // Function to handle reply context from nested comment components
+    const handleReply = (comment: Comment) => {
+      const replyTag = `@${comment.postedBy.username}`;
+      setReplyingTo({
+        commentId: comment._id,
+        name: replyTag,
+      });
+    };
+
+    // Render each comment and its possible replies.
     const renderItem = useCallback(
       ({ item }: { item: Comment & { replies?: Comment[] } }) => {
         // Filter out any replies that do not have valid text
@@ -305,7 +252,8 @@ const CommentModal = memo(
           (reply) => reply.text && reply.text.trim() !== ""
         );
         return (
-          <View className="px-2">
+          <View style={{ paddingHorizontal: 8 }}>
+            {/* Render the top-level comment */}
             <CommenterCard
               comment={item}
               targetId={targetId}
@@ -313,7 +261,7 @@ const CommentModal = memo(
               onReply={handleReply}
             />
             {validReplies && validReplies.length > 0 && (
-              <View className="ml-8 mt-2">
+              <View style={{ marginLeft: 32, marginTop: 8 }}>
                 {validReplies.map((reply) => (
                   <CommenterCard
                     key={reply._id}
@@ -332,38 +280,28 @@ const CommentModal = memo(
       [targetId]
     );
 
-    const widthInterpolated = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: ["0%", "100%"],
-    });
-
     return (
-      <View className="relative h-full flex-1">
-        <TextScallingFalse className="text-white self-center text-5xl my-4">
+      <View style={{ flex: 1 }}>
+        <TextScallingFalse className="mb-4 text-white text-5xl self-center">
           Comments
         </TextScallingFalse>
-
         <KeyboardAvoidingView
-          className="flex-1"
+          style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.select({
-            ios: 60, // Adjust this value based on your header height
-            android: 0,
-          })}
+          keyboardVerticalOffset={Platform.select({ ios: 60, android: 0 })}
         >
-          <View className="flex-1">
+          <View style={{ flex: 1 }}>
             {isFetching ? (
               <ActivityIndicator size="large" color={Colors.themeColor} />
             ) : (
               <FlatList
-                ref={flatListRef}
                 data={[...(comments?.data || [])].sort(
                   (a, b) =>
                     new Date(b.createdAt).getTime() -
                     new Date(a.createdAt).getTime()
                 )}
                 keyExtractor={(item) => item._id}
-                renderItem={({ item }) => renderItem({ item })}
+                renderItem={renderItem}
                 ListEmptyComponent={
                   <TextScallingFalse
                     style={{
@@ -378,86 +316,12 @@ const CommentModal = memo(
                 contentContainerStyle={{
                   flexGrow: 1,
                   paddingBottom: Platform.select({
-                    ios: 100, // Extra padding for iOS keyboard
+                    ios: 100,
                     android: 120,
                   }),
                 }}
               />
             )}
-          </View>
-
-          {/* Sticky comment input bar */}
-          <View className="absolute left-0 right-0 bottom-0">
-            <View className="bg-black">
-              <Divider
-                className="w-full rounded-full bg-neutral-700 mb-[1px]"
-                width={0.3}
-              />
-              {isPosting && (
-                <Animated.View
-                  style={{
-                    height: 4,
-                    width: widthInterpolated,
-                    backgroundColor: "#12956B",
-                  }}
-                />
-              )}
-              <View className="bg-black p-2">
-                <View className="w-full flex-row items-center rounded-full bg-neutral-900 px-4 py-1.5">
-                  <Image
-                    source={user?.profilePic ? { uri: user.profilePic } : nopic}
-                    className="w-10 h-10 rounded-full"
-                    resizeMode="cover"
-                  />
-                  {/* Fixed reply tag (if replying) */}
-                  {replyingTo && (
-                    <View
-                      style={{
-                        backgroundColor: "#333",
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 12,
-                        marginLeft: 8,
-                      }}
-                    >
-                      <TextScallingFalse
-                        style={{ color: Colors.themeColor, fontWeight: "600" }}
-                      >
-                        {replyingTo.name}
-                      </TextScallingFalse>
-                    </View>
-                  )}
-                  {/* The text input holds only the additional comment text */}
-                  <TextInput
-                    ref={textInputRef}
-                    autoFocus={true}
-                    placeholder="Type your comment here"
-                    className="flex-1 px-4 bg-neutral-900 text-white"
-                    placeholderTextColor="grey"
-                    cursorColor={Colors.themeColor}
-                    value={commentText}
-                    onChangeText={handleTextChange}
-                  />
-                  <TouchableOpacity
-                    onPress={handlePostComment}
-                    disabled={isPosting}
-                  >
-                    <MaterialIcons
-                      className="p-2"
-                      name="send"
-                      size={22}
-                      color={
-                        isPosting
-                          ? "#292A2D"
-                          : commentText
-                          ? Colors.themeColor
-                          : "grey"
-                      }
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
           </View>
         </KeyboardAvoidingView>
       </View>

@@ -28,12 +28,16 @@ import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
-import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import { postComment, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import CommentModal from "../feedPage/CommentModal";
+import { TextInput } from "react-native";
+import { Colors } from "~/constants/Colors";
+import StickyInput from "../ui/StickyInput";
+import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 
 type TaggedUser = {
   _id: string;
@@ -68,6 +72,51 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSeeMore, setShowSeeMore] = useState(false);
     const [activeIndex, setActiveIndex] = useState<any>(0);
+    // Comment for individual post
+    const [commentText, setCommentText] = useState("");
+    const [isPosting, setIsPosting] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<{
+      commentId: string;
+      name: string;
+    } | null>(null);
+    const progress = useRef(new Animated.Value(0)).current;
+
+    const { refetch: refetchComments } = useFetchCommentsQuery({
+      targetId: item._id,
+      targetType: "Post",
+    });
+
+    const handleTextChange = (text: string) => {
+      setCommentText(text);
+      if (text === "" && replyingTo) {
+        setReplyingTo(null);
+      }
+    };
+
+    const handlePostComment = async () => {
+      if (!commentText.trim()) return;
+      setIsPosting(true);
+      const isReply = replyingTo !== null;
+      const textToPost = commentText;
+      // Clear the input and reply context.
+      setCommentText("");
+      if (isReply) setReplyingTo(null);
+      try {
+        await dispatch(
+          postComment({
+            targetId: isReply ? replyingTo!.commentId : item._id,
+            targetType: isReply ? "Comment" : "Post",
+            text: textToPost,
+          })
+        ).unwrap();
+        await refetchComments();
+      } catch (error) {
+        console.log("Failed to post comment:", error);
+      }
+      setCommentText("");
+      setIsPosting(false);
+    };
+
     // Get the openBottomSheet function from context
     const { openBottomSheet, closeBottomSheet } = useBottomSheet();
 
@@ -91,38 +140,39 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           height: item.postedBy._id === user?._id ? "20%" : "25%",
           bgcolor: "#151515", // Ensure bgcolor is always defined
           border: false,
+          maxHeight: item.postedBy._id === user?._id ? "20%" : "25%",
+          draggableDirection: "down",
         });
       } else if (type === "comment") {
-        console.log("Comment sheet");
         openBottomSheet({
           isVisible: true,
           content: (
-            <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+            <>
+              <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+              <StickyInput
+                user={user}
+                value={commentText}
+                onChangeText={handleTextChange}
+                onSubmit={handlePostComment}
+                isPosting={isPosting}
+                replyingTo={replyingTo}
+                progress={progress}
+                placeholder="Type your comment here"
+                autoFocus={true}
+              />
+            </>
           ),
           height: "80%",
           bgcolor: "#000",
           border: true,
+          maxHeight: "100%",
+          draggableDirection: "both",
         });
       }
     };
 
     // Ref for the like animation
     const scaleAnim = useRef(new Animated.Value(0)).current;
-
-    // Handle hardware back press
-    useEffect(() => {
-      const handleBackPress = () => {
-        closeBottomSheet();
-        return true;
-      };
-
-      BackHandler.addEventListener("hardwareBackPress", handleBackPress);
-
-      // Cleanup on component unmount
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
-      };
-    }, []);
 
     // Handle like on double tap on post
     const handleDoubleTap = () => {

@@ -1,5 +1,4 @@
-// AppBottomSheet.js - Updated with explicit height control
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -15,81 +14,132 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 const AppBottomSheet = () => {
   const { bottomSheetState, closeBottomSheet } = useBottomSheet();
-  const { isVisible, content, height, bgcolor, border } = bottomSheetState;
+  const {
+    isVisible,
+    content,
+    height,
+    bgcolor,
+    border,
+    draggableDirection = "down",
+    maxHeight = "90%",
+  } = bottomSheetState;
+
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Height calculations
   const sheetHeight =
     typeof height === "string"
       ? (SCREEN_HEIGHT * parseFloat(height.replace("%", ""))) / 100
       : height;
 
+  const maxHeightValue =
+    typeof maxHeight === "string"
+      ? (SCREEN_HEIGHT * parseFloat(maxHeight.replace("%", ""))) / 100
+      : maxHeight;
+
+  const minTranslateY = SCREEN_HEIGHT - sheetHeight;
+  const maxTranslateY = SCREEN_HEIGHT - maxHeightValue;
+
   // Animation handling
   useEffect(() => {
     if (isVisible) {
+      setIsMounted(true);
       Animated.spring(translateY, {
-        toValue: SCREEN_HEIGHT - sheetHeight,
+        toValue: minTranslateY,
         useNativeDriver: true,
-        bounciness: 4,
       }).start();
     } else {
       Animated.timing(translateY, {
         toValue: SCREEN_HEIGHT,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      }).start(() => setIsMounted(false));
     }
   }, [isVisible, sheetHeight]);
 
-  // Pan responder for drag interactions
+  // Pan responder configuration
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gestureState) => {
-        const newY = SCREEN_HEIGHT - sheetHeight + gestureState.dy;
-        if (newY > SCREEN_HEIGHT - sheetHeight) {
-          translateY.setValue(newY);
+        Keyboard.dismiss();
+        let newY = SCREEN_HEIGHT - sheetHeight + gestureState.dy;
+
+        if (draggableDirection === "both") {
+          // Correct clamping logic for both directions
+          newY = Math.min(Math.max(newY, maxTranslateY), minTranslateY);
+        } else {
+          newY = Math.max(minTranslateY, newY);
         }
+
+        translateY.setValue(newY);
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.vy > 0.5 || gestureState.dy > 45) {
+        const currentY = translateY.__getValue();
+        const velocityThreshold = 0.5;
+        const dragThreshold = SCREEN_HEIGHT * 0.1;
+
+        // Enhanced closing logic
+        const shouldClose =
+          (gestureState.vy > velocityThreshold ||
+            gestureState.dy > dragThreshold) &&
+          currentY >= minTranslateY;
+
+        if (shouldClose) {
           closeBottomSheet();
         } else {
+          let targetY = minTranslateY;
+
+          if (draggableDirection === "both") {
+            const midPoint = (maxTranslateY + minTranslateY) / 2;
+            targetY = currentY < midPoint ? maxTranslateY : minTranslateY;
+          }
+
           Animated.spring(translateY, {
-            toValue: SCREEN_HEIGHT - sheetHeight,
+            toValue: targetY,
             useNativeDriver: true,
-            bounciness: 4,
           }).start();
         }
       },
     })
   ).current;
 
-  if (!isVisible) return null;
+  if (!isMounted) return null;
 
   return (
     <>
+      {/* Backdrop as sibling */}
       <TouchableOpacity
-        activeOpacity={1}
         style={styles.backdrop}
+        activeOpacity={1}
         onPress={closeBottomSheet}
       />
 
+      {/* Sheet content as sibling */}
       <Animated.View
         style={[
           styles.container,
           {
-            height: sheetHeight,
             transform: [{ translateY }],
-            backgroundColor: bgcolor,
-            borderWidth: border ? 0.5 : 0,
-            borderTopColor: border ? "#808080" : "transparent",
+            height: sheetHeight,
+            backgroundColor: bgcolor || "#fff",
+            borderTopLeftRadius: border || 20,
+            borderTopRightRadius: border || 20,
           },
         ]}
+        {...panResponder.panHandlers}
       >
-        <View {...panResponder.panHandlers} style={styles.dragHandle}>
+        <View style={styles.dragHandle}>
           <View style={styles.handle} />
         </View>
-
-        <View style={[styles.content, { height: sheetHeight - 40 }]}>
+        <View
+          onStartShouldSetResponder={(event) => true}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+          }}
+          style={styles.content}
+        >
           {content}
         </View>
       </Animated.View>
@@ -99,11 +149,7 @@ const AppBottomSheet = () => {
 
 const styles = StyleSheet.create({
   backdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
     zIndex: 999,
   },
@@ -130,11 +176,11 @@ const styles = StyleSheet.create({
     height: 5,
     backgroundColor: "#555",
     borderRadius: 3,
-    marginHorizontal: "auto",
     marginTop: 8,
   },
   content: {
     paddingHorizontal: 10,
+    flex: 1,
   },
 });
 

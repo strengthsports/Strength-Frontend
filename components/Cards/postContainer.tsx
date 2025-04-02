@@ -65,7 +65,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
-
     const { followUser, unFollowUser } = useFollow();
 
     // State for individual post

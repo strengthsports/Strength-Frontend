@@ -56,7 +56,7 @@ export const fetchSwipper = async () => {
   try {
     const baseUrl = process.env.EXPO_BASE_URL;
     const response = await fetch(
-      `http://192.168.70.31:3000/api/v1/exploreNews/get-trending-swipper`
+      `http://192.168.70.11:3000/api/v1/exploreNews/get-trending-swipper`
     );
 
     if (!response.ok) {

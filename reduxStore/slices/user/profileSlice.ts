@@ -400,7 +400,11 @@ const profileSlice = createSlice({
       })
       .addCase(onboardingUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = { ...state.user, ...action.payload };
+        console.log("Onboard response : ", action.payload);
+        state.user = {
+          ...state.user,
+          profilePic: action.payload.data,
+        };
         state.msgBackend = action.payload.message;
         resetOnboardingData();
         state.error = null;

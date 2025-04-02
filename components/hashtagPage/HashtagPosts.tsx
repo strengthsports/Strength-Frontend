@@ -13,6 +13,8 @@ import { Colors } from "~/constants/Colors";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
+import PostSkeletonLoader1 from "../skeletonLoaders/PostSkeletonLoader1";
+import { ScrollView } from "react-native";
 
 export default function HashtagPosts({ sort }: { sort?: number }) {
   const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
@@ -53,9 +55,19 @@ export default function HashtagPosts({ sort }: { sort?: number }) {
   }
 
   return isLoading ? (
-    <View className="mt-20 justify-center items-center">
-      <ActivityIndicator size="large" color={Colors.themeColor} />
-    </View>
+    <ScrollView
+      contentContainerStyle={{
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
+        width: "100%",
+        flex: 1,
+        backgroundColor: "#000",
+      }}
+    >
+      <PostSkeletonLoader1 />
+      <PostSkeletonLoader1 />
+      <PostSkeletonLoader1 />
+    </ScrollView>
   ) : !data?.data?.posts?.length ? (
     <View className="justify-center items-center h-20">
       <TextScallingFalse className="text-[#808080] text-2xl">

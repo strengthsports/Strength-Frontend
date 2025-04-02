@@ -7,6 +7,8 @@ type BottomState = {
   height: string | number;
   bgcolor?: string;
   border?: boolean;
+  draggableDirection?: string;
+  maxHeight: string | number;
 };
 
 // Define the initial bottom sheet state
@@ -16,6 +18,8 @@ const initialState: BottomState = {
   height: "30%",
   bgcolor: "#151515",
   border: false,
+  draggableDirection: "down",
+  maxHeight: "30%",
 };
 
 // Context type
@@ -42,6 +46,8 @@ export const BottomSheetProvider = ({ children }: { children: any }) => {
       height: config.height || "30%",
       bgcolor: config.bgcolor || "#151515",
       border: config.border || false,
+      draggableDirection: config.draggableDirection,
+      maxHeight: config.maxHeight,
     });
   };
 

@@ -1,5 +1,11 @@
-// PostDetailsPage.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
 import { useRouter } from "expo-router";
@@ -15,7 +21,6 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Text,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
@@ -32,6 +37,31 @@ import { Colors } from "~/constants/Colors";
 import nopic from "@/assets/images/nopic.jpg";
 import { MaterialIcons } from "@expo/vector-icons";
 
+const MAX_HEIGHT = 80;
+
+// Extracted and memoized ListHeader component
+const ListHeader = memo(
+  ({ post, router }: { post: Post; router: ReturnType<typeof useRouter> }) => {
+    return (
+      <View>
+        <TopBar heading="" backHandler={() => router.back()} />
+        <PostContainer item={post} isFeedPage={false} />
+        <View className="px-4 py-4">
+          <View className="relative">
+            <TextScallingFalse className="text-white text-5xl mb-2">
+              Comments
+            </TextScallingFalse>
+            <Divider
+              className="absolute top-4 right-0 w-[70%] rounded-full bg-neutral-700 opacity-25"
+              width={0.3}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  }
+);
+
 const PostDetailsPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -45,11 +75,10 @@ const PostDetailsPage = () => {
   const flatListRef = useRef<FlatList>(null);
   const textInputRef = useRef<TextInput>(null);
 
-  // The additional comment text (excludes the fixed reply tag)
+  // State for comment input and reply context
   const [commentText, setCommentText] = useState<string>("");
   const [isPosting, setIsPosting] = useState<boolean>(false);
-
-  // Reply context: when replying, store the parent comment's id and name.
+  const [inputHeight, setInputHeight] = useState(40);
   const [replyingTo, setReplyingTo] = useState<{
     commentId: string;
     name: string;
@@ -59,7 +88,7 @@ const PostDetailsPage = () => {
     return <TextScallingFalse>Post not found</TextScallingFalse>;
   }
 
-  // Scroll to end on mount (if needed)
+  // Scroll to end on mount
   useEffect(() => {
     const timeout = setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
@@ -67,8 +96,7 @@ const PostDetailsPage = () => {
     return () => clearTimeout(timeout);
   }, []);
 
-  // Fetch comments for the post. The backend now returns nested replies
-  // as an array on each comment (if any).
+  // Fetch comments for the post.
   const {
     data: comments,
     error: fetchError,
@@ -82,21 +110,72 @@ const PostDetailsPage = () => {
     }
   }, [fetchError]);
 
-  // When the Reply button is tapped, store the reply context.
-  const handleReply = (comment: Comment) => {
-    const replyTag = `@${comment.postedBy.username}`;
-    setReplyingTo({
-      commentId: comment._id,
-      name: replyTag,
-    });
-    // Focus the input so the user can type their reply.
-    textInputRef.current?.focus();
-  };
+  // Memoized sorted comments array
+  const sortedComments = useMemo(() => {
+    return [...(comments?.data || [])].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [comments?.data]);
 
-  // Render top-level comment and its nested replies.
+  // Handle Reply button tap
+  const handleReply = useCallback((comment: Comment) => {
+    const replyTag = `@${comment.postedBy.username}`;
+    setReplyingTo({ commentId: comment._id, name: replyTag });
+    textInputRef.current?.focus();
+  }, []);
+
+  // Memoize text change handler
+  const handleTextChange = useCallback(
+    (text: string) => {
+      setCommentText(text);
+      if (text === "" && replyingTo) {
+        setReplyingTo(null);
+      }
+    },
+    [replyingTo]
+  );
+
+  // Handle posting a new comment or reply.
+  const handlePostComment = useCallback(async () => {
+    if (!commentText.trim()) return;
+    setIsPosting(true);
+    const isReply = replyingTo !== null;
+    const textToPost = commentText;
+    setCommentText("");
+    if (isReply) setReplyingTo(null);
+    try {
+      await dispatch(
+        postComment({
+          targetId: isReply ? replyingTo!.commentId : post._id,
+          targetType: isReply ? "Comment" : "Post",
+          text: textToPost,
+        })
+      ).unwrap();
+      await refetchComments();
+    } catch (error) {
+      console.log("Failed to post comment:", error);
+    } finally {
+      setIsPosting(false);
+    }
+  }, [commentText, dispatch, post._id, refetchComments, replyingTo]);
+
+  // Animate the progress bar while posting.
+  useEffect(() => {
+    if (isPosting) {
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      progress.setValue(0);
+    }
+  }, [isPosting, progress]);
+
+  // Memoize renderItem to avoid unnecessary re-renders
   const renderItem = useCallback(
     ({ item }: { item: Comment & { replies?: Comment[] } }) => {
-      // Filter out any replies that do not have valid text
       const validReplies = item.replies?.filter(
         (reply) => reply.text && reply.text.trim() !== ""
       );
@@ -115,7 +194,7 @@ const PostDetailsPage = () => {
                   key={reply._id}
                   parent={item}
                   comment={reply}
-                  targetId={item._id} // reply's parent id
+                  targetId={item._id}
                   targetType="Comment"
                   onReply={handleReply}
                 />
@@ -125,76 +204,17 @@ const PostDetailsPage = () => {
         </View>
       );
     },
-    [post._id]
+    [handleReply, post._id]
   );
 
-  // Update text input state. If user clears the input, remove the reply context.
-  const handleTextChange = (text: string) => {
-    setCommentText(text);
-    if (text === "" && replyingTo) {
-      setReplyingTo(null);
-    }
-  };
-
-  // Handle posting a new comment or reply.
-  const handlePostComment = async () => {
-    if (!commentText.trim()) return;
-    setIsPosting(true);
-    const isReply = replyingTo !== null;
-    const textToPost = commentText;
-    // Clear the input and reply context.
-    setCommentText("");
-    if (isReply) setReplyingTo(null);
-    try {
-      await dispatch(
-        postComment({
-          targetId: isReply ? replyingTo!.commentId : post._id,
-          targetType: isReply ? "Comment" : "Post",
-          text: textToPost,
-        })
-      ).unwrap();
-      await refetchComments();
-    } catch (error) {
-      console.log("Failed to post comment:", error);
-    }
-    setIsPosting(false);
-  };
-
-  // Animate the progress bar while posting.
-  useEffect(() => {
-    if (isPosting) {
-      Animated.timing(progress, {
-        toValue: 1,
-        duration: 2000,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      progress.setValue(0);
-    }
-  }, [isPosting, progress]);
-
-  const ListHeader = () => (
-    <View>
-      <TopBar heading="" backHandler={() => router.back()} />
-      <PostContainer item={post as Post} isFeedPage={false} />
-      <View className="px-4 py-4">
-        <View className="relative">
-          <TextScallingFalse className="text-white text-5xl mb-2">
-            Comments
-          </TextScallingFalse>
-          <Divider
-            className="absolute top-4 right-0 w-[70%] rounded-full bg-neutral-700 opacity-25"
-            width={0.3}
-          />
-        </View>
-      </View>
-    </View>
+  const widthInterpolated = useMemo(
+    () =>
+      progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["0%", "100%"],
+      }),
+    [progress]
   );
-
-  const widthInterpolated = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0%", "100%"],
-  });
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -204,12 +224,9 @@ const PostDetailsPage = () => {
       >
         <FlatList
           ref={flatListRef}
-          data={[...(comments?.data || [])].sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )}
+          data={sortedComments}
           keyExtractor={(item) => item._id}
-          ListHeaderComponent={ListHeader}
+          ListHeaderComponent={<ListHeader post={post} router={router} />}
           renderItem={({ item }) => renderItem({ item })}
           inverted={false}
           ListEmptyComponent={
@@ -247,13 +264,18 @@ const PostDetailsPage = () => {
               />
             )}
             <View className="bg-black p-2">
-              <View className="w-full flex-row items-center rounded-full bg-neutral-900 px-4 py-1.5">
+              <View
+                className={`w-full flex-row ${
+                  inputHeight <= 40
+                    ? "items-center rounded-full"
+                    : "items-end rounded-2xl"
+                } bg-neutral-900 px-4 py-1.5`}
+              >
                 <Image
                   source={user?.profilePic ? { uri: user.profilePic } : nopic}
                   className="w-10 h-10 rounded-full"
                   resizeMode="cover"
                 />
-                {/* Fixed reply tag (if replying) */}
                 {replyingTo && (
                   <View
                     style={{
@@ -264,19 +286,25 @@ const PostDetailsPage = () => {
                       marginLeft: 8,
                     }}
                   >
-                    <Text
+                    <TextScallingFalse
                       style={{ color: Colors.themeColor, fontWeight: "600" }}
                     >
                       {replyingTo.name}
-                    </Text>
+                    </TextScallingFalse>
                   </View>
                 )}
-                {/* The text input holds only the additional comment text */}
                 <TextInput
                   ref={textInputRef}
                   autoFocus={true}
                   placeholder="Type your comment here"
                   className="flex-1 px-4 bg-neutral-900 text-white"
+                  style={{ height: Math.max(40, inputHeight) }}
+                  multiline={true}
+                  textAlignVertical="top"
+                  onContentSizeChange={(event) =>
+                    setInputHeight(event.nativeEvent.contentSize.height)
+                  }
+                  scrollEnabled={inputHeight >= MAX_HEIGHT}
                   placeholderTextColor="grey"
                   cursorColor={Colors.themeColor}
                   value={commentText}

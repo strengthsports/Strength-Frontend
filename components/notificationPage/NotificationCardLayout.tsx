@@ -89,43 +89,40 @@ const handleAccept = async () => {
     const token = await getToken("accessToken");
     if (!token) throw new Error("Authentication token missing");
 
-    // First try to discover current transaction state
-    const discovery = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/transaction-state`,
-      {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      }
-    );
-    
-    const { currentTransaction } = await discovery.json();
-
-    // Then use the discovered transaction ID
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/accept-invitation`,
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/accept-teamInvitation`,
       {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
-          "X-Transaction-ID": currentTransaction
         },
         body: JSON.stringify({
           teamId: target._id,
           notificationId: _id,
           senderId: sender._id,
           userId: userId,
-          transactionNumber: currentTransaction
         }),
       }
     );
 
-    // ... rest of the code
+    if (!response.ok) {
+      throw new Error("Failed to accept invitation");
+    }
+
+    // Handle success response
+    const data = await response.json();
+    console.log("Invitation accepted successfully", data);
   } catch (error) {
-    // ... error handling
+    console.error("Error accepting invitation:", error);
+  } finally {
+    setLoading(false);
   }
 };
+
+
+
+
   const handleReject = async () => {
     if (!_id) {
       Alert.alert("Error", "Missing notification ID");

@@ -22,6 +22,7 @@ import Toast from "react-native-toast-message";
 import SuggestionCard from "~/components/Cards/SuggestionCard";
 import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
 import { FlatList } from "react-native";
+import { SuggestionUser } from "~/types/user";
 
 interface SupportCardProps {
   user: any;
@@ -36,7 +37,7 @@ const SuggestedSupportScreen: React.FC = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [limit, SetLimit] = useState(10);
   const [page, SetPage] = useState(1);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<SuggestionUser[]>([]);
 
   const { headline, profilePic, selectedSports, loading, error } = useSelector(
     (state: RootState) => state.onboarding
@@ -46,9 +47,10 @@ const SuggestedSupportScreen: React.FC = () => {
 
   useEffect(() => {
     console.log("Selected Sports id:", selectedSports);
-    dispatch(fetchUserSuggestions({ selectedSports, limit, page })); // add limit, page for pagination while scrolling up
+    dispatch(fetchUserSuggestions({ sportsData: selectedSports, limit, page })); // add limit, page for pagination while scrolling up
     console.log("Dispatch completed...");
   }, [dispatch, page]);
+
   useEffect(() => {
     if (fetchedUsers) {
       setUsers((prevUsers) => [...prevUsers, ...fetchedUsers]);
@@ -89,9 +91,7 @@ const SuggestedSupportScreen: React.FC = () => {
       //   console.log(`${key}: ${value}`);
       // });
 
-      const response = await dispatch(
-        onboardingUser(finalOnboardingData)
-      ).unwrap();
+      await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
       // console.log(response);
 
@@ -119,11 +119,13 @@ const SuggestedSupportScreen: React.FC = () => {
       }
     }
   };
+
   const handleSelectedPlayers = (id: string) => {
     setSelectedPlayers((prev) =>
       prev.includes(id) ? prev.filter((player) => player !== id) : [...prev, id]
     );
   };
+
   const handleSkip = async () => {
     const onboardingData = {
       headline: headline,

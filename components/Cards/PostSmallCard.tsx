@@ -7,7 +7,6 @@ import {
   Text,
   NativeSyntheticEvent,
   TextLayoutEventData,
-  Pressable,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import TextScallingFalse from "../CentralText";
@@ -22,9 +21,6 @@ import { Post } from "~/types/post";
 import { formatTimeAgo } from "~/utils/formatTime";
 import Swiper from "react-native-swiper";
 import { router } from "expo-router";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "~/reduxStore";
-import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 
 const PostSmallCard = ({
   post,
@@ -33,7 +29,6 @@ const PostSmallCard = ({
   post: Post;
   highlightedHashtag?: string;
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
   // console.log("------------------------> ", post)
   const { width: screenWidth2 } = Dimensions.get("window");
   const scaleFactor = screenWidth2 / 410;
@@ -42,6 +37,10 @@ const PostSmallCard = ({
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef<Swiper>(null);
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
@@ -53,6 +52,15 @@ const PostSmallCard = ({
   const imageUrls = post.assets
     .filter((asset) => asset.url)
     .map((asset) => asset.url);
+  // console.log(imageUrls)
+
+  // const handleNext = () => {
+  //   swiperRef.current?.scrollBy(1);
+  // };
+
+  // const handlePrev = () => {
+  //   swiperRef.current?.scrollBy(-1);
+  // };
 
   const renderCaptionWithHashtags = (caption: string) => {
     return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
@@ -76,11 +84,6 @@ const PostSmallCard = ({
       }
       return word;
     });
-  };
-
-  // Handle like unlike
-  const handleLikeAction = () => {
-    dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
   };
 
   return (
@@ -108,13 +111,14 @@ const PostSmallCard = ({
           />
         </View>
         <View
-          style={{ width: "60%", flex: 1, flexDirection: "column", gap: 1.5 }}
+          style={{ width: "60%", flex: 1, flexDirection: "column", gap: 2 }}
         >
           <TextScallingFalse
             style={{
               color: "white",
               fontSize: responsiveFontSize(1.64),
               fontWeight: "500",
+              marginTop: 8,
             }}
           >
             {post.postedBy?.firstName} {post.postedBy?.lastName}
@@ -205,11 +209,7 @@ const PostSmallCard = ({
 
       <View style={{ height: 240 * scaleFactor }}>
         {imageUrls.length > 0 && (
-          <TouchableOpacity
-            onPress={() => router.push(`/post-view/${post._id}`)}
-            activeOpacity={0.8}
-            style={{ position: "absolute" }}
-          >
+          <View style={{ position: "absolute" }}>
             <Swiper
               ref={swiperRef}
               loop={true}
@@ -255,7 +255,7 @@ const PostSmallCard = ({
                 )}
               </>
             )} */}
-          </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -274,7 +274,6 @@ const PostSmallCard = ({
           <TouchableOpacity
             activeOpacity={0.7}
             style={{ flexDirection: "row" }}
-            onPress={() => router.push(`/post-details/${post._id}/likes`)}
           >
             <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
             <TextScallingFalse
@@ -307,14 +306,11 @@ const PostSmallCard = ({
             )}
           </View>
 
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push(`/post-details/${post._id}`)}
-          >
+          <TouchableOpacity activeOpacity={0.7}>
             <TextScallingFalse
               style={{
                 color: "white",
-                fontSize: responsiveFontSize(1.41),
+                fontSize: responsiveFontSize(1.25),
                 fontWeight: "300",
               }}
             >
@@ -336,53 +332,33 @@ const PostSmallCard = ({
         <View
           style={{
             width: "94%",
-            gap: "4%",
+            gap: "6%",
             backgroundColor: "#151515",
             height: 57 * scaleFactor,
-            borderBottomLeftRadius: 75,
-            borderBottomRightRadius: 50,
+            borderBottomLeftRadius: 45,
+            borderBottomRightRadius: 15,
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <View style={{ width: "1.5%" }} />
-          <TouchableOpacity
-            activeOpacity={0.5}
-            style={styles.ButtonsContainer}
-            onPress={handleLikeAction}
-          >
-            <AntDesign
-              name={post.isLiked ? "like1" : "like2"}
-              size={16 * scaleFactor}
-              color={post.isLiked ? "#FFC436" : "white"}
-            />
+          <View style={{ width: "0.8%" }} />
+          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
+            <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
             <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: responsiveFontSize(1.41),
-                fontWeight: "300",
-              }}
+              style={{ color: "white", fontSize: 10, fontWeight: "300" }}
             >
-              {post.isLiked ? "Liked" : "Like"}
+              Like
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.5}
-            style={styles.ButtonsContainer}
-            onPress={() => router.push(`/post-details/${post._id}`)}
-          >
+          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
             <Feather
               name="message-square"
-              size={16 * scaleFactor}
+              size={12 * scaleFactor}
               color="white"
             />
             <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: responsiveFontSize(1.41),
-                fontWeight: "300",
-              }}
+              style={{ color: "white", fontSize: 10, fontWeight: "300" }}
             >
               Comment
             </TextScallingFalse>
@@ -390,15 +366,11 @@ const PostSmallCard = ({
           <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
             <FontAwesome5
               name="location-arrow"
-              size={12 * scaleFactor}
+              size={10 * scaleFactor}
               color="white"
             />
             <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: responsiveFontSize(1.41),
-                fontWeight: "300",
-              }}
+              style={{ color: "white", fontSize: 10, fontWeight: "300" }}
             >
               Share
             </TextScallingFalse>

@@ -17,6 +17,7 @@ import {
 import { Ionicons, AntDesign, Feather } from "@expo/vector-icons";
 import CustomDrawer, { DrawerRefProps } from "~/components/ui/CustomDrawer";
 import nopic from "@/assets/images/nopic.jpg";
+import { useRouter } from "expo-router"; 
 
 interface DrawerContextProps {
   handleOpenDrawer: () => void;
@@ -55,7 +56,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
 
   // Dummy implementations; replace these with your actual logic
   const handleLogout = () => console.log("Logout");
-  const router = { push: (url: string) => console.log("Navigating to", url) };
+  const router = useRouter();
 
   return (
     <DrawerContext.Provider value={{ handleOpenDrawer, handleCloseDrawer }}>
@@ -178,7 +179,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 /> */}
             </View>
             <TouchableOpacity
-              onPress={handleLogout}
+              onPress={() => {router.push("/(auth)/login");}}
               className="mb-2 w-[90%] mx-auto"
             >
               <Text className="text-white text-4xl font-semibold">Logout</Text>

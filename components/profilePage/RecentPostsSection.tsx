@@ -59,9 +59,9 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({ posts, onSeeAll
   const ListFooterComponent = useCallback(() => {
     if (postsWithImages.length < 1) return null;
     return (
-        <View style={{alignItems:"center", flex:1, justifyContent:"center", flexDirection:"row", marginLeft:15}}>
+        <View style={{justifyContent:'center', flex:1, paddingLeft: 15, paddingTop: 10}}>
           <View 
-            style={{flex:1, flexDirection:"row", width: 'auto', padding: 75, marginTop:95 , marginBottom:60 ,justifyContent:'center', alignItems:'center',height:390*scaleFactor}}
+            style={{flexDirection:"row", width: 'auto', padding: 75, justifyContent:'center', alignItems:'center', height:385}}
             className="border-[#2C2C2C] border-[0.3px] rounded-[15px] bg-[#0B0B0B]"
           >
             <TouchableOpacity activeOpacity={0.3} style={{flex:1, flexDirection:"row", gap:5 ,}} onPress={onSeeAllPress}>

@@ -130,7 +130,7 @@ const Home = () => {
 
   // On progress complete show feedback and refresh
   const onProgressComplete = useCallback(() => {
-    showFeedback("Post uploaded successfully!");
+    showFeedback("Post uploaded successfully!","success");
     handleRefresh();
     // Dispatch an action to update isPostProgressOn to false
     dispatch(setPostProgressOn(false));

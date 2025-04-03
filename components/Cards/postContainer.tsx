@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   NativeSyntheticEvent,
   TextLayoutEventData,
+  Dimensions,
   BackHandler,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
@@ -27,8 +28,6 @@ import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import CommentModal from "../feedPage/CommentModal";
-import { TextInput } from "react-native";
-import { Colors } from "~/constants/Colors";
 import StickyInput from "../ui/StickyInput";
 import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 
@@ -37,6 +36,9 @@ type TaggedUser = {
   username: string;
   type: string;
 };
+export interface PostContainerHandles {
+  closeBottomSheet: (params: { type: string }) => void;
+}
 
 interface PostContainerProps {
   item: Post;
@@ -44,10 +46,6 @@ interface PostContainerProps {
   isFeedPage?: boolean;
   isMyActivity?: boolean;
   handleBottomSheet?: (state: boolean) => void;
-}
-
-export interface PostContainerHandles {
-  closeBottomSheet: (params: { type: string }) => void;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(

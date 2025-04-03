@@ -4,9 +4,9 @@ import { getUserId } from "./secureStore";
 const SOCKET_SERVER_URL = process.env.EXPO_PUBLIC_SOCKET_URL; // Your backend WebSocket URL
 
 // Module-level variable to hold the socket instance
-let socket: Socket | null = null;
+// let socket: Socket | null = null;
 
-export const connectSocket = async (): Promise<Socket | null> => {
+export const connectSocket = async () => {
   const userId = await getUserId("user_id"); // Retrieve user ID from secure store
 
   if (!userId) {
@@ -31,10 +31,10 @@ export const connectSocket = async (): Promise<Socket | null> => {
   return socket;
 };
 
-export const disconnectSocket = (): void => {
-  if (socket) {
-    socket.disconnect();
-    console.log("✅ Socket disconnected");
-    socket = null;
-  }
-};
+// export const disconnectSocket = (): void => {
+//   if (socket) {
+//     socket.disconnect();
+//     console.log("✅ Socket disconnected");
+//     socket = null;
+//   }
+// };

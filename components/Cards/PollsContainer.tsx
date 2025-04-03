@@ -57,6 +57,12 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
       }
     }, [options, mode]);
 
+    // useEffect(()=>{
+    //  if (localOptions.length > 1) {
+    //   set
+    //  }
+    // })
+
     const addOption = useCallback(() => {
       if (localOptions.length < 4) {
         const newOptions = [...localOptions, ""];

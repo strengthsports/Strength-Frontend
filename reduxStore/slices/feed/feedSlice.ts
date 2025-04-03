@@ -249,6 +249,69 @@ export const postComment = createAsyncThunk(
 
 // Delete Comment
 
+// Vote in poll
+export const voteInPoll = createAsyncThunk(
+  "feed/voteInPoll",
+  async (
+    {
+      targetId,
+      targetType,
+      selectedOption,
+    }: { targetId: string; targetType: string; selectedOption: number },
+    { getState, dispatch, rejectWithValue }
+  ) => {
+    console.log("Called");
+    const state = getState() as RootState;
+    let post;
+    let updatedPost;
+    if (targetType === "Post") {
+      post = selectPostById(state, targetId);
+      // Optimistic update
+      updatedPost = {
+        ...post,
+        isVoted: true,
+        votedOption: selectedOption,
+      };
+
+      // Update Redux state immediately
+      dispatch(updatePost(updatedPost));
+    }
+
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Authorization token not found");
+      console.log("Token : ", token);
+
+      // Actual API call
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/vote`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ targetId, targetType, selectedOption }),
+        }
+      );
+
+      console.log(response);
+      if (!response.ok) throw new Error("Failed to vote in the poll !");
+
+      return updatedPost;
+    } catch (error: any) {
+      // Rollback on error
+      if (targetType === "Post" && post) {
+        dispatch(updatePost(post));
+      }
+      console.log(error);
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to vote in the poll"
+      );
+    }
+  }
+);
+
 const feedSlice = createSlice({
   name: "feed",
   initialState,

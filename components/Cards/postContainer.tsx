@@ -21,7 +21,11 @@ import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
-import { postComment, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import {
+  postComment,
+  toggleLike,
+  voteInPoll,
+} from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
@@ -227,8 +231,14 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     };
 
     // Handle vote
-    const handleVote = () => {
-      console.log("Voted");
+    const handleVote = async (optionIndex: number) => {
+      await dispatch(
+        voteInPoll({
+          targetId: item._id,
+          targetType: "Post",
+          selectedOption: optionIndex,
+        })
+      );
     };
 
     // Set slider active index
@@ -423,8 +433,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 options={item.poll.options}
                 mode="view"
                 voteCounts={item.poll.voteCounts}
-                userVoted={true}
-                selectedOption={0}
+                userVoted={item.isVoted}
+                selectedOption={item.votedOption}
                 onVote={handleVote}
               />
             )}

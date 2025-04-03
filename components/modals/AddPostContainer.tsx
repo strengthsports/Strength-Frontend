@@ -37,6 +37,7 @@ import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
+import { showFeedback } from "~/utils/feedbackToast";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -146,11 +147,16 @@ export default function AddPostContainer({
     setActiveIndex(index);
   };
 
-  // Memoize derived values
-  const isPostButtonEnabled = useMemo(
-    () => postText.trim() || pickedImageUris.length > 0,
-    [postText, pickedImageUris.length]
-  );
+  const isPostButtonEnabled = useMemo(() => {
+    // Count non-empty options
+    const validOptionsCount = newPollOptions.filter(
+      (opt) => opt.trim() !== ""
+    ).length;
+
+    return (
+      postText.trim() || pickedImageUris.length > 0 || validOptionsCount >= 2 // At least 2 valid options required
+    );
+  }, [postText, pickedImageUris.length, newPollOptions]);
 
   // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(() => {
@@ -177,6 +183,7 @@ export default function AddPostContainer({
       formData.append("taggedUsers", JSON.stringify([]));
       // For poll
       const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
+      console.log("Valid Options : ", validOptions);
       validOptions.forEach((option) => {
         formData.append("options", JSON.stringify(option));
       });
@@ -190,17 +197,17 @@ export default function AddPostContainer({
         })
         .catch((error) => {
           console.error("Failed to add post:", error);
-          alert("Failed to add post. Please try again.");
+          showFeedback("Failed to add post. Please try again.");
         });
     } catch (error) {
       console.error("Failed to add post:", error);
-      alert("Failed to add post. Please try again.");
     }
   }, [
     addPost,
     isPostButtonEnabled,
     pickedImageUris,
     postText,
+    newPollOptions,
     router,
     selectedAspectRatio,
     dispatch,

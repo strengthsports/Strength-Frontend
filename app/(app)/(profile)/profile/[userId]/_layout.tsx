@@ -254,7 +254,7 @@ const ProfileLayout = () => {
           </View>
 
           {/* profile pic and cover image */}
-          <View style={{ alignItems: "flex-end", height: 135 * scaleFactor }}>
+          <View style={{ alignItems: "flex-end", height: 137 * scaleFactor }}>
             <TouchableOpacity
               className="w-full h-full"
               activeOpacity={0.9}

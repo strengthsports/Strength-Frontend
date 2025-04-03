@@ -141,7 +141,7 @@ const index = () => {
             borderColor: "white",
           }}
         />
-        <View style={{ paddingVertical: 17 }}>
+        <View style={{ paddingVertical: 17, width: 220}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 18, fontWeight: "600" }}
           >

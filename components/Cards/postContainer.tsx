@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  forwardRef,
-  useImperativeHandle,
-  useMemo,
-} from "react";
+import React, { useState, useRef, forwardRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -65,6 +58,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
+
     const { followUser, unFollowUser } = useFollow();
 
     // State for individual post

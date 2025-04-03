@@ -147,18 +147,23 @@ export default function AddPostContainer({
     setActiveIndex(index);
   };
 
+  // Conditions for posting content
   const isPostButtonEnabled = useMemo(() => {
-    // Count non-empty options
+    // Count non-empty poll options
     const validOptionsCount = newPollOptions.filter(
       (opt) => opt.trim() !== ""
     ).length;
 
-    return (
-      postText.trim() ||
-      pickedImageUris.length > 0 ||
-      (showPollInput && validOptionsCount >= 2) // At least 2 valid options required
-    );
-  }, [postText, pickedImageUris.length, newPollOptions]);
+    // Always require valid poll when poll input is shown
+    const pollValidation =
+      !showPollInput || (showPollInput && validOptionsCount >= 2);
+
+    // Enable button if:
+    // 1. There's either caption OR images
+    // AND
+    // 2. If poll is shown, it must be valid
+    return (postText.trim() || pickedImageUris.length > 0) && pollValidation;
+  }, [postText, pickedImageUris.length, showPollInput, newPollOptions]);
 
   // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(() => {
@@ -462,11 +467,14 @@ export default function AddPostContainer({
             <TouchableOpacity activeOpacity={0.5} className="p-[5px] w-[35px]">
               <TagsIcon />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handlePickImageOrAddMore}>
+            <TouchableOpacity
+              onPress={handlePickImageOrAddMore}
+              disabled={showPollInput}
+            >
               <MaterialCommunityIcons
                 name="image-outline"
                 size={24}
-                color={Colors.themeColor}
+                color={showPollInput ? "#737373" : Colors.themeColor}
               />
               {pickedImageUris.length > 0 && (
                 <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">

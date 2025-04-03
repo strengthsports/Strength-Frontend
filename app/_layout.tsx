@@ -25,6 +25,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Poppins: require("../assets/fonts/Poppins-Regular.ttf"),
+    Inter: require("../assets/fonts/Inter-Regular.ttf"),
     Montserrat: require("../assets/fonts/Montserrat-Bold.ttf"),
   });
 
@@ -41,7 +43,6 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
-  
 
   return (
     <GestureHandlerRootView>

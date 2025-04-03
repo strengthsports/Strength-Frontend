@@ -18,7 +18,7 @@ import { ProfileContext } from "./_layout";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { TeamEntry } from "~/app/(app)/(tabs)/profile";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -30,6 +30,7 @@ import {
 const Overview = () => {
   const params = useLocalSearchParams();
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   const fetchedUserId = useMemo(() => {
     return params.userId
@@ -146,7 +147,11 @@ const Overview = () => {
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
                 onPress={() => router.push("/(app)/(profile)/edit-overview")}
               >
-                <Feather name="chevron-right" size={20 * scaleFactor} color="#CCCCCC" />
+                <Feather
+                  name="chevron-right"
+                  size={20 * scaleFactor}
+                  color="#CCCCCC"
+                />
               </TouchableOpacity>
             </TabsList>
           </ScrollView>
@@ -190,7 +195,11 @@ const Overview = () => {
                     <View className="flex-row justify-between items-center mb-3">
                       <TextScallingFalse
                         className="text-[#8A8A8A]"
-                        style={{fontFamily: "Montserrat", fontWeight:700, fontSize: responsiveFontSize(1.8),}}
+                        style={{
+                          fontFamily: "Montserrat",
+                          fontWeight: 700,
+                          fontSize: responsiveFontSize(1.8),
+                        }}
                       >
                         CURRENT TEAMS
                       </TextScallingFalse>

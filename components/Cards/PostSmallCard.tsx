@@ -1,5 +1,5 @@
 import { StyleSheet, View, Image, Dimensions, TouchableOpacity, Text, NativeSyntheticEvent, TextLayoutEventData} from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import TextScallingFalse from '../CentralText'
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { AntDesign, Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
@@ -16,7 +16,6 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
 
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showSeeMore, setShowSeeMore] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef<Swiper>(null);
         
@@ -24,12 +23,12 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
     setIsExpanded(!isExpanded);
   };
 
-  const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-    const { lines } = e.nativeEvent;
-    const shouldShowSeeMore =
-      lines.length > 2 || (lines as any).some((line: any) => line.truncated);
-    setShowSeeMore(shouldShowSeeMore);
-  };
+  const maxCaptionLength = 40;
+  const captionText = post.caption || '';
+  const needsTruncation = captionText.length > maxCaptionLength;
+  const truncatedText = needsTruncation ? 
+    `${captionText.substring(0, maxCaptionLength).trim()}... ` : 
+    captionText;
 
   const imageUrls = post.assets.filter(asset => asset.url).map(asset => asset.url);
   // console.log(imageUrls)
@@ -115,24 +114,20 @@ const PostSmallCard = ({ post, highlightedHashtag }: { post: Post; highlightedHa
         </View> */}
 
         
-        <View className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515]`}>
+        <View className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515] flex flex-row`}>
           <MaterialIcons className="absolute right-5 top-2" name="more-horiz" size={18} color="#a3a3a3" />
-          <TextScallingFalse className=" pl-10 pr-6 pt-10 text-sm text-white"
-            numberOfLines={isExpanded ? undefined : 1}
-            ellipsizeMode="tail"
-            onTextLayout={handleTextLayout}
+          <TextScallingFalse className=" pl-8 pt-10 pb-2 text-sm text-white"
           >
-            {renderCaptionWithHashtags(post.caption)}
+            {renderCaptionWithHashtags(isExpanded ? captionText : truncatedText)}
+            {needsTruncation && (
+              <TextScallingFalse
+                onPress={handleToggle}
+                className="text-[#808080] font-light text-base"
+              >
+                {isExpanded ? ' see less' : ' see more'}
+              </TextScallingFalse>
+            )}
           </TextScallingFalse>
-          {showSeeMore && !isExpanded && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setIsExpanded(true)}
-              className="flex items-end mr-6"
-            >
-              <TextScallingFalse style={styles.seeMore}>See more</TextScallingFalse>
-            </TouchableOpacity>
-          )}
         </View>
         
 

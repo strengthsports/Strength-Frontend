@@ -124,6 +124,7 @@ export default function AddPostContainer({
   const inputRef = useRef<TextInput>(null);
   const [inputHeight, setInputHeight] = useState(40);
   const [showPollInput, setShowPollInput] = useState(false);
+  const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
 
   // Improved regex pattern for tag detection
   const parseTags = (text: string) => {
@@ -174,6 +175,11 @@ export default function AddPostContainer({
 
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
       formData.append("taggedUsers", JSON.stringify([]));
+      // For poll
+      const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
+      validOptions.forEach((option) => {
+        formData.append("options", JSON.stringify(option));
+      });
 
       setPostText("");
       setPickedImageUris([]);
@@ -282,6 +288,16 @@ export default function AddPostContainer({
     setIsImageRatioModalVisible(false);
   }, []);
 
+  const handleOptionsChange = (updatedOptions: string[]) => {
+    setNewPollOptions(updatedOptions);
+  };
+
+  // Handle close poll
+  const handleClosePoll = () => {
+    setShowPollInput(false);
+    setNewPollOptions(["", ""]);
+  };
+
   // Navigate back handler
   const navigateBack = () => {
     if (postText == "" && pickedImageUris.length === 0) {
@@ -380,7 +396,12 @@ export default function AddPostContainer({
 
           {/* Only render PollsContainer when polls is selected */}
           {showPollInput && (
-            <PollsContainer onClose={() => setShowPollInput(false)} />
+            <PollsContainer
+              onClose={handleClosePoll}
+              mode="create"
+              options={newPollOptions}
+              onOptionsChange={handleOptionsChange}
+            />
           )}
 
           {/* Only render CustomImageSlider when there are images */}

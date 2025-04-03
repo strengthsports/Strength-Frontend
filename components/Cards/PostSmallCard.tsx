@@ -182,14 +182,19 @@ const PostSmallCard = ({
           size={18}
           color="#a3a3a3"
         />
-        <TextScallingFalse className=" pl-10 pr-6 pt-10 pb-3 text-sm text-white ">
+        <TextScallingFalse
+          className=" pl-10 pr-6 pt-10 text-sm text-white"
+          numberOfLines={isExpanded ? undefined : 1}
+          ellipsizeMode="tail"
+          onTextLayout={handleTextLayout}
+        >
           {renderCaptionWithHashtags(post.caption)}
         </TextScallingFalse>
         {showSeeMore && !isExpanded && (
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => setIsExpanded(true)}
-            className="mt-1"
+            className="flex items-end mr-6"
           >
             <TextScallingFalse style={styles.seeMore}>
               See more

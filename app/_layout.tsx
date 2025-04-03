@@ -27,6 +27,7 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     Poppins: require("../assets/fonts/Poppins-Regular.ttf"),
     Inter: require("../assets/fonts/Inter-Regular.ttf"),
+    Montserrat: require("../assets/fonts/Montserrat-Bold.ttf"),
   });
 
   useEffect(() => {
@@ -42,7 +43,6 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
-  
 
   return (
     <GestureHandlerRootView>

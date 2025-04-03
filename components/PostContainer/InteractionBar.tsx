@@ -4,6 +4,7 @@ import { RelativePathString, useRouter } from "expo-router";
 import { AntDesign, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
+import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 
 const interactionBtn = `flex flex-row justify-between items-center gap-2 bg-black px-4 py-[6px] rounded-3xl`;
 const shadowStyle = Platform.select({
@@ -73,16 +74,53 @@ const InteractionBar = ({
 
         {isPostContainer && assetsCount && assetsCount > 1 ? (
           <View className="flex-row justify-center">
-            {Array.from({ length: assetsCount }).map((_, i) => (
-              <View
-                key={`dot-${i}`}
-                className={
-                  i === activeSlideIndex
-                    ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                    : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-                }
-              />
-            ))}
+            <AnimatedDotsCarousel
+              length={assetsCount}
+              currentIndex={activeSlideIndex as number}
+              maxIndicators={2}
+              interpolateOpacityAndColor={true}
+              activeIndicatorConfig={{
+                color: "#FFFFFF",
+                margin: 3,
+                opacity: 1,
+                size: 6,
+              }}
+              inactiveIndicatorConfig={{
+                color: "#FFFFFF",
+                margin: 3,
+                opacity: 0.5,
+                size: 6,
+              }}
+              decreasingDots={[
+                {
+                  config: {
+                    color: "#FFFFFF",
+                    margin: 3,
+                    opacity: 0.5,
+                    size: 5,
+                  },
+                  quantity: 1,
+                },
+                {
+                  config: {
+                    color: "#FFFFFF",
+                    margin: 3,
+                    opacity: 0.5,
+                    size: 4,
+                  },
+                  quantity: 1,
+                },
+                {
+                  config: {
+                    color: "#FFFFFF",
+                    margin: 3,
+                    opacity: 0.5,
+                    size: 3,
+                  },
+                  quantity: 1,
+                },
+              ]}
+            />
           </View>
         ) : (
           <View />

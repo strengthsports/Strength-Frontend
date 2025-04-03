@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   drawerContainer: {
     position: "absolute",
     left: 0,
-    top: 30,
+    top: 0,
     bottom: 0,
     width: DRAWER_WIDTH,
     backgroundColor: "#fff",

@@ -226,14 +226,14 @@ const EditProfile = () => {
           label: "Username",
           placeholder: "@username",
           description:
-            "Help players discover your account by using the name that you're known by: either your name, nickname, or business name.",
+            "Your username is your unique identity on Strength—make it memorable, recognizable, and true to your sports journey!.",
         };
       case "headline":
         return {
           label: "Headline",
           placeholder: "Enter your headline",
           description:
-            "If you are changing something then only press done else press back otherwise by default this field considers itself blank.",
+            "Your headline is the perfect way to showcase your identity in sports—keep it concise and impactful (max 50 characters) to let others instantly know who you are!.",
         };
       case "dateOfBirth":
         return {
@@ -1079,19 +1079,15 @@ const EditProfile = () => {
 
         {/* Edit Modal */}
         <Modal visible={isModalVisible} transparent onRequestClose={closeModal}>
-          <TouchableOpacity
-            className="flex-1"
-            activeOpacity={1}
-            onPress={closeModal}
-          >
-            <View className="bg-black h-full">
+          <View className="flex-1">
+            <SafeAreaView className="bg-black h-full">
               {/* Modal Header */}
-              <View className="flex-row justify-between items-center p-5 border-b border-gray-800">
+              <View className="flex-row justify-between items-center p-4 border-b border-gray-800">
                 <View className="flex-row items-center">
-                  <TouchableOpacity onPress={closeModal}>
+                  <TouchableOpacity className="w-[50px] h-[40px] justify-center" onPress={closeModal}>
                     <AntDesign name="arrowleft" size={28} color="white" />
                   </TouchableOpacity>
-                  <Text className="text-white text-5xl font-medium ml-6">
+                  <Text className="text-white text-5xl font-medium">
                     {label}
                   </Text>
                 </View>
@@ -1193,19 +1189,24 @@ const EditProfile = () => {
                 ) : (
                   <>
                     <Text className="text-gray-500 text-xl">{label}</Text>
-                    <View className="flex-row border-b border-white">
+                    <View className="flex-row border-b border-white h-[50px]">
                       <TextInput
-                        value={inputValue}
-                        onChangeText={(text) => {
-                          setInputValue(text);
-                          if (picType === "address") {
-                            setAddressPickup(text); //sync addressPickup with input
-                          }
-                        }}
-                        placeholder={placeholder}
-                        placeholderTextColor="gray"
-                        className="text-white text-4xl flex-1 pl-0 pb-0"
-                      />
+  value={inputValue}
+  onChangeText={(text) => {
+    if (picType === "headline" && text.length > 50) {
+      // Prevent exceeding the limit
+      return;
+    }
+    setInputValue(text);
+    if (picType === "address") {
+      setAddressPickup(text); //sync addressPickup with input
+    }
+  }}
+  placeholder={placeholder}
+  placeholderTextColor="gray"
+  className="text-white text-4xl flex-1 pl-0 pb-0 bg-red-500 w-80%"
+  maxLength={picType === "headline" ? 50 : undefined} // Apply maxLength conditionally
+/>
                     </View>
                   </>
                 )}
@@ -1252,8 +1253,8 @@ const EditProfile = () => {
                   ""
                 )}
               </View>
-            </View>
-          </TouchableOpacity>
+            </SafeAreaView>
+          </View>
         </Modal>
       </PageThemeView>
     </SafeAreaView>

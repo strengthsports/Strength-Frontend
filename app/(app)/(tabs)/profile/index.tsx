@@ -145,12 +145,8 @@ const Overview = () => {
                         </Text>
                       </View>
                     ))}
-                    <TouchableOpacity className="absolute bottom-4 right-5">
-                      <Feather
-                        name="edit"
-                        size={18 * scaleFactor}
-                        color="#717171"
-                      />
+                    <TouchableOpacity className="absolute bottom-8 right-5">
+                      <EditIcon />
                     </TouchableOpacity>
                   </View>
                 )}
@@ -159,32 +155,23 @@ const Overview = () => {
                   <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-xl mt-2">
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
-                      <TextScallingFalse className="text-[#808080] font-bold">
+                      <TextScallingFalse
+                        className="text-[#8A8A8A] "
+                        style={{
+                          fontFamily: "Montserrat",
+                          fontWeight: 700,
+                          fontSize: responsiveFontSize(1.8),
+                        }}
+                      >
                         CURRENT TEAMS
                       </TextScallingFalse>
                       <View className="flex items-center justify-center flex-row gap-2">
                         <TouchableOpacity
-                          className="flex items-center justify-center"
-                          style={{
-                            width: 36 * scaleFactor,
-                            height: 36 * scaleFactor,
-                          }}
                           onPress={() =>
                             router.push("/(app)/(profile)/edit-overview")
                           }
                         >
-                          <Feather
-                            name="plus"
-                            size={20 * scaleFactor}
-                            color="#717171"
-                          />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                          <Feather
-                            name="edit"
-                            size={18 * scaleFactor}
-                            color="#717171"
-                          />
+                          <AddIcon />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -283,7 +270,7 @@ const Overview = () => {
                 router.push("/(app)/(profile)/edit-overview?about=true")
               }
             >
-              <Feather name="edit" size={18 * scaleFactor} color="#717171" />
+              <EditIcon />
             </TouchableOpacity>
           </View>
         </View>
@@ -398,8 +385,8 @@ const styles = StyleSheet.create({
 });
 
 const textColor = "#FFFFFF";
-const secondaryTextColor = "#A9A9A9";
-const dividerColor = "#A9A9A9";
+const secondaryTextColor = "#B2B2B2";
+const dividerColor = "#454545";
 
 const month = [
   "Jan",
@@ -416,7 +403,7 @@ const month = [
   "Dec",
 ];
 export const TeamEntry = ({ team }: any) => {
-  console.log(team);
+  // console.log(team);
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
       {/* Team Logo */}
@@ -427,14 +414,16 @@ export const TeamEntry = ({ team }: any) => {
           width: 60 * scaleFactor,
           height: 60 * scaleFactor,
           borderRadius: 100,
+          borderWidth: 1.5,
+          borderColor: "#1C1C1C",
           // marginRight: 10,
           marginBottom: 18,
         }}
       />
       {/* Team Details */}
       <View className="flex flex-col ml-5 items-start justify-between gap-2 py-3">
-        <View className="flex flex-col gap-0.5">
-          <Text
+        <View className="flex flex-col">
+          <TextScallingFalse
             style={{
               color: textColor,
               fontSize: 16,
@@ -443,17 +432,17 @@ export const TeamEntry = ({ team }: any) => {
           >
             {team.team.name}
             {/* Kolkata Knight Riders */}
-          </Text>
-          <Text
+          </TextScallingFalse>
+          <TextScallingFalse
             style={{
               color: secondaryTextColor,
-              fontSize: 10,
-              fontWeight: "400", // Regular
+              fontSize: 12,
+              fontWeight: "300", // Regular
             }}
           >
             {team.location || "Location Not Available"}
             {/* Kolkata, West Bengal, India */}
-          </Text>
+          </TextScallingFalse>
         </View>
         <View
           style={{
@@ -472,10 +461,14 @@ export const TeamEntry = ({ team }: any) => {
               alignItems: "flex-start",
             }}
           >
-            <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>
+            <TextScallingFalse
+              style={{ color: textColor, fontSize: 12, fontWeight: "700" }}
+            >
               Joined:{" "}
-            </Text>
-            <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
+            </TextScallingFalse>
+            <TextScallingFalse
+              style={{ color: secondaryTextColor, fontSize: 12 }}
+            >
               {team.creationDate || team.joiningDate
                 ? `${
                     month[
@@ -485,7 +478,7 @@ export const TeamEntry = ({ team }: any) => {
                     team.creationDate || team.joiningDate
                   ).getFullYear()}`
                 : "NA"}
-            </Text>
+            </TextScallingFalse>
           </View>
           <View
             style={{
@@ -502,12 +495,16 @@ export const TeamEntry = ({ team }: any) => {
               alignItems: "flex-start",
             }}
           >
-            <Text style={{ color: textColor, fontSize: 12, fontWeight: "700" }}>
+            <TextScallingFalse
+              style={{ color: textColor, fontSize: 12, fontWeight: "700" }}
+            >
               Role:{" "}
-            </Text>
-            <Text style={{ color: secondaryTextColor, fontSize: 12 }}>
+            </TextScallingFalse>
+            <TextScallingFalse
+              style={{ color: secondaryTextColor, fontSize: 12 }}
+            >
               {team.role || "NA"}
-            </Text>
+            </TextScallingFalse>
           </View>
         </View>
       </View>

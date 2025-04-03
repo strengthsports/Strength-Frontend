@@ -270,7 +270,7 @@ export const voteInPoll = createAsyncThunk(
       updatedPost = {
         ...post,
         isVoted: true,
-        votedOption: selectedOption,
+        votedOption: Number(selectedOption),
       };
 
       // Update Redux state immediately

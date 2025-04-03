@@ -154,7 +154,9 @@ export default function AddPostContainer({
     ).length;
 
     return (
-      postText.trim() || pickedImageUris.length > 0 || validOptionsCount >= 2 // At least 2 valid options required
+      postText.trim() ||
+      pickedImageUris.length > 0 ||
+      (showPollInput && validOptionsCount >= 2) // At least 2 valid options required
     );
   }, [postText, pickedImageUris.length, newPollOptions]);
 

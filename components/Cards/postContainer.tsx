@@ -434,7 +434,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 mode="view"
                 voteCounts={item.poll.voteCounts}
                 userVoted={item.isVoted}
-                selectedOption={item.votedOption}
+                selectedOption={Number(item.votedOption)}
                 onVote={handleVote}
               />
             )}

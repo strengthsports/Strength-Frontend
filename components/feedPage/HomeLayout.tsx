@@ -76,7 +76,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
     "Share your sports moment...",
   ];
 
-  // Select a random message each time the component mounts
+
   const [message, setMessage] = React.useState("");
 
   useEffect(() => {
@@ -118,26 +118,26 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
       const teamsList = fetchedTeamsData.createdTeams
         .concat(fetchedTeamsData.joinedTeams)
         .map((teamEntry) => {
-          // Check if the team exists before accessing its properties
+         
           if (teamEntry.team) {
             return {
               name: teamEntry.team.name,
-              url: teamEntry.team.logo?.url, // Add optional chaining to avoid errors if 'logo' is null
+              url: teamEntry.team.logo?.url, 
               id: teamEntry.team._id,
             };
           } else {
-            // Return null or some fallback if the team is null
+            
             return null;
           }
         })
-        .filter((team) => team !== null); // Filter out any null entries
+        .filter((team) => team !== null);
 
-      console.log(teamsList); // Logs an array of team names and URLs
+      console.log(teamsList); 
 
       setTeamDetails(teamsList);
     } catch (error) {
       console.error("Error fetching teams:", error);
-      // Optionally, handle the error (e.g., show an error message or fallback UI)
+    
     }
   };
   useEffect(() => {

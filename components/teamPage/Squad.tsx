@@ -71,7 +71,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       </Text>
       <View className="flex flex-row flex-wrap">
         {members.length > 0 ? (
-          members.map((member: any) => {
+          members.map((member, index) => {
             const user = member.user;
             return (
               <View
@@ -127,40 +127,45 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   );
 
   return (
-    <ScrollView className="flex-1 max-w-screen-lg px-4">
-      <View className="flex flex-row justify-between items-center px-4 mt-2">
-        <Text
-          style={{
-            fontFamily: "Sansation-Regular",
-            color: "white",
-            fontSize: 24,
-          }}
-        ></Text>
-        <Icon name="dots-three-horizontal" size={30} color="white" />
-      </View>
+<ScrollView style={{ flex: 1, maxWidth: "100%", paddingHorizontal: 16 }}>
+  {/* Header Section */}
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 8 }}>
+    <Text
+      style={{
+        fontFamily: "Sansation-Regular",
+        color: "white",
+        fontSize: 24,
+      }}
+    ></Text>
+    <Icon name="dots-three-horizontal" size={30} color="white" />
+  </View>
 
-      {teamDetails?.sport?.playerTypes.map((playerType: any) =>
-        renderMemberSection(playerType.name, categorizeMembers(playerType.name))
-      )}
+  {/* Render Player Sections */}
+  {teamDetails?.sport?.playerTypes?.map((playerType: any) =>
+    renderMemberSection(playerType.name, categorizeMembers(playerType.name))
+  )}
 
-      <AddMembersModal
-        onInvite={(selectedUsers: any) => {
-          console.log("Inviting users:", selectedUsers);
-          setShowMembersModal(false);
-        }}
-        visible={showMembersModal}
-        onClose={() => setShowMembersModal(false)}
-        buttonName="Invite"
-        multiselect={true}
-        player={teamDetails.members || []}
-      />
+  {/* Add Members Modal */}
+  <AddMembersModal
+    visible={showMembersModal}
+    buttonName="Invite"
+    multiselect={true}
+    player={teamDetails?.members || []}
+    onInvite={(selectedUsers: any) => {
+      console.log("Inviting users:", selectedUsers);
+      setShowMembersModal(false);
+    }}
+    onClose={() => setShowMembersModal(false)}
+  />
 
-      <DownwardDrawer
-        visible={showDownwardDrawer}
-        onClose={() => setShowDownwardDrawer(false)}
-        member={selectedMember}
-      />
-    </ScrollView>
+  {/* Downward Drawer */}
+  <DownwardDrawer
+    visible={showDownwardDrawer}
+    onClose={() => setShowDownwardDrawer(false)}
+    member={selectedMember}
+  />
+</ScrollView>
+
   );
 };
 

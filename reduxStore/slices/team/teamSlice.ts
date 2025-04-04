@@ -128,7 +128,7 @@ export const fetchTeamDetails = createAsyncThunk<
       return rejectWithValue(data.message || "Something went wrong!");
     }
     console.log("data.data--",data.data);
-    return data.data; // Return team data
+    return data.data; 
   } catch (error: any) {
     return rejectWithValue(error.message || "Network error!");
   }
@@ -195,10 +195,6 @@ export const deleteTeam = createAsyncThunk<
   }
 });
 
-
-
-
-
 // Update the fetchUserSuggestion action
 export const fetchUserSuggestion = createAsyncThunk<
   any,
@@ -242,6 +238,55 @@ export const fetchUserSuggestion = createAsyncThunk<
     return rejectWithValue(error.message || "Network error!");
   }
 });
+
+
+
+
+//Edit team S
+export const updateTeam = createAsyncThunk<
+  Team,
+  { teamId: string; teamData: Partial<TeamPayload> },
+  { rejectValue: string }
+>("team/updateTeam", async ({ teamId, teamData }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+
+    const formData = new FormData();
+    
+    if (teamData.name) formData.append("name", teamData.name);
+    if (teamData.sport) formData.append("sport", JSON.stringify(teamData.sport));
+    if (teamData.establishedOn) {
+      const datee = convertToDate(teamData.establishedOn);
+      formData.append("establishedOn", datee);
+    }
+    if (teamData.gender) formData.append("gender", teamData.gender);
+    if (teamData.description) formData.append("description", teamData.description);
+    if (teamData.address) formData.append("address", JSON.stringify(teamData.address));
+    if (teamData.logo) formData.append("assets", teamData.logo);
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/${teamId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to update team");
+    }
+
+    return data;
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Network error!");
+  }
+});
+
 
 
 
@@ -309,7 +354,7 @@ const teamSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // Handle fetchUser
+     
       // Handle fetchUserSuggestion
       .addCase(fetchUserSuggestion.pending, (state) => {
         state.loading = true;
@@ -323,7 +368,22 @@ const teamSlice = createSlice({
       .addCase(fetchUserSuggestion.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+
+      //Edit Team
+      .addCase(updateTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTeam.fulfilled, (state, action) => {
+        state.loading = false;
+        state.team = action.payload;
+      })
+      .addCase(updateTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
+      
   },
 });
 

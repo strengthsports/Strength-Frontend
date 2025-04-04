@@ -96,7 +96,7 @@ const TeamPage: React.FC = () => {
 
   return (
     
-      <CombinedDrawer menuItems={menuItems} teamId={teamId}>
+      <CombinedDrawer menuItems={menuItems} teamId={teamId} >
         <TeamCard
           teamName={teamDetails?.name || "Loading..."}
           sportCategory={teamDetails?.sport?.name || "Loading..."}

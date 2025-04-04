@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect, useState} from "react";
+import React, { useMemo, useCallback, useEffect, useState } from "react";
 import {
   Animated,
   TouchableOpacity,
@@ -15,29 +15,26 @@ import ProfileIcon from "~/components/SvgIcons/navbar/ProfileIcon";
 import { useScroll } from "@/context/ScrollContext";
 import TextScallingFalse from "../CentralText";
 import eventBus from "~/utils/eventBus";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
+import { resetCount } from "~/reduxStore/slices/notification/notificationSlice";
 
 const BOTTOM_NAVBAR_HEIGHT = Platform.OS === "ios" ? 80 : 60;
-interface CustomBottomNavbarProps {
-  hasNewNotification: boolean;
-  setHasNewNotification: (value: boolean) => void;
-  notificationCount: number;
-  setNotificationCount: (value: number) => void;
-}
-
-const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
-  hasNewNotification,
-  setHasNewNotification,
-  notificationCount,
-  setNotificationCount,
-}) => {
+const CustomBottomNavbar = () => {
   const router = useRouter();
   const segments = useSegments();
+  const dispatch = useDispatch<AppDispatch>();
+  const { notificationCount } = useSelector(
+    (state: RootState) => state.notification
+  );
   const { scrollY } = useScroll();
   const [activeRoute, setActiveRoute] = useState("/(app)/(tabs)/home");
 
   // Compute the active route only once.
   useEffect(() => {
-    setActiveRoute(segments.length ? "/" + segments.join("/") : "/(app)/(tabs)/home");
+    setActiveRoute(
+      segments.length ? "/" + segments.join("/") : "/(app)/(tabs)/home"
+    );
   }, [segments]);
   const computedActiveRoute = useMemo(() => activeRoute, [activeRoute]);
 
@@ -90,8 +87,7 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
       }) =>
       () => {
         if (item.label === "Notification") {
-          setHasNewNotification(false);
-          setNotificationCount(0);
+          dispatch(resetCount());
         }
         if (item.label === "Home" && computedActiveRoute.includes(item.route)) {
           // If already on Home, trigger scroll-to-top event.
@@ -100,9 +96,8 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
         }
         router.push(item.route as RelativePathString);
       },
-    [computedActiveRoute, router, setHasNewNotification, setNotificationCount]
+    [computedActiveRoute, router, dispatch]
   );
-
 
   return (
     <View
@@ -126,18 +121,16 @@ const CustomBottomNavbar: React.FC<CustomBottomNavbarProps> = ({
           >
             <View style={styles.iconContainer}>
               <item.Icon color={iconColor} />
-              {item.label === "Notification" && hasNewNotification && (
+              {item.label === "Notification" && notificationCount > 0 && (
                 <View style={styles.notificationDot}>
-                  {notificationCount > 0 && (
-                    <TextScallingFalse style={styles.notificationText}>
-                      {notificationCount}
-                    </TextScallingFalse>
-                  )}
+                  <TextScallingFalse style={styles.notificationText}>
+                    {notificationCount}
+                  </TextScallingFalse>
                 </View>
               )}
-               <TextScallingFalse style={[styles.label, { color: iconColor }]}>
-              {item.label}
-            </TextScallingFalse>
+              <TextScallingFalse style={[styles.label, { color: iconColor }]}>
+                {item.label}
+              </TextScallingFalse>
             </View>
           </TouchableOpacity>
         );
@@ -162,8 +155,8 @@ const styles = StyleSheet.create({
   },
   navItem: {
     alignItems: "center",
-    borderRadius: '35%',
-    height: '100%',
+    borderRadius: "35%",
+    height: "100%",
     flex: 1,
   },
   iconContainer: {
@@ -173,14 +166,15 @@ const styles = StyleSheet.create({
   },
   notificationDot: {
     position: "absolute",
-    top: -2,
-    right: -4,
-    width: 12,
-    height: 12,
-    borderRadius: Platform.OS === "ios" ? 6 : 12, // Using numbers instead of "100%"
+    top: -4, // Adjust position
+    right: -8,
+    minWidth: 18, // Dynamic width
+    height: 18, // Larger circle
+    borderRadius: 9,
     backgroundColor: "#12956B",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 4,
   },
   notificationText: {
     color: "white",

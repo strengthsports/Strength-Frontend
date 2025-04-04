@@ -67,43 +67,41 @@ const StickyInput = memo(
       }
     }, [autoFocus]);
 
-    useEffect(() => {
-      const keyboardShowEvent =
-        Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-      const keyboardHideEvent =
-        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    // useEffect(() => {
+    //   const keyboardShowEvent =
+    //     Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    //   const keyboardHideEvent =
+    //     Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-      const keyboardShowListener = Keyboard.addListener(
-        keyboardShowEvent,
-        (e) => {
-          Animated.timing(translateY, {
-            toValue: -e.endCoordinates.height,
-            duration: 250,
-            useNativeDriver: true,
-          }).start();
-        }
-      );
-      const keyboardHideListener = Keyboard.addListener(
-        keyboardHideEvent,
-        () => {
-          Animated.timing(translateY, {
-            toValue: 0,
-            duration: 250,
-            useNativeDriver: true,
-          }).start();
-        }
-      );
+    //   const keyboardShowListener = Keyboard.addListener(
+    //     keyboardShowEvent,
+    //     (e) => {
+    //       Animated.timing(translateY, {
+    //         toValue: -e.endCoordinates.height,
+    //         duration: 250,
+    //         useNativeDriver: true,
+    //       }).start();
+    //     }
+    //   );
+    //   const keyboardHideListener = Keyboard.addListener(
+    //     keyboardHideEvent,
+    //     () => {
+    //       Animated.timing(translateY, {
+    //         toValue: 0,
+    //         duration: 250,
+    //         useNativeDriver: true,
+    //       }).start();
+    //     }
+    //   );
 
-      return () => {
-        keyboardShowListener.remove();
-        keyboardHideListener.remove();
-      };
-    }, [translateY]);
+    //   return () => {
+    //     keyboardShowListener.remove();
+    //     keyboardHideListener.remove();
+    //   };
+    // }, [translateY]);
 
     return (
-      <Animated.View
-        style={[styles.animatedContainer, { transform: [{ translateY }] }]}
-      >
+      <View style={[styles.animatedContainer]}>
         <View style={styles.container}>
           <Divider style={styles.divider} width={0.3} />
           {isPosting && progress && (
@@ -158,7 +156,7 @@ const StickyInput = memo(
             </TouchableOpacity>
           </View>
         </View>
-      </Animated.View>
+      </View>
     );
   }
 );

@@ -1,4 +1,4 @@
-import React, { useState, useRef, forwardRef, useMemo } from "react";
+import React, { useState, useRef, forwardRef, useMemo, memo } from "react";
 import {
   View,
   Text,
@@ -22,7 +22,11 @@ import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
-import { postComment, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import {
+  postComment,
+  toggleLike,
+  voteInPoll,
+} from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
@@ -30,6 +34,8 @@ import { useBottomSheet } from "~/context/BottomSheetContext";
 import CommentModal from "../feedPage/CommentModal";
 import StickyInput from "../ui/StickyInput";
 import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
+import { Modal } from "react-native";
+import PollsContainer from "./PollsContainer";
 
 type TaggedUser = {
   _id: string;
@@ -56,6 +62,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
+
+    const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
+      useState(false);
 
     const { followUser, unFollowUser } = useFollow();
 
@@ -135,30 +144,34 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           draggableDirection: "down",
         });
       } else if (type === "comment") {
-        openBottomSheet({
-          isVisible: true,
-          content: (
-            <>
-              <CommentModal targetId={item._id} autoFocusKeyboard={true} />
-              <StickyInput
-                user={user}
-                value={commentText}
-                onChangeText={handleTextChange}
-                onSubmit={handlePostComment}
-                isPosting={isPosting}
-                replyingTo={replyingTo}
-                progress={progress}
-                placeholder="Type your comment here"
-                autoFocus={true}
-              />
-            </>
-          ),
-          height: "80%",
-          bgcolor: "#000",
-          border: true,
-          maxHeight: "100%",
-          draggableDirection: "both",
-        });
+        // openBottomSheet({
+        //   isVisible: true,
+        //   content: (
+        //     <>
+        //       <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+        //       <StickyInput
+        //         user={user}
+        //         value={commentText}
+        //         onChangeText={handleTextChange}
+        //         onSubmit={handlePostComment}
+        //         isPosting={isPosting}
+        //         replyingTo={replyingTo}
+        //         progress={progress}
+        //         placeholder="Type your comment here"
+        //         autoFocus={true}
+        //       />
+        //     </>
+        //   ),
+        //   height: "80%",
+        //   bgcolor: "#000",
+        //   border: true,
+        //   maxHeight: "100%",
+        //   draggableDirection: "both",
+        // });
+
+        <Modal transparent visible={true} animationType="slide">
+          <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+        </Modal>;
       }
     };
 
@@ -213,6 +226,17 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       };
 
       await unFollowUser(unfollowData);
+    };
+
+    // Handle vote
+    const handleVote = async (optionIndex: number) => {
+      await dispatch(
+        voteInPoll({
+          targetId: item._id,
+          targetType: "Post",
+          selectedOption: optionIndex,
+        })
+      );
     };
 
     // Set slider active index
@@ -401,6 +425,17 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 </TouchableOpacity>
               )}
             </View>
+
+            {item.isPoll && (
+              <PollsContainer
+                options={item.poll.options}
+                mode="view"
+                voteCounts={item.poll.voteCounts}
+                userVoted={item.isVoted}
+                selectedOption={Number(item.votedOption)}
+                onVote={handleVote}
+              />
+            )}
           </View>
 
           {/* Image Swiper */}
@@ -442,7 +477,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           <InteractionBar
             postId={item._id}
             onPressLike={handleLike}
-            onPressComment={() => handleOpenBottomSheet({ type: "comment" })}
+            onPressComment={() => setIsCommentCountModalVisible(true)}
             isLiked={item.isLiked}
             likesCount={item.likesCount}
             commentsCount={item.commentsCount}
@@ -452,6 +487,18 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             isFeedPage={isFeedPage}
           />
         </View>
+        <Modal
+          visible={isCommentCountModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsCommentCountModalVisible(false)}
+        >
+          <CommentModal
+            targetId={item._id}
+            autoFocusKeyboard={true}
+            onClose={() => setIsCommentCountModalVisible(false)}
+          />
+        </Modal>
       </View>
     );
   }

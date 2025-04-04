@@ -19,7 +19,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Divider } from "react-native-elements";
-import { MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -33,7 +33,7 @@ import nopic from "@/assets/images/nopic.jpg";
 import { Comment } from "~/types/post";
 import { KeyboardAvoidingView } from "react-native";
 import { Animated } from "react-native";
-import { postComment } from "~/reduxStore/slices/feed/feedSlice";
+import { postComment, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 import { User } from "~/types/user";
 import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
@@ -129,13 +129,47 @@ interface CommenterCardProps {
 export const CommenterCard = memo(
   ({ comment, targetId, targetType, onReply, parent }: CommenterCardProps) => {
     const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
+    const [isCommentLiked, setIsCommentLiked] = useState(false);
+    const [commentLikesCount, setCommentLikesCount] = useState(
+      comment.likesCount
+    );
     const serializedUser = encodeURIComponent(
       JSON.stringify({
         id: comment?.postedBy?._id,
         type: comment?.postedBy?.type,
       })
     );
+
+    // Handle like on comment
+    const toggleLikeOnComment = async () => {
+      try {
+        if (isCommentLiked) {
+          setIsCommentLiked(false);
+          setCommentLikesCount((prev) => prev - 1);
+          await dispatch(
+            toggleLike({ targetId: comment._id, targetType: "Comment" })
+          );
+        } else {
+          setIsCommentLiked(true);
+          setCommentLikesCount((prev) => prev + 1);
+          await dispatch(
+            toggleLike({ targetId: comment._id, targetType: "Comment" })
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        if (isCommentLiked) {
+          setIsCommentLiked(true);
+          setCommentLikesCount((prev) => prev + 1);
+        } else {
+          setIsCommentLiked(false);
+          setCommentLikesCount((prev) => prev - 1);
+        }
+      }
+    };
+
     return (
       <View className="pl-12 pr-1 py-2 my-2 relative">
         <TouchableOpacity
@@ -206,11 +240,21 @@ export const CommenterCard = memo(
           </View>
         </View>
         <View className="flex-row gap-2 items-center ml-10 mt-1">
-          <TouchableOpacity>
-            <TextScallingFalse className="text-white text-lg font-medium">
-              Like
+          <TouchableOpacity onPress={toggleLikeOnComment}>
+            <TextScallingFalse
+              className={`${
+                isCommentLiked ? "text-amber-400" : "text-white"
+              } text-lg font-medium`}
+            >
+              {isCommentLiked ? "Liked" : "Like"}
             </TextScallingFalse>
           </TouchableOpacity>
+          {commentLikesCount > 0 && (
+            <TextScallingFalse className="text-[#939393] text-lg font-normal">
+              {`• `} <AntDesign name="like1" size={12} color="#FABE25" />{" "}
+              {` ${commentLikesCount}`}
+            </TextScallingFalse>
+          )}
           <TextScallingFalse className="text-2xl text-[#939393]">
             |
           </TextScallingFalse>
@@ -227,6 +271,61 @@ export const CommenterCard = memo(
     );
   }
 );
+
+interface CommentItemProps {
+  item: Comment;
+  targetId: string;
+  handleReply: (comment: Comment) => void;
+}
+
+export const CommentItem = ({
+  item,
+  targetId,
+  handleReply,
+}: CommentItemProps) => {
+  const [expanded, setExpanded] = useState(false);
+
+  // Filter out invalid replies
+  const validReplies = item.replies?.filter(
+    (reply: any) => reply.text && reply.text.trim() !== ""
+  );
+
+  console.log("Replies : ", validReplies.length);
+
+  return (
+    <View style={{ paddingHorizontal: 8 }}>
+      <CommenterCard
+        comment={item}
+        targetId={targetId}
+        targetType="Post"
+        onReply={handleReply}
+      />
+      {validReplies && validReplies.length > 0 && (
+        <View style={{ marginLeft: 32, marginTop: 8 }}>
+          {validReplies
+            .slice(0, expanded ? validReplies.length : 1)
+            .map((reply: any) => (
+              <CommenterCard
+                key={reply._id}
+                parent={item}
+                comment={reply}
+                targetId={item._id} // reply's parent id
+                targetType="Comment"
+                onReply={handleReply}
+              />
+            ))}
+          {!expanded && validReplies.length > 1 && (
+            <TouchableOpacity onPress={() => setExpanded(true)}>
+              <TextScallingFalse style={{ color: "#12956B", marginTop: 5 }}>
+                Load more replies...
+              </TextScallingFalse>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
+  );
+};
 
 interface CommentModalProps {
   autoFocusKeyboard?: boolean;
@@ -274,36 +373,14 @@ const CommentModal = memo(
 
     // Render each comment and its possible replies.
     const renderItem = useCallback(
-      ({ item }: { item: Comment & { replies?: Comment[] } }) => {
-        const validReplies = item.replies?.filter(
-          (reply) => reply.text && reply.text.trim() !== ""
-        );
-        return (
-          <View style={{ paddingHorizontal: 8 }}>
-            <CommenterCard
-              comment={item}
-              targetId={targetId}
-              targetType="Post"
-              onReply={handleReply}
-            />
-            {validReplies && validReplies.length > 0 && (
-              <View style={{ marginLeft: 32, marginTop: 8 }}>
-                {validReplies.map((reply) => (
-                  <CommenterCard
-                    key={reply._id}
-                    parent={item}
-                    comment={reply}
-                    targetId={item._id} // reply's parent id
-                    targetType="Comment"
-                    onReply={handleReply}
-                  />
-                ))}
-              </View>
-            )}
-          </View>
-        );
-      },
-      [targetId]
+      ({ item }: { item: Comment & { replies?: Comment[] } }) => (
+        <CommentItem
+          item={item}
+          targetId={targetId}
+          handleReply={handleReply}
+        />
+      ),
+      [targetId, handleReply]
     );
 
     // Animated value for vertical translation

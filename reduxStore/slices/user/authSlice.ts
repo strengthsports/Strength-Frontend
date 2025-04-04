@@ -93,7 +93,7 @@ export const logoutUser = createAsyncThunk(
       }
 
       // Disconnect socket connection
-      disconnectSocket();
+      // disconnectSocket();
 
       // Clear Secure Store
       removeToken("accessToken");

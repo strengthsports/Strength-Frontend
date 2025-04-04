@@ -128,12 +128,12 @@ const EditProfile = () => {
           unit === "ft"
             ? "feetInches"
             : unit === "cm"
-            ? "centimeters"
-            : unit === "m"
-            ? "meters"
-            : unit === "kg"
-            ? "kilograms"
-            : "pounds";
+              ? "centimeters"
+              : unit === "m"
+                ? "meters"
+                : unit === "kg"
+                  ? "kilograms"
+                  : "pounds";
       }
 
       setSelectedField(selectedUnit);
@@ -210,10 +210,10 @@ const EditProfile = () => {
       return unit === "ft"
         ? value * 30.48
         : unit === "cm"
-        ? value
-        : unit === "m"
-        ? value * 100
-        : 0;
+          ? value
+          : unit === "m"
+            ? value * 100
+            : 0;
     }
     return unit === "kg" ? value : unit === "lbs" ? value / 2.20462 : 0;
   };
@@ -233,7 +233,7 @@ const EditProfile = () => {
           label: "Headline",
           placeholder: "Enter your headline",
           description:
-            "Your headline is the perfect way to showcase your identity in sports—keep it concise and impactful (max 50 characters) to let others instantly know who you are!.",
+            "Your headline is the perfect way to showcase your identity in sports. keep it concise and impactful to let others instantly know who you are!",
         };
       case "dateOfBirth":
         return {
@@ -247,7 +247,7 @@ const EditProfile = () => {
           label: "Location",
           placeholder: "city, state, country",
           description:
-            "Connect with local sports enthusiasts by sharing your address. Update manually or use automatic detection to stay visible and accessible to the community.",
+            "Connect with local sports enthusiasts by sharing your address.",
         };
       case "height":
         return {
@@ -256,7 +256,7 @@ const EditProfile = () => {
           unit2: "In Centimeters [approx.]-",
           unit3: "In meters [approx.]-",
           description:
-            "This is a short description for height in order to showcase a real, standard and fit community",
+            "Showcase your height to help teams and athletes know your physical presence in the game!",
         };
       case "weight":
         return {
@@ -264,7 +264,7 @@ const EditProfile = () => {
           unit1: "In Kilograms [approx.]-",
           unit3: "In pounds [approx.]-",
           description:
-            "This is a short description for weight in order to showcase a real, standard and fit community",
+            "Your weight helps define your athletic profile. Enter it to showcase your physical attributes!",
         };
       default:
         return { label: "", placeholder: "", description: "" };
@@ -357,13 +357,12 @@ const EditProfile = () => {
       // height field
       const heightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
       const heightString = heightValue
-        ? `${heightValue} ${
-            selectedField === "feetInches"
-              ? "ft"
-              : selectedField === "centimeters"
-              ? "cm"
-              : "m"
-          }`
+        ? `${heightValue} ${selectedField === "feetInches"
+          ? "ft"
+          : selectedField === "centimeters"
+            ? "cm"
+            : "m"
+        }`
         : "";
 
       setFormData((prev) => ({ ...prev, [field]: heightString }));
@@ -374,10 +373,18 @@ const EditProfile = () => {
       const weightString = weightValue
         ? `${weightValue} ${selectedField === "kilograms" ? "kg" : "lbs"}`
         : "";
+        
 
       setFormData((prev) => ({ ...prev, [field]: weightString }));
       finalUploadData.set("weight", weightString);
     } else if (field === "username") {
+      const usernameRegex = /^[a-z0-9]+$/;
+
+      if (!usernameRegex.test(value)) {
+        showToast("Username can only contain lowercase letters and numbers!");
+        return;
+      }
+      
       try {
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/checkUsername`,
@@ -426,50 +433,55 @@ const EditProfile = () => {
   }, [picType, addressPickup]);
 
   // Pick Image (Cover pic, Profile Pic)
-  const pickImage = async (imageType: "cover" | "profile") => {
-    try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+// Pick Image (Cover pic, Profile Pic)
+const pickImage = async (imageType: "cover" | "profile") => {
+  try {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      if (!permissionResult.granted) {
-        showToast("Permission to access the camera roll is required!");
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        const file = result.assets[0];
-        const fileName = file.uri.split("/").pop() || "image.jpg";
-        const mimeType = file.mimeType || "image/jpeg";
-
-        // React Native requires this format for file uploads
-        const fileObject = {
-          uri: file.uri,
-          name: fileName,
-          type: mimeType,
-        };
-
-        if (imageType === "cover") {
-          finalUploadData.append("coverPic", fileObject as any);
-          setCoverImage(file.uri);
-        } else {
-          finalUploadData.append("profilePic", fileObject as any);
-          setProfileImage(file.uri);
-        }
-      }
-    } catch (error) {
-      console.error("Error picking image:", error);
-      showToast("Error picking image");
-    } finally {
-      setPicModalVisible({ coverPic: false, profilePic: false });
+    if (!permissionResult.granted) {
+      showToast("Permission to access the camera roll is required!");
+      return;
     }
-  };
+
+    let aspect: [number, number] = [1, 1]; // Explicitly type aspect as [number, number]
+    if (imageType === "cover") {
+      aspect = [3, 1];
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: aspect,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const file = result.assets[0];
+      const fileName = file.uri.split("/").pop() || "image.jpg";
+      const mimeType = file.mimeType || "image/jpeg";
+
+      // React Native requires this format for file uploads
+      const fileObject = {
+        uri: file.uri,
+        name: fileName,
+        type: mimeType,
+      };
+
+      if (imageType === "cover") {
+        finalUploadData.append("coverPic", fileObject as any);
+        setCoverImage(file.uri);
+      } else {
+        finalUploadData.append("profilePic", fileObject as any);
+        setProfileImage(file.uri);
+      }
+    }
+  } catch (error) {
+    console.error("Error picking image:", error);
+    showToast("Error picking image");
+  } finally {
+    setPicModalVisible({ coverPic: false, profilePic: false });
+  }
+};
 
   // Unified toggle function for pic modal
   const togglePicModal = (type: "coverPic" | "profilePic") => {
@@ -625,22 +637,21 @@ const EditProfile = () => {
     {
       type: "address",
       label: "Location*",
-      icon: <MaterialIcons name="location-pin" size={22.5} color="grey" />,
     },
     {
       type: "height",
       label: "Height",
-      icon: <AntDesign name="down" size={20} color="grey" />,
+      icon: <AntDesign name="down" size={15} color="grey" />,
     },
     {
       type: "weight",
       label: "Weight",
-      icon: <AntDesign name="down" size={20} color="grey" />,
+      icon: <AntDesign name="down" size={15} color="grey" />,
     },
     {
       type: "team",
       label: "Team",
-      icon: <AntDesign name="down" size={20} color="grey" />,
+      icon: <AntDesign name="down" size={15} color="grey" />,
       placeholder: "not joined yet",
     },
     // {
@@ -671,15 +682,15 @@ const EditProfile = () => {
           field === "feetInches"
             ? heightInFeet
             : field === "centimeters"
-            ? heightInCentimeters
-            : heightInMeters
+              ? heightInCentimeters
+              : heightInMeters
         ) || 0;
 
       return field === "feetInches"
         ? value * 30.48
         : field === "centimeters"
-        ? value
-        : value * 100;
+          ? value
+          : value * 100;
     }
 
     if (picType === "weight") {
@@ -738,11 +749,10 @@ const EditProfile = () => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${
-                    Array.from(finalUploadData.entries()).length
-                      ? "text-[#12956B]"
-                      : "text-[#808080]"
-                  } text-4xl font-medium`}
+                  className={`${Array.from(finalUploadData.entries()).length
+                    ? "text-[#12956B]"
+                    : "text-[#808080]"
+                    } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -751,7 +761,7 @@ const EditProfile = () => {
           </View>
 
           {/* Profile and cover image */}
-          <View className="relative w-full h-36 lg:h-60 mb-24 flex justify-center items-center">
+          <View style={{position: 'relative',  width: '100%', height: 137, marginBottom: 96, justifyContent: 'center', alignItems: 'center',}}>
             {/* cover pic */}
             <TouchableOpacity
               onPress={() => togglePicModal("coverPic")}
@@ -784,7 +794,7 @@ const EditProfile = () => {
             <TouchableOpacity
               onPress={() => togglePicModal("profilePic")}
               activeOpacity={0.9}
-              className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full border-2 border-black"
+              className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full  border-2 border-black"
             >
               {profileImage ? (
                 <Image
@@ -810,14 +820,14 @@ const EditProfile = () => {
 
           {/* Form Part */}
           {/* first name */}
-          <View className="flex-row items-center justify-between px-6 border-b border-[#3030309a]">
+          <View className="flex-row items-center justify-between px-6 h-[50px] border-b border-[#3030309a]">
             <Text className="text-white text-4xl font-medium w-1/3">
               First Name*
             </Text>
             <TextInput
               placeholder="enter your first name"
               placeholderTextColor={"grey"}
-              className="text-2xl font-light flex-grow text-white pl-0"
+              className="text-2xl font-light h-full flex-grow text-white pl-0"
               onChangeText={(text) => {
                 setFormData({ ...formData, firstName: text });
                 finalUploadData.set("firstName", text);
@@ -833,7 +843,7 @@ const EditProfile = () => {
             <TextInput
               placeholder="enter your first name"
               placeholderTextColor={"grey"}
-              className="text-2xl font-light flex-grow text-white pl-0"
+              className="text-2xl font-light h-full flex-grow text-white pl-0"
               onChangeText={(text) => {
                 setFormData({ ...formData, lastName: text });
                 finalUploadData.set("lastName", text);
@@ -924,7 +934,7 @@ const EditProfile = () => {
                           fontWeight: "semibold",
                         }}
                       >
-                        Upload your Cover Picture
+                        Upload your Cover Pictur
                       </TextScallingFalse>
                       <TextScallingFalse
                         style={{
@@ -933,8 +943,7 @@ const EditProfile = () => {
                           fontWeight: "300",
                         }}
                       >
-                        On Strength we require members to use their standard
-                        details so upload a meaningful cover pic
+                        Add a cover photo that represents your sports journey, passion, or team spirit. Make your profile stand out!
                       </TextScallingFalse>
                     </View>
                   </TouchableOpacity>
@@ -1009,8 +1018,7 @@ const EditProfile = () => {
                           fontWeight: "300",
                         }}
                       >
-                        On Strength we require members to use their real
-                        identities so upload a photo of yourself
+                        Your profile picture is your identity in the sports community. Choose an image that represents you best!
                       </TextScallingFalse>
                     </View>
                   </TouchableOpacity>
@@ -1078,11 +1086,11 @@ const EditProfile = () => {
         </Modal>
 
         {/* Edit Modal */}
-        <Modal visible={isModalVisible} transparent onRequestClose={closeModal}>
+        <Modal visible={isModalVisible} animationType="slide" transparent onRequestClose={closeModal}>
           <View className="flex-1">
             <SafeAreaView className="bg-black h-full">
               {/* Modal Header */}
-              <View className="flex-row justify-between items-center p-4 border-b border-gray-800">
+              <View className="flex-row justify-between items-center p-4" style={{borderBottomColor:'#252525', borderWidth: 0.7}}>
                 <View className="flex-row items-center">
                   <TouchableOpacity className="w-[50px] h-[40px] justify-center" onPress={closeModal}>
                     <AntDesign name="arrowleft" size={28} color="white" />
@@ -1093,7 +1101,7 @@ const EditProfile = () => {
                 </View>
                 <TouchableOpacity
                   onPress={() => handleDone(picType, inputValue)}
-                  disabled={!hasChanges}
+                  disabled={!hasChanges} className="w-[60px] justify-end items-end"
                 >
                   <MaterialIcons
                     name="done"
@@ -1168,7 +1176,7 @@ const EditProfile = () => {
                 ) : picType === "dateOfBirth" ? (
                   <>
                     <Text className="text-gray-500 text-xl">{label}</Text>
-                    <View className="flex-row border-b border-white">
+                    <View className="flex-row border-b h-[50px] border-white">
                       <TextInput
                         value={dateFormatter(new Date(inputValue), "date")}
                         onChangeText={setInputValue}
@@ -1189,25 +1197,47 @@ const EditProfile = () => {
                 ) : (
                   <>
                     <Text className="text-gray-500 text-xl">{label}</Text>
-                    <View className="flex-row border-b border-white h-[50px]">
+                    <View className={`flex-row border-b border-white ${picType === 'headline' ? '' : 'h-[50px]'}`}>
                       <TextInput
-  value={inputValue}
-  onChangeText={(text) => {
-    if (picType === "headline" && text.length > 50) {
-      // Prevent exceeding the limit
-      return;
-    }
-    setInputValue(text);
-    if (picType === "address") {
-      setAddressPickup(text); //sync addressPickup with input
-    }
-  }}
-  placeholder={placeholder}
-  placeholderTextColor="gray"
-  className="text-white text-4xl flex-1 pl-0 pb-0 bg-red-500 w-80%"
-  maxLength={picType === "headline" ? 50 : undefined} // Apply maxLength conditionally
-/>
+                        value={inputValue}
+                        onChangeText={(text) => {
+                          let newText = text;
+                          if (picType === "username" && text.length > 20) {
+                            newText = text.toLowerCase(); // Force lowercase for usernames
+                            return;
+                          }
+                          setInputValue(newText);
+                          if (picType === "headline" && text.length > 60) {
+                            // Prevent exceeding the limit
+                            return;
+                          }
+                          setInputValue(text);
+                          if (picType === "address") {
+                            setAddressPickup(text); //sync addressPickup with input
+                          }
+                        }}
+                        placeholder={placeholder}
+                        placeholderTextColor="gray"
+                        className="text-white text-4xl flex-1 pl-0 pb-0 w-80%" style={{lineHeight: 25}}
+                        maxLength={picType === "headline" ? 60 : undefined} // Apply maxLength conditionally
+                        multiline={picType === "headline"}
+                        numberOfLines={picType === "headline" ? 2 : 1}
+                        autoCapitalize="none"
+                      />
                     </View>
+                    {/* Character Counter (Only shown if picType is "headline") */}
+                    {picType === "headline" && (
+                      <Text className="text-gray-500 text-sm mt-1">
+                        {inputValue.length} / 60
+                      </Text>
+                    )}
+
+                    {/* Character Counter (Only shown if picType is "username") */}
+                    {picType === "username" && (
+                      <Text className="text-gray-500 text-sm mt-1">
+                        {inputValue.length} / 20
+                      </Text>
+                    )}
                   </>
                 )}
 
@@ -1442,20 +1472,18 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-14 ${
-      !isLast ? "border-b border-[#3030309a]" : ""
-    }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
+      }`}
   >
     <Text className="text-white text-4xl font-medium w-1/3">{label}</Text>
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
-      className="flex-row items-center justify-between w-2/3"
+      className="flex-row items-center justify-between h-full w-2/3"
     >
       <Text
-        className={`text-2xl font-light ${
-          value ? "text-white" : "text-gray-500"
-        }`}
+        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
+          }`}
       >
         {isDate ? dateFormatter(value as any, "date") : value || placeholder}
       </Text>
@@ -1538,22 +1566,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-              ? "Cm"
-              : field === "meters"
-              ? "m"
-              : field === "kilograms"
-              ? "kg"
-              : "lbs"}
+                ? "Cm"
+                : field === "meters"
+                  ? "m"
+                  : field === "kilograms"
+                    ? "kg"
+                    : "lbs"}
           </Text>
         </View>
         <CustomButton
           field={
             field as
-              | "feetInches"
-              | "centimeters"
-              | "meters"
-              | "kilograms"
-              | "pounds"
+            | "feetInches"
+            | "centimeters"
+            | "meters"
+            | "kilograms"
+            | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

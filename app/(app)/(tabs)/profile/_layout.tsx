@@ -164,16 +164,16 @@ const ProfileLayout = () => {
           <View
             style={{
               width: "95.12%",
-              backgroundColor: "#171717",
+              backgroundColor: "#181818",
               borderRadius: 33,
               padding: 25,
             }}
           >
             {/* first name, last name, country */}
             <View
-              style={{ position: "relative", top: -9, flexDirection: "row" }}
+              style={{ position: "relative", top: -9, flexDirection: "row", gap:4, }}
             >
-              <View style={{ width: "47.1%" }}>
+              <View style={{ width:"50%", flexDirection:"row", gap:15, }}>
                 <TextScallingFalse
                   style={{
                     color: "white",
@@ -183,33 +183,34 @@ const ProfileLayout = () => {
                 >
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
-              </View>
-              <View style={{ width: "19.70%" }}>
-                <View style={{ height: 7 }} />
-                <View style={{ flexDirection: "row", gap: 3 }}>
-                  <Image
-                    source={flag}
-                    style={{ width: "23.88%", height: "90%" }}
-                  />
-                  <TextScallingFalse
-                    style={{
-                      color: "white",
-                      fontSize: responsiveFontSize(1.41),
-                      fontWeight: "400",
-                    }}
-                  >
-                    {user?.address?.country || "undefined"}
-                  </TextScallingFalse>
+
+                <View style={{marginTop:6, marginRight:5, height:"auto",}}>
+                  <View style={{ flexDirection: "row", gap: 3, }}>
+                    <Image
+                      source={flag}
+                      style={{ width: 18, height: 18, borderRadius:5, marginBottom:5}}
+                    />
+                    <TextScallingFalse
+                      style={{
+                        marginTop:2,
+                        color: "#EAEAEA",
+                        fontSize: responsiveFontSize(1.41),
+                        fontWeight: "400",
+                      }}
+                    >
+                      {user?.address?.country || "undefined"}
+                    </TextScallingFalse>
+                  </View>
                 </View>
               </View>
             </View>
 
             {/* headline */}
-            <View style={{ width: "67.64%", position: "relative", top: -9 }}>
+            <View style={{ width: "67.64%", position: "relative", top: -12 }}>
               <TextScallingFalse
                 style={{
-                  color: "white",
-                  fontSize: responsiveFontSize(1.3),
+                  color: "#EAEAEA",
+                  fontSize: responsiveFontSize(1.5),
                   fontWeight: "400",
                 }}
               >
@@ -217,9 +218,9 @@ const ProfileLayout = () => {
               </TextScallingFalse>
             </View>
 
-            <View style={{ paddingTop: "3.6%" }}>
+            <View style={{ paddingTop: 5 }}>
               {/* age, height, weight, teams */}
-              <View style={{ position: "relative", left: -3 }}>
+              <View style={{ position: "relative", left: -5 }}>
                 <View
                   style={{
                     flexDirection: "row",
@@ -308,7 +309,7 @@ const ProfileLayout = () => {
                   <TextScallingFalse
                     style={{
                       color: "grey",
-                      fontSize: responsiveFontSize(1.35),
+                      fontSize: responsiveFontSize(1.4),
                       width: "63.25%",
                     }}
                   >
@@ -332,7 +333,7 @@ const ProfileLayout = () => {
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
-                        fontSize: responsiveFontSize(1.64),
+                        fontSize: responsiveFontSize(1.6),
                       }}
                     >
                       {user?.followerCount} Followers
@@ -352,7 +353,7 @@ const ProfileLayout = () => {
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
-                        fontSize: responsiveFontSize(1.64),
+                        fontSize: responsiveFontSize(1.6),
                       }}
                     >
                       {" "}
@@ -461,7 +462,7 @@ const ProfileLayout = () => {
         ></View>
         {/* Tabs Header */}
         <View
-          className="flex-row justify-evenly mt-2 border-b-[0.5px] border-gray-600"
+          className="flex-row justify-evenly mt-2 border-b-[1px] border-[#4E4E4E]"
           style={{
             backgroundColor: "black",
             zIndex: 1,
@@ -491,7 +492,7 @@ const ProfileLayout = () => {
         </View>
 
         {/* Animated Tab Content */}
-        <MotiView className="flex-1">{renderContent()}</MotiView>
+        <MotiView className="flex-1 mt-2">{renderContent()}</MotiView>
 
         {/* Profile/Cover Pic modal */}
         <Modal
@@ -560,8 +561,8 @@ const scaleFactor = screenWidth2 / 410;
 
 const styles = StyleSheet.create({
   ProfileKeyPoints: {
-    color: "white",
-    fontSize: responsiveFontSize(1.17),
+    color: "#E1E1E1",
+    fontSize: responsiveFontSize(1.4),
     fontWeight: "semibold",
   },
 });

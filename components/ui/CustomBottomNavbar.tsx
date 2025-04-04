@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect, useState } from "react";
 import {
   Animated,
   TouchableOpacity,
@@ -19,8 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { resetCount } from "~/reduxStore/slices/notification/notificationSlice";
 
-const BOTTOM_NAVBAR_HEIGHT = 70;
-
+const BOTTOM_NAVBAR_HEIGHT = Platform.OS === "ios" ? 80 : 60;
 const CustomBottomNavbar = () => {
   const router = useRouter();
   const segments = useSegments();
@@ -29,11 +28,15 @@ const CustomBottomNavbar = () => {
     (state: RootState) => state.notification
   );
   const { scrollY } = useScroll();
+  const [activeRoute, setActiveRoute] = useState("/(app)/(tabs)/home");
 
   // Compute the active route only once.
-  const computedActiveRoute = useMemo(() => {
-    return segments.length ? "/" + segments.join("/") : "/(app)/(tabs)/home";
+  useEffect(() => {
+    setActiveRoute(
+      segments.length ? "/" + segments.join("/") : "/(app)/(tabs)/home"
+    );
   }, [segments]);
+  const computedActiveRoute = useMemo(() => activeRoute, [activeRoute]);
 
   // Compute the clamped scroll value.
   const clampedScrollY = useMemo(
@@ -97,18 +100,17 @@ const CustomBottomNavbar = () => {
   );
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.container,
-        // Only apply the animated translate if on the home route.
-        computedActiveRoute === "/(app)/(tabs)/home" && {
-          transform: [{ translateY: headerTranslateY }],
-        },
+        // activeRoute === "(app)/(tabs)/home"
+        //   ? { transform: [{ translateY: headerTranslateY }] }
+        //   : {},
       ]}
     >
       {navItems.map((item, index) => {
-        const isActive = computedActiveRoute.includes(item.route);
-        const iconColor = isActive ? "#12956B" : "white";
+        const isActive = computedActiveRoute.startsWith(item.route);
+        const iconColor = isActive ? "#12956B" : "#cccccc";
 
         return (
           <TouchableOpacity
@@ -126,14 +128,14 @@ const CustomBottomNavbar = () => {
                   </TextScallingFalse>
                 </View>
               )}
+              <TextScallingFalse style={[styles.label, { color: iconColor }]}>
+                {item.label}
+              </TextScallingFalse>
             </View>
-            <TextScallingFalse style={[styles.label, { color: iconColor }]}>
-              {item.label}
-            </TextScallingFalse>
           </TouchableOpacity>
         );
       })}
-    </Animated.View>
+    </View>
   );
 };
 
@@ -145,21 +147,22 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingTop: 15,
-    paddingBottom: 15,
-    backgroundColor: "#000000",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    backgroundColor: "black",
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
     overflow: "hidden",
     height: BOTTOM_NAVBAR_HEIGHT,
   },
   navItem: {
     alignItems: "center",
+    borderRadius: "35%",
+    height: "100%",
     flex: 1,
   },
   iconContainer: {
     position: "relative",
     alignItems: "center",
+    paddingVertical: 15,
   },
   notificationDot: {
     position: "absolute",
@@ -178,8 +181,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   label: {
-    fontSize: 10,
-    marginTop: 4,
+    color: "#000",
+    fontSize: 9,
+    marginTop: 2,
     fontFamily: "Inter",
   },
 });

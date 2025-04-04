@@ -36,11 +36,11 @@ const signupEnterUsername3 = () => {
     Platform.OS === "android"
       ? ToastAndroid.show(errorMsg, ToastAndroid.LONG)
       : Toast.show({
-          type,
-          text1: errorMsg,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+        type,
+        text1: errorMsg,
+        visibilityTime: 3000,
+        autoHide: true,
+      });
   };
 
   const handleUsername = (value: string) => {
@@ -97,9 +97,16 @@ const signupEnterUsername3 = () => {
           <TextInputSection
             placeholder="Enter your username"
             value={username}
-            onChangeText={handleUsername}
+            onChangeText={(text) => {
+              if (text.length <= 20) {
+                handleUsername(text); // Update state if within limit
+              }
+            }}
             autoCapitalize="none"
           />
+          <TextScallingFalse className="text-gray-500 text-sm mt-1 p-1">
+            {username.length} / 20
+          </TextScallingFalse>
         </View>
         <View style={{ marginTop: 55 }}>
           <SignupButton disabled={false} onPress={handleNext}>

@@ -1,15 +1,14 @@
 import React, { lazy, Suspense } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import ComingSoon from "~/components/explorePage/comingSoon";
-import { Colors } from "~/constants/Colors";
 import { ExploreSportsCategoriesKeys } from "~/types/exploreSportKeys";
+import { Colors } from "~/constants/Colors";
 
-// Lazy loading for sports categories
-const TrendingAll = lazy(() => import("./TrendingAll"));
+// Define content components for each sports category
+const TrendingTeam = lazy(() => import("./TrendingTeam"));
 const SelectedSport = lazy(() => import("./SelectedSport"));
-
 const DefaultContent = lazy(
   () =>
     new Promise<{ default: React.FC<{ sportsName: string }> }>((resolve) =>
@@ -17,26 +16,12 @@ const DefaultContent = lazy(
     )
 );
 
-// Define the type for sports category keys
-// type ExploreSportsCategoriesKeys =
-//   | "Trending"
-//   | "Cricket"
-//   | "Football"
-//   | "Badminton"
-//   | "Hockey"
-//   | "Basketball"
-//   | "Kabbadi"
-//   | "Tennis"
-//   | "Table Tennis"
-//   | "More \u2193"
-//   | "Default";
-
-// Component map for lazy-loaded categories
+// Create a component map for sports categories
 const componentMap: Record<
   ExploreSportsCategoriesKeys,
   React.LazyExoticComponent<React.FC<{ sportsName: string }>>
 > = {
-  Trending: TrendingAll,
+  Trending: TrendingTeam,
   Cricket: SelectedSport,
   Football: SelectedSport,
   Badminton: SelectedSport,
@@ -49,12 +34,12 @@ const componentMap: Record<
   Default: DefaultContent,
 };
 
-const ExploreAllLayout = () => {
+const ExploreTeamLayout = () => {
   const selectedCategory = useSelector(
     (state: RootState) => state.explore.selectedExploreSportsCategory
   );
 
-  // Get the correct component from the map
+  // Safely access the component from the map
   const CategoryComponent =
     componentMap[selectedCategory as ExploreSportsCategoriesKeys] ||
     componentMap.Default;
@@ -74,4 +59,4 @@ const ExploreAllLayout = () => {
   );
 };
 
-export default ExploreAllLayout;
+export default ExploreTeamLayout;

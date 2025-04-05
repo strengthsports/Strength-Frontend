@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
-import { Image } from "expo-image";
+import React, { useMemo } from "react";
+import { View, ActivityIndicator, Image } from "react-native";
+// import { Image } from "expo-image";
 import Swiper from "react-native-swiper";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "~/constants/Colors"; // Ensure this path is correct
@@ -10,17 +10,21 @@ import {
   hashtagData,
   fetchSwipper,
 } from "~/constants/hardCodedFiles";
-import { useGetTrendingSwipperSlidesQuery } from "~/reduxStore/api/explore/swipper/trendingSlide.Api";
 
 interface SwipperSlide {
   _id: string;
   imageUrl: string;
   title: string;
   sportsName: string;
-  type: string;
+  isTrending: boolean;
   createdAt: string;
+  content: string;
   date?: string; // Add date & time fields
   time?: string;
+}
+
+interface SwiperTopProps {
+  swiperData: SwipperSlide[];
 }
 
 // Function to format date & time
@@ -44,25 +48,34 @@ const formatDateTime = (isoString: string) => {
   return { date: formattedDate, time: formattedTime };
 };
 
-const SwiperTop = () => {
-  const [swipperData, setSwipperData] = useState<SwipperSlide[]>([]);
+const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
+  // const [swipperData, setSwipperData] = useState<SwipperSlide[]>([]);
   // const {
   //   data: swipperSlides,
   //   isLoading,
   //   error,
   // } = useGetTrendingSwipperSlidesQuery();
 
-  useEffect(() => {
-    if (swipperData.length === 0) {
-      fetchSwipper().then((slides) => {
-        const formattedData = slides.map((item: SwipperSlide) => ({
-          ...item,
-          ...formatDateTime(item.createdAt), // Add formatted date & time
-        }));
-        setSwipperData(formattedData);
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (swipperData.length === 0) {
+  //     fetchSwipper().then((slides) => {
+  //       const formattedData = slides.map((item: SwipperSlide) => ({
+  //         ...item,
+  //         ...formatDateTime(item.createdAt), // Add formatted date & time
+  //       }));
+  //       setSwipperData(formattedData);
+  //     });
+  //   }
+  // }, []);
+
+  const formattedData = useMemo(
+    () =>
+      swiperData.map((item) => ({
+        ...item,
+        ...formatDateTime(item.createdAt),
+      })),
+    [swiperData]
+  );
 
   return (
     <Swiper
@@ -70,7 +83,7 @@ const SwiperTop = () => {
       loop={true} // Ensure continuous sliding
       autoplayTimeout={3}
       showsPagination={true}
-      key={swipperData.length} // Ensures re-render on data change
+      key={swiperData.length} // Ensures re-render on data change
       paginationStyle={{ bottom: 8, gap: 4 }}
       dotStyle={{
         backgroundColor: Colors.greyText,
@@ -86,8 +99,8 @@ const SwiperTop = () => {
       }}
       style={{ height: 250, marginTop: 0.5 }}
     >
-      {swipperData.length > 0 ? (
-        swipperData.map((slide, index) => (
+      {formattedData.length > 0 ? (
+        formattedData.map((slide) => (
           <View key={slide._id} className="flex-1">
             <Image
               source={{ uri: slide.imageUrl }}

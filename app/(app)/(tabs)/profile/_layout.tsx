@@ -10,6 +10,7 @@ import {
   Pressable,
   Modal,
   SafeAreaView,
+  RefreshControl,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
@@ -31,7 +32,10 @@ import PicModal from "~/components/profilePage/PicModal";
 import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
 import { AppDispatch } from "~/reduxStore";
-import { removePic } from "~/reduxStore/slices/user/profileSlice";
+import {
+  fetchMyProfile,
+  removePic,
+} from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
 import Tags from "./tags";
@@ -48,6 +52,16 @@ const ProfileLayout = () => {
       status: false,
       message: "",
     });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await dispatch(
+      fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
+    );
+
+    setRefreshing(false);
+  };
 
   // Define the available tabs.
   const tabs = useMemo(
@@ -98,12 +112,15 @@ const ProfileLayout = () => {
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[5]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        <View 
-          // style={{
-          //   backgroundColor: "black",
-          //   zIndex: 999,
-          // }}
+        <View
+        // style={{
+        //   backgroundColor: "black",
+        //   zIndex: 999,
+        // }}
         >
           <Header username={user?.username} isBackButtonVisible={false} />
         </View>
@@ -124,7 +141,10 @@ const ProfileLayout = () => {
               style={{ width: "100%", height: "100%" }}
             />
           </TouchableOpacity>
-          <View className="absolute h-full flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]" style={{zIndex:1}}>
+          <View
+            className="absolute h-full flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]"
+            style={{ zIndex: 1 }}
+          >
             <View
               style={{
                 width: responsiveWidth(31),
@@ -171,9 +191,14 @@ const ProfileLayout = () => {
           >
             {/* first name, last name, country */}
             <View
-              style={{ position: "relative", top: -9, flexDirection: "row", gap:4, }}
+              style={{
+                position: "relative",
+                top: -9,
+                flexDirection: "row",
+                gap: 4,
+              }}
             >
-              <View style={{ width:"50%", flexDirection:"row", gap:15, }}>
+              <View style={{ width: "50%", flexDirection: "row", gap: 15 }}>
                 <TextScallingFalse
                   style={{
                     color: "white",
@@ -184,15 +209,20 @@ const ProfileLayout = () => {
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
 
-                <View style={{marginTop:6, marginRight:5, height:"auto",}}>
-                  <View style={{ flexDirection: "row", gap: 3, }}>
+                <View style={{ marginTop: 6, marginRight: 5, height: "auto" }}>
+                  <View style={{ flexDirection: "row", gap: 3 }}>
                     <Image
                       source={flag}
-                      style={{ width: 18, height: 18, borderRadius:5, marginBottom:5}}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 5,
+                        marginBottom: 5,
+                      }}
                     />
                     <TextScallingFalse
                       style={{
-                        marginTop:2,
+                        marginTop: 2,
                         color: "#EAEAEA",
                         fontSize: responsiveFontSize(1.41),
                         fontWeight: "400",
@@ -219,81 +249,150 @@ const ProfileLayout = () => {
             </View>
 
             <View style={{ paddingTop: 5 }}>
-              {/* age, height, weight, teams */}
-              <View style={{ position: "relative", left: -5 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Age: {user?.age}{" "}
-                      <TextScallingFalse style={{ color: "grey" }}>
-                        ({dateFormatter(user?.dateOfBirth, "text")})
+              {/* age, height, weight, teams for user profile */}
+              {user.type === "User" && (
+                <View style={{ position: "relative", left: -5 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Age: {user?.age}{" "}
+                        <TextScallingFalse style={{ color: "grey" }}>
+                          ({dateFormatter(user?.dateOfBirth, "text")})
+                        </TextScallingFalse>
                       </TextScallingFalse>
-                    </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Height:{" "}
+                        {user?.height || (
+                          <Text style={{ color: "grey" }}>undefined</Text>
+                        )}
+                      </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Weight:{" "}
+                        {user?.weight || (
+                          <Text style={{ color: "grey" }}>undefined</Text>
+                        )}
+                      </TextScallingFalse>
+                    </View>
                   </View>
 
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Height:{" "}
-                      {user?.height || (
-                        <Text style={{ color: "grey" }}>undefined</Text>
-                      )}
-                    </TextScallingFalse>
-                  </View>
-
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Weight:{" "}
-                      {user?.weight || (
-                        <Text style={{ color: "grey" }}>undefined</Text>
-                      )}
-                    </TextScallingFalse>
+                  <View style={{ paddingTop: "3%" }}>
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Teams:{" "}
+                        {user?.createdTeams?.length > 0 &&
+                          user.createdTeams.map((team: any) => (
+                            <TextScallingFalse style={{ color: "grey" }}>
+                              {" "}
+                              {team.name}
+                            </TextScallingFalse>
+                          ))}
+                      </TextScallingFalse>
+                    </View>
                   </View>
                 </View>
+              )}
 
-                <View style={{ paddingTop: "3%" }}>
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Teams:{" "}
-                      {user?.createdTeams?.length > 0 &&
-                        user.createdTeams.map((team: any) => (
-                          <TextScallingFalse style={{ color: "grey" }}>
-                            {" "}
-                            {team.name}
-                          </TextScallingFalse>
-                        ))}
-                    </TextScallingFalse>
+              {/* page type, established on, sports category for page profile */}
+              {user.type === "Page" && (
+                <View style={{ position: "relative", left: -5 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      rowGap: 14,
+                    }}
+                  >
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        {user?.category}
+                      </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Sports Category:{" "}
+                        <Text style={{ color: "grey" }}>Football</Text>
+                      </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Website:{" "}
+                        <Text style={{ color: "#12956B" }}>
+                          https://www.eastbengal.in
+                        </Text>
+                      </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Established On:{" "}
+                        <Text style={{ color: "grey" }}>Sept, 1997</Text>
+                      </TextScallingFalse>
+                    </View>
                   </View>
                 </View>
-              </View>
+              )}
 
               {/* address and followings */}
               <View

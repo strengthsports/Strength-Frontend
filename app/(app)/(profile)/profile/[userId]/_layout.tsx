@@ -95,12 +95,13 @@ const ProfileLayout = () => {
     message: "",
   });
   const [followingStatus, setFollowingStatus] = useState<boolean>();
-  const [followerCount, setFollowerCount] = useState<number>();
+  const [followerCount, setFollowerCount] = useState<number>(0);
   const [isReported, setIsReported] = useState<boolean>();
 
   // Fetch user profile when the component mounts
   useEffect(() => {
     if (userId) {
+      console.log("User ID : ", userId?.id, " Type : ", userId?.type);
       getUserProfile({
         targetUserId: userId?.id,
         targetUserType: userId?.type,
@@ -110,6 +111,7 @@ const ProfileLayout = () => {
 
   useEffect(() => {
     if (profileData) {
+      console.log("Profile data : ", profileData);
       setFollowingStatus(profileData.followingStatus);
       setFollowerCount(profileData.followerCount);
       setIsReported(profileData.reportingStatus);
@@ -246,11 +248,16 @@ const ProfileLayout = () => {
           showsVerticalScrollIndicator={false}
           stickyHeaderIndices={[0]}
         >
-          <View style={{
-            backgroundColor: "black",
-            zIndex: 999,
-          }}>
-            <Header username={profileData?.username} isBackButtonVisible={true} />
+          <View
+            style={{
+              backgroundColor: "black",
+              zIndex: 999,
+            }}
+          >
+            <Header
+              username={profileData?.username}
+              isBackButtonVisible={true}
+            />
           </View>
 
           {/* profile pic and cover image */}
@@ -341,10 +348,10 @@ const ProfileLayout = () => {
                   position: "relative",
                   top: -9,
                   flexDirection: "row",
-                  gap:4,
+                  gap: 4,
                 }}
               >
-                <View style={{ width:"50%", flexDirection:"row", gap:15, }}>
+                <View style={{ width: "50%", flexDirection: "row", gap: 15 }}>
                   <TextScallingFalse
                     style={{
                       color: "white",
@@ -352,19 +359,26 @@ const ProfileLayout = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    {profileData?.firstName} {profileData?.lastName}
+                    {profileData?.firstName} {profileData?.lastName || ""}
                   </TextScallingFalse>
 
                   {!profileData?.blockingStatus && (
-                    <View style={{marginTop:6, marginRight:5, height:"auto",}}>
-                      <View style={{ flexDirection: "row", gap: 3, }}>
+                    <View
+                      style={{ marginTop: 6, marginRight: 5, height: "auto" }}
+                    >
+                      <View style={{ flexDirection: "row", gap: 3 }}>
                         <Image
                           source={flag}
-                          style={{ width: 18, height: 18, borderRadius:5, marginBottom:5}}
+                          style={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: 5,
+                            marginBottom: 5,
+                          }}
                         />
                         <TextScallingFalse
                           style={{
-                            marginTop:2,
+                            marginTop: 2,
                             color: "#EAEAEA",
                             fontSize: responsiveFontSize(1.41),
                             fontWeight: "400",
@@ -402,7 +416,7 @@ const ProfileLayout = () => {
                         style={{
                           flexDirection: "row",
                           justifyContent: "space-between",
-                          gap:5
+                          gap: 5,
                         }}
                       >
                         <View style={{ flexDirection: "row" }}>
@@ -732,12 +746,12 @@ const ProfileLayout = () => {
             ) : isSettingsModalVisible.message === "Unfollow" ? (
               <View>
                 <TextScallingFalse className="text-white text-xl font-semibold">
-                  Unfollow {profileData?.firstName || ''}
+                  Unfollow {profileData?.firstName || ""}
                 </TextScallingFalse>
                 <TextScallingFalse className="text-white mt-1 font-light text-sm">
-                  Stop seeing posts from {profileData?.firstName || ''} on your feed.{" "}
-                  {profileData?.firstName || ''} won't be notified that you've
-                  unfollowed
+                  Stop seeing posts from {profileData?.firstName || ""} on your
+                  feed. {profileData?.firstName || ""} won't be notified that
+                  you've unfollowed
                 </TextScallingFalse>
                 <View className="items-center justify-evenly flex-row mt-5">
                   {/* cancel unfollow */}

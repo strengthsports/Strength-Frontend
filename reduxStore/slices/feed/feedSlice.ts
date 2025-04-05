@@ -65,7 +65,7 @@ export const fetchFeedPosts = createAsyncThunk<
     const data: FeedResponse = await response.json();
     // console.log(data);
     return {
-      posts: data.data.posts,
+      posts: data.data.posts || [],
       lastTimestamp: data.data.lastTimestamp,
       nextPage: data.data.nextPage,
     };

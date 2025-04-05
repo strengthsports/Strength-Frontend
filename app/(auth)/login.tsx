@@ -31,12 +31,13 @@ import {
 } from "~/reduxStore/slices/user/authSlice";
 import { z } from "zod";
 import loginSchema from "@/schemas/loginSchema";
+import { Colors } from "~/constants/Colors";
 
 const LoginScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   // const { status, error,  } = useSelector((state: RootState) => state.auth);
 
-  const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -65,7 +66,9 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const loginData = loginSchema.parse({ email, password });
+      const loginData = id.includes("@")
+        ? loginSchema.parse({ email: id, password })
+        : loginSchema.parse({ username: id, password });
 
       // Reset state and start loading
       dispatch(resetAuthState());
@@ -146,11 +149,11 @@ const LoginScreen = () => {
               Email or username
             </TextScallingFalse>
             <TextInputSection
-              placeholder="example@gmail.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              placeholder=""
+              value={id}
+              onChangeText={setId}
               autoCapitalize="none"
+              cursorColor={Colors.themeColor}
             />
             <TextScallingFalse
               style={{
@@ -168,6 +171,7 @@ const LoginScreen = () => {
               value={password}
               onChangeText={setPassword}
               customStyle={{ paddingEnd: 55 }}
+              cursorColor={Colors.themeColor}
             />
             <TouchableOpacity
               activeOpacity={0.5}

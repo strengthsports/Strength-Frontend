@@ -1,10 +1,11 @@
-import React from 'react';
-import { StyleSheet, TextInput, View, TextInputProps } from 'react-native';
+import React from "react";
+import { StyleSheet, TextInput, View, TextInputProps } from "react-native";
 
 interface TextInputSectionProps extends TextInputProps {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+  cursorColor?: string;
   secureTextEntry?: boolean; // Accept secureTextEntry as a prop
   customStyle?: object;
 }
@@ -15,14 +16,15 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
   onChangeText,
   keyboardType,
   autoCapitalize,
+  cursorColor,
   secureTextEntry, // Destructure secureTextEntry
   customStyle,
 }) => {
   return (
-    <View style={{marginTop: 4}}>
+    <View style={{ marginTop: 4 }}>
       <TextInput
         placeholder={placeholder}
-        placeholderTextColor={'transparent'}
+        placeholderTextColor={"transparent"}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
@@ -30,6 +32,7 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
         secureTextEntry={secureTextEntry} // Add secureTextEntry here
         style={[styles.input, customStyle]}
         textAlignVertical="center"
+        cursorColor={cursorColor}
       />
     </View>
   );
@@ -40,14 +43,14 @@ const styles = StyleSheet.create({
     width: 335,
     height: 44,
     borderWidth: 1,
-    borderColor: 'white',
+    borderColor: "white",
     borderRadius: 5.5,
-    color: 'white',
+    color: "white",
     fontSize: 18,
     paddingLeft: 10,
     paddingEnd: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingTop: 8,
     paddingBottom: 8,
   },

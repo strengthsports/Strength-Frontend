@@ -7,7 +7,7 @@ export const signupSchema = z.object({
     .string()
     .nonempty("Email is required")
     .email("Invalid email address"),
-  
+
   dateOfBirth: z
     .string()
     .optional()
@@ -19,10 +19,10 @@ export const signupSchema = z.object({
       },
       { message: "Invalid date format. Use 'YYYY-MM-DD'." }
     ),
-    
-  gender: z
-  .union([z.enum(["male", "female"]), z.literal("")])
-  .optional(),
+
+  gender: z.union([z.enum(["male", "female"]), z.literal("")]).optional(),
+
+  userType: z.string().nonempty("User type is required"),
 
   // password: z
   //   .string()
@@ -39,5 +39,5 @@ export const otpSchema = z.object({
 });
 export const resendOtpSchema = z.object({
   userId: z.string().nonempty("User ID is required."),
-  email: z.string()
+  email: z.string(),
 });

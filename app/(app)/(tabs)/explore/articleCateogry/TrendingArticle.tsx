@@ -5,17 +5,11 @@ import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import SwiperTop from "~/components/explorePage/SwiperTop";
 
-interface SelectedSportProps {
-  sportsName: string;
-}
+// import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
-const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
+const TrendingArticle = () => {
   const renderSwiper = () => {
-    const {
-      data: articles,
-      error,
-      isLoading,
-    } = useGetSportArticleQuery(sportsName);
+    const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
       return (
         <TextScallingFalse className="text-white self-center text-center pr-7">
@@ -37,7 +31,6 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
 
   return (
     <View>
-      <Text className="text-white">{sportsName}</Text>
       <FlatList
         data={sections}
         keyExtractor={(item, index) => index.toString()}
@@ -51,4 +44,4 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   );
 };
 
-export default SelectedSport;
+export default TrendingArticle;

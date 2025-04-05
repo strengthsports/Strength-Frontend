@@ -20,6 +20,11 @@ import MatchCard from "~/components/explorePage/cricketMatchCard";
 import NextMatchCard from "~/components/explorePage/cricketNextMatchCard";
 import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
+import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
+// import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
+// import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
+// import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
+// import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
 import FootballNextMatchCard from "~/components/explorePage/footballMatchCard";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import SwiperTop from "~/components/explorePage/SwiperTop";
@@ -29,7 +34,26 @@ import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoa
 const TrendingAll = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const renderSwiper = () => <SwiperTop />;
+  const { data: articles, error, isLoading } = useGetSportArticleQuery();
+
+  const renderSwiper = () => {
+    if (isLoading) {
+      return (
+        <TextScallingFalse className="text-white self-center text-center pr-7">
+          No swipper slides available
+        </TextScallingFalse>
+      );
+    }
+
+    if (error) {
+      return (
+        <TextScallingFalse className="text-white">
+          Error loading articles.
+        </TextScallingFalse>
+      );
+    }
+    return <SwiperTop swiperData={articles ?? []} />;
+  };
 
   const renderHashtags = () => (
     <View className="mt-10">

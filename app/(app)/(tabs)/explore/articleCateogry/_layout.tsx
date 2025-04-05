@@ -1,15 +1,14 @@
 import React, { lazy, Suspense } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
 import ComingSoon from "~/components/explorePage/comingSoon";
-import { Colors } from "~/constants/Colors";
 import { ExploreSportsCategoriesKeys } from "~/types/exploreSportKeys";
+import { Colors } from "~/constants/Colors";
 
-// Lazy loading for sports categories
-const TrendingAll = lazy(() => import("./TrendingAll"));
+// Define content components for each sports category
+const TrendingArticle = lazy(() => import("./TrendingArticle"));
 const SelectedSport = lazy(() => import("./SelectedSport"));
-
 const DefaultContent = lazy(
   () =>
     new Promise<{ default: React.FC<{ sportsName: string }> }>((resolve) =>
@@ -31,12 +30,12 @@ const DefaultContent = lazy(
 //   | "More \u2193"
 //   | "Default";
 
-// Component map for lazy-loaded categories
+// Create a component map for sports categories
 const componentMap: Record<
   ExploreSportsCategoriesKeys,
   React.LazyExoticComponent<React.FC<{ sportsName: string }>>
 > = {
-  Trending: TrendingAll,
+  Trending: TrendingArticle,
   Cricket: SelectedSport,
   Football: SelectedSport,
   Badminton: SelectedSport,
@@ -49,12 +48,12 @@ const componentMap: Record<
   Default: DefaultContent,
 };
 
-const ExploreAllLayout = () => {
+const ExploreArticleLayout = () => {
   const selectedCategory = useSelector(
     (state: RootState) => state.explore.selectedExploreSportsCategory
   );
 
-  // Get the correct component from the map
+  // Safely access the component from the map
   const CategoryComponent =
     componentMap[selectedCategory as ExploreSportsCategoriesKeys] ||
     componentMap.Default;
@@ -73,5 +72,4 @@ const ExploreAllLayout = () => {
     </View>
   );
 };
-
-export default ExploreAllLayout;
+export default ExploreArticleLayout;

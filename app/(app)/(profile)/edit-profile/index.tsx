@@ -25,7 +25,7 @@ import { responsiveFontSize } from "react-native-responsive-dimensions";
 import CustomButton from "~/components/common/CustomButtons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { editUserProfile } from "~/reduxStore/slices/user/profileSlice";
+import { editUserProfile, optimisticallyUpdateUser } from "~/reduxStore/slices/user/profileSlice";
 import { UserData } from "@/types/user";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { getToken } from "~/utils/secureStore";
@@ -321,6 +321,8 @@ const EditProfile = () => {
       return;
     }
 
+    let updatedValue: any = {};
+
     // Handle specific fields
     if (field === "address") {
       //address field
@@ -367,6 +369,9 @@ const EditProfile = () => {
         : "";
 
       setFormData((prev) => ({ ...prev, [field]: heightString }));
+      updatedValue = {
+        height: heightString,
+      };
       finalUploadData.set("height", heightString);
     } else if (field === "weight") {
       // weight field
@@ -376,6 +381,9 @@ const EditProfile = () => {
         : "";
 
       setFormData((prev) => ({ ...prev, [field]: weightString }));
+      updatedValue = {
+        weight: weightString,
+      };
       finalUploadData.set("weight", weightString);
     } else if (field === "username") {
       try {
@@ -396,6 +404,9 @@ const EditProfile = () => {
         if (response.ok) {
           // Username is valid and available
           setFormData((prev) => ({ ...prev, [field]: value }));
+          updatedValue = {
+            username: value,
+          };
           finalUploadData.set("username", value);
         } else {
           Keyboard.dismiss();
@@ -409,9 +420,13 @@ const EditProfile = () => {
       }
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
+      updatedValue = {
+        [field]: value,
+      };
       finalUploadData.set(field, value);
     }
 
+    dispatch(optimisticallyUpdateUser(updatedValue));
     closeModal();
   };
 

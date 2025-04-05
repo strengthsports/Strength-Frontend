@@ -15,6 +15,7 @@ const initialState: ProfileState = {
   msgBackend: null,
   posts: [],
   currentPost: null,
+  tempUser: null,
 };
 
 // Edit user profile details
@@ -337,6 +338,16 @@ const profileSlice = createSlice({
       state.error = null;
       state.posts = [];
     },
+    optimisticallyUpdateUser: (state, action) => {
+      //to store the current user data temporarily
+      state.tempUser = state.user ? { ...state.user } : null;
+      state.user = { ...state.user, ...action.payload };
+    },
+    //rollback reducer
+    rollbackUserUpdate: (state) => {
+      state.user = state.tempUser ? { ...state.tempUser } : state.user;
+      state.tempUser = null;
+    },
   },
   extraReducers: (builder) => {
     // Login
@@ -422,14 +433,18 @@ const profileSlice = createSlice({
       .addCase(editUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = { ...state.user, ...action.payload };
+        state.tempUser = null;
         state.msgBackend = action.payload.message;
         state.error = null;
       })
       .addCase(editUserProfile.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
         state.success = false;
         state.error =
           action.payload || "Unexpected error occurred during updating user.";
+        state.tempUser = null;
+        profileSlice.caseReducers.rollbackUserUpdate(state); //rollback to the previous state on error
       });
 
     // Fetch my profile
@@ -525,6 +540,8 @@ export const {
   pullFollowings,
   pushFollowings,
   setCurrentPost,
+  optimisticallyUpdateUser,
+  rollbackUserUpdate,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

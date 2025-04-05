@@ -19,11 +19,13 @@ const initialState: SignupState = {
 };
 
 interface SignupPayload {
+  userType: string;
   email: string;
   firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  category?: string;
 }
 // Thunk for Signup
 export const signupUser = createAsyncThunk<
@@ -33,7 +35,7 @@ export const signupUser = createAsyncThunk<
 >("auth/signupUser", async (SignupPayload, { rejectWithValue }) => {
   try {
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/initiate-signup`,
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/initiate-signup?userType=${SignupPayload.userType}`,
       {
         method: "POST",
         headers: {

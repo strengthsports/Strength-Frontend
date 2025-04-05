@@ -49,7 +49,7 @@ const SuggestionCard = ({
       setFollowingStatus(true);
       const followData: FollowUser = {
         followingId: user._id,
-        followingType: user.type || "User",
+        followingType: user.type,
       };
 
       await followUser(followData);
@@ -66,7 +66,7 @@ const SuggestionCard = ({
       setFollowingStatus(false);
       const unfollowData: FollowUser = {
         followingId: user._id,
-        followingType: user.type || "User",
+        followingType: user.type,
       };
       if (isSelected) {
         isSelected(user._id); // Remove from selected players

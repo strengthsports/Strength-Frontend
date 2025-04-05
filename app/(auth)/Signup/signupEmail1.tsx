@@ -199,7 +199,7 @@ const SignupEmail1 = () => {
             <TextScallingFalse
               style={{ color: "white", fontSize: 14, fontWeight: "500" }}
             >
-              Email or phone number
+              Email
             </TextScallingFalse>
             <TextInputSection
               placeholder=""

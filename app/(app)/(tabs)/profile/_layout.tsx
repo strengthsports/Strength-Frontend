@@ -40,6 +40,7 @@ import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
 import Tags from "./tags";
 import Media from "./media";
+import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -54,6 +55,7 @@ const ProfileLayout = () => {
     });
   const [refreshing, setRefreshing] = useState(false);
 
+  // On refresh Profile Page
   const onRefresh = async () => {
     setRefreshing(true);
     await dispatch(
@@ -95,6 +97,11 @@ const ProfileLayout = () => {
     await dispatch(removePic(picType));
   };
 
+  // Handle open post container
+  const handleOpenPostContainer = () => {
+    dispatch(setAddPostContainerOpen(true));
+  };
+
   if (loading) {
     <View>
       <Text className="text-white">Loading...</Text>
@@ -116,13 +123,12 @@ const ProfileLayout = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View
-        // style={{
-        //   backgroundColor: "black",
-        //   zIndex: 999,
-        // }}
-        >
-          <Header username={user?.username} isBackButtonVisible={false} />
+        <View>
+          <Header
+            username={user?.username}
+            isBackButtonVisible={false}
+            handlePostContainerOpen={handleOpenPostContainer}
+          />
         </View>
         {/* profile pic and cover image */}
         <View
@@ -338,6 +344,7 @@ const ProfileLayout = () => {
                       rowGap: 14,
                     }}
                   >
+                    {/* page category/type */}
                     <View style={{ flexDirection: "row" }}>
                       <Entypo
                         name="dot-single"
@@ -349,7 +356,7 @@ const ProfileLayout = () => {
                         {user?.category}
                       </TextScallingFalse>
                     </View>
-
+                    {/* sports category */}
                     <View style={{ flexDirection: "row" }}>
                       <Entypo
                         name="dot-single"
@@ -359,37 +366,47 @@ const ProfileLayout = () => {
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
                         Sports Category:{" "}
-                        <Text style={{ color: "grey" }}>Football</Text>
-                      </TextScallingFalse>
-                    </View>
-
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Website:{" "}
-                        <Text style={{ color: "#12956B" }}>
-                          https://www.eastbengal.in
+                        <Text style={{ color: "grey" }}>
+                          {user?.favouriteSports?.map(
+                            (sport: any) => `${sport.sport.name} `
+                          )}
                         </Text>
                       </TextScallingFalse>
                     </View>
-
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Established On:{" "}
-                        <Text style={{ color: "grey" }}>Sept, 1997</Text>
-                      </TextScallingFalse>
-                    </View>
+                    {/* website */}
+                    {user?.websiteLink && (
+                      <View style={{ flexDirection: "row" }}>
+                        <Entypo
+                          name="dot-single"
+                          size={responsiveDotSize}
+                          color="white"
+                        />
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          Website:{" "}
+                          <Text style={{ color: "#12956B" }}>
+                            https://www.eastbengal.in
+                          </Text>
+                        </TextScallingFalse>
+                      </View>
+                    )}
+                    {/* established on */}
+                    {user?.dateOfBirth && (
+                      <View style={{ flexDirection: "row" }}>
+                        <Entypo
+                          name="dot-single"
+                          size={responsiveDotSize}
+                          color="white"
+                        />
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          Established On:{" "}
+                          <Text style={{ color: "grey" }}>
+                            {dateFormatter(user?.dateOfBirth, "text")}
+                          </Text>
+                        </TextScallingFalse>
+                      </View>
+                    )}
                   </View>
                 </View>
               )}

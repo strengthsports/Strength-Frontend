@@ -36,3 +36,12 @@ export type Target = {
   targetId: string;
   targetType: string;
 };
+
+export type NotificationType =
+  | "Like"
+  | "Comment"
+  | "Follow"
+  | "TeamInvitation"
+  | "JoinTeamRequest"
+  | "Report"
+  | "Tag";

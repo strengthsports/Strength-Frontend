@@ -84,6 +84,7 @@ const Overview = () => {
       </PageThemeView>
     );
   }
+
   if (isLoading) {
     return (
       <PageThemeView>
@@ -98,7 +99,7 @@ const Overview = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {validSports.length > 0 && (
+      {fetchedUserId?.type !== "Page" && validSports.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
             horizontal

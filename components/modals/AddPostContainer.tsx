@@ -37,6 +37,7 @@ import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
+import { showFeedback } from "~/utils/feedbackToast";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -124,6 +125,7 @@ export default function AddPostContainer({
   const inputRef = useRef<TextInput>(null);
   const [inputHeight, setInputHeight] = useState(40);
   const [showPollInput, setShowPollInput] = useState(false);
+  const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
 
   // Improved regex pattern for tag detection
   const parseTags = (text: string) => {
@@ -145,11 +147,23 @@ export default function AddPostContainer({
     setActiveIndex(index);
   };
 
-  // Memoize derived values
-  const isPostButtonEnabled = useMemo(
-    () => postText.trim() || pickedImageUris.length > 0,
-    [postText, pickedImageUris.length]
-  );
+  // Conditions for posting content
+  const isPostButtonEnabled = useMemo(() => {
+    // Count non-empty poll options
+    const validOptionsCount = newPollOptions.filter(
+      (opt) => opt.trim() !== ""
+    ).length;
+
+    // Always require valid poll when poll input is shown
+    const pollValidation =
+      !showPollInput || (showPollInput && validOptionsCount >= 2);
+
+    // Enable button if:
+    // 1. There's either caption OR images
+    // AND
+    // 2. If poll is shown, it must be valid
+    return (postText.trim() || pickedImageUris.length > 0) && pollValidation;
+  }, [postText, pickedImageUris.length, showPollInput, newPollOptions]);
 
   // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(() => {
@@ -174,6 +188,12 @@ export default function AddPostContainer({
 
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
       formData.append("taggedUsers", JSON.stringify([]));
+      // For poll
+      const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
+      console.log("Valid Options : ", validOptions);
+      validOptions.forEach((option) => {
+        formData.append("options", JSON.stringify(option));
+      });
 
       setPostText("");
       setPickedImageUris([]);
@@ -184,17 +204,17 @@ export default function AddPostContainer({
         })
         .catch((error) => {
           console.error("Failed to add post:", error);
-          alert("Failed to add post. Please try again.");
+          showFeedback("Failed to add post. Please try again.");
         });
     } catch (error) {
       console.error("Failed to add post:", error);
-      alert("Failed to add post. Please try again.");
     }
   }, [
     addPost,
     isPostButtonEnabled,
     pickedImageUris,
     postText,
+    newPollOptions,
     router,
     selectedAspectRatio,
     dispatch,
@@ -281,6 +301,16 @@ export default function AddPostContainer({
   const closeRatioModal = useCallback(() => {
     setIsImageRatioModalVisible(false);
   }, []);
+
+  const handleOptionsChange = (updatedOptions: string[]) => {
+    setNewPollOptions(updatedOptions);
+  };
+
+  // Handle close poll
+  const handleClosePoll = () => {
+    setShowPollInput(false);
+    setNewPollOptions(["", ""]);
+  };
 
   // Navigate back handler
   const navigateBack = () => {
@@ -380,7 +410,12 @@ export default function AddPostContainer({
 
           {/* Only render PollsContainer when polls is selected */}
           {showPollInput && (
-            <PollsContainer onClose={() => setShowPollInput(false)} />
+            <PollsContainer
+              onClose={handleClosePoll}
+              mode="create"
+              options={newPollOptions}
+              onOptionsChange={handleOptionsChange}
+            />
           )}
 
           {/* Only render CustomImageSlider when there are images */}
@@ -432,11 +467,14 @@ export default function AddPostContainer({
             <TouchableOpacity activeOpacity={0.5} className="p-[5px] w-[35px]">
               <TagsIcon />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handlePickImageOrAddMore}>
+            <TouchableOpacity
+              onPress={handlePickImageOrAddMore}
+              disabled={showPollInput}
+            >
               <MaterialCommunityIcons
                 name="image-outline"
                 size={24}
-                color={Colors.themeColor}
+                color={showPollInput ? "#737373" : Colors.themeColor}
               />
               {pickedImageUris.length > 0 && (
                 <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">

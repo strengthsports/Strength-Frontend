@@ -7,7 +7,12 @@ import {
 } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { User, AuthState } from "@/types/user";
-import { disconnectSocket } from "~/utils/socket";
+
+type LoginPayload = {
+  email?: string;
+  username?: string;
+  password: string;
+};
 
 // Initial State
 const initialState: AuthState = {
@@ -35,9 +40,9 @@ export const initializeAuth = createAsyncThunk(
 // Login User
 export const loginUser = createAsyncThunk<
   { user: User; message: string },
-  { email: string; password: string },
+  LoginPayload,
   { rejectValue: string }
->("auth/loginUser", async ({ email, password }, { rejectWithValue }) => {
+>("auth/loginUser", async (LoginPayload, { rejectWithValue }) => {
   try {
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/login`,
@@ -46,7 +51,7 @@ export const loginUser = createAsyncThunk<
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(LoginPayload),
       }
     );
     const data = await response.json();
@@ -93,7 +98,7 @@ export const logoutUser = createAsyncThunk(
       }
 
       // Disconnect socket connection
-      disconnectSocket();
+      // disconnectSocket();
 
       // Clear Secure Store
       removeToken("accessToken");

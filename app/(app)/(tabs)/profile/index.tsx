@@ -169,27 +169,11 @@ const Overview = () => {
                       </TextScallingFalse>
                       <View className="flex items-center justify-center flex-row gap-2">
                         <TouchableOpacity
-                          className="flex items-center justify-center"
-                          style={{
-                            width: 36 * scaleFactor,
-                            height: 36 * scaleFactor,
-                          }}
                           onPress={() =>
                             router.push("/(app)/(profile)/edit-overview")
                           }
                         >
-                          <Feather
-                            name="plus"
-                            size={20 * scaleFactor}
-                            color="#717171"
-                          />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                          <Feather
-                            name="edit"
-                            size={18 * scaleFactor}
-                            color="#717171"
-                          />
+                          <AddIcon />
                         </TouchableOpacity>
                       </View>
                     </View>

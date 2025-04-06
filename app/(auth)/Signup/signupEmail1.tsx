@@ -68,6 +68,7 @@ const SignupEmail1 = () => {
     lastName,
     dateOfBirth,
     gender,
+    userType: "User",
   };
   const feedback = (message: string, type: "error" | "success" = "error") => {
     if (type === "error") {
@@ -106,7 +107,7 @@ const SignupEmail1 = () => {
         // console.log('Zod response',validationError)
         feedback(validationError, "error");
       } else {
-        console.log('Backend response: ',err)
+        console.log("Backend response: ", err);
         feedback(err || "An error occurred. Please try again.");
       }
     }
@@ -198,7 +199,7 @@ const SignupEmail1 = () => {
             <TextScallingFalse
               style={{ color: "white", fontSize: 14, fontWeight: "500" }}
             >
-              Email or phone number
+              Email
             </TextScallingFalse>
             <TextInputSection
               placeholder=""
@@ -237,7 +238,9 @@ const SignupEmail1 = () => {
                 activeOpacity={0.5}
               >
                 <AntDesign name="calendar" size={25} color="white" />
-                <Text style={{ color: "white", fontSize: 14, fontWeight: "400" }}>
+                <Text
+                  style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+                >
                   {dateOfBirth}
                 </Text>
               </TouchableOpacity>

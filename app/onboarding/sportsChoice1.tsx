@@ -44,6 +44,7 @@ const SportsChoice: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
   const [numberOfSports, setNumberOfSports] = React.useState(1);
+  const [isSelected, setIsSelected] = React.useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -98,9 +99,14 @@ const SportsChoice: React.FC = () => {
   // Toggle selection of sports
   const toggleSport = (_id: string) => {
     const updatedSelected = new Set(localSelectedSports);
-    if (_id === "all") {
+    if (_id === "all" && isSelected) {
+      sportsData.filter((sport) => updatedSelected.delete(sport._id));
+      setIsSelected(false);
+    } else if (_id === "all" && !isSelected) {
       sportsData.map((sport) => updatedSelected.add(sport._id));
+      setIsSelected(true);
     }
+
     if (updatedSelected.has(_id)) {
       updatedSelected.delete(_id);
     } else {
@@ -173,36 +179,6 @@ const SportsChoice: React.FC = () => {
             </TextScallingFalse>
           </View>
         </TouchableOpacity>
-        {/* {userType && userType === "Page" && (
-          <TouchableOpacity className="m-1" onPress={() => toggleSport("all")}>
-            <View
-              className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${
-                isSelected
-                  ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
-                  : "border border-white/30 bg-black" // Default black background
-              }`}
-            >
-              <TextScallingFalse
-                className={`text-center text-[13px] leading-[15px] mt-2 ${
-                  isSelected
-                    ? "text-white font-normal"
-                    : "text-white font-normal"
-                }`}
-                numberOfLines={2} // Ensures text wraps within two lines
-                ellipsizeMode="tail" // Adds "..." if text is too long
-                allowFontScaling={false}
-                style={{
-                  flexShrink: 1, // Ensures text shrinks if needed
-                  width: "100%", // Ensures text doesn't overflow
-                  overflow: "hidden", // Prevents text from breaking out
-                  textAlign: "center",
-                }}
-              >
-                All Sports
-              </TextScallingFalse>
-            </View>
-          </TouchableOpacity>
-        )} */}
       </>
     );
   };
@@ -268,6 +244,39 @@ const SportsChoice: React.FC = () => {
                   {renderSportItem({ item })}
                 </View>
               ))}
+              {userType && userType === "Page" && (
+                <TouchableOpacity
+                  className="m-1"
+                  onPress={() => toggleSport("all")}
+                >
+                  <View
+                    className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${
+                      isSelected
+                        ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
+                        : "border border-white/30 bg-black" // Default black background
+                    }`}
+                  >
+                    <TextScallingFalse
+                      className={`text-center text-[13px] leading-[15px] mt-2 ${
+                        isSelected
+                          ? "text-white font-normal"
+                          : "text-white font-normal"
+                      }`}
+                      numberOfLines={2} // Ensures text wraps within two lines
+                      ellipsizeMode="tail" // Adds "..." if text is too long
+                      allowFontScaling={false}
+                      style={{
+                        flexShrink: 1, // Ensures text shrinks if needed
+                        width: "100%", // Ensures text doesn't overflow
+                        overflow: "hidden", // Prevents text from breaking out
+                        textAlign: "center",
+                      }}
+                    >
+                      All Sports
+                    </TextScallingFalse>
+                  </View>
+                </TouchableOpacity>
+              )}
             </View>
           )}
 

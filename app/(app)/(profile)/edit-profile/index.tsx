@@ -33,9 +33,9 @@ import Toast from "react-native-toast-message";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from "react-native";
-import { Text } from "react-native";
 import useGetAddress from "~/hooks/useGetAddress";
 import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
+import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -453,10 +453,12 @@ const EditProfile = () => {
       setFormData((prev) => ({ ...prev, [field]: weightString }));
       finalUploadData.set("weight", weightString);
     } else if (field === "username") {
-      const usernameRegex = /^[a-z0-9]+$/;
+      const usernameRegex = /^[a-z0-9._]+$/;
 
       if (!usernameRegex.test(value)) {
-        showToast("Username can only contain lowercase letters and numbers!");
+        showToast(
+          "Username can only contain lowercase letters, numbers,(.) and (_)."
+        );
         return;
       }
 
@@ -954,16 +956,13 @@ const EditProfile = () => {
                     style={{
                       flexDirection: "row",
                       gap: "3%",
-                      paddingHorizontal: 30,
+                      paddingHorizontal: 35,
                     }}
                     onPress={() => pickImage("cover")}
                   >
-                    <FontAwesome5
-                      name="images"
-                      style={{ marginTop: "1%" }}
-                      size={24}
-                      color="white"
-                    />
+                    <View className="w-[20%] justify-center items-center border border-gray-500 rounded-[15px]">
+                      <UploadImg />
+                    </View>
                     <View>
                       <TextScallingFalse
                         style={{
@@ -972,7 +971,7 @@ const EditProfile = () => {
                           fontWeight: "semibold",
                         }}
                       >
-                        Upload your Cover Pictur
+                        Upload your Cover Picture
                       </TextScallingFalse>
                       <TextScallingFalse
                         style={{
@@ -1030,16 +1029,13 @@ const EditProfile = () => {
                     style={{
                       flexDirection: "row",
                       gap: "3%",
-                      paddingHorizontal: 30,
+                      paddingHorizontal: 35,
                     }}
                     onPress={() => pickImage("profile")}
                   >
-                    <FontAwesome5
-                      name="images"
-                      style={{ marginTop: "1%" }}
-                      size={24}
-                      color="white"
-                    />
+                    <View className="w-[20%] justify-center items-center border border-gray-500 rounded-[15px]">
+                      <UploadImg />
+                    </View>
                     <View>
                       <TextScallingFalse
                         style={{
@@ -1072,19 +1068,20 @@ const EditProfile = () => {
         {isDatePickerVisible && (
           <View>
             <DateTimePicker
-              value={inputValue ? new Date(inputValue) : new Date()} // Set initial value
+              value={inputValue ? new Date(inputValue) : new Date()}
               mode="date"
-              display="spinner"
+              display={Platform.OS === "ios" ? "inline" : "default"}
               onChange={(event, selectedDate) => {
                 if (selectedDate) {
                   const formattedDate = selectedDate
                     .toISOString()
-                    .split("T")[0]; // Format date
-                  setInputValue(formattedDate); // Update state
+                    .split("T")[0];
+                  setInputValue(formattedDate);
                 }
-                setIsDatePickerVisible(false); // Close picker
+                if (Platform.OS === "android") {
+                  setIsDatePickerVisible(false); // Android auto-closes
+                }
               }}
-              themeVariant="dark"
             />
           </View>
         )}
@@ -1146,9 +1143,9 @@ const EditProfile = () => {
                   >
                     <AntDesign name="arrowleft" size={28} color="white" />
                   </TouchableOpacity>
-                  <Text className="text-white text-5xl font-medium">
+                  <TextScallingFalse className="text-white text-5xl font-medium">
                     {label}
-                  </Text>
+                  </TextScallingFalse>
                 </View>
                 <TouchableOpacity
                   onPress={() => handleDone(picType, inputValue)}
@@ -1227,19 +1224,31 @@ const EditProfile = () => {
                   </>
                 ) : picType === "dateOfBirth" ? (
                   <>
-                    <Text className="text-gray-500 text-xl">{label}</Text>
-                    <View className="flex-row border-b h-[50px] border-white">
-                      <TextInput
-                        value={dateFormatter(new Date(inputValue), "date")}
-                        onChangeText={setInputValue}
-                        placeholder={placeholder}
-                        placeholderTextColor="gray"
-                        className="text-white text-4xl flex-1 pl-0 pb-0"
-                      />
+                    <TextScallingFalse className="text-gray-500 text-xl mb-5">
+                      {label}
+                    </TextScallingFalse>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        borderBottomWidth: 1,
+                        height: 31,
+                        borderColor: "white",
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => setIsDatePickerVisible(true)}
+                        activeOpacity={0.7}
+                        style={{ width: "90%", justifyContent: "center" }}
+                      >
+                        <TextScallingFalse className="text-white text-4xl flex-1 pl-0 pb-0">
+                          {dateFormatter(new Date(inputValue), "date")}
+                        </TextScallingFalse>
+                      </TouchableOpacity>
                       {picType === "dateOfBirth" && (
                         <TouchableOpacity
                           onPress={() => setIsDatePickerVisible(true)}
-                          className="inset-y-3"
+                          className="w-[10%] justify-center items-center"
+                          activeOpacity={0.5}
                         >
                           <AntDesign name="calendar" size={22} color="white" />
                         </TouchableOpacity>
@@ -1258,11 +1267,20 @@ const EditProfile = () => {
                         value={inputValue}
                         onChangeText={(text) => {
                           let newText = text;
-                          if (picType === "username" && text.length > 20) {
-                            newText = text.toLowerCase(); // Force lowercase for usernames
+
+                          if (picType === "username") {
+                            // Remove spaces and force lowercase
+                            newText = text.replace(/\s/g, "").toLowerCase();
+
+                            // Enforce max length
+                            if (newText.length > 20) {
+                              return;
+                            }
+
+                            setInputValue(newText);
                             return;
                           }
-                          setInputValue(newText);
+
                           if (picType === "headline" && text.length > 60) {
                             // Prevent exceeding the limit
                             return;
@@ -1284,23 +1302,23 @@ const EditProfile = () => {
                     </View>
                     {/* Character Counter (Only shown if picType is "headline") */}
                     {picType === "headline" && (
-                      <Text className="text-gray-500 text-sm mt-1">
+                      <TextScallingFalse className="text-gray-500 text-sm mt-1">
                         {inputValue.length} / 60
-                      </Text>
+                      </TextScallingFalse>
                     )}
 
                     {/* Character Counter (Only shown if picType is "username") */}
                     {picType === "username" && (
-                      <Text className="text-gray-500 text-sm mt-1">
+                      <TextScallingFalse className="text-gray-500 text-sm mt-1">
                         {inputValue.length} / 20
-                      </Text>
+                      </TextScallingFalse>
                     )}
                   </>
                 )}
 
-                <Text className="text-gray-500 text-base mt-4">
+                <TextScallingFalse className="text-gray-500 text-base mt-4">
                   {description}
-                </Text>
+                </TextScallingFalse>
                 {picType === "address" ? (
                   <TouchableOpacity
                     activeOpacity={0.5}
@@ -1533,19 +1551,21 @@ const FormField = ({
       !isLast ? "border-b border-[#3030309a]" : ""
     }`}
   >
-    <Text className="text-white text-4xl font-medium w-1/3">{label}</Text>
+    <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
+      {label}
+    </TextScallingFalse>
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
       className="flex-row items-center justify-between h-full w-2/3"
     >
-      <Text
+      <TextScallingFalse
         className={`text-2xl font-light ${
           value ? "text-white" : "text-gray-500"
         }`}
       >
         {isDate ? dateFormatter(value as any, "date") : value || placeholder}
-      </Text>
+      </TextScallingFalse>
       {icon && <View className="">{icon}</View>}
     </TouchableOpacity>
   </View>
@@ -1608,7 +1628,9 @@ const MeasurementInput = ({
 
   return (
     <View className="flex-row items-center justify-between w-full mb-4">
-      <Text className="text-white text-3xl font-light basis-[55%]">{unit}</Text>
+      <TextScallingFalse className="text-white text-3xl font-light basis-[55%]">
+        {unit}
+      </TextScallingFalse>
       <View className="flex-row basis-[45%]">
         <View className="relative">
           <TextInput
@@ -1621,7 +1643,7 @@ const MeasurementInput = ({
               textAlignVertical: "center",
             }}
           />
-          <Text className="absolute right-4 top-[5px] text-white text-2xl font-semibold pointer-events-none">
+          <TextScallingFalse className="absolute right-4 top-[5px] text-white text-2xl font-semibold pointer-events-none">
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
@@ -1631,7 +1653,7 @@ const MeasurementInput = ({
               : field === "kilograms"
               ? "kg"
               : "lbs"}
-          </Text>
+          </TextScallingFalse>
         </View>
         <CustomButton
           field={

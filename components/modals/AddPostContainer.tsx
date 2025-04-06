@@ -33,7 +33,10 @@ import { useLocalSearchParams } from "expo-router";
 import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
+import {
+  setAddPostContainerOpen,
+  setPostProgressOn,
+} from "~/reduxStore/slices/post/postSlice";
 import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
@@ -102,10 +105,10 @@ const ImageRatioModal = React.memo(
 
 export default function AddPostContainer({
   text,
-  setAddPostContainerOpen,
+  isAddPostContainerOpen,
 }: {
   text: string;
-  setAddPostContainerOpen: (state: boolean) => void;
+  isAddPostContainerOpen: boolean;
 }) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -168,8 +171,8 @@ export default function AddPostContainer({
   // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(() => {
     if (!isPostButtonEnabled) return;
-    // router.push("/(app)/(tabs)/home");
-    setAddPostContainerOpen(false);
+    dispatch(setAddPostContainerOpen(false));
+    router.push("/(app)/(tabs)/home");
     dispatch(setPostProgressOn(true));
 
     try {
@@ -312,213 +315,233 @@ export default function AddPostContainer({
     setNewPollOptions(["", ""]);
   };
 
-  // Navigate back handler
-  const navigateBack = () => {
-    if (postText == "" && pickedImageUris.length === 0) {
-      // router.push("..");
-      setAddPostContainerOpen(false);
-    } else {
+  const handleCloseAddPostContainer = () => {
+    if (isPostButtonEnabled && !isAlertModalOpen) {
       setAlertModalOpen(true);
+    } else if (isAlertModalOpen) {
+      setPostText("");
+      setAlertModalOpen(false);
+      dispatch(setAddPostContainerOpen(false));
+    } else {
+      dispatch(setAddPostContainerOpen(false));
     }
   };
 
   return (
-    <PageThemeView>
-      <View className="h-full">
-        {/* Header */}
-        <View className="flex flex-row items-center justify-between p-4">
-          <AddPostHeader onBackPress={navigateBack} />
-          <TouchableOpacity
-            className={`px-6 py-1 rounded-full ${
-              isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-            }`}
-            onPress={handlePostSubmit}
-            disabled={!isPostButtonEnabled}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={"white"} />
-            ) : (
-              <TextScallingFalse
-                className={`${
-                  isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                } text-3xl font-semibold`}
+    <Modal
+      visible={isAddPostContainerOpen}
+      animationType="slide"
+      onRequestClose={handleCloseAddPostContainer}
+      transparent={true}
+    >
+      <TouchableOpacity
+        className="flex-1"
+        activeOpacity={1}
+        onPress={handleCloseAddPostContainer}
+      >
+        <PageThemeView>
+          <View className="h-full">
+            {/* Header */}
+            <View className="flex flex-row items-center justify-between p-4">
+              <AddPostHeader onBackPress={handleCloseAddPostContainer} />
+              <TouchableOpacity
+                className={`px-6 py-1 rounded-full ${
+                  isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+                }`}
+                onPress={handlePostSubmit}
+                disabled={!isPostButtonEnabled}
               >
-                Post
-              </TextScallingFalse>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          className="px-0"
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          removeClippedSubviews={true}
-        >
-          <View style={{ minHeight: 100 }}>
-            {/* Overlay text with highlighting */}
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                pointerEvents: "none",
-                paddingHorizontal: 16,
-                paddingTop: Platform.OS === "ios" ? 8 : 4,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: "transparent",
-                  lineHeight: 24,
-                  // Match TextInput's text alignment behavior
-                  textAlignVertical: "top",
-                  includeFontPadding: false,
-                }}
-              >
-                {parseTags(postText)}
-              </Text>
+                {isLoading ? (
+                  <ActivityIndicator color={"white"} />
+                ) : (
+                  <TextScallingFalse
+                    className={`${
+                      isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                    } text-3xl font-semibold`}
+                  >
+                    Post
+                  </TextScallingFalse>
+                )}
+              </TouchableOpacity>
             </View>
 
-            {/* Actual text input */}
-            <TextInput
-              ref={inputRef}
-              multiline
-              autoFocus
-              placeholder={placeholderText}
-              placeholderTextColor="grey"
-              value={postText}
-              onChangeText={setPostText}
-              onContentSizeChange={(e) => {
-                setInputHeight(e.nativeEvent.contentSize.height);
-              }}
-              style={{
-                fontSize: 16,
-                color: "white",
-                paddingHorizontal: 16,
-                height: Math.max(40, inputHeight),
-                opacity: 0.99, // Needs to be almost opaque to hide overlay
-                lineHeight: 24,
-                textAlignVertical: "top",
-              }}
-              textBreakStrategy="highQuality"
-              keyboardAppearance="dark"
-            />
-          </View>
-
-          {/* Only render PollsContainer when polls is selected */}
-          {showPollInput && (
-            <PollsContainer
-              onClose={handleClosePoll}
-              mode="create"
-              options={newPollOptions}
-              onOptionsChange={handleOptionsChange}
-            />
-          )}
-
-          {/* Only render CustomImageSlider when there are images */}
-          {pickedImageUris.length > 0 && (
-            <CustomImageSlider
-              images={pickedImageUris}
-              aspectRatio={selectedAspectRatio}
-              onRemoveImage={removeImage}
-              setIndex={handleSetActiveIndex}
-            />
-          )}
-
-          {/* Pagination */}
-          {pickedImageUris.length > 1 && (
-            <View className="flex-row justify-center mt-2">
-              {Array.from({ length: pickedImageUris.length }).map((_, i) => (
+            <ScrollView
+              className="px-0"
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              removeClippedSubviews={true}
+            >
+              <View style={{ minHeight: 100 }}>
+                {/* Overlay text with highlighting */}
                 <View
-                  key={`dot-${i}`}
-                  className={
-                    i === activeIndex
-                      ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                      : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-                  }
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    pointerEvents: "none",
+                    paddingHorizontal: 16,
+                    paddingTop: Platform.OS === "ios" ? 8 : 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "transparent",
+                      lineHeight: 24,
+                      // Match TextInput's text alignment behavior
+                      textAlignVertical: "top",
+                      includeFontPadding: false,
+                    }}
+                  >
+                    {parseTags(postText)}
+                  </Text>
+                </View>
+
+                {/* Actual text input */}
+                <TextInput
+                  ref={inputRef}
+                  multiline
+                  autoFocus
+                  placeholder={placeholderText}
+                  placeholderTextColor="grey"
+                  value={postText}
+                  onChangeText={setPostText}
+                  onContentSizeChange={(e) => {
+                    setInputHeight(e.nativeEvent.contentSize.height);
+                  }}
+                  style={{
+                    fontSize: 16,
+                    color: "white",
+                    paddingHorizontal: 16,
+                    height: Math.max(40, inputHeight),
+                    opacity: 0.99, // Needs to be almost opaque to hide overlay
+                    lineHeight: 24,
+                    textAlignVertical: "top",
+                  }}
+                  textBreakStrategy="highQuality"
+                  keyboardAppearance="dark"
                 />
-              ))}
-            </View>
-          )}
-        </ScrollView>
+              </View>
 
-        {/* Footer */}
-        <View className="flex flex-row justify-between items-center p-5">
-          <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
-            <MaterialCommunityIcons
-              name="earth"
-              size={20}
-              color={Colors.themeColor}
-            />
-            <TextScallingFalse className="text-theme text-3xl">
-              Public
-            </TextScallingFalse>
-            <MaterialCommunityIcons
-              name="menu-down"
-              size={24}
-              color={Colors.themeColor}
-            />
-          </TouchableOpacity>
+              {/* Only render PollsContainer when polls is selected */}
+              {showPollInput && (
+                <PollsContainer
+                  onClose={handleClosePoll}
+                  mode="create"
+                  options={newPollOptions}
+                  onOptionsChange={handleOptionsChange}
+                />
+              )}
 
-          <View className="flex flex-row justify-between items-center gap-2">
-            <TouchableOpacity activeOpacity={0.5} className="p-[5px] w-[35px]">
-              <TagsIcon />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handlePickImageOrAddMore}
-              disabled={showPollInput}
-            >
-              <MaterialCommunityIcons
-                name="image-outline"
-                size={24}
-                color={showPollInput ? "#737373" : Colors.themeColor}
-              />
+              {/* Only render CustomImageSlider when there are images */}
               {pickedImageUris.length > 0 && (
-                <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
-                  <FontAwesome6 name="add" size={12} color="#12956B" />
+                <CustomImageSlider
+                  images={pickedImageUris}
+                  aspectRatio={selectedAspectRatio}
+                  onRemoveImage={removeImage}
+                  setIndex={handleSetActiveIndex}
+                />
+              )}
+
+              {/* Pagination */}
+              {pickedImageUris.length > 1 && (
+                <View className="flex-row justify-center mt-2">
+                  {Array.from({ length: pickedImageUris.length }).map(
+                    (_, i) => (
+                      <View
+                        key={`dot-${i}`}
+                        className={
+                          i === activeIndex
+                            ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
+                            : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
+                        }
+                      />
+                    )
+                  )}
                 </View>
               )}
-            </TouchableOpacity>
-            <Modal
-              visible={isImageRatioModalVisible}
-              transparent
-              animationType="slide"
-              onRequestClose={closeRatioModal}
-            >
-              <TouchableOpacity
-                className="flex-1 justify-end bg-black/50"
-                activeOpacity={1}
-                onPress={closeRatioModal}
-              >
-                <ImageRatioModal pickImage={selectFirstImage} />
-              </TouchableOpacity>
-            </Modal>
-            <TouchableOpacity
-              onPress={() => setShowPollInput(true)}
-              className="p-[5px]"
-              activeOpacity={0.5}
-            >
-              <PollsIcon />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+            </ScrollView>
 
-      {/* alert modal */}
-      <AlertModal
-        isVisible={isAlertModalOpen}
-        alertConfig={{
-          title: "Discard Post ?",
-          message: "All your changes will be deleted",
-          cancelMessage: "Cancel",
-          confirmMessage: "Discard",
-          confirmAction: () => setAddPostContainerOpen(false),
-          discardAction: () => setAlertModalOpen(false),
-        }}
-      />
-    </PageThemeView>
+            {/* Footer */}
+            <View className="flex flex-row justify-between items-center p-5">
+              <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+                <MaterialCommunityIcons
+                  name="earth"
+                  size={20}
+                  color={Colors.themeColor}
+                />
+                <TextScallingFalse className="text-theme text-3xl">
+                  Public
+                </TextScallingFalse>
+                <MaterialCommunityIcons
+                  name="menu-down"
+                  size={24}
+                  color={Colors.themeColor}
+                />
+              </TouchableOpacity>
+
+              <View className="flex flex-row justify-between items-center gap-2">
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  className="p-[5px] w-[35px]"
+                >
+                  <TagsIcon />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handlePickImageOrAddMore}
+                  disabled={showPollInput}
+                >
+                  <MaterialCommunityIcons
+                    name="image-outline"
+                    size={24}
+                    color={showPollInput ? "#737373" : Colors.themeColor}
+                  />
+                  {pickedImageUris.length > 0 && (
+                    <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
+                      <FontAwesome6 name="add" size={12} color="#12956B" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <Modal
+                  visible={isImageRatioModalVisible}
+                  transparent
+                  animationType="slide"
+                  onRequestClose={closeRatioModal}
+                >
+                  <TouchableOpacity
+                    className="flex-1 justify-end bg-black/50"
+                    activeOpacity={1}
+                    onPress={closeRatioModal}
+                  >
+                    <ImageRatioModal pickImage={selectFirstImage} />
+                  </TouchableOpacity>
+                </Modal>
+                <TouchableOpacity
+                  onPress={() => setShowPollInput(true)}
+                  className="p-[5px]"
+                  activeOpacity={0.5}
+                >
+                  <PollsIcon />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* alert modal */}
+          <AlertModal
+            isVisible={isAlertModalOpen}
+            alertConfig={{
+              title: "Discard Post ?",
+              message: "All your changes will be deleted",
+              cancelMessage: "Cancel",
+              confirmMessage: "Discard",
+              confirmAction: () => handleCloseAddPostContainer(),
+              discardAction: () => setAlertModalOpen(false),
+            }}
+          />
+        </PageThemeView>
+      </TouchableOpacity>
+    </Modal>
   );
 }

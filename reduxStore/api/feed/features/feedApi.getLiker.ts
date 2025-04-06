@@ -6,6 +6,7 @@ export interface Liker {
   lastName: string;
   headline: string;
   profilePic: string;
+  type: string;
 }
 
 interface FetchLikersResponse {

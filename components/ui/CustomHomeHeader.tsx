@@ -1,18 +1,10 @@
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Modal as RNModal,
-} from "react-native";
-import React, { useMemo, useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useMemo } from "react";
 import { Image } from "react-native";
 import AnimatedAddPostBar from "../feedPage/AnimatedAddPostBar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import defaultPic from "../../assets/images/nopic.jpg";
-import { useScroll } from "~/context/ScrollContext";
-import { Animated } from "react-native";
 import { useDrawer } from "~/context/DrawerContext";
 import AddPostContainer from "../modals/AddPostContainer";
 
@@ -20,8 +12,7 @@ const HEADER_HEIGHT = 60;
 
 const CustomHomeHeader = () => {
   const { user } = useSelector((state: any) => state?.profile);
-  const [isAddPostContainerOpen, setAddPostContainerOpen] =
-    useState<boolean>(false);
+  const { isAddPostContainerOpen } = useSelector((state: any) => state?.post);
   const possibleMessages = [
     "What's going on...",
     "What's on your mind...",
@@ -37,12 +28,7 @@ const CustomHomeHeader = () => {
 
   // Memoized AnimatedAddPostBar to avoid unnecessary re-renders
   const memoizedAddPostBar = useMemo(() => {
-    return (
-      <AnimatedAddPostBar
-        suggestionText={message}
-        setAddPostContainerOpen={setAddPostContainerOpen}
-      />
-    );
+    return <AnimatedAddPostBar suggestionText={message} />;
   }, [message]);
 
   // Get the shared scrollY animated value
@@ -84,23 +70,11 @@ const CustomHomeHeader = () => {
         </TouchableOpacity>
       </View>
 
-      <RNModal
-        visible={isAddPostContainerOpen}
-        animationType="slide"
-        onRequestClose={() => setAddPostContainerOpen(false)}
-        transparent={true}
-      >
-        <TouchableOpacity
-          className="flex-1"
-          activeOpacity={1}
-          onPress={() => setAddPostContainerOpen(false)}
-        >
-          <AddPostContainer
-            text={message}
-            setAddPostContainerOpen={setAddPostContainerOpen}
-          />
-        </TouchableOpacity>
-      </RNModal>
+      {/* Add Post container modal */}
+      <AddPostContainer
+        text={message}
+        isAddPostContainerOpen={isAddPostContainerOpen}
+      />
     </>
   );
 };

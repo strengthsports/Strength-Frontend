@@ -1,14 +1,16 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import { View, TouchableOpacity, Animated, Easing } from "react-native";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
+import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
 
 const AnimatedAddPostBar = ({
   suggestionText = "What's on your mind...",
-  setAddPostContainerOpen,
 }: {
   suggestionText: string;
-  setAddPostContainerOpen: (state: boolean) => void;
 }) => {
+  const dispatch = useDispatch<AppDispatch>();
   // Use layout animation approach instead of mixing native and JS drivers
   const containerWidthAnim = useRef(new Animated.Value(37)).current;
   const textOpacityAnim = useRef(new Animated.Value(0)).current;
@@ -35,7 +37,7 @@ const AnimatedAddPostBar = ({
   }, []); // Empty dependency array ensures this runs only once
 
   const handleOpenAddPostContainer = () => {
-    setAddPostContainerOpen(true);
+    dispatch(setAddPostContainerOpen(true));
   };
 
   return (

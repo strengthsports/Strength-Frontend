@@ -8,9 +8,11 @@ import { useRouter } from "expo-router";
 const Header = ({
   username,
   isBackButtonVisible,
+  handlePostContainerOpen,
 }: {
   username: string;
   isBackButtonVisible: boolean;
+  handlePostContainerOpen?: () => void;
 }) => {
   const router = useRouter();
   return (
@@ -35,7 +37,7 @@ const Header = ({
       </View>
       {/* add post button and message button */}
       <View className="flex-row gap-x-3">
-        <PostButton />
+        <PostButton onPress={handlePostContainerOpen} />
         <TouchableOpacity activeOpacity={0.5}>
           <MaterialCommunityIcons
             name="message-reply-text-outline"

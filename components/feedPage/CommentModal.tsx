@@ -223,21 +223,18 @@ export const CommenterCard = memo(
               @{comment?.postedBy?.username} | {comment?.postedBy?.headline}
             </TextScallingFalse>
           </View>
-          <View className="flex-row items-center">
-            <TouchableOpacity
-              onPress={() =>
-                router.push(`/(app)/(profile)/profile/${serializedUser}`)
-              }
-            >
-              <TextScallingFalse className="text-[#12956B] font-medium">
-                {targetType === "Comment" &&
-                  "@" + parent?.postedBy?.username + " "}
-              </TextScallingFalse>
-            </TouchableOpacity>
-            <TextScallingFalse className="text-xl text-white mt-4 mb-3">
+
+          <TextScallingFalse
+            className="text-[#12956B] font-medium mt-2"
+            onPress={() =>
+              router.push(`/(app)/(profile)/profile/${serializedUser}`)
+            }
+          >
+            {targetType === "Comment" && "@" + parent?.postedBy?.username + " "}
+            <TextScallingFalse className="text-xl font-normal text-white mt-4 mb-3">
               {comment?.text}
             </TextScallingFalse>
-          </View>
+          </TextScallingFalse>
         </View>
         <View className="flex-row gap-2 items-center ml-10 mt-1">
           <TouchableOpacity onPress={toggleLikeOnComment}>

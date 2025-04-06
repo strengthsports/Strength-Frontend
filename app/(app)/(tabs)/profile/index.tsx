@@ -23,6 +23,7 @@ import {
   fetchUserPosts,
   selectPostsByUserId,
 } from "~/reduxStore/slices/feed/feedSlice";
+import AddPostFTU from "~/components/ui/FTU/profilePage/AddPostFTU";
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -45,15 +46,15 @@ const Overview = () => {
 
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
-    selectPostsByUserId(state.feed.posts as any, user._id)
+    selectPostsByUserId(state.feed.posts as any, user?._id)
   );
 
   // Fetch initial posts
   useEffect(() => {
     dispatch(
       fetchUserPosts({
-        postedBy: user._id,
-        postedByType: user.type,
+        postedBy: user?._id,
+        postedByType: user?.type,
         limit: 10,
         skip: 0,
       })
@@ -279,13 +280,17 @@ const Overview = () => {
       </View>
 
       {/* recent posts */}
-      <RecentPostsSection
-        posts={userPosts}
-        onSeeAllPress={() =>
-          router.push("/(app)/(tabs)/profile/activity/posts")
-        }
-        scaleFactor={scaleFactor}
-      />
+      {userPosts?.length > 0 ? (
+        <RecentPostsSection
+          posts={userPosts}
+          onSeeAllPress={() =>
+            router.push("/(app)/(tabs)/profile/activity/posts")
+          }
+          scaleFactor={scaleFactor}
+        />
+      ) : (
+        <AddPostFTU />
+      )}
     </ScrollView>
   );
 };

@@ -45,7 +45,73 @@ type PicType =
   | "address"
   | "height"
   | "weight"
+  | "websiteLink"
   | "";
+
+// Form configurations
+const userFormConfig = [
+  { type: "username", label: "Username*", icon: null },
+  { type: "headline", label: "Headline", icon: null },
+  {
+    type: "dateOfBirth",
+    label: "Birth Date*",
+    icon: <AntDesign name="calendar" size={24} color="grey" />,
+  },
+  {
+    type: "address",
+    label: "Location*",
+  },
+  {
+    type: "height",
+    label: "Height",
+    icon: <AntDesign name="down" size={15} color="grey" />,
+  },
+  {
+    type: "weight",
+    label: "Weight",
+    icon: <AntDesign name="down" size={15} color="grey" />,
+  },
+  {
+    type: "team",
+    label: "Team",
+    icon: <AntDesign name="down" size={15} color="grey" />,
+    placeholder: "not joined yet",
+  },
+  // {
+  //   type: "academy",
+  //   label: "Academy",
+  //   icon: <AntDesign name="down" size={20} color="grey" />,
+  //   placeholder: "not joined yet",
+  // },
+  // {
+  //   type: "club",
+  //   label: "Club",
+  //   icon: <AntDesign name="down" size={20} color="grey" />,
+  //   placeholder: "not joined yet",
+  // },
+  // {
+  //   type: "gym",
+  //   label: "Gym",
+  //   icon: <AntDesign name="down" size={20} color="grey" />,
+  //   placeholder: "not joined yet",
+  // },
+];
+
+const pageFormConfig = [
+  { type: "username", label: "Username*", icon: null },
+  { type: "headline", label: "Tagline", icon: null },
+  { type: "favouriteSports", label: "Sports Category*", icon: null },
+  {
+    type: "dateOfBirth",
+    label: "Established",
+    icon: <AntDesign name="calendar" size={24} color="grey" />,
+  },
+  {
+    type: "address",
+    label: "Location*",
+  },
+  { type: "websiteLink", label: "Website", icon: null },
+];
 
 let finalUploadData = new FormData();
 
@@ -60,6 +126,8 @@ const EditProfile = () => {
   const [inputValue, setInputValue] = useState("");
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [picType, setPicType] = useState<PicType>("");
+
+  const formConfig = user?.type === "User" ? userFormConfig : pageFormConfig;
 
   const [selectedField, setSelectedField] = useState<string | null>(
     picType === "height" ? "feetInches" : "kilograms" // this is the default unit for each section
@@ -100,6 +168,7 @@ const EditProfile = () => {
       user?.coverPic?.toString() || "",
       user?.profilePic?.toString() || "",
     ],
+    websiteLink: user?.websiteLink || "",
   });
 
   // Cover Image, Profile Image states
@@ -128,12 +197,12 @@ const EditProfile = () => {
           unit === "ft"
             ? "feetInches"
             : unit === "cm"
-              ? "centimeters"
-              : unit === "m"
-                ? "meters"
-                : unit === "kg"
-                  ? "kilograms"
-                  : "pounds";
+            ? "centimeters"
+            : unit === "m"
+            ? "meters"
+            : unit === "kg"
+            ? "kilograms"
+            : "pounds";
       }
 
       setSelectedField(selectedUnit);
@@ -210,10 +279,10 @@ const EditProfile = () => {
       return unit === "ft"
         ? value * 30.48
         : unit === "cm"
-          ? value
-          : unit === "m"
-            ? value * 100
-            : 0;
+        ? value
+        : unit === "m"
+        ? value * 100
+        : 0;
     }
     return unit === "kg" ? value : unit === "lbs" ? value / 2.20462 : 0;
   };
@@ -265,6 +334,12 @@ const EditProfile = () => {
           unit3: "In pounds [approx.]-",
           description:
             "Your weight helps define your athletic profile. Enter it to showcase your physical attributes!",
+        };
+      case "websiteLink":
+        return {
+          label: "Website",
+          description: "Give your website link here",
+          placeholder: "www.example.com",
         };
       default:
         return { label: "", placeholder: "", description: "" };
@@ -357,12 +432,13 @@ const EditProfile = () => {
       // height field
       const heightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
       const heightString = heightValue
-        ? `${heightValue} ${selectedField === "feetInches"
-          ? "ft"
-          : selectedField === "centimeters"
-            ? "cm"
-            : "m"
-        }`
+        ? `${heightValue} ${
+            selectedField === "feetInches"
+              ? "ft"
+              : selectedField === "centimeters"
+              ? "cm"
+              : "m"
+          }`
         : "";
 
       setFormData((prev) => ({ ...prev, [field]: heightString }));
@@ -373,7 +449,6 @@ const EditProfile = () => {
       const weightString = weightValue
         ? `${weightValue} ${selectedField === "kilograms" ? "kg" : "lbs"}`
         : "";
-        
 
       setFormData((prev) => ({ ...prev, [field]: weightString }));
       finalUploadData.set("weight", weightString);
@@ -384,7 +459,7 @@ const EditProfile = () => {
         showToast("Username can only contain lowercase letters and numbers!");
         return;
       }
-      
+
       try {
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/checkUsername`,
@@ -433,55 +508,55 @@ const EditProfile = () => {
   }, [picType, addressPickup]);
 
   // Pick Image (Cover pic, Profile Pic)
-// Pick Image (Cover pic, Profile Pic)
-const pickImage = async (imageType: "cover" | "profile") => {
-  try {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+  // Pick Image (Cover pic, Profile Pic)
+  const pickImage = async (imageType: "cover" | "profile") => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!permissionResult.granted) {
-      showToast("Permission to access the camera roll is required!");
-      return;
-    }
-
-    let aspect: [number, number] = [1, 1]; // Explicitly type aspect as [number, number]
-    if (imageType === "cover") {
-      aspect = [3, 1];
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: aspect,
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const file = result.assets[0];
-      const fileName = file.uri.split("/").pop() || "image.jpg";
-      const mimeType = file.mimeType || "image/jpeg";
-
-      // React Native requires this format for file uploads
-      const fileObject = {
-        uri: file.uri,
-        name: fileName,
-        type: mimeType,
-      };
-
-      if (imageType === "cover") {
-        finalUploadData.append("coverPic", fileObject as any);
-        setCoverImage(file.uri);
-      } else {
-        finalUploadData.append("profilePic", fileObject as any);
-        setProfileImage(file.uri);
+      if (!permissionResult.granted) {
+        showToast("Permission to access the camera roll is required!");
+        return;
       }
+
+      let aspect: [number, number] = [1, 1]; // Explicitly type aspect as [number, number]
+      if (imageType === "cover") {
+        aspect = [3, 1];
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: aspect,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const file = result.assets[0];
+        const fileName = file.uri.split("/").pop() || "image.jpg";
+        const mimeType = file.mimeType || "image/jpeg";
+
+        // React Native requires this format for file uploads
+        const fileObject = {
+          uri: file.uri,
+          name: fileName,
+          type: mimeType,
+        };
+
+        if (imageType === "cover") {
+          finalUploadData.append("coverPic", fileObject as any);
+          setCoverImage(file.uri);
+        } else {
+          finalUploadData.append("profilePic", fileObject as any);
+          setProfileImage(file.uri);
+        }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      showToast("Error picking image");
+    } finally {
+      setPicModalVisible({ coverPic: false, profilePic: false });
     }
-  } catch (error) {
-    console.error("Error picking image:", error);
-    showToast("Error picking image");
-  } finally {
-    setPicModalVisible({ coverPic: false, profilePic: false });
-  }
-};
+  };
 
   // Unified toggle function for pic modal
   const togglePicModal = (type: "coverPic" | "profilePic") => {
@@ -625,55 +700,6 @@ const pickImage = async (imageType: "cover" | "profile") => {
     }
   };
 
-  // Form configurations
-  const formConfig = [
-    { type: "username", label: "Username*", icon: null },
-    { type: "headline", label: "Headline", icon: null },
-    {
-      type: "dateOfBirth",
-      label: "Birth Date*",
-      icon: <AntDesign name="calendar" size={24} color="grey" />,
-    },
-    {
-      type: "address",
-      label: "Location*",
-    },
-    {
-      type: "height",
-      label: "Height",
-      icon: <AntDesign name="down" size={15} color="grey" />,
-    },
-    {
-      type: "weight",
-      label: "Weight",
-      icon: <AntDesign name="down" size={15} color="grey" />,
-    },
-    {
-      type: "team",
-      label: "Team",
-      icon: <AntDesign name="down" size={15} color="grey" />,
-      placeholder: "not joined yet",
-    },
-    // {
-    //   type: "academy",
-    //   label: "Academy",
-    //   icon: <AntDesign name="down" size={20} color="grey" />,
-    //   placeholder: "not joined yet",
-    // },
-    // {
-    //   type: "club",
-    //   label: "Club",
-    //   icon: <AntDesign name="down" size={20} color="grey" />,
-    //   placeholder: "not joined yet",
-    // },
-    // {
-    //   type: "gym",
-    //   label: "Gym",
-    //   icon: <AntDesign name="down" size={20} color="grey" />,
-    //   placeholder: "not joined yet",
-    // },
-  ];
-
   const calculateCurrentMeasurement = () => {
     if (picType === "height") {
       const field = selectedField;
@@ -682,15 +708,15 @@ const pickImage = async (imageType: "cover" | "profile") => {
           field === "feetInches"
             ? heightInFeet
             : field === "centimeters"
-              ? heightInCentimeters
-              : heightInMeters
+            ? heightInCentimeters
+            : heightInMeters
         ) || 0;
 
       return field === "feetInches"
         ? value * 30.48
         : field === "centimeters"
-          ? value
-          : value * 100;
+        ? value
+        : value * 100;
     }
 
     if (picType === "weight") {
@@ -749,10 +775,11 @@ const pickImage = async (imageType: "cover" | "profile") => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${Array.from(finalUploadData.entries()).length
-                    ? "text-[#12956B]"
-                    : "text-[#808080]"
-                    } text-4xl font-medium`}
+                  className={`${
+                    Array.from(finalUploadData.entries()).length
+                      ? "text-[#12956B]"
+                      : "text-[#808080]"
+                  } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -761,7 +788,16 @@ const pickImage = async (imageType: "cover" | "profile") => {
           </View>
 
           {/* Profile and cover image */}
-          <View style={{position: 'relative',  width: '100%', height: 137, marginBottom: 96, justifyContent: 'center', alignItems: 'center',}}>
+          <View
+            style={{
+              position: "relative",
+              width: "100%",
+              height: 137,
+              marginBottom: 96,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             {/* cover pic */}
             <TouchableOpacity
               onPress={() => togglePicModal("coverPic")}
@@ -822,7 +858,7 @@ const pickImage = async (imageType: "cover" | "profile") => {
           {/* first name */}
           <View className="flex-row items-center justify-between px-6 h-[50px] border-b border-[#3030309a]">
             <Text className="text-white text-4xl font-medium w-1/3">
-              First Name*
+              {user?.type === "User" ? "First Name*" : "Page Name*"}
             </Text>
             <TextInput
               placeholder="enter your first name"
@@ -836,21 +872,23 @@ const pickImage = async (imageType: "cover" | "profile") => {
             />
           </View>
           {/* last name */}
-          <View className="flex-row items-center justify-between px-6 h-14 border-b border-[#3030309a]">
-            <Text className="text-white text-4xl font-medium w-1/3">
-              Last Name*
-            </Text>
-            <TextInput
-              placeholder="enter your first name"
-              placeholderTextColor={"grey"}
-              className="text-2xl font-light h-full flex-grow text-white pl-0"
-              onChangeText={(text) => {
-                setFormData({ ...formData, lastName: text });
-                finalUploadData.set("lastName", text);
-              }}
-              value={formData.lastName}
-            />
-          </View>
+          {user?.type === "User" && (
+            <View className="flex-row items-center justify-between px-6 h-14 border-b border-[#3030309a]">
+              <Text className="text-white text-4xl font-medium w-1/3">
+                Last Name*
+              </Text>
+              <TextInput
+                placeholder="enter your first name"
+                placeholderTextColor={"grey"}
+                className="text-2xl font-light h-full flex-grow text-white pl-0"
+                onChangeText={(text) => {
+                  setFormData({ ...formData, lastName: text });
+                  finalUploadData.set("lastName", text);
+                }}
+                value={formData.lastName}
+              />
+            </View>
+          )}
           {/* username, dob, location, height, weight */}
           {formConfig.map(
             ({ type, label, icon, placeholder }, index: Number) => (
@@ -943,7 +981,8 @@ const pickImage = async (imageType: "cover" | "profile") => {
                           fontWeight: "300",
                         }}
                       >
-                        Add a cover photo that represents your sports journey, passion, or team spirit. Make your profile stand out!
+                        Add a cover photo that represents your sports journey,
+                        passion, or team spirit. Make your profile stand out!
                       </TextScallingFalse>
                     </View>
                   </TouchableOpacity>
@@ -1018,7 +1057,8 @@ const pickImage = async (imageType: "cover" | "profile") => {
                           fontWeight: "300",
                         }}
                       >
-                        Your profile picture is your identity in the sports community. Choose an image that represents you best!
+                        Your profile picture is your identity in the sports
+                        community. Choose an image that represents you best!
                       </TextScallingFalse>
                     </View>
                   </TouchableOpacity>
@@ -1086,13 +1126,24 @@ const pickImage = async (imageType: "cover" | "profile") => {
         </Modal>
 
         {/* Edit Modal */}
-        <Modal visible={isModalVisible} animationType="slide" transparent onRequestClose={closeModal}>
+        <Modal
+          visible={isModalVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={closeModal}
+        >
           <View className="flex-1">
             <SafeAreaView className="bg-black h-full">
               {/* Modal Header */}
-              <View className="flex-row justify-between items-center p-4" style={{borderBottomColor:'#252525', borderWidth: 0.7}}>
+              <View
+                className="flex-row justify-between items-center p-4"
+                style={{ borderBottomColor: "#252525", borderWidth: 0.7 }}
+              >
                 <View className="flex-row items-center">
-                  <TouchableOpacity className="w-[50px] h-[40px] justify-center" onPress={closeModal}>
+                  <TouchableOpacity
+                    className="w-[50px] h-[40px] justify-center"
+                    onPress={closeModal}
+                  >
                     <AntDesign name="arrowleft" size={28} color="white" />
                   </TouchableOpacity>
                   <Text className="text-white text-5xl font-medium">
@@ -1101,7 +1152,8 @@ const pickImage = async (imageType: "cover" | "profile") => {
                 </View>
                 <TouchableOpacity
                   onPress={() => handleDone(picType, inputValue)}
-                  disabled={!hasChanges} className="w-[60px] justify-end items-end"
+                  disabled={!hasChanges}
+                  className="w-[60px] justify-end items-end"
                 >
                   <MaterialIcons
                     name="done"
@@ -1197,7 +1249,11 @@ const pickImage = async (imageType: "cover" | "profile") => {
                 ) : (
                   <>
                     <Text className="text-gray-500 text-xl">{label}</Text>
-                    <View className={`flex-row border-b border-white ${picType === 'headline' ? '' : 'h-[50px]'}`}>
+                    <View
+                      className={`flex-row border-b border-white ${
+                        picType === "headline" ? "" : "h-[50px]"
+                      }`}
+                    >
                       <TextInput
                         value={inputValue}
                         onChangeText={(text) => {
@@ -1218,7 +1274,8 @@ const pickImage = async (imageType: "cover" | "profile") => {
                         }}
                         placeholder={placeholder}
                         placeholderTextColor="gray"
-                        className="text-white text-4xl flex-1 pl-0 pb-0 w-80%" style={{lineHeight: 25}}
+                        className="text-white text-4xl flex-1 pl-0 pb-0 w-80%"
+                        style={{ lineHeight: 25 }}
                         maxLength={picType === "headline" ? 60 : undefined} // Apply maxLength conditionally
                         multiline={picType === "headline"}
                         numberOfLines={picType === "headline" ? 2 : 1}
@@ -1472,8 +1529,9 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
-      }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${
+      !isLast ? "border-b border-[#3030309a]" : ""
+    }`}
   >
     <Text className="text-white text-4xl font-medium w-1/3">{label}</Text>
     <TouchableOpacity
@@ -1482,8 +1540,9 @@ const FormField = ({
       className="flex-row items-center justify-between h-full w-2/3"
     >
       <Text
-        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
-          }`}
+        className={`text-2xl font-light ${
+          value ? "text-white" : "text-gray-500"
+        }`}
       >
         {isDate ? dateFormatter(value as any, "date") : value || placeholder}
       </Text>
@@ -1566,22 +1625,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-                ? "Cm"
-                : field === "meters"
-                  ? "m"
-                  : field === "kilograms"
-                    ? "kg"
-                    : "lbs"}
+              ? "Cm"
+              : field === "meters"
+              ? "m"
+              : field === "kilograms"
+              ? "kg"
+              : "lbs"}
           </Text>
         </View>
         <CustomButton
           field={
             field as
-            | "feetInches"
-            | "centimeters"
-            | "meters"
-            | "kilograms"
-            | "pounds"
+              | "feetInches"
+              | "centimeters"
+              | "meters"
+              | "kilograms"
+              | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

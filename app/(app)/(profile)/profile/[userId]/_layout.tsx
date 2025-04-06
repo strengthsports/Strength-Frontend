@@ -411,73 +411,163 @@ const ProfileLayout = () => {
 
                   <View style={{ paddingTop: 5 }}>
                     {/* age, height, weight, teams */}
-                    <View style={{ position: "relative", left: -5 }}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          gap: 5,
-                        }}
-                      >
-                        <View style={{ flexDirection: "row" }}>
-                          <Entypo
-                            name="dot-single"
-                            size={responsiveDotSize}
-                            color="white"
-                          />
-                          <TextScallingFalse style={styles.ProfileKeyPoints}>
-                            {" "}
-                            Age: {profileData?.age}
-                            <TextScallingFalse style={{ color: "grey" }}>
-                              ({dateFormatter(profileData?.dateOfBirth, "text")}
-                              )
-                            </TextScallingFalse>
-                          </TextScallingFalse>
-                        </View>
-
-                        <View style={{ flexDirection: "row" }}>
-                          <Entypo
-                            name="dot-single"
-                            size={responsiveDotSize}
-                            color="white"
-                          />
-                          <TextScallingFalse style={styles.ProfileKeyPoints}>
-                            {" "}
-                            Height: {profileData?.height}
-                          </TextScallingFalse>
-                        </View>
-
-                        <View style={{ flexDirection: "row" }}>
-                          <Entypo
-                            name="dot-single"
-                            size={responsiveDotSize}
-                            color="white"
-                          />
-                          <TextScallingFalse style={styles.ProfileKeyPoints}>
-                            {" "}
-                            Weight: {profileData?.weight}
-                          </TextScallingFalse>
-                        </View>
-                      </View>
-
-                      <View style={{ paddingTop: "3%" }}>
-                        <View style={{ flexDirection: "row" }}>
-                          <Entypo
-                            name="dot-single"
-                            size={responsiveDotSize}
-                            color="white"
-                          />
-                          <TextScallingFalse style={styles.ProfileKeyPoints}>
-                            {" "}
-                            Teams:{" "}
-                            <TextScallingFalse style={{ color: "grey" }}>
+                    {profileData?.type === "User" && (
+                      <View style={{ position: "relative", left: -5 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            gap: 5,
+                          }}
+                        >
+                          <View style={{ flexDirection: "row" }}>
+                            <Entypo
+                              name="dot-single"
+                              size={responsiveDotSize}
+                              color="white"
+                            />
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Pro Trackers
+                              Age: {profileData?.age}
+                              <TextScallingFalse style={{ color: "grey" }}>
+                                (
+                                {dateFormatter(
+                                  profileData?.dateOfBirth,
+                                  "text"
+                                )}
+                                )
+                              </TextScallingFalse>
                             </TextScallingFalse>
-                          </TextScallingFalse>
+                          </View>
+
+                          <View style={{ flexDirection: "row" }}>
+                            <Entypo
+                              name="dot-single"
+                              size={responsiveDotSize}
+                              color="white"
+                            />
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
+                              {" "}
+                              Height: {profileData?.height}
+                            </TextScallingFalse>
+                          </View>
+
+                          <View style={{ flexDirection: "row" }}>
+                            <Entypo
+                              name="dot-single"
+                              size={responsiveDotSize}
+                              color="white"
+                            />
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
+                              {" "}
+                              Weight: {profileData?.weight}
+                            </TextScallingFalse>
+                          </View>
+                        </View>
+
+                        <View style={{ paddingTop: "3%" }}>
+                          <View style={{ flexDirection: "row" }}>
+                            <Entypo
+                              name="dot-single"
+                              size={responsiveDotSize}
+                              color="white"
+                            />
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
+                              {" "}
+                              Teams:{" "}
+                              <TextScallingFalse style={{ color: "grey" }}>
+                                {" "}
+                                Pro Trackers
+                              </TextScallingFalse>
+                            </TextScallingFalse>
+                          </View>
                         </View>
                       </View>
-                    </View>
+                    )}
+
+                    {/* page type, established on, sports category for page profile */}
+                    {profileData?.type === "Page" && (
+                      <View style={{ position: "relative", left: -5 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            flexWrap: "wrap",
+                            rowGap: 14,
+                          }}
+                        >
+                          {/* page category/type */}
+                          <View style={{ flexDirection: "row" }}>
+                            <Entypo
+                              name="dot-single"
+                              size={responsiveDotSize}
+                              color="white"
+                            />
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
+                              {" "}
+                              {profileData?.category}
+                            </TextScallingFalse>
+                          </View>
+                          {/* sports category */}
+                          <View style={{ flexDirection: "row" }}>
+                            <Entypo
+                              name="dot-single"
+                              size={responsiveDotSize}
+                              color="white"
+                            />
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
+                              {" "}
+                              Sports Category:{" "}
+                              <Text style={{ color: "grey" }}>
+                                {profileData?.favouriteSports.length > 0
+                                  ? profileData?.favouriteSports?.map(
+                                      (sport: any) => `${sport.sport.name} `
+                                    )
+                                  : "All"}
+                              </Text>
+                            </TextScallingFalse>
+                          </View>
+                          {/* website */}
+                          {profileData?.websiteLink && (
+                            <View style={{ flexDirection: "row" }}>
+                              <Entypo
+                                name="dot-single"
+                                size={responsiveDotSize}
+                                color="white"
+                              />
+                              <TextScallingFalse
+                                style={styles.ProfileKeyPoints}
+                              >
+                                {" "}
+                                Website:{" "}
+                                <Text style={{ color: "#12956B" }}>
+                                  https://www.eastbengal.in
+                                </Text>
+                              </TextScallingFalse>
+                            </View>
+                          )}
+                          {/* established on */}
+                          {profileData?.dateOfBirth && (
+                            <View style={{ flexDirection: "row" }}>
+                              <Entypo
+                                name="dot-single"
+                                size={responsiveDotSize}
+                                color="white"
+                              />
+                              <TextScallingFalse
+                                style={styles.ProfileKeyPoints}
+                              >
+                                {" "}
+                                Established On:{" "}
+                                <Text style={{ color: "grey" }}>
+                                  Sept, 1997
+                                </Text>
+                              </TextScallingFalse>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    )}
 
                     {/* address and followings */}
                     <View

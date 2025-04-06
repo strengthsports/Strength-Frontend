@@ -42,6 +42,10 @@ const Overview = () => {
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
   );
+  const postsWithImages = useMemo(
+    () => userPosts?.filter((post) => post.assets.length > 0) || [],
+    [userPosts]
+  );
 
   // Fetch initial posts
   useEffect(() => {
@@ -138,8 +142,8 @@ const Overview = () => {
                     }`}
                     // style={styles.buttonText}
                   >
-                    {sport.sport?.name.charAt(0).toUpperCase() +
-                      sport.sport?.name.slice(1)}
+                    {sport.sport?.name?.charAt(0).toUpperCase() +
+                      sport.sport?.name?.slice(1)}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
@@ -289,11 +293,13 @@ const Overview = () => {
       )}
 
       {/* recent posts */}
-      <RecentPostsSection
-        posts={userPosts}
-        onSeeAllPress={() => {}}
-        scaleFactor={scaleFactor}
-      />
+      {postsWithImages.length > 0 && (
+        <RecentPostsSection
+          posts={postsWithImages}
+          onSeeAllPress={() => {}}
+          scaleFactor={scaleFactor}
+        />
+      )}
 
       <DiscoverPeopleList />
 

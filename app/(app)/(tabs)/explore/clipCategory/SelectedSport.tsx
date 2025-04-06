@@ -7,10 +7,9 @@ interface SelectedSportProps {
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
-  const commingSoontext = `${sportsName} clips`;
   return (
     <View>
-      <ComingSoon text={commingSoontext} />
+      <ComingSoon text="Clips" />
     </View>
   );
 };

@@ -10,17 +10,19 @@ import TextScallingFalse from "../../CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import CricketMatchCard from "../matchCard/CricketMatchCard";
 import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
-import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
+// import MatchCard from "../matchCard/CricketMatchCard";
 
-const {
-  data: cricketData,
-  isFetching: isCricketFetching,
-  refetch: refetchLiveCricket,
-} = useGetCricketMatchesQuery({});
-const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
-  cricketData || {};
+interface LiveCricketMatchProps {
+  liveMatches: any[];
+  isFetching: boolean;
+  onRefetch: () => void;
+}
 
-const CricketLiveMatch = () => {
+const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
+  liveMatches,
+  isFetching,
+  onRefetch,
+}) => {
   return (
     <View className="mt-7">
       <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
@@ -37,7 +39,7 @@ const CricketLiveMatch = () => {
         </View>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={refetchLiveCricket}
+          onPress={onRefetch}
           style={{
             width: 40,
             height: 20,
@@ -53,17 +55,17 @@ const CricketLiveMatch = () => {
           />
         </TouchableOpacity>
       </View>
+
       <FlatList
-        data={liveCricketMatches}
+        data={liveMatches}
         keyExtractor={(item) => item.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="h-52 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545] ">
-            {isCricketFetching ? (
+          <View className="h-52 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545]">
+            {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
-                {/* <ActivityIndicator size="large" color={Colors.themeColor} /> */}
                 <ScoresSkeletonLoader />
               </View>
             ) : (

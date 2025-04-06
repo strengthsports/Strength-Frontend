@@ -20,12 +20,14 @@ import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { TeamEntry } from "~/app/(app)/(tabs)/profile";
+import TeamEntry from "~/components/profilePage/TeamEntry";
 import { AppDispatch, RootState } from "~/reduxStore";
 import {
   fetchUserPosts,
   selectPostsByUserId,
 } from "~/reduxStore/slices/feed/feedSlice";
+import MembersSection from "~/components/profilePage/MembersSection";
+import members from "~/constants/members";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -71,11 +73,18 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   console.log("User data on Overview page : ", profileData);
 
+  // Valid Sports data
   const validSports =
     profileData?.selectedSports?.filter((s: any) => s.sport) || [];
   const [activeSubSection, setActiveSubSection] = useState(
     validSports[0]?.sport.name || null
   );
+
+  // Athlete data
+  const athletes = members.filter((member) => member.role === "Athlete");
+
+  // Coach Data
+  const coaches = members.filter((member) => member.role === "Coach");
 
   if (error) {
     return (
@@ -298,6 +307,22 @@ const Overview = () => {
           posts={postsWithImages}
           onSeeAllPress={() => {}}
           scaleFactor={scaleFactor}
+        />
+      )}
+
+      {/* members */}
+      {profileData?.type === "Page" && coaches.length > 0 && (
+        <MembersSection
+          members={coaches}
+          sectionHeader="Coaches"
+          moreText="Show all coaches"
+        />
+      )}
+      {profileData?.type === "Page" && athletes.length > 0 && (
+        <MembersSection
+          members={athletes}
+          sectionHeader="Athletes"
+          moreText="Show all athletes"
         />
       )}
 

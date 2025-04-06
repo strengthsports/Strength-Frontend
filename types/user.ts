@@ -93,3 +93,12 @@ export interface ReportUser {
   targetType: string;
   reason: string;
 }
+
+export type Member = {
+  _id: string;
+  type: string;
+  firstName: string;
+  lastName: string;
+  profilePic: string;
+  role: string;
+};

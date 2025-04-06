@@ -23,6 +23,8 @@ import { useDispatch, useSelector } from "react-redux";
 import RightArrow from "~/components/Arrows/RightArrow";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
+import MembersSection from "~/components/profilePage/MembersSection";
+import SearchBar from "~/components/search/searchbar";
 import TopBar from "~/components/TopBar";
 import { AppDispatch } from "~/reduxStore";
 import { useGetSportsQuery } from "~/reduxStore/api/sportsApi";
@@ -31,6 +33,8 @@ import {
   fetchMyProfile,
   editUserAbout,
 } from "~/reduxStore/slices/user/profileSlice";
+import members from "~/constants/members";
+import UserInfoModal from "~/components/modals/UserInfoModal";
 
 interface SelectedSport {
   sportsId: string;
@@ -40,12 +44,24 @@ interface SelectedSport {
   [key: string]: any;
 }
 
+// ✅ Define the type above your component
+type AlertConfigType = {
+  title: string;
+  message: string;
+  discardAction: () => void;
+  confirmMessage: string;
+  cancelMessage: string;
+  onSkip?: () => void;
+};
+
 function EditOverview() {
-  const { loading, error, user } = useSelector((state: any) => state?.profile);
+  const { loading, error, user, isUserInfoModalOpen } = useSelector(
+    (state: any) => state?.profile
+  );
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { about } = useLocalSearchParams();
+  const query = useLocalSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -85,11 +101,21 @@ function EditOverview() {
   // About modal
   const [initialAbout, setAbout] = useState(user?.about);
   const [isAboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
+  const [isAssociatesModalOpen, setAssociatesModalOpen] =
+    useState<boolean>(false);
 
-  // Check if about edit request has came
+  // Athlete data
+  const athletes = members.filter((member) => member.role === "Athlete");
+
+  // Coach Data
+  const coaches = members.filter((member) => member.role === "Coach");
+
+  // Check which edit request has came
   useEffect(() => {
-    if (about) {
+    if (query.about) {
       setAboutModalOpen((prev) => !prev);
+    } else if (query.associates) {
+      setAssociatesModalOpen((prev) => !prev);
     }
   }, []);
 
@@ -187,15 +213,6 @@ function EditOverview() {
     setSportsOptionModalOpen((prev) => !prev);
   }, []);
 
-  // ✅ Define the type above your component
-  type AlertConfigType = {
-    title: string;
-    message: string;
-    discardAction: () => void;
-    confirmMessage: string;
-    cancelMessage: string;
-    onSkip?: () => void;
-  };
   const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
   const handleOpenAlertModal = useCallback(
     (
@@ -225,6 +242,14 @@ function EditOverview() {
   const handleCloseAboutModal = useCallback(() => {
     setAbout(initialAbout);
     setAboutModalOpen((prev) => !prev);
+  }, []);
+
+  const handleOpenAssociatesModal = useCallback(() => {
+    setAssociatesModalOpen((prev) => !prev);
+  }, []);
+
+  const handleCloseAssociatesModal = useCallback(() => {
+    setAssociatesModalOpen((prev) => !prev);
   }, []);
 
   // Handle delete a specific sports overview (only remove sport)
@@ -506,7 +531,44 @@ function EditOverview() {
         </View>
 
         {/* Members section */}
-        <View></View>
+        {user?.type === "Page" && (
+          <>
+            <View
+              style={{ width: "90%", padding: 20 }}
+              className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+                onPress={handleOpenAboutModal}
+              >
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                >
+                  Teams
+                </TextScallingFalse>
+                <RightArrow />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{ width: "90%", padding: 20 }}
+              className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+                onPress={handleOpenAssociatesModal}
+              >
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                >
+                  Associates {`[221]`}
+                </TextScallingFalse>
+                <RightArrow />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         {/* Edit sports details modal */}
         <Modal
@@ -977,6 +1039,69 @@ function EditOverview() {
             </View>
           </TouchableOpacity>
         </Modal>
+
+        {/* Associates Modal */}
+        <Modal
+          visible={isAssociatesModalOpen}
+          transparent
+          onRequestClose={handleCloseAssociatesModal}
+        >
+          <TouchableOpacity className="flex-1" activeOpacity={1}>
+            <View className="bg-black h-full">
+              {/* Modal Header */}
+              <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
+                <View className="flex-row items-center">
+                  <TouchableOpacity onPress={handleCloseAssociatesModal}>
+                    <AntDesign name="arrowleft" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
+                <TextScallingFalse className="text-white text-5xl">
+                  Associates
+                </TextScallingFalse>
+                <TouchableOpacity onPress={handleSaveAbout}>
+                  <MaterialIcons
+                    name="done"
+                    size={28}
+                    color={initialAbout === user?.about ? "grey" : "#12956B"}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View>
+                <SearchBar placeholder="Search associated members..." />
+                <TextScallingFalse
+                  className="text-[#8A8A8A]"
+                  style={{
+                    fontFamily: "Montserrat",
+                    fontWeight: 600,
+                    fontSize: 16,
+                    marginLeft: 20,
+                    marginBottom: 10,
+                  }}
+                >
+                  Coaches
+                </TextScallingFalse>
+                <MembersSection members={athletes} isEditView={true} />
+                <TextScallingFalse
+                  className="text-[#8A8A8A]"
+                  style={{
+                    fontFamily: "Montserrat",
+                    fontWeight: 600,
+                    fontSize: 16,
+                    marginLeft: 20,
+                    marginBottom: 10,
+                  }}
+                >
+                  Athletes
+                </TextScallingFalse>
+                <MembersSection members={coaches} isEditView={true} />
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* {isUserInfoModalOpen && (
+          <UserInfoModal isUserInfoModalOpen={isUserInfoModalOpen} />
+        )} */}
       </PageThemeView>
     </SafeAreaView>
   );

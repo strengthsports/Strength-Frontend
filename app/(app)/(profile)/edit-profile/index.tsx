@@ -859,9 +859,9 @@ const EditProfile = () => {
           {/* Form Part */}
           {/* first name */}
           <View className="flex-row items-center justify-between px-6 h-[50px] border-b border-[#3030309a]">
-            <Text className="text-white text-4xl font-medium w-1/3">
+            <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
               {user?.type === "User" ? "First Name*" : "Page Name*"}
-            </Text>
+            </TextScallingFalse>
             <TextInput
               placeholder="enter your first name"
               placeholderTextColor={"grey"}
@@ -876,9 +876,9 @@ const EditProfile = () => {
           {/* last name */}
           {user?.type === "User" && (
             <View className="flex-row items-center justify-between px-6 h-14 border-b border-[#3030309a]">
-              <Text className="text-white text-4xl font-medium w-1/3">
+              <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
                 Last Name*
-              </Text>
+              </TextScallingFalse>
               <TextInput
                 placeholder="enter your first name"
                 placeholderTextColor={"grey"}
@@ -1257,7 +1257,9 @@ const EditProfile = () => {
                   </>
                 ) : (
                   <>
-                    <Text className="text-gray-500 text-xl">{label}</Text>
+                    <TextScallingFalse className="text-gray-500 text-xl">
+                      {label}
+                    </TextScallingFalse>
                     <View
                       className={`flex-row border-b border-white ${
                         picType === "headline" ? "" : "h-[50px]"

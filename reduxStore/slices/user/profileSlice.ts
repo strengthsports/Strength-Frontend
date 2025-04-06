@@ -15,6 +15,7 @@ const initialState: ProfileState = {
   msgBackend: null,
   posts: [],
   currentPost: null,
+  isUserInfoModalOpen: false,
 };
 
 // Edit user profile details
@@ -337,6 +338,9 @@ const profileSlice = createSlice({
       state.error = null;
       state.posts = [];
     },
+    setOpenUserInfoModal: (state, action) => {
+      state.isUserInfoModalOpen = action.payload;
+    },
   },
   extraReducers: (builder) => {
     // Login
@@ -529,6 +533,7 @@ export const {
   pullFollowings,
   pushFollowings,
   setCurrentPost,
+  setOpenUserInfoModal,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

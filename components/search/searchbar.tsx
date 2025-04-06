@@ -10,7 +10,13 @@ import TextScallingFalse from "../CentralText";
 import { FilterModal } from "../explorePage/filter";
 import SearchIcon from "../SvgIcons/Common_Icons/SearchIcon";
 
-const SearchBar = ({ searchText }: { searchText?: string }) => {
+const SearchBar = ({
+  searchText,
+  placeholder,
+}: {
+  searchText?: string;
+  placeholder?: string;
+}) => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -34,7 +40,7 @@ const SearchBar = ({ searchText }: { searchText?: string }) => {
           }`}
           aria-disabled={true}
         >
-          {searchText || "Search..."}
+          {searchText || placeholder || "Search..."}
         </TextScallingFalse>
       </TouchableOpacity>
     </View>

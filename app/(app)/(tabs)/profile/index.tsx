@@ -8,7 +8,7 @@ import {
   Text,
   useWindowDimensions,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TextScallingFalse from "@/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
@@ -47,6 +47,10 @@ const Overview = () => {
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, user?._id)
+  );
+  const postsWithImages = useMemo(
+    () => userPosts?.filter((post) => post.assets.length > 0) || [],
+    [userPosts]
   );
 
   // Fetch initial posts
@@ -280,9 +284,9 @@ const Overview = () => {
       </View>
 
       {/* recent posts */}
-      {userPosts?.length > 0 ? (
+      {postsWithImages?.length > 0 ? (
         <RecentPostsSection
-          posts={userPosts}
+          posts={postsWithImages}
           onSeeAllPress={() =>
             router.push("/(app)/(tabs)/profile/activity/posts")
           }

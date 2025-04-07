@@ -11,6 +11,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import TextScallingFalse from "../CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
+import PollsTickIcon from "../SvgIcons/addpost/PollsTickIcon";
 
 interface PollsContainerProps {
   mode?: "create" | "view";
@@ -46,6 +47,7 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
     );
     
     const inputRefs = useRef<Array<TextInput | null>>([]);
+    const MAX_OPTION_LENGTH = 25;
 
     useEffect(() => {
       setLocalUserVoted(userVoted);
@@ -63,30 +65,35 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
       } else if (localOptions.length > 0 && (!voteCounts || voteCounts.length === 0)) {
           setLocalVoteCounts(Array(localOptions.length).fill(0));
       }
-    }, [JSON.stringify(voteCounts), localOptions.length]);
+  }, [JSON.stringify(voteCounts), localOptions.length]);
   
     
 
     // Memoized total votes calculation
     const totalVotes = useMemo(
-      () => voteCounts.reduce((acc, curr) => acc + curr, 0),
-      [voteCounts]
+      () => localVoteCounts.reduce((acc, curr) => acc + curr, 0),
+      [localVoteCounts]
     );
 
     // Memoized percentage calculations
     const optionPercentages = useMemo(
       () =>
-        voteCounts.map((count) =>
+        localVoteCounts.map((count) =>
           totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
         ),
-      [voteCounts, totalVotes]
+      [localVoteCounts, totalVotes]
     );
-
+  
     useEffect(() => {
       if (mode === "create") {
         setLocalOptions(options.length > 0 ? options : ["", ""]);
+      }else {
+        if (JSON.stringify(options) !== JSON.stringify(localOptions)) {
+          setLocalOptions(options);
+          setLocalVoteCounts(voteCounts && voteCounts.length === options.length ? [...voteCounts] : Array(options.length).fill(0));
+        }
       }
-    }, [options, mode]);
+    }, [options, mode, voteCounts]);
 
     // useEffect(()=>{
     //  if (localOptions.length > 1) {
@@ -120,11 +127,11 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
           optimisticCounts[index] += 1;
           const optimisticVoted = true;
           const optimisticSelection = index;
-  
+
           setLocalVoteCounts(optimisticCounts);
           setLocalUserVoted(optimisticVoted);
           setLocalSelectedOption(optimisticSelection);
-  
+
           onVote?.(index);
         }
       },
@@ -134,12 +141,12 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
     return (
       <View
         style={styles.container}
-        className={`${mode === "create" && "ml-5 pt-5 pb-10 rounded-2xl"}`}
+        className={`${mode === "create" && "mt-[-30px] ml-3 mr-1 pt-5 pb-8 rounded-2xl"}`}
       >
         {(mode === "create" || onClose) && (
           <View style={styles.header}>
             <TextScallingFalse style={styles.title}>
-              {mode === "create" ? "Create Poll" : "Poll"}
+              Poll
             </TextScallingFalse>
             {onClose && (
               <TouchableOpacity
@@ -147,14 +154,14 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                 style={styles.closeButton}
                 onPress={onClose}
               >
-                <AntDesign name="close" size={14} color="grey" />
+                <AntDesign name="close" size={14} color="white" />
               </TouchableOpacity>
             )}
           </View>
         )}
 
         <View style={{ width: "100%", paddingVertical: 10 }}>
-          {localOptions.map((option, index) => {
+        {localOptions.map((option, index) => {
             const percentage = optionPercentages[index] / 100;
 
             const baseBackgroundColor = '#181818';
@@ -178,23 +185,29 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
             return (
               <View key={index} style={styles.optionContainer}>
                 {mode === "create" ? (
-                  <TextInput
-                    ref={(ref) => (inputRefs.current[index] = ref)}
-                    placeholder={`Option ${index + 1}`}
-                    placeholderTextColor="grey"
-                    value={option}
-                    onChangeText={(text) => updateOption(text, index)}
-                    style={styles.optionInput}
-                    editable={mode === "create"}
-                  />
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      ref={(ref) => (inputRefs.current[index] = ref)}
+                      placeholder={index < 2 ? `Option ${index + 1}` : `Option ${index + 1} (Optional)`}
+                      placeholderTextColor="grey"
+                      value={option}
+                      onChangeText={(text) => updateOption(text, index)}
+                      style={styles.optionInput}
+                      editable={mode === "create"}
+                      maxLength={MAX_OPTION_LENGTH}
+                    />
+                    <TextScallingFalse style={styles.charCountText}>
+                      {MAX_OPTION_LENGTH - option.length}
+                    </TextScallingFalse>
+                  </View>
                 ) : (
                   <TouchableOpacity
-                    style={[
-                      styles.optionInputBase,
-                      localSelectedOption === index && styles.selectedOptionBorder,
-                    ]}
-                    disabled={localUserVoted}
-                    onPress={() => handleVote(index)}
+                     style={[
+                       styles.optionInputBase,
+                       localSelectedOption === index && styles.selectedOptionBorder,
+                     ]}
+                     disabled={localUserVoted}
+                     onPress={() => handleVote(index)}
                   >
                     <LinearGradient
                       style={styles.resultBarContainer}
@@ -207,19 +220,15 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                         {option}
                         {localSelectedOption === index && (
                           <View style={{paddingLeft: 5}}>
-                            <MaterialCommunityIcons
-                              name="check-circle"
-                              color="white"
-                              size={14}
-                            />
+                            <PollsTickIcon/>
                           </View>
                         )}
                       </TextScallingFalse>
-                      {localUserVoted && (
-                        <TextScallingFalse style={styles.percentageText}>
-                          {optionPercentages[index]}%
-                        </TextScallingFalse>
-                      )}
+                        {localUserVoted && (
+                          <TextScallingFalse style={styles.percentageText}>
+                             {optionPercentages[index]}%
+                          </TextScallingFalse>
+                        )}
                     </LinearGradient>
                   </TouchableOpacity>
                 )}
@@ -235,14 +244,21 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                 style={styles.addButton}
                 onPress={addOption}
               >
-                <TextScallingFalse style={styles.addButtonText}>
-                  Add Option
-                </TextScallingFalse>
+                <View style={{flexDirection:"row", alignItems:"center", justifyContent:"space-between"}}>
+                  <TextScallingFalse style={styles.addButtonText}>
+                    Add Option
+                  </TextScallingFalse>
+                  <MaterialCommunityIcons
+                    name="plus"
+                    color="white"
+                    size={18}
+                  />
+                </View>
               </TouchableOpacity>
             )
-          : localUserVoted && (
+          : (
               <TextScallingFalse style={styles.totalVotesText}>
-                Votes : {totalVotes}
+                {totalVotes>1 ? `Votes: ${totalVotes}` : `Vote: ${totalVotes}`}
               </TextScallingFalse>
             )}
       </View>
@@ -275,12 +291,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#181818",
     paddingHorizontal: 35,
     alignSelf: "center",
-    width: "100%",
+    width: "95%",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
   title: {
     color: "white",
@@ -298,7 +314,7 @@ const styles = StyleSheet.create({
   optionInput: {
     fontSize: 16,
     color: "white",
-    // paddingHorizontal: 16,
+    paddingHorizontal: 16,
     height: 45,
     backgroundColor: "#181818",
     borderWidth: 1,
@@ -316,10 +332,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     overflow: 'hidden',
+    // backgroundColor: BASE_BACKGROUND_COLOR,
   },
   selectedOptionBorder: {
     borderColor: "#5F5F5F",
   },
+  // resultBarAnimated: {
+  //   position: 'absolute',
+  //   left: 0,
+  //   top: 0,
+  //   bottom: 0,
+  // },
+  // contentOverlay: {
+  //   position: 'relative',
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "space-between",
+  //   height: "100%",
+  //   paddingHorizontal: 16,
+  //   backgroundColor: 'transparent',
+  // },
   addButton: {
     padding: 12,
     backgroundColor: "#181818",
@@ -333,6 +365,25 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 15,
   },
+  optionTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    marginRight: 8,
+    // backgroundColor: 'transparent',
+  },
+  optionText: {
+    color: "white",
+    fontSize: 16,
+    zIndex: 2,
+    // backgroundColor: 'transparent',
+  },
+  tickIconContainer: {
+    paddingLeft: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  //  backgroundColor: 'transparent',
+  },
   optionContainer: {
     position: "relative",
     marginVertical: 5,
@@ -344,28 +395,19 @@ const styles = StyleSheet.create({
     height: "100%",
     paddingHorizontal: 16,
   },
-  resultBar: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: "#353535",
-    borderRadius: 10,
-  },
-  optionText: {
-    alignItems: "center",
-    color: "white",
-    fontSize: 16,
-    zIndex: 1,
-    flexShrink: 1,
-    marginRight: 5,
-    backgroundColor: 'transparent',
-  },
+  // resultBar: {
+  //   position: "absolute",
+  //   left: 0,
+  //   top: 0,
+  //   bottom: 0,
+  //   backgroundColor: "#353535",
+  //   borderRadius: 10,
+  // },
   percentageText: {
     color: "grey",
     fontSize: 14,
     fontWeight: '500',
-    zIndex: 1,
+    zIndex: 2,
     backgroundColor: 'transparent',
   },
   totalVotesText: {
@@ -374,5 +416,17 @@ const styles = StyleSheet.create({
     textAlign: "left",
     paddingRight: 8,
     marginTop: 8,
+  },
+  inputWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  charCountText: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    color: 'grey',
+    fontSize: 10,
+    fontWeight:700
   },
 });

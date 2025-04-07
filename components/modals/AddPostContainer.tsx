@@ -548,5 +548,7 @@ export default function AddPostContainer({
       />
       )}
     </PageThemeView>
+    </TouchableOpacity>
+    </Modal>
   );
 }

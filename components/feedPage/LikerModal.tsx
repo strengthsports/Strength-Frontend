@@ -22,7 +22,7 @@ const ITEM_HEIGHT = 60; // Fixed height of each item in pixels
 export const LikerCard = ({ liker }: { liker: any }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: liker._id, type: "User" })
+    JSON.stringify({ id: liker._id, type: liker.type })
   );
   return (
     <>

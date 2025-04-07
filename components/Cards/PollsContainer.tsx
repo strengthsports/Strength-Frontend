@@ -10,6 +10,7 @@ import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import TextScallingFalse from "../CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface PollsContainerProps {
   mode?: "create" | "view";
@@ -33,8 +34,38 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
     onOptionsChange,
     onVote,
   }) => {
-    const [localOptions, setLocalOptions] = useState(options);
+    const [localOptions, setLocalOptions] = useState(
+      mode === "create" ? (options.length > 0 ? options : ["", ""]) : options
+   );
+
+   //state for optimistic UI updates
+   const [localUserVoted, setLocalUserVoted] = useState(userVoted);
+    const [localSelectedOption, setLocalSelectedOption] = useState(selectedOption);
+    const [localVoteCounts, setLocalVoteCounts] = useState(() =>
+      (voteCounts && voteCounts.length === options.length) ? [...voteCounts] : Array(options.length).fill(0)
+    );
+    
     const inputRefs = useRef<Array<TextInput | null>>([]);
+
+    useEffect(() => {
+      setLocalUserVoted(userVoted);
+    }, [userVoted]);
+  
+    useEffect(() => {
+      setLocalSelectedOption(selectedOption);
+    }, [selectedOption]);
+
+    useEffect(() => {
+      if (voteCounts && voteCounts.length === localOptions.length) {
+          if (JSON.stringify(voteCounts) !== JSON.stringify(localVoteCounts)) {
+               setLocalVoteCounts([...voteCounts]);
+          }
+      } else if (localOptions.length > 0 && (!voteCounts || voteCounts.length === 0)) {
+          setLocalVoteCounts(Array(localOptions.length).fill(0));
+      }
+    }, [JSON.stringify(voteCounts), localOptions.length]);
+  
+    
 
     // Memoized total votes calculation
     const totalVotes = useMemo(
@@ -81,6 +112,25 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
       [localOptions, onOptionsChange]
     );
 
+    // *** optimistic vote handler ***
+    const handleVote = useCallback(
+      (index: number) => {
+        if (!localUserVoted && index >= 0 && index < localVoteCounts.length) {
+          const optimisticCounts = [...localVoteCounts];
+          optimisticCounts[index] += 1;
+          const optimisticVoted = true;
+          const optimisticSelection = index;
+  
+          setLocalVoteCounts(optimisticCounts);
+          setLocalUserVoted(optimisticVoted);
+          setLocalSelectedOption(optimisticSelection);
+  
+          onVote?.(index);
+        }
+      },
+      [localUserVoted, localVoteCounts, onVote]
+    );
+
     return (
       <View
         style={styles.container}
@@ -104,57 +154,78 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
         )}
 
         <View style={{ width: "100%", paddingVertical: 10 }}>
-          {localOptions.map((option, index) => (
-            <View key={index} style={styles.optionContainer}>
-              {mode === "create" ? (
-                <TextInput
-                  ref={(ref) => (inputRefs.current[index] = ref)}
-                  placeholder={`Option ${index + 1}`}
-                  placeholderTextColor="grey"
-                  value={option}
-                  onChangeText={(text) => updateOption(text, index)}
-                  style={styles.optionInput}
-                  editable={mode === "create"}
-                />
-              ) : (
-                <TouchableOpacity
-                  style={[
-                    styles.optionInput,
-                    userVoted && { backgroundColor: "#353535" },
-                    selectedOption === index && { borderColor: "#5F5F5F" },
-                  ]}
-                  disabled={userVoted}
-                  onPress={() => onVote?.(index)}
-                >
-                  <View style={styles.resultBarContainer}>
-                    {userVoted && (
-                      <View
-                        style={[
-                          styles.resultBar,
-                          { width: `${optionPercentages[index]}%` },
-                        ]}
-                      />
-                    )}
-                    <TextScallingFalse style={styles.optionText}>
-                      {option}
-                      {selectedOption === index && (
-                        <MaterialCommunityIcons
-                          name="check-circle"
-                          size={14}
-                          className="ml-3"
-                        />
-                      )}
-                    </TextScallingFalse>
-                    {userVoted && (
-                      <TextScallingFalse style={styles.percentageText}>
-                        {optionPercentages[index]}%
+          {localOptions.map((option, index) => {
+            const percentage = optionPercentages[index] / 100;
+
+            const baseBackgroundColor = '#181818';
+            const fillColor = '#353535';
+  
+            const gradientLocations = [0, percentage, Math.min(percentage + 0.0001, 1), 1] as const;
+            const gradientColors = [
+              fillColor,
+              fillColor,
+              baseBackgroundColor,
+              baseBackgroundColor,
+            ] as const;
+  
+            const gradientDisabledColors = [
+              baseBackgroundColor,
+              baseBackgroundColor,
+            ] as const;
+  
+            const gradientDisabledLocations = [0, 1] as const;
+
+            return (
+              <View key={index} style={styles.optionContainer}>
+                {mode === "create" ? (
+                  <TextInput
+                    ref={(ref) => (inputRefs.current[index] = ref)}
+                    placeholder={`Option ${index + 1}`}
+                    placeholderTextColor="grey"
+                    value={option}
+                    onChangeText={(text) => updateOption(text, index)}
+                    style={styles.optionInput}
+                    editable={mode === "create"}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.optionInputBase,
+                      localSelectedOption === index && styles.selectedOptionBorder,
+                    ]}
+                    disabled={localUserVoted}
+                    onPress={() => handleVote(index)}
+                  >
+                    <LinearGradient
+                      style={styles.resultBarContainer}
+                      colors={localUserVoted ? gradientColors : gradientDisabledColors}
+                      locations={localUserVoted ? gradientLocations : gradientDisabledLocations}
+                      start={{ x: 0, y: 0.5 }}
+                      end={{ x: 1, y: 0.5 }}
+                    >
+                      <TextScallingFalse style={styles.optionText}>
+                        {option}
+                        {localSelectedOption === index && (
+                          <View style={{paddingLeft: 5}}>
+                            <MaterialCommunityIcons
+                              name="check-circle"
+                              color="white"
+                              size={14}
+                            />
+                          </View>
+                        )}
                       </TextScallingFalse>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+                      {localUserVoted && (
+                        <TextScallingFalse style={styles.percentageText}>
+                          {optionPercentages[index]}%
+                        </TextScallingFalse>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )
+          })}
         </View>
 
         {mode === "create"
@@ -169,7 +240,7 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                 </TextScallingFalse>
               </TouchableOpacity>
             )
-          : userVoted && (
+          : localUserVoted && (
               <TextScallingFalse style={styles.totalVotesText}>
                 Votes : {totalVotes}
               </TextScallingFalse>
@@ -227,14 +298,27 @@ const styles = StyleSheet.create({
   optionInput: {
     fontSize: 16,
     color: "white",
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     height: 45,
     backgroundColor: "#181818",
     borderWidth: 1,
     borderColor: "#363636",
     borderRadius: 10,
-    paddingVertical: 8,
+    // paddingVertical: 8,
     marginVertical: 5,
+  },
+  optionInputBase: {
+    fontSize: 16,
+    color: "white",
+    height: 45,
+    borderWidth: 1,
+    borderColor: "#363636",
+    borderRadius: 10,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  selectedOptionBorder: {
+    borderColor: "#5F5F5F",
   },
   addButton: {
     padding: 12,
@@ -251,14 +335,14 @@ const styles = StyleSheet.create({
   },
   optionContainer: {
     position: "relative",
-    // marginVertical: 5,
+    marginVertical: 5,
   },
   resultBarContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     height: "100%",
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
   },
   resultBar: {
     position: "absolute",
@@ -269,16 +353,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   optionText: {
-    flexDirection: "row",
     alignItems: "center",
     color: "white",
     fontSize: 16,
     zIndex: 1,
+    flexShrink: 1,
+    marginRight: 5,
+    backgroundColor: 'transparent',
   },
   percentageText: {
     color: "grey",
     fontSize: 14,
+    fontWeight: '500',
     zIndex: 1,
+    backgroundColor: 'transparent',
   },
   totalVotesText: {
     color: "grey",

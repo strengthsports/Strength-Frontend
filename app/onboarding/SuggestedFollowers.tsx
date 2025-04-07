@@ -68,12 +68,12 @@ const SuggestedSupportScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    // console.log("Selected Sports:", selectedSports);
+    console.log("Selected Sports:", selectedSports);
 
     const onboardingData = {
       headline: headline,
       profilePic: profilePic?.fileObject,
-      followings: selectedPlayers,
+      favSports: selectedSports,
     };
 
     try {
@@ -81,15 +81,14 @@ const SuggestedSupportScreen: React.FC = () => {
       const finalOnboardingData = new FormData();
       finalOnboardingData.append("headline", onboardingData.headline);
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
-      finalOnboardingData.append(
-        "followings",
-        JSON.stringify(onboardingData.followings)
-      );
+      onboardingData.favSports.forEach((sportId) => {
+        finalOnboardingData.append("favSports", sportId);
+      });
 
-      // Log FormData values (for debugging)
-      // finalOnboardingData.forEach((value, key) => {
-      //   console.log(`${key}: ${value}`);
-      // });
+      //Log FormData values (for debugging)
+      finalOnboardingData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+      });
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
@@ -130,7 +129,7 @@ const SuggestedSupportScreen: React.FC = () => {
     const onboardingData = {
       headline: headline,
       profilePic: profilePic?.fileObject,
-      followings: selectedPlayers,
+      favSports: selectedSports,
     };
 
     try {
@@ -138,10 +137,9 @@ const SuggestedSupportScreen: React.FC = () => {
       const finalOnboardingData = new FormData();
       finalOnboardingData.append("headline", onboardingData.headline);
       finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
-      finalOnboardingData.append(
-        "followings",
-        JSON.stringify(onboardingData.followings)
-      );
+      onboardingData.favSports.forEach((sportId) => {
+        finalOnboardingData.append("favSports", sportId);
+      });
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 

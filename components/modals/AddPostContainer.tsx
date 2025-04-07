@@ -41,6 +41,7 @@ import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
 import { showFeedback } from "~/utils/feedbackToast";
+import Svg, { Path } from "react-native-svg";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -129,6 +130,7 @@ export default function AddPostContainer({
   const [inputHeight, setInputHeight] = useState(40);
   const [showPollInput, setShowPollInput] = useState(false);
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
+  const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
 
   // Improved regex pattern for tag detection
   const parseTags = (text: string) => {
@@ -184,7 +186,7 @@ export default function AddPostContainer({
         const file = {
           uri,
           name: `image_${index}.jpg`,
-          type: "image/jpeg",
+          type: isTypeVideo ? "video/mp4" : "image/jpeg",
         };
         formData.append(`assets${index + 1}`, file);
       });
@@ -236,10 +238,11 @@ export default function AddPostContainer({
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images", "videos"],
         aspect: Platform.OS === "ios" ? ratio : ratio,
         quality: 0.8,
         allowsEditing: true,
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        // mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 
       if (!result.canceled && result.assets.length > 0) {
@@ -489,8 +492,23 @@ export default function AddPostContainer({
                   <TagsIcon />
                 </TouchableOpacity>
                 <TouchableOpacity
+                  activeOpacity={0.5}
+                  className="p-[5px] w-[35px]"
+                  onPress={() => {
+                    handlePickImageOrAddMore();
+                    setTypeVideo(true);
+                  }}
+                  disabled={showPollInput || isTypeVideo}
+                >
+                  <MaterialCommunityIcons
+                    name="play-circle-outline"
+                    size={24}
+                    color={showPollInput ? "#737373" : Colors.themeColor}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
                   onPress={handlePickImageOrAddMore}
-                  disabled={showPollInput}
+                  disabled={showPollInput || isTypeVideo}
                 >
                   <MaterialCommunityIcons
                     name="image-outline"

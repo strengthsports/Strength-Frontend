@@ -327,6 +327,11 @@ export default function AddPostContainer({
     }
   };
 
+  const handleCloseBothModals = () => {
+    setAddPostContainerOpen(false);
+    setAlertModalOpen(false);
+  }
+
   return (
     <Modal
       visible={isAddPostContainerOpen}
@@ -528,20 +533,20 @@ export default function AddPostContainer({
             </View>
           </View>
 
-          {/* alert modal */}
-          <AlertModal
-            isVisible={isAlertModalOpen}
-            alertConfig={{
-              title: "Discard Post ?",
-              message: "All your changes will be deleted",
-              cancelMessage: "Cancel",
-              confirmMessage: "Discard",
-              confirmAction: () => handleCloseAddPostContainer(),
-              discardAction: () => setAlertModalOpen(false),
-            }}
-          />
-        </PageThemeView>
-      </TouchableOpacity>
-    </Modal>
+      {/* alert modal */}
+      {isAlertModalOpen && (
+      <AlertModal
+        isVisible={isAlertModalOpen}
+        alertConfig={{
+          title: "Discard Post ?",
+          message: "All your changes will be deleted",
+          cancelMessage: "Cancel",
+          confirmMessage: "Discard",
+          confirmAction: () => setAddPostContainerOpen(false), 
+          discardAction: handleCloseBothModals
+        }}
+      />
+      )}
+    </PageThemeView>
   );
 }

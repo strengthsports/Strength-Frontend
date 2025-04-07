@@ -31,6 +31,8 @@ import {
   fetchMyProfile,
   editUserAbout,
 } from "~/reduxStore/slices/user/profileSlice";
+import AlertModal from "~/components/modals/AlertModal";
+import KeyDetailsMenu from "~/components/modals/KeyDetailsMenu";
 
 interface SelectedSport {
   sportsId: string;
@@ -70,12 +72,11 @@ function EditOverview() {
   const [alertConfig, setAlertConfig] = useState<AlertConfigType>({
     title: "Discard changes?",
     message: "If you go back now, you will lose your changes.",
-    discardAction: () => {},
+    discardAction: () => { },
     confirmMessage: "Discard Changes",
     cancelMessage: "Continue editing",
-    onSkip: undefined,
   });
-  
+
   // Initial sports data
   const [initialSportsData, setInitialSportsData] = useState<any>();
   // Final selected sports data
@@ -129,6 +130,7 @@ function EditOverview() {
       setSelectedSport({ sportsId, sportsName, keyDetails: mergedKeyDetails, logo });
       setHasSkippedAlert(false);
       console.log("hasSkippedAlert:", hasSkippedAlert);
+      setSportsOptionModalOpen(false);
       setKeyDetailsFormOpen(true);
     },
     [finalSelectedSports]
@@ -183,15 +185,22 @@ function EditOverview() {
   }, []);
 
   // ✅ Define the type above your component
-type AlertConfigType = {
-  title: string;
-  message: string;
-  discardAction: () => void;
-  confirmMessage: string;
-  cancelMessage: string;
-  onSkip?: () => void;
-};
-const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
+  type AlertConfigType = {
+    title: string;
+    message: string;
+    discardAction: () => void;
+    confirmMessage: string;
+    cancelMessage: string;
+    discardButtonColor?: {
+      bg: string;
+      text: string;
+    };
+    cancelButtonColor?: {
+      bg: string;
+      text: string;
+    };
+  };
+  const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
   const handleOpenAlertModal = useCallback(
     (
       title: string,
@@ -199,6 +208,8 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
       discardAction: () => void,
       confirmMessage: string,
       cancelMessage: string,
+      discardButtonColor?: { bg: string; text: string },
+      cancelButtonColor?: { bg: string; text: string }
     ) => {
       if (hasSkippedAlert) return;
       setAlertConfig({
@@ -207,6 +218,8 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
         discardAction,
         confirmMessage,
         cancelMessage,
+        discardButtonColor,
+        cancelButtonColor,
       });
       setAlertModal(true);
     },
@@ -238,6 +251,9 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
     setEditModalOpen(false);
   }, [selectedSport]);
 
+  const handleCloseAlertModal = () => {
+    setAlertModal(false);
+  };
 
   // Handle save final sports key details
   const handleSaveFinalSportsData = useCallback(() => {
@@ -255,8 +271,9 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
           "Add More Key Details",
           "We recommend adding at least 3 key details to your Sports Overview for a complete and impactful profile.",
           () => setAlertModal(false),
-          "Skip",
+          "  Skip  ",
           "Add more",
+          { bg: "transparent", text: "#808080" },
         );
         return; // Don't proceed
       }
@@ -532,8 +549,8 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
           onRequestClose={handleCloseKeyDetailsForm}
         >
           <PageThemeView>
-            <View className="px-5 py-2 flex-row justify-between items-center">
-              <View className="flex-row justify-start items-center gap-x-3">
+            <View style={{ paddingHorizontal: 20, paddingVertical: 18, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
@@ -549,24 +566,25 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
                         "Discard Changes?",
                         "If you go back, you will lose your changes.",
                         handleCloseKeyDetailsForm,
-                        "Discard changes",
-                        "Continue editing"
+                        "Discard",
+                        "Cancel",
+                        { bg: "transparent", text: "#E4080A" },
                       );
                     }
                   }}
                 >
                   <AntDesign name="arrowleft" size={24} color="white" />
                 </TouchableOpacity>
-                <TextScallingFalse className="text-5xl text-white">
-                  {selectedSport ? selectedSport.sportsName : ""}
-                </TextScallingFalse>
               </View>
+              <TextScallingFalse className="text-6xl text-white">
+                {selectedSport ? selectedSport.sportsName : ""}
+              </TextScallingFalse>
               <TouchableOpacity
                 onPress={handleSaveFinalSportsData}
               >
                 <MaterialIcons
                   name="done"
-                  size={28}
+                  size={30}
                   color={
                     selectedSport?.keyDetails &&
                       Object.values(selectedSport.keyDetails).every(
@@ -589,6 +607,7 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
                 width: "100%",
                 paddingVertical: 10,
                 paddingHorizontal: 20,
+                paddingTop: 20,
               }}
             >
               <TextScallingFalse
@@ -597,6 +616,15 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
                 Key Details:
               </TextScallingFalse>
             </View>
+
+            {isKeyValueDropdownOpen && (
+            <KeyDetailsMenu
+              isVisible={isKeyValueDropdownOpen}
+              keyOptions={keyOptions ?? []}
+              handleKeyValueSelect={handleKeyValueSelect}
+              handleClose={handleCloseKeyValueDropdown}
+            />
+          )}
 
             <View style={{ width: "100%", paddingHorizontal: 20, gap: 1 }}>
               {sports
@@ -618,7 +646,7 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
                     return (
                       <View key={index} style={styles.EditTopicSportsView}>
                         <TextScallingFalse style={styles.KeymenuText}>
-                          {propName}
+                          {propName} -
                         </TextScallingFalse>
                         <TouchableOpacity
                           activeOpacity={0.5}
@@ -645,290 +673,223 @@ const [hasSkippedAlert, setHasSkippedAlert] = useState(false);
               !Object.values(selectedSport.keyDetails).every(
                 (value) => value === ""
               ) && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  className="flex-row justify-center items-center mt-4"
-                  onPress={() =>
-                    handleOpenAlertModal(
-                      "Delete Overview",
-                      "Are you sure you want to delete your Cricket overview ?",
-                      handleDeleteSportsOverview,
-                      "Delete",
-                      "No Thanks"
-                    )
-                  }
-                >
-                  <TextScallingFalse className="text-[#808080] text-2xl font-semibold">
-                    Delete Overview
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              )}
-          </PageThemeView>
-        </Modal>
-
-        {/* Option menu for each key according to every sports */}
-        <Modal
-          visible={isKeyValueDropdownOpen}
-          transparent
-          animationType="fade"
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={{
-              flex: 1,
-              marginTop: 100,
-              marginLeft: 100,
-            }}
-            onPress={handleCloseKeyValueDropdown}
-          >
-            <View style={styles.modalContent}>
-              {keyOptions?.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.option}
-                  onPress={() => {
-                    handleKeyValueSelect(option);
-                  }}
-                >
-                  <TextScallingFalse
-                    style={styles.optionText}
-                    allowFontScaling={false}
+                <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    className="flex-row justify-center items-center w-[70%] rounded-[20px] mt-12"
+                    onPress={() =>
+                      handleOpenAlertModal(
+                        "Delete Overview",
+                        "Are you sure you want to delete your Cricket overview ?",
+                        handleDeleteSportsOverview,
+                        "Delete",
+                        "Cancel",
+                        { bg: "transparent", text: "#D44044" },
+                      )
+                    }
                   >
-                    {option}
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              ))}
-              {/* Unselect button */}
-              <TouchableOpacity
-                style={[styles.option, { borderTopWidth: 1, borderTopColor: "#ccc", marginTop: 5 }]}
-                onPress={() => handleKeyValueSelect("")} // Passing empty value to remove selection
-              >
-                <TextScallingFalse style={[styles.optionText, { color: "red" }]} allowFontScaling={false}>
-                  Unselect Option
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-
-        {/* Sports selection options modal */}
-        <Modal
-          visible={isSportsOptionModalOpen}
-          transparent={true}
-          onRequestClose={handleCloseSportsOptionModal}
-        >
-          <PageThemeView>
-            {/* Top header */}
-            <View className="px-5 py-2 flex-row justify-start items-center">
-              <TouchableOpacity
-                activeOpacity={0.5}
-                onPress={handleCloseSportsOptionModal}
-              >
-                <AntDesign name="arrowleft" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-            {/* Headings */}
-            <View style={{ width: "100%", padding: 20 }}>
-              <TextScallingFalse
-                style={{ color: "white", fontSize: 20, fontWeight: "500" }}
-              >
-                Select Your Sport..
-              </TextScallingFalse>
-              <TextScallingFalse className="text-[#808080] text-lg font-normal pt-2">
-                Choose the sport you want to showcase in your Overview Your
-                sports profile is your story; let's make it legendary!
-              </TextScallingFalse>
-            </View>
-            {/* Search bar */}
-            <View className="w-full justify-center items-center flex-row mx-auto h-[80px]">
-              <TextInput
-                placeholder="Search for sports"
-                placeholderTextColor={"grey"}
-                className="bg-[#181818] w-3/4 h-12 pl-5 rounded-l-md text-white"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                cursorColor="#12956B"
-              />
-              <View className="bg-[#181818] h-12 w-12 justify-center rounded-r-md">
-                <Feather
-                  name="search"
-                  style={{ paddingLeft: 10 }}
-                  size={23}
-                  color="grey"
-                />
-              </View>
-            </View>
-            {/* Sports options */}
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#12956B" />
-            ) : (
-              <ScrollView showsVerticalScrollIndicator={true}>
-                <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-3 p-5">
-                  {[...filteredSports]
-                    .sort((a, b) => {
-                      const aSelected = finalSelectedSports.some(s => s.sportsName === a.name);
-                      const bSelected = finalSelectedSports.some(s => s.sportsName === b.name);
-                      return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
-                    })
-                    .map((sport) => {
-                      const keyDetails = sport.defaultProperties.reduce((acc: any, dp) => {
-                        acc[dp.name] = "";
-                        return acc;
-                      }, {});
-
-                      const isSelected = finalSelectedSports.some(s => s.sportsName === sport.name);
-
-                      return (
-                        <TouchableOpacity
-                          onPress={() =>
-                            handleOpenEditModal(
-                              sport._id,
-                              sport.name,
-                              keyDetails,
-                              sport.logo
-                            )
-                          }
-                          activeOpacity={0.7}
-                          key={sport._id}
-                          style={{
-                            height: 100,
-                            width: 110,
-                            borderWidth: 0.3,
-                            borderColor: "#606060",
-                            borderRadius: 7,
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: 10,
-                            backgroundColor: isSelected ? "#12956B" : "transparent",
-                          }}
-                          className="w-[30%]"
-                        >
-                          <Image
-                            source={{ uri: sport.logo }}
-                            style={{ width: 28, height: 28 }}
-                          />
-                          <TextScallingFalse
-                            style={{
-                              color: "white",
-                              fontSize: 13,
-                              fontWeight: "500",
-                            }}
-                          >
-                            {sport.name}
-                          </TextScallingFalse>
-                        </TouchableOpacity>
-                      );
-                    })}
+                    <TextScallingFalse className="text-[#E4080A] text-2xl font-semibold">
+                      Delete Overview
+                    </TextScallingFalse>
+                  </TouchableOpacity>
                 </View>
-              </ScrollView>
+              )}
 
+            {/* Alert modal */}
+            {isAlertModalSet && (
+              <AlertModal
+                alertConfig={{
+                  ...alertConfig,
+                  confirmAction: () => {
+                    if (alertConfig.title === "Add More Key Details") {
+                      setHasSkippedAlert(true);
+                    }
+                    alertConfig.discardAction?.(); // optional chaining for safety
+                    handleCloseAlertModal();
+                  },
+                  discardAction: () => {
+                    if (alertConfig.title === "Add More Key Details") {
+                      setHasSkippedAlert(true);
+                    }
+                    handleCloseAlertModal();
+                  },
+                }}
+                isVisible={isAlertModalSet}
+              />
             )}
           </PageThemeView>
         </Modal>
 
-        {/* Alert modal */}
-        <Modal visible={isAlertModalSet} transparent animationType="fade">
-          <View style={styles.AlertModalView}>
-            <View
-              style={styles.AlertModalContainer}
-              className="h-full flex items-center justify-center gap-y-3 p-8"
-            >
-              <TextScallingFalse className="text-[20px] text-white font-bold">
-                {alertConfig.title}
-              </TextScallingFalse>
-              <TextScallingFalse className="text-[14px] text-white text-center">
-                {alertConfig.message}
-              </TextScallingFalse>
+{/* Sports selection options modal */ }
+<Modal
+  visible={isSportsOptionModalOpen}
+  transparent={true}
+  onRequestClose={handleCloseSportsOptionModal}
+>
+  <PageThemeView>
+    {/* Top header */}
+    <View className="px-5 py-2 flex-row justify-start items-center">
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={handleCloseSportsOptionModal}
+      >
+        <AntDesign name="arrowleft" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
+    {/* Headings */}
+    <View style={{ width: "100%", padding: 20 }}>
+      <TextScallingFalse
+        style={{ color: "white", fontSize: 20, fontWeight: "500" }}
+      >
+        Select Your Sport..
+      </TextScallingFalse>
+      <TextScallingFalse className="text-[#808080] text-lg font-normal pt-2">
+        Choose the sport you want to showcase in your Overview Your
+        sports profile is your story; let's make it legendary!
+      </TextScallingFalse>
+    </View>
+    {/* Search bar */}
+    <View className="w-full justify-center items-center flex-row mx-auto h-[80px]">
+      <TextInput
+        placeholder="Search for sports"
+        placeholderTextColor={"grey"}
+        className="bg-[#181818] w-3/4 h-12 pl-5 rounded-l-md text-white"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        cursorColor="#12956B"
+      />
+      <View className="bg-[#181818] h-12 w-12 justify-center rounded-r-md">
+        <Feather
+          name="search"
+          style={{ paddingLeft: 10 }}
+          size={23}
+          color="grey"
+        />
+      </View>
+    </View>
+    {/* Sports options */}
+    {isLoading ? (
+      <ActivityIndicator size="small" color="#12956B" />
+    ) : (
+      <ScrollView showsVerticalScrollIndicator={true}>
+        <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-3 p-5">
+          {[...filteredSports]
+            .sort((a, b) => {
+              const aSelected = finalSelectedSports.some(s => s.sportsName === a.name);
+              const bSelected = finalSelectedSports.some(s => s.sportsName === b.name);
+              return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
+            })
+            .map((sport) => {
+              const keyDetails = sport.defaultProperties.reduce((acc: any, dp) => {
+                acc[dp.name] = "";
+                return acc;
+              }, {});
 
-              <View className="flex-row border-t border-[#8080808b] w-full">
+              const isSelected = finalSelectedSports.some(s => s.sportsName === sport.name);
+
+              return (
                 <TouchableOpacity
-                  onPress={() => {
-                    alertConfig.discardAction();
-                  }}
-                  className="py-2 items-center"
-                >
-                  <TextScallingFalse className="font-semibold text-4xl text-red-600">
-                    {alertConfig.confirmMessage}
-                  </TextScallingFalse>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  onPress={() =>
+                    handleOpenEditModal(
+                      sport._id,
+                      sport.name,
+                      keyDetails,
+                      sport.logo
+                    )
+                  }
                   activeOpacity={0.7}
-                  onPress={() => {
-                    if (
-                      alertConfig.title === "Add More Key Details" &&
-                      alertConfig.message.includes("We recommend adding at least 3 key details")
-                    ) {
-                      setHasSkippedAlert(true);
-                    }
-                    setAlertModal(false);
+                  key={sport._id}
+                  style={{
+                    height: 100,
+                    width: 110,
+                    borderWidth: 0.3,
+                    borderColor: "#606060",
+                    borderRadius: 7,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 10,
+                    backgroundColor: isSelected ? "#12956B" : "transparent",
                   }}
-                  className="py-2 items-center"
+                  className="w-[30%]"
                 >
-                  <TextScallingFalse className="font-semibold text-4xl text-[#808080]">
-                    {alertConfig.cancelMessage}
+                  <Image
+                    source={{ uri: sport.logo }}
+                    style={{ width: 28, height: 28 }}
+                  />
+                  <TextScallingFalse
+                    style={{
+                      color: "white",
+                      fontSize: 13,
+                      fontWeight: "500",
+                    }}
+                  >
+                    {sport.name}
                   </TextScallingFalse>
                 </TouchableOpacity>
-              </View>
+              );
+            })}
+        </View>
+      </ScrollView>
 
-            </View>
-          </View>
-        </Modal>
+    )}
+  </PageThemeView>
+</Modal>
 
-        {/* About Modal */}
-        <Modal
-          visible={isAboutModalOpen}
-          transparent
-          onRequestClose={handleCloseAboutModal}
-        >
-          <TouchableOpacity
-            className="flex-1"
-            activeOpacity={1}
-            onPress={handleCloseAboutModal}
-          >
-            <View className="bg-black h-full">
-              {/* Modal Header */}
-              <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
-                <View className="flex-row items-center">
-                  <TouchableOpacity onPress={handleCloseAboutModal}>
-                    <AntDesign name="arrowleft" size={24} color="white" />
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={handleSaveAbout}>
-                  <MaterialIcons
-                    name="done"
-                    size={28}
-                    color={initialAbout === user?.about ? "grey" : "#12956B"}
-                  />
-                </TouchableOpacity>
-              </View>
-              {/* Modal Content */}
-              <View className="p-5">
-                <Text className="text-white font-bold text-5xl">
-                  Edit About
-                </Text>
-                <Text className="text-gray-500 text-base mb-5 mt-1.5">
-                  Use this space to showcase who you are as a professional
-                  athlete. You can share your sports background, achievements,
-                  and the essence of your athletic journey.
-                </Text>
-                <View className="border border-white h-72 rounded-sm justify-start">
-                  <TextInput
-                    value={initialAbout}
-                    onChangeText={setAbout}
-                    placeholder="Write about yourself..."
-                    placeholderTextColor="gray"
-                    multiline
-                    numberOfLines={15}
-                    className="text-white text-xl flex-1 p-3"
-                    style={{ textAlignVertical: "top" }}
-                  />
-                </View>
-              </View>
-            </View>
+{/* About Modal */ }
+<Modal
+  visible={isAboutModalOpen}
+  transparent
+  onRequestClose={handleCloseAboutModal}
+>
+  <TouchableOpacity
+    className="flex-1"
+    activeOpacity={1}
+    onPress={handleCloseAboutModal}
+  >
+    <View className="bg-black h-full">
+      {/* Modal Header */}
+      <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
+        <View className="flex-row items-center">
+          <TouchableOpacity onPress={handleCloseAboutModal}>
+            <AntDesign name="arrowleft" size={24} color="white" />
           </TouchableOpacity>
-        </Modal>
-      </PageThemeView>
-    </SafeAreaView>
+        </View>
+        <TouchableOpacity onPress={handleSaveAbout}>
+          <MaterialIcons
+            name="done"
+            size={28}
+            color={initialAbout === user?.about ? "grey" : "#12956B"}
+          />
+        </TouchableOpacity>
+      </View>
+      {/* Modal Content */}
+      <View className="p-5">
+        <Text className="text-white font-bold text-5xl">
+          Edit About
+        </Text>
+        <Text className="text-gray-500 text-base mb-5 mt-1.5">
+          Use this space to showcase who you are as a professional
+          athlete. You can share your sports background, achievements,
+          and the essence of your athletic journey.
+        </Text>
+        <View className="border border-white h-72 rounded-sm justify-start">
+          <TextInput
+            value={initialAbout}
+            onChangeText={setAbout}
+            placeholder="Write about yourself..."
+            placeholderTextColor="gray"
+            multiline
+            numberOfLines={15}
+            className="text-white text-xl flex-1 p-3"
+            style={{ textAlignVertical: "top" }}
+          />
+        </View>
+      </View>
+    </View>
+  </TouchableOpacity>
+</Modal>
+      </PageThemeView >
+    </SafeAreaView >
   );
 }
 
@@ -956,6 +917,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "300",
+    paddingRight: 23,
   },
   flexRowView: {
     flexDirection: "row",
@@ -978,7 +940,7 @@ const styles = StyleSheet.create({
   },
   AlertModalContainer: {
     width: "90%",
-    height: 250,
+    height: 240,
     borderRadius: 15,
     backgroundColor: "#181818",
     alignItems: "center",

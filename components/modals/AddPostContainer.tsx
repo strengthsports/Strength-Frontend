@@ -322,6 +322,11 @@ export default function AddPostContainer({
     }
   };
 
+  const handleCloseBothModals = () => {
+    setAddPostContainerOpen(false);
+    setAlertModalOpen(false);
+  }
+
   return (
     <PageThemeView>
       <View className="h-full">
@@ -508,6 +513,7 @@ export default function AddPostContainer({
       </View>
 
       {/* alert modal */}
+      {isAlertModalOpen && (
       <AlertModal
         isVisible={isAlertModalOpen}
         alertConfig={{
@@ -515,10 +521,11 @@ export default function AddPostContainer({
           message: "All your changes will be deleted",
           cancelMessage: "Cancel",
           confirmMessage: "Discard",
-          confirmAction: () => setAddPostContainerOpen(false),
-          discardAction: () => setAlertModalOpen(false),
+          confirmAction: () => setAddPostContainerOpen(false), 
+          discardAction: handleCloseBothModals
         }}
       />
+      )}
     </PageThemeView>
   );
 }

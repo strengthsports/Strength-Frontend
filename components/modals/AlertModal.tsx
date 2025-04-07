@@ -20,7 +20,6 @@ const AlertModal = ({
   isVisible: boolean;
 }) => {
   return (
-    <Modal visible={isVisible} transparent animationType="fade">
       <View style={styles.AlertModalView}>
         <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[22%] w-[80%]">
           <View className="flex-1">
@@ -85,7 +84,6 @@ const AlertModal = ({
           </View>
         </View>
       </View>
-    </Modal>
   );
 };
 
@@ -96,6 +94,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position:'absolute',
+    zIndex: 100,
   },
   AlertModalContainer: {
     width: "85%",

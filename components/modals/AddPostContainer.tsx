@@ -12,10 +12,7 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  KeyboardAvoidingView,
   Platform,
-  Text,
-  BackHandler,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
@@ -137,12 +134,12 @@ export default function AddPostContainer({
     return parts.map((part, index) => {
       if (part.startsWith("#") || part.startsWith("@")) {
         return (
-          <Text key={index} style={{ color: "#12956B" }}>
+          <TextScallingFalse key={index} style={{ color: "#12956B" }}>
             {part}
-          </Text>
+          </TextScallingFalse>
         );
       }
-      return <Text key={index}>{part}</Text>;
+      return <TextScallingFalse key={index}>{part}</TextScallingFalse>;
     });
   };
 
@@ -327,6 +324,11 @@ export default function AddPostContainer({
     }
   };
 
+  const handleCloseBothModals = () => {
+    setAddPostContainerOpen(false);
+    setAlertModalOpen(false);
+  }
+
   return (
     <Modal
       visible={isAddPostContainerOpen}
@@ -384,7 +386,7 @@ export default function AddPostContainer({
                     paddingTop: Platform.OS === "ios" ? 8 : 4,
                   }}
                 >
-                  <Text
+                  <TextScallingFalse
                     style={{
                       fontSize: 16,
                       color: "transparent",
@@ -395,7 +397,7 @@ export default function AddPostContainer({
                     }}
                   >
                     {parseTags(postText)}
-                  </Text>
+                  </TextScallingFalse>
                 </View>
 
                 {/* Actual text input */}
@@ -528,20 +530,22 @@ export default function AddPostContainer({
             </View>
           </View>
 
-          {/* alert modal */}
-          <AlertModal
-            isVisible={isAlertModalOpen}
-            alertConfig={{
-              title: "Discard Post ?",
-              message: "All your changes will be deleted",
-              cancelMessage: "Cancel",
-              confirmMessage: "Discard",
-              confirmAction: () => handleCloseAddPostContainer(),
-              discardAction: () => setAlertModalOpen(false),
-            }}
-          />
-        </PageThemeView>
-      </TouchableOpacity>
+      {/* alert modal */}
+      {isAlertModalOpen && (
+      <AlertModal
+        isVisible={isAlertModalOpen}
+        alertConfig={{
+          title: "Discard Post ?",
+          message: "All your changes will be deleted",
+          cancelMessage: "Cancel",
+          confirmMessage: "Discard",
+          confirmAction: () => setAddPostContainerOpen(false), 
+          discardAction: handleCloseBothModals
+        }}
+      />
+      )}
+    </PageThemeView>
+    </TouchableOpacity>
     </Modal>
   );
 }

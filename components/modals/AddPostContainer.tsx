@@ -38,6 +38,7 @@ import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
 import { showFeedback } from "~/utils/feedbackToast";
+import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -491,11 +492,7 @@ export default function AddPostContainer({
                   onPress={handlePickImageOrAddMore}
                   disabled={showPollInput}
                 >
-                  <MaterialCommunityIcons
-                    name="image-outline"
-                    size={24}
-                    color={showPollInput ? "#737373" : Colors.themeColor}
-                  />
+                  <AddImageIcon />
                   {pickedImageUris.length > 0 && (
                     <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
                       <FontAwesome6 name="add" size={12} color="#12956B" />

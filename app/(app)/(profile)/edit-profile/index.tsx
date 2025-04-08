@@ -197,12 +197,12 @@ const EditProfile = () => {
           unit === "ft"
             ? "feetInches"
             : unit === "cm"
-            ? "centimeters"
-            : unit === "m"
-            ? "meters"
-            : unit === "kg"
-            ? "kilograms"
-            : "pounds";
+              ? "centimeters"
+              : unit === "m"
+                ? "meters"
+                : unit === "kg"
+                  ? "kilograms"
+                  : "pounds";
       }
 
       setSelectedField(selectedUnit);
@@ -279,10 +279,10 @@ const EditProfile = () => {
       return unit === "ft"
         ? value * 30.48
         : unit === "cm"
-        ? value
-        : unit === "m"
-        ? value * 100
-        : 0;
+          ? value
+          : unit === "m"
+            ? value * 100
+            : 0;
     }
     return unit === "kg" ? value : unit === "lbs" ? value / 2.20462 : 0;
   };
@@ -432,13 +432,12 @@ const EditProfile = () => {
       // height field
       const heightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
       const heightString = heightValue
-        ? `${heightValue} ${
-            selectedField === "feetInches"
-              ? "ft"
-              : selectedField === "centimeters"
-              ? "cm"
-              : "m"
-          }`
+        ? `${heightValue} ${selectedField === "feetInches"
+          ? "ft"
+          : selectedField === "centimeters"
+            ? "cm"
+            : "m"
+        }`
         : "";
 
       setFormData((prev) => ({ ...prev, [field]: heightString }));
@@ -710,15 +709,15 @@ const EditProfile = () => {
           field === "feetInches"
             ? heightInFeet
             : field === "centimeters"
-            ? heightInCentimeters
-            : heightInMeters
+              ? heightInCentimeters
+              : heightInMeters
         ) || 0;
 
       return field === "feetInches"
         ? value * 30.48
         : field === "centimeters"
-        ? value
-        : value * 100;
+          ? value
+          : value * 100;
     }
 
     if (picType === "weight") {
@@ -734,6 +733,10 @@ const EditProfile = () => {
   const hasChanges = ["height", "weight"].includes(picType)
     ? calculateCurrentMeasurement() !== initialMeasurement
     : inputValue !== initialValue;
+
+  const today = new Date();
+  const maxDOB = new Date();
+  maxDOB.setFullYear(today.getFullYear() - 13); // must be born before today minus 13 years
 
   return (
     <SafeAreaView>
@@ -777,11 +780,10 @@ const EditProfile = () => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${
-                    Array.from(finalUploadData.entries()).length
-                      ? "text-[#12956B]"
-                      : "text-[#808080]"
-                  } text-4xl font-medium`}
+                  className={`${Array.from(finalUploadData.entries()).length
+                    ? "text-[#12956B]"
+                    : "text-[#808080]"
+                    } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -1064,28 +1066,6 @@ const EditProfile = () => {
           </Modal>
         </ScrollView>
 
-        {/* Date picker component */}
-        {isDatePickerVisible && (
-          <View>
-            <DateTimePicker
-              value={inputValue ? new Date(inputValue) : new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  const formattedDate = selectedDate
-                    .toISOString()
-                    .split("T")[0];
-                  setInputValue(formattedDate);
-                }
-                if (Platform.OS === "android") {
-                  setIsDatePickerVisible(false); // Android auto-closes
-                }
-              }}
-            />
-          </View>
-        )}
-
         {/* Alert modal */}
         <Modal visible={isAlertModalSet} transparent animationType="fade">
           <View style={styles.AlertModalView}>
@@ -1254,14 +1234,37 @@ const EditProfile = () => {
                         </TouchableOpacity>
                       )}
                     </View>
+                    <TextScallingFalse className="text-gray-500 text-base mt-4">
+                      {description}
+                    </TextScallingFalse>
+                    {/* Date picker component */}
+                    {isDatePickerVisible && (
+                      <View style={{ width: '100%', height: '100%', paddingTop: 30, alignItems: 'center', }}>
+                        <DateTimePicker
+                          value={inputValue ? new Date(inputValue) : maxDOB}
+                          mode="date"
+                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                          maximumDate={maxDOB} // restrict to users at least 13
+                          onChange={(event, selectedDate) => {
+                            if (selectedDate) {
+                              const formattedDate = selectedDate.toISOString().split("T")[0];
+                              setInputValue(formattedDate);
+                            }
+                            if (Platform.OS === "android") {
+                              setIsDatePickerVisible(false);
+                            }
+                          }}
+                        />
+
+                      </View>
+                    )}
                   </>
                 ) : (
                   <>
                     <TextScallingFalse className="text-gray-500 text-xl">{label}</TextScallingFalse>
                     <View
-                      className={`flex-row border-b border-white ${
-                        picType === "headline" ? "" : "h-[50px]"
-                      }`}
+                      className={`flex-row border-b border-white ${picType === "headline" ? "" : "h-[50px]"
+                        }`}
                     >
                       <TextInput
                         value={inputValue}
@@ -1316,9 +1319,14 @@ const EditProfile = () => {
                   </>
                 )}
 
-                <TextScallingFalse className="text-gray-500 text-base mt-4">
+                {picType === "dateOfBirth" ? (
+                  null
+                ) : (
+                  <TextScallingFalse className="text-gray-500 text-base mt-4">
                   {description}
                 </TextScallingFalse>
+                )
+                }
                 {picType === "address" ? (
                   <TouchableOpacity
                     activeOpacity={0.5}
@@ -1547,9 +1555,8 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-16 ${
-      !isLast ? "border-b border-[#3030309a]" : ""
-    }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
+      }`}
   >
     <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
       {label}
@@ -1560,9 +1567,8 @@ const FormField = ({
       className="flex-row items-center justify-between h-full w-2/3"
     >
       <TextScallingFalse
-        className={`text-2xl font-light ${
-          value ? "text-white" : "text-gray-500"
-        }`}
+        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
+          }`}
       >
         {isDate ? dateFormatter(value as any, "date") : value || placeholder}
       </TextScallingFalse>
@@ -1647,22 +1653,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-              ? "Cm"
-              : field === "meters"
-              ? "m"
-              : field === "kilograms"
-              ? "kg"
-              : "lbs"}
+                ? "Cm"
+                : field === "meters"
+                  ? "m"
+                  : field === "kilograms"
+                    ? "kg"
+                    : "lbs"}
           </TextScallingFalse>
         </View>
         <CustomButton
           field={
             field as
-              | "feetInches"
-              | "centimeters"
-              | "meters"
-              | "kilograms"
-              | "pounds"
+            | "feetInches"
+            | "centimeters"
+            | "meters"
+            | "kilograms"
+            | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

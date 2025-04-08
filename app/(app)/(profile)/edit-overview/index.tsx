@@ -33,6 +33,7 @@ import {
 } from "~/reduxStore/slices/user/profileSlice";
 import AlertModal from "~/components/modals/AlertModal";
 import KeyDetailsMenu from "~/components/modals/KeyDetailsMenu";
+import DownArrow from "~/components/SvgIcons/Edit-Overview/DownArrow";
 
 interface SelectedSport {
   sportsId: string;
@@ -699,7 +700,7 @@ function EditOverview() {
                           <TextScallingFalse style={styles.selectButton}>
                             {propValue || "Select"}
                           </TextScallingFalse>
-                          <RightArrow />
+                          <DownArrow />
                         </TouchableOpacity>
                       </View>
                     );

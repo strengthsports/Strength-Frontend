@@ -6,7 +6,6 @@ import {
   ScrollView,
   Dimensions,
   Text,
-  useWindowDimensions,
 } from "react-native";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
@@ -27,7 +26,8 @@ import {
   selectPostsByUserId,
 } from "~/reduxStore/slices/feed/feedSlice";
 import MembersSection from "~/components/profilePage/MembersSection";
-import members from "~/constants/members";
+import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
+import { Member } from "~/types/user";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -40,6 +40,13 @@ const Overview = () => {
       : null;
   }, [params.userId]);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const { profileData, isLoading, error } = useContext(ProfileContext);
+
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
@@ -47,6 +54,11 @@ const Overview = () => {
   const postsWithImages = useMemo(
     () => userPosts?.filter((post) => post.assets.length > 0) || [],
     [userPosts]
+  );
+
+  // Get associates list
+  const associates = useSelector(
+    (state: RootState) => (state.profile.user?.associates as Member[]) || []
   );
 
   // Fetch initial posts
@@ -61,17 +73,14 @@ const Overview = () => {
     );
   }, [fetchedUserId, dispatch]);
 
-  const { width: screenWidth2 } = useWindowDimensions();
-  const scaleFactor = screenWidth2 / 410;
-
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const { profileData, isLoading, error } = useContext(ProfileContext);
-  console.log("User data on Overview page : ", profileData);
+  // Fetch page associates
+  useEffect(() => {
+    dispatch(
+      fetchAssociates({
+        pageId: fetchedUserId.id,
+      })
+    );
+  }, [fetchedUserId, dispatch]);
 
   // Valid Sports data
   const validSports =
@@ -80,11 +89,16 @@ const Overview = () => {
     validSports[0]?.sport.name || null
   );
 
-  // Athlete data
-  const athletes = members.filter((member) => member.role === "Athlete");
+  // Memoized athlete and coach data
+  const athletes = useMemo(
+    () => associates.filter((member) => member.role === "Athlete"),
+    [associates]
+  );
 
-  // Coach Data
-  const coaches = members.filter((member) => member.role === "Coach");
+  const coaches = useMemo(
+    () => associates.filter((member) => member.role === "Coach"),
+    [associates]
+  );
 
   if (error) {
     return (

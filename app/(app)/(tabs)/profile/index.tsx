@@ -27,6 +27,8 @@ import AddPostFTU from "~/components/ui/FTU/profilePage/AddPostFTU";
 import TeamEntry from "~/components/profilePage/TeamEntry";
 import MembersSection from "~/components/profilePage/MembersSection";
 import members from "~/constants/members";
+import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
+import { Member } from "~/types/user";
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -56,6 +58,11 @@ const Overview = () => {
     [userPosts]
   );
 
+  // Get associates list
+  const associates = useSelector(
+    (state: RootState) => (state.profile.user?.associates as Member[]) || []
+  );
+
   // Fetch initial posts
   useEffect(() => {
     dispatch(
@@ -68,11 +75,23 @@ const Overview = () => {
     );
   }, [user._id, dispatch]);
 
-  // Athlete data
-  const athletes = members.filter((member) => member.role === "Athlete");
+  // Fetch page associates
+  useEffect(() => {
+    if (user.type === "Page") {
+      dispatch(fetchAssociates(null));
+    }
+  }, [user.type, dispatch]);
 
-  // Coach Data
-  const coaches = members.filter((member) => member.role === "Coach");
+  // Memoized athlete and coach data
+  const athletes = useMemo(
+    () => associates.filter((member) => member.role === "Athlete"),
+    [associates]
+  );
+
+  const coaches = useMemo(
+    () => associates.filter((member) => member.role === "Coach"),
+    [associates]
+  );
 
   //toggle see more
   const handleToggle = () => {

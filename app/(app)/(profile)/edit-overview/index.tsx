@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Image,
   Modal,
-  Pressable,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -23,18 +22,15 @@ import { useDispatch, useSelector } from "react-redux";
 import RightArrow from "~/components/Arrows/RightArrow";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
-import MembersSection from "~/components/profilePage/MembersSection";
-import SearchBar from "~/components/search/searchbar";
 import TopBar from "~/components/TopBar";
-import { AppDispatch } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { useGetSportsQuery } from "~/reduxStore/api/sportsApi";
 import {
   editUserSportsOverview,
   fetchMyProfile,
   editUserAbout,
 } from "~/reduxStore/slices/user/profileSlice";
-import members from "~/constants/members";
-import UserInfoModal from "~/components/modals/UserInfoModal";
+import { Member } from "~/types/user";
 
 interface SelectedSport {
   sportsId: string;
@@ -56,7 +52,11 @@ type AlertConfigType = {
 
 function EditOverview() {
   const { loading, error, user, isUserInfoModalOpen } = useSelector(
-    (state: any) => state?.profile
+    (state: RootState) => state?.profile
+  );
+  // Get associates list length
+  const associatesLength = useSelector(
+    (state: RootState) => state.profile.user?.associates.length
   );
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
@@ -101,21 +101,11 @@ function EditOverview() {
   // About modal
   const [initialAbout, setAbout] = useState(user?.about);
   const [isAboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
-  const [isAssociatesModalOpen, setAssociatesModalOpen] =
-    useState<boolean>(false);
-
-  // Athlete data
-  const athletes = members.filter((member) => member.role === "Athlete");
-
-  // Coach Data
-  const coaches = members.filter((member) => member.role === "Coach");
 
   // Check which edit request has came
   useEffect(() => {
     if (query.about) {
       setAboutModalOpen((prev) => !prev);
-    } else if (query.associates) {
-      setAssociatesModalOpen((prev) => !prev);
     }
   }, []);
 
@@ -242,14 +232,6 @@ function EditOverview() {
   const handleCloseAboutModal = useCallback(() => {
     setAbout(initialAbout);
     setAboutModalOpen((prev) => !prev);
-  }, []);
-
-  const handleOpenAssociatesModal = useCallback(() => {
-    setAssociatesModalOpen((prev) => !prev);
-  }, []);
-
-  const handleCloseAssociatesModal = useCallback(() => {
-    setAssociatesModalOpen((prev) => !prev);
   }, []);
 
   // Handle delete a specific sports overview (only remove sport)
@@ -557,12 +539,14 @@ function EditOverview() {
               <TouchableOpacity
                 activeOpacity={0.8}
                 className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-                onPress={handleOpenAssociatesModal}
+                onPress={() =>
+                  router.push("/(app)/(profile)/edit-overview/associates")
+                }
               >
                 <TextScallingFalse
                   style={{ color: "white", fontSize: 16, fontWeight: "500" }}
                 >
-                  Associates {`[221]`}
+                  Associates {`[${associatesLength}]`}
                 </TextScallingFalse>
                 <RightArrow />
               </TouchableOpacity>
@@ -1035,65 +1019,6 @@ function EditOverview() {
                     style={{ textAlignVertical: "top" }}
                   />
                 </View>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-
-        {/* Associates Modal */}
-        <Modal
-          visible={isAssociatesModalOpen}
-          transparent
-          onRequestClose={handleCloseAssociatesModal}
-        >
-          <TouchableOpacity className="flex-1" activeOpacity={1}>
-            <View className="bg-black h-full">
-              {/* Modal Header */}
-              <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
-                <View className="flex-row items-center">
-                  <TouchableOpacity onPress={handleCloseAssociatesModal}>
-                    <AntDesign name="arrowleft" size={24} color="white" />
-                  </TouchableOpacity>
-                </View>
-                <TextScallingFalse className="text-white text-5xl">
-                  Associates
-                </TextScallingFalse>
-                <TouchableOpacity onPress={handleSaveAbout}>
-                  <MaterialIcons
-                    name="done"
-                    size={28}
-                    color={initialAbout === user?.about ? "grey" : "#12956B"}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View>
-                <SearchBar placeholder="Search associated members..." />
-                <TextScallingFalse
-                  className="text-[#8A8A8A]"
-                  style={{
-                    fontFamily: "Montserrat",
-                    fontWeight: 600,
-                    fontSize: 16,
-                    marginLeft: 20,
-                    marginBottom: 10,
-                  }}
-                >
-                  Coaches
-                </TextScallingFalse>
-                <MembersSection members={athletes} isEditView={true} />
-                <TextScallingFalse
-                  className="text-[#8A8A8A]"
-                  style={{
-                    fontFamily: "Montserrat",
-                    fontWeight: 600,
-                    fontSize: 16,
-                    marginLeft: 20,
-                    marginBottom: 10,
-                  }}
-                >
-                  Athletes
-                </TextScallingFalse>
-                <MembersSection members={coaches} isEditView={true} />
               </View>
             </View>
           </TouchableOpacity>

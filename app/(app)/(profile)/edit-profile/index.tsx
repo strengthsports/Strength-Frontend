@@ -1296,7 +1296,7 @@ const EditProfile = () => {
                     {picType === "height" && (
                       <>
                         <View className="flex-row items-center justify-between w-full mb-4">
-                          <TextScallingFalse className="text-white text-3xl font-light basis-[45%]">
+                          <TextScallingFalse className="text-white text-3xl font-light basis-[50%]">
                             {unit1 || "In Feet & Inches [approx.]-"} 
                           </TextScallingFalse>
                             <View className="flex-row basis-[45%] items-center">

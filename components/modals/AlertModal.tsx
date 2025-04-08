@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import React from "react";
 import TextScallingFalse from "../CentralText";
 import { LinearGradient } from "expo-linear-gradient";
@@ -6,8 +6,8 @@ import { LinearGradient } from "expo-linear-gradient";
 interface AlertConfig {
   title: string;
   message: string;
-  discardAction: () => void;
   confirmAction: () => void;
+  discardAction: () => void;
   confirmMessage: string;
   cancelMessage: string;
 }
@@ -20,10 +20,10 @@ const AlertModal = ({
   isVisible: boolean;
 }) => {
   return (
-    <Modal visible={isVisible} transparent animationType="fade">
-      <View style={styles.AlertModalView}>
-        <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[22%] w-[80%]">
-          <View className="flex-1">
+      <KeyboardAvoidingView style={styles.AlertModalView} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        {/* it was h-[22%] below */}
+        <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[200px] w-[80%]"> 
+          <View className="flex-1 items-center justify-center">
             <TextScallingFalse className="text-center text-6xl font-semibold text-[#FFFCFC] mb-4">
               {alertConfig.title}
             </TextScallingFalse>
@@ -84,8 +84,7 @@ const AlertModal = ({
             </LinearGradient>
           </View>
         </View>
-      </View>
-    </Modal>
+      </KeyboardAvoidingView>
   );
 };
 
@@ -96,6 +95,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position:'absolute',
+    zIndex: 100,
   },
   AlertModalContainer: {
     width: "85%",

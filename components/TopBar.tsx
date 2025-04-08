@@ -18,7 +18,7 @@ function TopBar({
   const router = useRouter();
 
   return (
-    <View className="h-12 w-full flex-row justify-between items-center px-5 border-b-[0.5px] border-[#404040]">
+    <View className="h-[45px] w-full flex-row justify-between items-center px-5 border-b-[0.5px] border-[#404040]">
       <TouchableOpacity
         onPress={() => {
           if (backHandler) {
@@ -27,7 +27,8 @@ function TopBar({
             router.push(backRoute);
           }
         }}
-        className="basis-[15%]"
+        className="basis-[15%] py-4"
+        activeOpacity={0.5}
       >
         <AntDesign name="arrowleft" size={24} color="white" />
       </TouchableOpacity>

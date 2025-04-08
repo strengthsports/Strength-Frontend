@@ -1,45 +1,19 @@
-import { View, Text, FlatList } from "react-native";
 import React from "react";
+import { View, Text, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
-import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
-import SwiperTop from "~/components/explorePage/SwiperTop";
 
 interface SelectedSportProps {
   sportsName: string;
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
-  const renderSwiper = () => {
-    const {
-      data: articles,
-      error,
-      isLoading,
-    } = useGetSportArticleQuery(sportsName);
-    if (isLoading) {
-      return (
-        <TextScallingFalse className="text-white self-center text-center pr-7">
-          No swipper slides available
-        </TextScallingFalse>
-      );
-    }
-
-    if (error) {
-      return (
-        <TextScallingFalse className="text-white">
-          Error loading swipper slides.
-        </TextScallingFalse>
-      );
-    }
-    return <SwiperTop swiperData={articles ?? []} />;
-  };
-
   const renderMatches = () => {
     return (
       <View className="flex-row items-center pl-7 mt-3">
@@ -117,11 +91,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     return <FootballNextMatch />;
   };
 
-  // one imporvement can be done is using useMemo for sections to avoid re-render first consult about it
-  //also can use configMap for reusing if/else statements
-  const sections = [{ type: "swiper", content: renderSwiper() }];
-
-  sections.push({ type: "matches", content: renderMatches() });
+  const sections = [{ type: "matches", content: renderMatches() }];
 
   if (sportsName === "Cricket")
     sections.push({

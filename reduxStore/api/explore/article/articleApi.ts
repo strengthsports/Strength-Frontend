@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const swipperSlideApi = createApi({
-  reducerPath: "swipperSlideApi",
+export const articleApi = createApi({
+  reducerPath: "articleApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
     prepareHeaders: (headers) => {
@@ -9,6 +9,6 @@ export const swipperSlideApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["SwipperSlides"],
+  tagTypes: ["SportArticle"],
   endpoints: () => ({}),
 });

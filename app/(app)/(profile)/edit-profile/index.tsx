@@ -133,7 +133,8 @@ const EditProfile = () => {
     picType === "height" ? "feetInches" : "kilograms" // this is the default unit for each section
   );
   // Units state
-  const [heightInFeet, setHeightInFeet] = useState("");
+  const [heightFeet, setHeightFeet] = useState("");
+  const [heightInches, setHeightInches] = useState("");
   const [heightInCentimeters, setHeightInCentimeters] = useState("");
   const [heightInMeters, setHeightInMeters] = useState("");
   const [weightInKg, setWeightInKg] = useState("");
@@ -188,68 +189,72 @@ const EditProfile = () => {
     if (type === "height" || type === "weight") {
       const currentValue = formData[type];
       let selectedUnit: string = type === "height" ? "feetInches" : "kilograms";
-      let parsedValue = 0;
-      let unit = "";
-
-      if (currentValue) {
-        [parsedValue, unit] = parseMeasurement(currentValue);
-        selectedUnit =
-          unit === "ft"
-            ? "feetInches"
-            : unit === "cm"
-            ? "centimeters"
-            : unit === "m"
-            ? "meters"
-            : unit === "kg"
-            ? "kilograms"
-            : "pounds";
-      }
-
-      setSelectedField(selectedUnit);
+      const parsed = parseMeasurement(currentValue);
+      let initialFeet = 0;
+      let initialInches = 0;
+      let initialCm = 0;
+      let initialM = 0;
+      let initialKg = 0;
+      let initialLbs = 0;
 
       // Initialize measurement values
       if (type === "height") {
-        if (unit === "ft") {
-          setHeightInFeet(parsedValue.toFixed(2));
-          const cm = parsedValue * 30.48;
-          setHeightInCentimeters(cm.toFixed(2));
-          const meters = parsedValue * 0.3048;
-          setHeightInMeters(meters.toFixed(2));
-        } else if (unit === "cm") {
-          setHeightInCentimeters(parsedValue.toFixed(2));
-          const feet = parsedValue / 30.48;
-          setHeightInFeet(feet.toFixed(2));
-          const meters = parsedValue / 100;
-          setHeightInMeters(meters.toFixed(2));
-        } else if (unit === "m") {
-          setHeightInMeters(parsedValue.toFixed(2));
-          const feet = parsedValue / 0.3048;
-          setHeightInFeet(feet.toFixed(2));
-          const cm = parsedValue * 100;
-          setHeightInCentimeters(cm.toFixed(2));
-        } else {
-          setHeightInFeet("");
-          setHeightInCentimeters("");
-          setHeightInMeters("");
+        selectedUnit = "feetInches";
+        if (parsed.unit === "ft in") {
+          initialFeet = parsed.feet;
+          initialInches = parsed.inches;
+          const totalFeet = initialFeet + initialInches / 12;
+
+          initialCm = totalFeet * 30.48;
+          initialM = totalFeet * 0.3048;
+          selectedUnit = "feetInches";
+        } else if (parsed.unit === "cm") {
+          initialCm = parsed.value;
+          initialM = initialCm / 100;
+          const totalInches = initialCm / 2.54;
+
+          initialFeet = Math.floor(totalInches / 12);
+          initialInches = totalInches % 12;
+          selectedUnit = "centimeters";
+        } else if (parsed.unit === "m") {
+          initialM = parsed.value;
+          initialCm = initialM * 100;
+          const totalInches = initialCm / 2.54;
+
+          initialFeet = Math.floor(totalInches / 12);
+          initialInches = totalInches % 12;
+          selectedUnit = "meters";
         }
+        setHeightFeet(initialFeet > 0 ? initialFeet.toFixed(0) : "");
+        setHeightInches(initialInches > 0 ? initialInches.toFixed(0) : "");
+        setHeightInCentimeters(initialCm > 0 ? initialCm.toFixed(2) : "");
+        setHeightInMeters(initialM > 0 ? initialM.toFixed(2) : "");
+        const baseCm = initialFeet * 30.48 + initialInches * 2.54;
+        setInitialMeasurement(baseCm);
       } else {
-        if (unit === "kg") {
-          setWeightInKg(parsedValue.toFixed(2));
-          const lbs = parsedValue * 2.20462;
-          setWeightInLbs(lbs.toFixed(2));
-        } else if (unit === "lbs") {
-          setWeightInLbs(parsedValue.toFixed(2));
-          const kg = parsedValue / 2.20462;
-          setWeightInKg(kg.toFixed(2));
-        } else {
-          setWeightInKg("");
-          setWeightInLbs("");
+        if (parsed.unit === "kg") {
+          initialKg = parsed.value;
+          initialLbs = initialKg * 2.20462;
+          selectedUnit = "kilograms";
+        } else if (parsed.unit === "lbs") {
+          initialLbs = parsed.value;
+          initialKg = initialLbs / 2.20462;
+          selectedUnit = "pounds";
         }
+        setWeightInKg(initialKg > 0 ? initialKg.toFixed(2) : "");
+        setWeightInLbs(initialLbs > 0 ? initialLbs.toFixed(2) : "");
+
+        //calculate initial measurement in a base unit (kg)
+        const baseKg =
+          parsed.unit === "kg"
+            ? parsed.value
+            : parsed.unit === "lbs"
+            ? parsed.value / 2.20462
+            : 0;
+        setInitialMeasurement(baseKg);
       }
 
-      // Set initial measurement
-      const initial = calculateBaseMeasurement(type, parsedValue, unit);
-      setInitialMeasurement(initial);
+      setSelectedField(selectedUnit);
     } else {
       const value =
         type === "address"
@@ -261,31 +266,74 @@ const EditProfile = () => {
     setModalVisible(true);
   };
 
-  const parseMeasurement = (value: string): [number, string] => {
-    const parts = value.split(" ");
-    if (parts.length !== 2) return [0, ""];
-    const numericValue = parseFloat(parts[0]);
-    const unit = parts[1];
-    return [numericValue, unit];
+  const parseMeasurement = (
+    value: string
+  ): { feet: number; inches: number; value: number; unit: string } => {
+    if (!value) return { feet: 0, inches: 0, value: 0, unit: "" };
+    const parts = value.trim().split(" ");
+
+    try {
+      if (parts.length === 4 && parts[1] === "ft" && parts[3] === "in") {
+        //handles "X ft Y in"
+        const feet = parseFloat(parts[0]);
+        const inches = parseFloat(parts[2]);
+        if (!isNaN(feet) && !isNaN(inches)) {
+          const totalValueInches = feet * 12 + inches;
+          return {
+            feet: feet,
+            inches: inches,
+            value: totalValueInches / 12,
+            unit: "ft in",
+          };
+        }
+      } else if (parts.length === 2) {
+        const numericValue = parseFloat(parts[0]);
+        const unit = parts[1];
+        if (!isNaN(numericValue)) {
+          if (unit === "ft") {
+            //handle "X ft" treat as X ft 0 in
+            return {
+              feet: numericValue,
+              inches: 0,
+              value: numericValue,
+              unit: "ft in",
+            };
+          }
+          if (
+            unit === "cm" ||
+            unit === "m" ||
+            unit === "kg" ||
+            unit === "lbs"
+          ) {
+            // Other units (keep value as is, feet/inches not applicable directly)
+            return { feet: 0, inches: 0, value: numericValue, unit: unit };
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error parsing measurement:", e);
+    }
+    //default fallback
+    return { feet: 0, inches: 0, value: 0, unit: "" };
   };
 
   // Helper to calculate base measurement
-  const calculateBaseMeasurement = (
-    type: string,
-    value: number,
-    unit: string
-  ) => {
-    if (type === "height") {
-      return unit === "ft"
-        ? value * 30.48
-        : unit === "cm"
-        ? value
-        : unit === "m"
-        ? value * 100
-        : 0;
-    }
-    return unit === "kg" ? value : unit === "lbs" ? value / 2.20462 : 0;
-  };
+  // const calculateBaseMeasurement = (
+  //   type: string,
+  //   value: number,
+  //   unit: string
+  // ) => {
+  //   if (type === "height") {
+  //     return unit === "ft"
+  //       ? value * 30.48
+  //       : unit === "cm"
+  //       ? value
+  //       : unit === "m"
+  //       ? value * 100
+  //       : 0;
+  //   }
+  //   return unit === "kg" ? value : unit === "lbs" ? value / 2.20462 : 0;
+  // };
 
   // Render modal content based on type
   const renderModalContent = () => {
@@ -429,23 +477,34 @@ const EditProfile = () => {
         return;
       }
     } else if (field === "height") {
-      // height field
-      const heightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
-      const heightString = heightValue
-        ? `${heightValue} ${
-            selectedField === "feetInches"
-              ? "ft"
-              : selectedField === "centimeters"
-              ? "cm"
-              : "m"
-          }`
-        : "";
+      let heightString = "";
+      if (selectedField === "feetInches") {
+        const ft = parseInt(heightFeet, 10) || 0;
+        const inch = parseFloat(heightInches) || 0;
+        if (ft > 0 || inch > 0) {
+          heightString = `${ft} ft ${inch.toFixed(0)} in`;
+        }
+      } else if (selectedField === "centimeters") {
+        const cm = parseFloat(heightInCentimeters) || 0;
+        if (cm > 0) {
+          heightString = `${cm.toFixed(1)} cm`;
+        }
+      } else if (selectedField === "meters") {
+        const m = parseFloat(heightInMeters) || 0;
+        if (m > 0) {
+          heightString = `${m.toFixed(2)} m`;
+        }
+      }
 
       setFormData((prev) => ({ ...prev, [field]: heightString }));
-      finalUploadData.set("height", heightString);
+      if (heightString) {
+        finalUploadData.set("height", heightString);
+      } else {
+        finalUploadData.delete("height");
+      }
     } else if (field === "weight") {
       // weight field
-      const weightValue = renderFieldValue(selectedField || ""); // Get value in selected unit
+      const weightValue = renderFieldValue(selectedField || "");
       const weightString = weightValue
         ? `${weightValue} ${selectedField === "kilograms" ? "kg" : "lbs"}`
         : "";
@@ -594,7 +653,7 @@ const EditProfile = () => {
   const renderFieldValue = (field: string | null) => {
     switch (field) {
       case "feetInches":
-        return heightInFeet || "";
+        return heightFeet || "";
       case "centimeters":
         return heightInCentimeters || "";
       case "meters":
@@ -610,47 +669,154 @@ const EditProfile = () => {
 
   const handleFeetChange = useCallback(
     (value: string) => {
-      setHeightInFeet(value);
       if (value === "") {
-        setHeightInCentimeters("");
-        setHeightInMeters("");
-      } else {
-        const feet = parseFloat(value) || 0;
-        setHeightInCentimeters((feet * 30.48).toFixed(2));
-        setHeightInMeters((feet * 0.3048).toFixed(2));
+        setHeightFeet("");
+        const inches = parseFloat(heightInches) || 0;
+        const totalFeet = 0 + inches / 12;
+        if (heightInches === "") {
+          setHeightInCentimeters("");
+          setHeightInMeters("");
+        } else {
+          setHeightInCentimeters((totalFeet * 30.48).toFixed(2));
+          setHeightInMeters((totalFeet * 0.3048).toFixed(2));
+        }
+        return;
       }
+
+      const numericString = value.replace(/[^0-9]/g, "");
+      let feet = parseInt(numericString, 10);
+
+      if (isNaN(feet)) {
+        if (numericString === "") {
+          setHeightFeet("");
+          const inches = parseFloat(heightInches) || 0;
+          const totalFeet = 0 + inches / 12;
+          if (heightInches === "") {
+            setHeightInCentimeters("");
+            setHeightInMeters("");
+          } else {
+            setHeightInCentimeters((totalFeet * 30.48).toFixed(2));
+            setHeightInMeters((totalFeet * 0.3048).toFixed(2));
+          }
+          return;
+        }
+        feet = 0;
+      }
+
+      const MAX_FEET = 9;
+      if (feet > MAX_FEET) {
+        feet = MAX_FEET;
+      }
+
+      const inches = parseFloat(heightInches) || 0;
+      const feetString = feet.toString();
+
+      setHeightFeet(feetString);
+
+      const totalFeet = feet + inches / 12;
+      setHeightInCentimeters((totalFeet * 30.48).toFixed(2));
+      setHeightInMeters((totalFeet * 0.3048).toFixed(2));
     },
-    [setHeightInFeet, setHeightInCentimeters, setHeightInMeters]
+    [heightInches, setHeightFeet, setHeightInCentimeters, setHeightInMeters]
+  );
+
+  const handleInchesChange = useCallback(
+    (value: string) => {
+      if (value === "") {
+        setHeightInches("");
+        const feet = parseInt(heightFeet, 10) || 0;
+        const totalFeet = feet + 0 / 12;
+        if (heightFeet === "") {
+          setHeightInCentimeters("");
+          setHeightInMeters("");
+        } else {
+          setHeightInCentimeters((totalFeet * 30.48).toFixed(2));
+          setHeightInMeters((totalFeet * 0.3048).toFixed(2));
+        }
+        return;
+      }
+
+      const numericString = value.replace(/[^0-9]/g, "");
+
+      let inches = parseInt(numericString, 10);
+
+      if (isNaN(inches)) {
+        if (numericString === "") {
+          setHeightInches("");
+          const feet = parseInt(heightFeet, 10) || 0;
+          const totalFeet = feet + 0 / 12;
+          if (heightFeet === "") {
+            setHeightInCentimeters("");
+            setHeightInMeters("");
+          } else {
+            setHeightInCentimeters((totalFeet * 30.48).toFixed(2));
+            setHeightInMeters((totalFeet * 0.3048).toFixed(2));
+          }
+          return;
+        }
+        inches = 0;
+      }
+
+      const MAX_INCHES = 11;
+      if (inches > MAX_INCHES) {
+        inches = MAX_INCHES;
+      } else if (inches < 0) {
+        inches = 0;
+      }
+
+      const finalInchesString = inches.toString();
+      const feet = parseInt(heightFeet, 10) || 0;
+
+      setHeightInches(finalInchesString);
+
+      const totalFeet = feet + inches / 12;
+      setHeightInCentimeters((totalFeet * 30.48).toFixed(2));
+      setHeightInMeters((totalFeet * 0.3048).toFixed(2));
+    },
+    [heightFeet, setHeightInches, setHeightInCentimeters, setHeightInMeters]
   );
 
   const handleCentimetersChange = useCallback(
     (value: string) => {
       setHeightInCentimeters(value);
       if (value === "") {
-        setHeightInFeet("");
+        setHeightFeet("");
+        setHeightInches("");
         setHeightInMeters("");
       } else {
         const cm = parseFloat(value) || 0;
-        setHeightInFeet((cm / 30.48).toFixed(2));
+        const totalInches = cm / 2.54;
+        const feet = Math.floor(totalInches / 12);
+        const inches = totalInches % 12;
+
+        setHeightFeet(feet.toFixed(0));
+        setHeightInches(inches.toFixed(0));
         setHeightInMeters((cm / 100).toFixed(2));
       }
     },
-    [setHeightInCentimeters, setHeightInFeet, setHeightInMeters]
+    [setHeightInCentimeters, setHeightFeet, setHeightInches, setHeightInMeters]
   );
 
   const handleMetersChange = useCallback(
     (value: string) => {
       setHeightInMeters(value);
       if (value === "") {
-        setHeightInFeet("");
+        setHeightFeet("");
+        setHeightInches("");
         setHeightInCentimeters("");
       } else {
         const meters = parseFloat(value) || 0;
-        setHeightInFeet((meters / 0.3048).toFixed(2));
-        setHeightInCentimeters((meters * 100).toFixed(2));
+        const cm = meters * 100;
+        const totalInches = cm / 2.54;
+        const feet = Math.floor(totalInches / 12);
+        const inches = totalInches % 12;
+
+        setHeightFeet(feet.toFixed(0));
+        setHeightInches(inches.toFixed(0));
+        setHeightInCentimeters(cm.toFixed(2));
       }
     },
-    [setHeightInMeters, setHeightInFeet, setHeightInCentimeters]
+    [setHeightInMeters, setHeightFeet, setHeightInches, setHeightInCentimeters]
   );
 
   const handleKgChange = useCallback(
@@ -704,29 +870,29 @@ const EditProfile = () => {
 
   const calculateCurrentMeasurement = () => {
     if (picType === "height") {
-      const field = selectedField;
-      const value =
-        parseFloat(
-          field === "feetInches"
-            ? heightInFeet
-            : field === "centimeters"
-            ? heightInCentimeters
-            : heightInMeters
-        ) || 0;
+      const ft = parseInt(heightFeet, 10) || 0;
+      const inches = parseFloat(heightInches) || 0;
+      const cm = parseFloat(heightInCentimeters) || 0;
+      const m = parseFloat(heightInMeters) || 0;
 
-      return field === "feetInches"
-        ? value * 30.48
-        : field === "centimeters"
-        ? value
-        : value * 100;
+      if (selectedField === "feetInches") {
+        return ft * 30.48 + inches * 2.54;
+      } else if (selectedField === "centimeters") {
+        return cm;
+      } else if (selectedField === "meters") {
+        return m * 100;
+      }
     }
 
     if (picType === "weight") {
-      const field = selectedField;
-      const value =
-        parseFloat(field === "kilograms" ? weightInKg : weightInLbs) || 0;
+      const kg = parseFloat(weightInKg) || 0;
+      const lbs = parseFloat(weightInLbs) || 0;
 
-      return field === "kilograms" ? value : value / 2.20462;
+      if (selectedField === "kilograms") {
+        return kg;
+      } else if (selectedField === "pounds") {
+        return lbs / 2.20462;
+      }
     }
     return 0;
   };
@@ -734,6 +900,10 @@ const EditProfile = () => {
   const hasChanges = ["height", "weight"].includes(picType)
     ? calculateCurrentMeasurement() !== initialMeasurement
     : inputValue !== initialValue;
+
+  const today = new Date();
+  const maxDOB = new Date();
+  maxDOB.setFullYear(today.getFullYear() - 13); // must be born before today minus 13 years
 
   return (
     <SafeAreaView>
@@ -1064,28 +1234,6 @@ const EditProfile = () => {
           </Modal>
         </ScrollView>
 
-        {/* Date picker component */}
-        {isDatePickerVisible && (
-          <View>
-            <DateTimePicker
-              value={inputValue ? new Date(inputValue) : new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  const formattedDate = selectedDate
-                    .toISOString()
-                    .split("T")[0];
-                  setInputValue(formattedDate);
-                }
-                if (Platform.OS === "android") {
-                  setIsDatePickerVisible(false); // Android auto-closes
-                }
-              }}
-            />
-          </View>
-        )}
-
         {/* Alert modal */}
         <Modal visible={isAlertModalSet} transparent animationType="fade">
           <View style={styles.AlertModalView}>
@@ -1166,17 +1314,55 @@ const EditProfile = () => {
                   <>
                     {picType === "height" && (
                       <>
-                        <MeasurementInput
-                          unit={unit1 || ""}
-                          value={heightInFeet}
-                          onChange={handleFeetChange}
-                          field="feetInches"
-                          selectedField={selectedField || ""}
-                          toggleField={() => toggleSelectedField("feetInches")}
-                          renderFieldValue={() =>
-                            renderFieldValue("feetInches")
-                          }
-                        />
+                        <View className="flex-row items-center justify-between w-full mb-4">
+                          <TextScallingFalse className="text-white text-3xl font-light basis-[50%]">
+                            {unit1 || "In Feet & Inches [approx.]-"}
+                          </TextScallingFalse>
+                          <View className="flex-row basis-[45%] items-center">
+                            <View className="relative items-center mr-1">
+                              <TextInput
+                                value={heightFeet}
+                                onChangeText={handleFeetChange}
+                                keyboardType="numeric"
+                                maxLength={1}
+                                className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-[54px] h-9 text-center"
+                                style={{ paddingRight: 28 }}
+                              />
+                              <TextScallingFalse
+                                style={{ top: 6 }}
+                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
+                              >
+                                ft
+                              </TextScallingFalse>
+                            </View>
+                            <View className="relative items-center mr-1">
+                              <TextInput
+                                value={heightInches}
+                                onChangeText={handleInchesChange}
+                                keyboardType="numeric"
+                                maxLength={2}
+                                className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-[54px] h-9 text-center"
+                                style={{ paddingRight: 28 }}
+                              />
+                              <TextScallingFalse
+                                style={{ top: 6 }}
+                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
+                              >
+                                in
+                              </TextScallingFalse>
+                            </View>
+                            <CustomButton
+                              field={"feetInches"}
+                              selectedField={selectedField || ""}
+                              toggleSelectedField={() =>
+                                toggleSelectedField("feetInches")
+                              }
+                              renderFieldValue={() =>
+                                `${heightFeet || 0} ft ${heightInches || 0} in`
+                              }
+                            />
+                          </View>
+                        </View>
                         <MeasurementInput
                           unit={unit2 || ""}
                           value={heightInCentimeters}
@@ -1254,6 +1440,40 @@ const EditProfile = () => {
                         </TouchableOpacity>
                       )}
                     </View>
+                    <TextScallingFalse className="text-gray-500 text-base mt-4">
+                      {description}
+                    </TextScallingFalse>
+                    {/* Date picker component */}
+                    {isDatePickerVisible && (
+                      <View
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          paddingTop: 30,
+                          alignItems: "center",
+                        }}
+                      >
+                        <DateTimePicker
+                          value={inputValue ? new Date(inputValue) : maxDOB}
+                          mode="date"
+                          display={
+                            Platform.OS === "ios" ? "spinner" : "default"
+                          }
+                          maximumDate={maxDOB} // restrict to users at least 13
+                          onChange={(event, selectedDate) => {
+                            if (selectedDate) {
+                              const formattedDate = selectedDate
+                                .toISOString()
+                                .split("T")[0];
+                              setInputValue(formattedDate);
+                            }
+                            if (Platform.OS === "android") {
+                              setIsDatePickerVisible(false);
+                            }
+                          }}
+                        />
+                      </View>
+                    )}
                   </>
                 ) : (
                   <>
@@ -1318,9 +1538,11 @@ const EditProfile = () => {
                   </>
                 )}
 
-                <TextScallingFalse className="text-gray-500 text-base mt-4">
-                  {description}
-                </TextScallingFalse>
+                {picType === "dateOfBirth" ? null : (
+                  <TextScallingFalse className="text-gray-500 text-base mt-4">
+                    {description}
+                  </TextScallingFalse>
+                )}
                 {picType === "address" ? (
                   <TouchableOpacity
                     activeOpacity={0.5}

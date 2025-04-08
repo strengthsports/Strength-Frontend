@@ -281,6 +281,7 @@ const PicModal = ({
       )}
 
       {/* Alert modal */}
+      {( isAlertModalOpen &&
       <AlertModal
         alertConfig={{
           title: `Remove ${heading}?`,
@@ -293,6 +294,7 @@ const PicModal = ({
         }}
         isVisible={isAlertModalOpen}
       />
+    )}
     </>
   );
 };

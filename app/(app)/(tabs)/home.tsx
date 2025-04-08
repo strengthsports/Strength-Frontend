@@ -288,6 +288,7 @@ const Home = () => {
             ListEmptyComponent={<EmptyComponent error={error} />}
             ListFooterComponent={<ListFooterComponent isLoading={isLoading} />}
             contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
           />
         </GestureHandlerRootView>
       )}

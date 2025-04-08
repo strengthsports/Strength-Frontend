@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Image, TouchableOpacity, Animated } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import NameFlagSubCard from "./nameFlagSubCard";
+import NameFlagSubCard from "../nameFlagSubCard";
 import { countryCodes } from "~/constants/countryCodes";
 
 interface MatchCardProps {
@@ -19,7 +19,7 @@ interface MatchCardProps {
   isLive?: boolean;
 }
 
-const MatchCard = ({ match, isLive }: MatchCardProps) => {
+const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
   const opacityValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -243,4 +243,4 @@ const MatchCard = ({ match, isLive }: MatchCardProps) => {
   );
 };
 
-export default MatchCard;
+export default CricketMatchCard;

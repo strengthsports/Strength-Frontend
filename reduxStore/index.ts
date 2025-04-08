@@ -37,6 +37,7 @@ import { searchApi } from "./api/explore/searchApi";
 import sportsReducer from "./slices/team/sportSlice";
 import notificationReducer from "./slices/notification/notificationSlice";
 import { footballApi } from "./api/explore/footballApi";
+import { articleApi } from "./api/explore/article/articleApi";
 
 // Persist configuration
 const persistConfig = {
@@ -77,6 +78,7 @@ const rootReducer = combineReducers({
   [feedApi.reducerPath]: feedApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
   [searchApi.reducerPath]: searchApi.reducer,
+  [articleApi.reducerPath]: articleApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -97,7 +99,8 @@ export const store = configureStore({
       footballApi.middleware,
       feedApi.middleware,
       postsApi.middleware,
-      searchApi.middleware
+      searchApi.middleware,
+      articleApi.middleware
     ),
 });
 

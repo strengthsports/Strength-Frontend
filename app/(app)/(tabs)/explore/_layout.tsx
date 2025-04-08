@@ -5,9 +5,18 @@ import { useSelector } from "react-redux";
 import SearchBar from "~/components/search/searchbar";
 import { RootState } from "~/reduxStore";
 import TrendingAll from "./allCategory";
-import TrendingNews from "./newsCategory/TrendingNews";
+import TrendingMatch from "./matchCategory";
+import TrendingArticle from "./articleCategory";
+import TrendingTeam from "./teamCategory";
+import TrendingClip from "./clipCategory";
+import TrendingGroup from "./groupCategory";
 import SearcHeader from "~/components/search/SearchHeader";
 import SearchHeader from "~/components/search/SearchHeader";
+import {
+  ExploreCategoryHeader,
+  ExploreAllSportsCategoryHeader,
+} from "~/components/explorePage/exploreHeader";
+import { CategoryKeys } from "~/types/exploreCateogryKeys";
 
 // Define the Category components
 
@@ -43,30 +52,29 @@ const ArticlesCategory = () => (
 );
 const DefaultCategory = () => (
   <View>
-    <Text style={styles.text}>Defauslt Category</Text>
+    <Text style={styles.text}>Default Category</Text>
   </View>
 );
 
 // Define the type for category keys
-type CategoryKeys =
-  | "All"
-  | "News"
-  | "Matches"
-  | "Transfers"
-  | "Leagues"
-  | "Ranking"
-  | "Articles"
-  | "Default";
+// type CategoryKeys =
+//   | "All"
+//   | "News"
+//   | "Matches"
+//   | "Transfers"
+//   | "Leagues"
+//   | "Ranking"
+//   | "Articles"
+//   | "Default";
 
 // Create a component map
 const componentMap: Record<CategoryKeys, () => JSX.Element> = {
   All: TrendingAll,
-  News: TrendingNews,
-  Matches: MatchesCategory,
-  Transfers: TransfersCategory,
-  Leagues: LeaguesCategory,
-  Ranking: RankingCategory,
-  Articles: ArticlesCategory,
+  Matches: TrendingMatch,
+  Articles: TrendingArticle,
+  Teams: TrendingTeam,
+  Clips: TrendingClip,
+  Groups: TrendingGroup,
   Default: DefaultCategory,
 };
 
@@ -83,6 +91,8 @@ export default function ExploreMainLayout() {
       <View className="border-b-[0.5px] bg-black border-b-[#505050]">
         {/* <SearchBar /> */}
         <SearchHeader />
+        <ExploreCategoryHeader />
+        <ExploreAllSportsCategoryHeader />
       </View>
       <CategoryComponent />
     </SafeAreaView>

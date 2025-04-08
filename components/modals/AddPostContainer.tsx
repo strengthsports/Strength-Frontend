@@ -324,10 +324,12 @@ export default function AddPostContainer({
     }
   };
 
-  const handleCloseBothModals = () => {
-    setAddPostContainerOpen(false);
+
+  const handleDiscard = () => {
     setAlertModalOpen(false);
-  }
+    setAddPostContainerOpen(false),
+    console.log("Discard pressed. isAlertModalOpen will become false.");
+  };
 
   return (
     <Modal
@@ -336,11 +338,6 @@ export default function AddPostContainer({
       onRequestClose={handleCloseAddPostContainer}
       transparent={true}
     >
-      <TouchableOpacity
-        className="flex-1"
-        activeOpacity={1}
-        onPress={handleCloseAddPostContainer}
-      >
         <PageThemeView>
           <View className="h-full">
             {/* Header */}
@@ -539,13 +536,12 @@ export default function AddPostContainer({
           message: "All your changes will be deleted",
           cancelMessage: "Cancel",
           confirmMessage: "Discard",
-          confirmAction: () => setAddPostContainerOpen(false), 
-          discardAction: handleCloseBothModals
+          confirmAction: () => setAlertModalOpen(false), 
+          discardAction: handleDiscard,
         }}
       />
       )}
     </PageThemeView>
-    </TouchableOpacity>
     </Modal>
   );
 }

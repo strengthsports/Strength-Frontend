@@ -27,7 +27,8 @@ function TopBar({
             router.push(backRoute);
           }
         }}
-        className="basis-[15%]"
+        className="basis-[15%] py-4"
+        activeOpacity={0.5}
       >
         <AntDesign name="arrowleft" size={24} color="white" />
       </TouchableOpacity>

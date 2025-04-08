@@ -22,7 +22,10 @@ import exploreReducer from "./slices/explore/exploreSlice";
 import hashtagReducer from "./slices/hashtagPage/hashtagPageSlice";
 import profileReducer from "./slices/user/profileSlice";
 import teamReducer from "./slices/team/teamSlice";
-import searchReducer from "./slices/explore/searchSlice"
+import searchReducer from "./slices/explore/searchSlice";
+import sportsReducer from "./slices/team/sportSlice";
+import teamForumReducer from "./slices/team/teamForumSlice";
+
 import { profileApi } from "./api/profile/profileApi";
 import { sportsApi } from "./api/sportsApi";
 import { postsApi } from "./api/posts/postsApi";
@@ -30,18 +33,14 @@ import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { cricketApi } from "./api/explore/cricketApi";
 import { searchApi } from "./api/explore/searchApi";
-import  sportsReducer  from "./slices/team/sportSlice";
-
-// Single feedApi
 import { feedApi } from "./api/feed/services/feedApi";
 import { footballApi } from "./api/explore/footballApi";
-
 
 // Persist configuration
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "signup", "onboarding", "forgotPassword", "profile","search"],
+  whitelist: ["auth", "signup", "onboarding", "forgotPassword", "profile", "search", "teamForum"],
 };
 
 // Combine reducers
@@ -54,8 +53,9 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   hashtagPage: hashtagReducer,
   team: teamReducer,
-  sports: sportsReducer, 
-  search:searchReducer,
+  sports: sportsReducer,
+  search: searchReducer,
+  teamForum: teamForumReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,
@@ -64,9 +64,7 @@ const rootReducer = combineReducers({
   [footballApi.reducerPath]: footballApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
-  [searchApi.reducerPath]: searchApi.reducer, 
- 
-  // Use feedApi as the single reducer for all feed-related features
+  [searchApi.reducerPath]: searchApi.reducer,
 });
 
 // Create persisted reducer
@@ -90,8 +88,6 @@ const store = configureStore({
       feedApi.middleware,
       postsApi.middleware,
       searchApi.middleware
-
-      // Single middleware for all feed features
     ),
 });
 

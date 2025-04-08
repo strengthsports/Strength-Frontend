@@ -64,7 +64,8 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const [showAll, setShowAll] = useState(false);
   const visibleTeams = showAll ? teamDetails : teamDetails.slice(0, 4);
-
+  const drawerRef = useRef<DrawerRefProps>(null);
+  const [isDrawerOpen, setDrawerOpen] = useState<boolean>(false);
   const navigation = useNavigation();
 
   const [isAddPostContainerOpen, setAddPostContainerOpen] =
@@ -114,38 +115,33 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const check = async () => {
     try {
       const fetchedTeamsData = await dispatch(getTeams()).unwrap();
-
-      const teamsList = fetchedTeamsData.createdTeams
-        .concat(fetchedTeamsData.joinedTeams)
-        .map((teamEntry) => {
-         
-          if (teamEntry.team) {
-            return {
-              name: teamEntry.team.name,
-              url: teamEntry.team.logo?.url, 
-              id: teamEntry.team._id,
-            };
-          } else {
-            
-            return null;
-          }
-        })
-        .filter((team) => team !== null);
-
-      console.log(teamsList); 
-
+      const uniqueTeams = new Map(); // Store unique teams by ID
+  
+      [...fetchedTeamsData.createdTeams, ...fetchedTeamsData.joinedTeams].forEach((teamEntry) => {
+        if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
+          uniqueTeams.set(teamEntry.team._id, {
+            name: teamEntry.team.name,
+            url: teamEntry.team.logo?.url || "",
+            id: teamEntry.team._id,
+          });
+        }
+      });
+  
+      const teamsList = Array.from(uniqueTeams.values()); // Convert map to an array
+  
+      console.log(teamsList);
       setTeamDetails(teamsList);
     } catch (error) {
       console.error("Error fetching teams:", error);
-    
     }
   };
+  
+
   useEffect(() => {
     check();
-  }, []);
+  }, [isDrawerOpen]);
 
-  const drawerRef = useRef<DrawerRefProps>(null);
-  const [isDrawerOpen, setDrawerOpen] = useState<boolean>(false);
+  
 
   const handleOpenDrawer = () => {
     drawerRef.current?.open();
@@ -235,7 +231,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
            
             <View className="mt-2 w-[90%] mx-auto">
       <Text className="text-white text-4xl font-bold">Manage Teams</Text>
-<ScrollView>
+      <ScrollView>
       {visibleTeams.map((team: any, index: number) => (
         <View
           className={index === visibleTeams.length - 1 ? "mb-4 mx-2" : "mb-2 mx-2"}

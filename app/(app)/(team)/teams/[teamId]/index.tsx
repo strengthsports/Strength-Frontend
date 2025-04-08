@@ -84,7 +84,10 @@ const TeamPage: React.FC = () => {
       label: "Invite Members",
       logo:InviteMembers,
       color:"white",
-      onPress: () => console.log("Invite Members Modal Will Open"),
+      onPress: () =>
+        router.push(
+          `/(app)/(team)/teams/${teamId}/InviteMembers` as RelativePathString
+        ),
     },
     {
       label: "Leave Team",

@@ -8,6 +8,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
+import TextScallingFalse from "~/components/CentralText";
 
 const Settings = () => {
   const router = useRouter();
@@ -83,7 +84,7 @@ const Settings = () => {
                 <TouchableOpacity onPress={() => router.back()}>
                   <Icon name="arrowleft" size={30} color="white" />
                 </TouchableOpacity>
-                <Text className="text-white text-5xl font-bold flex-1 text-center">Team Settings</Text>
+                <TextScallingFalse className="text-white text-5xl font-bold flex-1 text-center">Team Settings</TextScallingFalse>
               </View>
 
               {/* Logo Section */}

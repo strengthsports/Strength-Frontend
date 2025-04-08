@@ -17,7 +17,7 @@ const InitiateCreateTeam = () => {
   const screenWidth = Dimensions.get("window").width;
 
   const handleCreateTeam = () => {
-    console.log("Join Team Link Clicked");
+    // console.log("Join Team Link Clicked");
     router.push("../teams/create-team");
   };
 
@@ -48,7 +48,7 @@ const InitiateCreateTeam = () => {
         }}
       >
         <Image
-          source={require("~/assets/images/teams/initiatecreateteam.png")}
+          source={require("~/assets/images/teams/initiateteam.gif")}
           style={{
             height: 300,
             width: screenWidth,

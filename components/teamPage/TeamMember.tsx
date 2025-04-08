@@ -1,16 +1,22 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import Icon from "react-native-vector-icons/Entypo";
 import Nopic from "@/assets/images/nopic.jpg";
 
 type TeamMemberProps = {
-  imageUrl?: string; // URL for the profile image (optional)
-  name: string; // Name of the person (required)
-  description: string; // Description or subtitle (required)
-  isCaptain?: boolean; // Indicates if the person is a captain (optional)
-  isViceCaptain?: boolean; // Indicates if the person is a vice-captain (optional)
-  isAdmin?: boolean; // Indicates if the current user is an admin (optional)
-  onRemove?: () => void; // Callback for removing the member (optional)
+  imageUrl?: string;
+  name: string;
+  description: string;
+  isCaptain?: boolean;
+  isViceCaptain?: boolean;
+  isAdmin?: boolean;
+  onRemove?: () => void;
 };
 
 const TeamMember: React.FC<TeamMemberProps> = ({
@@ -23,25 +29,18 @@ const TeamMember: React.FC<TeamMemberProps> = ({
   onRemove,
 }) => {
   return (
-    <View
-      className="bg-black p-4 rounded-lg items-center shadow-md border border-gray-700 relative"
-      style={{
-        width: 170,
-        height: 180,
-        justifyContent: "space-between",
-      }}
-    >
-      {/* Profile Image (Always Rendered with Default Fallback) */}
+    <View style={styles.container}>
+      {/* Profile Image */}
       <Image
         source={imageUrl ? { uri: imageUrl } : Nopic}
-        className="h-16 w-16 mt-2 rounded-full mb-2"
+        style={styles.image}
         resizeMode="cover"
       />
 
-      {/* Captain or Vice-Captain Badge */}
+      {/* Badge */}
       {(isCaptain || isViceCaptain) && (
-        <View className="absolute left-2 bg-[#303030] px-2 py-1 rounded-lg">
-          <Text className="text-white text-xs font-bold">
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>
             {isCaptain ? "C" : "VC"}
           </Text>
         </View>
@@ -49,7 +48,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
 
       {/* Name */}
       <Text
-        className="text-white text-3xl font-semibold text-center"
+        style={styles.name}
         numberOfLines={1}
         ellipsizeMode="tail"
       >
@@ -58,18 +57,18 @@ const TeamMember: React.FC<TeamMemberProps> = ({
 
       {/* Description */}
       <Text
-        className="text-gray-400 text-lg text-center"
+        style={styles.description}
         numberOfLines={3}
         ellipsizeMode="tail"
       >
         {description}
       </Text>
 
-      {/* Remove Button (Only for Admins) */}
+      {/* Remove Button */}
       {isAdmin && onRemove && (
         <TouchableOpacity
           onPress={onRemove}
-          className="absolute top-2 right-2 rounded-full p-1 bg-gray-800"
+          style={styles.removeButton}
           hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
         >
           <Icon name="cross" size={16} color="white" />
@@ -78,5 +77,65 @@ const TeamMember: React.FC<TeamMemberProps> = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#0004",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: 170,
+    height: 200,
+    borderWidth: 0.2,
+    borderColor: "#4B5563", // Tailwind: border-gray-700
+    position: "relative",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  image: {
+    height: 94,
+    width: 94,
+    borderRadius: 100,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  badge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: "#00000",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  name: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  description: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    textAlign: "center",
+  },
+  removeButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    padding: 4,
+    borderRadius: 9999,
+    backgroundColor: "#1F2937", // Tailwind: bg-gray-800
+  },
+});
 
 export default TeamMember;

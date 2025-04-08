@@ -27,7 +27,7 @@ export const editUserProfile = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
-    console.log("User data input :", userdata);
+    // console.log("User data input :", userdata);
 
     // userdata.forEach((value, key) => {
     //   console.log(`${key}: ${value}`);
@@ -44,16 +44,16 @@ export const editUserProfile = createAsyncThunk<
       }
     );
 
-    console.log("Response:", response);
+    // console.log("Response:", response);
     const data = await response.json();
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error getting user");
     }
-    console.log("Data : ", data.data.updatedUser);
+    // console.log("Data : ", data.data.updatedUser);
     return data.data.updatedUser;
   } catch (error: unknown) {
-    console.log("Actual api error : ", error);
+    // console.log("Actual api error : ", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unexpected error occurred";
     return rejectWithValue(errorMessage);
@@ -67,7 +67,7 @@ export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(
     try {
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      console.log("Token : ", token);
+      // console.log("Token : ", token);
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post`,
@@ -80,13 +80,13 @@ export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(
         }
       );
 
-      console.log("Response:", response);
+      // console.log("Response:", response);
       const data = await response.json();
 
       if (!response.ok) {
         return rejectWithValue(data.message || "Error getting posts");
       }
-      console.log("Data : ", data?.data?.formattedPosts);
+      // console.log("Data : ", data?.data?.formattedPosts);
       return data?.data?.formattedPosts;
     } catch (error: unknown) {
       console.log("Actual api error : ", error);
@@ -122,13 +122,13 @@ export const fetchMyProfile = createAsyncThunk<
         }
       );
 
-      console.log("Response:", response);
+      // console.log("Response:", response);
       const data = await response.json();
 
       if (!response.ok) {
         return rejectWithValue(data.message || "Error getting profile");
       }
-      console.log("Data : ", data.data);
+      // console.log("Data : ", data.data);
       return data.data;
     } catch (error: unknown) {
       console.log("Actual api error : ", error);
@@ -149,7 +149,7 @@ export const editUserSportsOverview = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
-    console.log("User data input :", sportsData);
+    // console.log("User data input :", sportsData);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/add-sport`,
@@ -163,13 +163,13 @@ export const editUserSportsOverview = createAsyncThunk<
       }
     );
 
-    console.log("Response:", response);
+    // console.log("Response:", response);
     const data = await response.json();
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error editing sports overview");
     }
-    console.log("Data : ", data.data);
+    // console.log("Data : ", data.data);
     return data.data;
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
@@ -189,7 +189,7 @@ export const editUserAbout = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
-    console.log("User data input :", userAbout);
+    // console.log("User data input :", userAbout);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateAbout`,
@@ -203,13 +203,13 @@ export const editUserAbout = createAsyncThunk<
       }
     );
 
-    console.log("Response:", response);
+    // console.log("Response:", response);
     const data = await response.json();
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error editing sports overview");
     }
-    console.log("Data : ", data);
+    // console.log("Data : ", data);
     return data.data.about;
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
@@ -249,7 +249,7 @@ export const uploadPic = createAsyncThunk<
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("Error updating pic :", response.json());
+      // console.log("Error updating pic :", response.json());
       return rejectWithValue(data.message || "Error updating pic");
     }
 
@@ -282,10 +282,10 @@ export const removePic = createAsyncThunk<any, string, { rejectValue: string }>(
       );
 
       const data = await response.json();
-      console.log("Data after removing pic api call : ", data);
+      // console.log("Data after removing pic api call : ", data);
 
       if (!response.ok) {
-        console.log("Error removing pic :", response.json());
+        // console.log("Error removing pic :", response.json());
         return rejectWithValue(data.message || "Error removing pic");
       }
 

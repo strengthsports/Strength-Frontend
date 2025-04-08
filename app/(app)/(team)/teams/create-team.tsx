@@ -23,6 +23,10 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import LocationModal from "@/components/teamPage/LocationModal";
+import {
+  sendInvitations,
+  fetchMemberSuggestions,
+} from "~/reduxStore/slices/team/teamSlice";
 // import { useSelector } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
@@ -147,7 +151,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
-  const [suggestedMembers, setSuggestedMembers] = useState([]);
+
 
   const { sports, loading, error } = useSelector(
     (state: RootState) => state.sports
@@ -166,6 +170,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
 
   const load = useSelector((state) => state.team.loading);
+
   useEffect(() => {
     if (user?.id) {
       setFormData((prevFormData) => ({
@@ -179,9 +184,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   useEffect(() => {
     dispatch(
       fetchUserSuggestions({
-        sportsData: ["67cd0bb8970c518cc730d485"],
-        limit: 20,
-        page: 1,
+        sportsData: ["67cd0bb8970c518cc730d485","6771941c77a19c8141f2f1b7"],
+        limit: 50,
+        page: 8,
       })
     );
   }, [dispatch, formData?.sport]);
@@ -256,8 +261,8 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       }));
     }
 
-    // Close the picker after selection for both iOS & Android
-    setShow(false);
+    setTimeout(() => {
+    setShow(false);}, 3000);
   };
 
   const selectImage = async () => {
@@ -610,8 +615,8 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
                   {formData.members.map((member) => (
                     <MemberCard
-                      key={member._id}
-                      imageUrl={member.profilePic}
+                      key={member?._id}
+                      imageUrl={member?.profilePic}
                       name={member.firstName}
                       description={member?.headline}
                       isAdmin={true}

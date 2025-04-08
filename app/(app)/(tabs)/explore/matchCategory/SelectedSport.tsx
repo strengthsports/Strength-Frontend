@@ -1,5 +1,7 @@
 import React from "react";
 import { View, Text, FlatList } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import TextScallingFalse from "~/components/CentralText";
 import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
@@ -12,6 +14,32 @@ interface SelectedSportProps {
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
+  const renderMatches = () => {
+    return (
+      <View className="flex-row items-center pl-7 mt-3">
+        <TextScallingFalse className="text-white text-5xl font-bold">
+          Matches
+        </TextScallingFalse>
+        <MaterialCommunityIcons
+          name="chevron-double-right"
+          size={22}
+          color="white"
+          className="-mb-1"
+        />
+      </View>
+    );
+  };
+
+  const renderDontMiss = () => {
+    return (
+      <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
+        <TextScallingFalse className="text-white text-5xl font-bold">
+          Don’t Miss
+        </TextScallingFalse>
+      </View>
+    );
+  };
+
   const {
     data: cricketData,
     isFetching: isCricketFetching,
@@ -63,37 +91,41 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     return <FootballNextMatch />;
   };
 
-  const sections = [];
+  const sections = [{ type: "matches", content: renderMatches() }];
 
-  if (sportsName === "Cricket") {
+  if (sportsName === "Cricket")
     sections.push({
       type: "CricketLiveMatches",
       content: renderCricketLiveMatches(),
     });
-    sections.push({
-      type: "CricketNextMatches",
-      content: renderCricketNextMatches(),
-    });
-  } else if (sportsName === "Football") {
+  else if (sportsName === "Football")
     sections.push({
       type: "FootballLiveMatches",
       content: renderFootballLiveMatches(),
     });
+
+  sections.push({ type: "dontMiss", content: renderDontMiss() });
+
+  if (sportsName === "Cricket")
+    sections.push({
+      type: "CricketNextMatches",
+      content: renderCricketNextMatches(),
+    });
+  else if (sportsName === "Football")
     sections.push({
       type: "FootballNextMatches",
       content: renderFootballNextMatches(),
     });
-  }
 
   return (
-    <View>
-      <Text className="text-white">{sportsName}</Text>
+    <View className="flex-1">
       <FlatList
         data={sections}
         keyExtractor={(item) => item.type}
         // keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => item.content}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

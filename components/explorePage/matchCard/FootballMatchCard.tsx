@@ -1,7 +1,7 @@
 import TextScallingFalse from "../../CentralText";
 import CountryFlag from "react-native-country-flag";
-import { Image, TouchableOpacity, View } from "react-native";
-import { useState } from "react";
+import { Image, TouchableOpacity, View, Animated } from "react-native";
+import { useState, useEffect, useRef } from "react";
 import { countryCodes } from "~/constants/countryCodes";
 
 interface MatchCardProps {
@@ -19,7 +19,28 @@ interface MatchCardProps {
   isLive?: boolean;
 }
 
-const FootballNextMatchCard = ({ match }: MatchCardProps) => {
+const FootballMatchCard = ({ match, isLive }: MatchCardProps) => {
+  const opacityValue = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (isLive) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(opacityValue, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 1,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [isLive, opacityValue]);
+
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
@@ -31,7 +52,7 @@ const FootballNextMatchCard = ({ match }: MatchCardProps) => {
       {/* <View className="w-full h-full rounded-t-2xl bg-neutral-700" > */}
 
       {/* Title Section */}
-      <View className="px-4 pt-4 mt-[0.7] pb-2 w-full h-20 rounded-t-2xl bg-transparent">
+      <View className="px-4 pt-4 pb-2">
         <TouchableOpacity
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}
@@ -59,7 +80,7 @@ const FootballNextMatchCard = ({ match }: MatchCardProps) => {
         </TouchableOpacity>
 
         {/* Game Type and Round */}
-        <View className="flex-row items-center p-1">
+        <View className="flex-row items-center px-1 py-0.5">
           <TextScallingFalse className="text-theme text-base font-bold">
             {"\u25B6"} Football{" "}
           </TextScallingFalse>
@@ -68,6 +89,24 @@ const FootballNextMatchCard = ({ match }: MatchCardProps) => {
           </TextScallingFalse>
         </View>
       </View>
+
+      {/* Live Indicator */}
+      {isLive && (
+        <View className="rounded-full absolute right-5 top-5 bg-[#BC3D40] px-2 py-0.5 flex-row items-center justify-center">
+          <Animated.Text
+            className="text-lg text-white font-bold"
+            style={{ opacity: opacityValue }}
+          >
+            &bull;{" "}
+          </Animated.Text>
+          <TextScallingFalse className="text-lg text-white font-bold">
+            LIVE
+          </TextScallingFalse>
+        </View>
+      )}
+
+      {/* Border */}
+      <View className="h-[0.8] bg-[#454545]" />
 
       <View className=" h-28 flex-row justify-center items-center pb-4">
         {/* view 1 */}
@@ -114,4 +153,4 @@ const FootballNextMatchCard = ({ match }: MatchCardProps) => {
     </>
   );
 };
-export default FootballNextMatchCard;
+export default FootballMatchCard;

@@ -39,11 +39,7 @@ const componentMap: Record<
   Cricket: SelectedSport,
   Football: SelectedSport,
   Badminton: SelectedSport,
-  Hockey: SelectedSport,
   Basketball: SelectedSport,
-  Kabbadi: SelectedSport,
-  Tennis: SelectedSport,
-  "Table Tennis": SelectedSport,
   "More \u2193": DefaultContent,
   Default: DefaultContent,
 };

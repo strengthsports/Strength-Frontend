@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import FootballNextMatchCard from "../matchCard/FootballMatchCard";
+import FootballMatchCard from "../matchCard/FootballMatchCard";
 import { Colors } from "~/constants/Colors";
 
 interface LiveFootballMatchProps {
@@ -25,37 +25,6 @@ const FootballLiveMatch: React.FC<LiveFootballMatchProps> = ({
 }) => {
   return (
     <View className="mt-4">
-      <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-        <View className="flex-row items-center ">
-          <TextScallingFalse className="text-white text-6xl font-bold">
-            Matches
-          </TextScallingFalse>
-          <MaterialCommunityIcons
-            name="chevron-double-right"
-            size={22}
-            color="white"
-            className="-mb-1"
-          />
-        </View>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onRefetch}
-          style={{
-            width: 40,
-            height: 20,
-            justifyContent: "center",
-            alignItems: "flex-end",
-          }}
-        >
-          <MaterialCommunityIcons
-            name="reload"
-            size={22}
-            color="grey"
-            className="-mb-1"
-          />
-        </TouchableOpacity>
-      </View>
-
       <FlatList
         data={liveMatches}
         keyExtractor={(item) => item.id.toString()}
@@ -63,13 +32,13 @@ const FootballLiveMatch: React.FC<LiveFootballMatchProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="h-48 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545] ">
+          <View className="h-52 w-80 bg-transparent rounded-2xl mr-5 border border-[#454545]">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ActivityIndicator size="large" color={Colors.themeColor} />
               </View>
             ) : (
-              <FootballNextMatchCard match={item} isLive={true} />
+              <FootballMatchCard match={item} isLive={true} />
             )}
           </View>
         )}

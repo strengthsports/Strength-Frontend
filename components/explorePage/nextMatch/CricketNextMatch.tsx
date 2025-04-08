@@ -16,12 +16,6 @@ const CricketNextMatch: React.FC<NextCricketMatchProps> = ({
 }) => {
   return (
     <View className="mt-7">
-      <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-        <TextScallingFalse className="text-white text-6xl font-bold">
-          Don’t Miss
-        </TextScallingFalse>
-      </View>
-
       {nextMatch ? (
         <View className="px-6">
           <View className="h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545]">

@@ -13,7 +13,9 @@ const SelectedSport = lazy(() => import("./SelectedSport"));
 const DefaultContent = lazy(
   () =>
     new Promise<{ default: React.FC<{ sportsName: string }> }>((resolve) =>
-      resolve({ default: () => <ComingSoon text="More" /> })
+      resolve({
+        default: () => <ComingSoon text="More sports" />,
+      })
     )
 );
 
@@ -40,11 +42,7 @@ const componentMap: Record<
   Cricket: SelectedSport,
   Football: SelectedSport,
   Badminton: SelectedSport,
-  Hockey: SelectedSport,
   Basketball: SelectedSport,
-  Kabbadi: SelectedSport,
-  Tennis: SelectedSport,
-  "Table Tennis": SelectedSport,
   "More \u2193": DefaultContent,
   Default: DefaultContent,
 };

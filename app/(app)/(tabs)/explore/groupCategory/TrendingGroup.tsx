@@ -6,7 +6,7 @@ import ComingSoon from "~/components/explorePage/comingSoon";
 
 const TrendingGroup = () => {
   return (
-    <View>
+    <View className="flex-1">
       <ComingSoon text="Groups" />
     </View>
   );

@@ -24,38 +24,7 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
   onRefetch,
 }) => {
   return (
-    <View className="mt-7">
-      <View className="flex-row items-center justify-between pl-7 pr-10 mb-4">
-        <View className="flex-row items-center ">
-          <TextScallingFalse className="text-white text-6xl font-bold">
-            Matches
-          </TextScallingFalse>
-          <MaterialCommunityIcons
-            name="chevron-double-right"
-            size={22}
-            color="white"
-            className="-mb-1"
-          />
-        </View>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onRefetch}
-          style={{
-            width: 40,
-            height: 20,
-            justifyContent: "center",
-            alignItems: "flex-end",
-          }}
-        >
-          <MaterialCommunityIcons
-            name="reload"
-            size={22}
-            color="grey"
-            className="-mb-1"
-          />
-        </TouchableOpacity>
-      </View>
-
+    <View className="mt-4">
       <FlatList
         data={liveMatches}
         keyExtractor={(item) => item.id.toString()}
@@ -63,7 +32,7 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="h-52 w-96 bg-transparent rounded-2xl mr-5 border border-[#454545]">
+          <View className="h-52 w-80 bg-transparent rounded-2xl mr-5 border border-[#454545]">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ScoresSkeletonLoader />

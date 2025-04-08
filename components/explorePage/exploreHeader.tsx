@@ -33,7 +33,7 @@ export const ExploreCategoryHeader = () => {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{
         alignItems: "center",
-        marginVertical: 8,
+        marginVertical: 4,
         paddingStart: 10,
         paddingEnd: 10,
       }}
@@ -46,9 +46,9 @@ export const ExploreCategoryHeader = () => {
         >
           <View>
             <Text
-              className={`px-5 py-2.5 rounded-xl mx-1 text-xl text-center overflow-hidden border-[#2E2E2E] border ${
+              className={`px-4 py-2.5 rounded-[8px] mx-1.5 text-xl text-center overflow-hidden ${
                 category === selectedExploreCategory
-                  ? "text-black bg-white"
+                  ? "text-black bg-white font-semibold"
                   : "text-white bg-[#262626]"
               }`}
             >
@@ -66,11 +66,7 @@ const exploreSportsCategories = [
   "Cricket",
   "Football",
   "Badminton",
-  "Hockey",
   "Basketball",
-  "Kabbadi",
-  "Tennis",
-  "Table Tennis",
   "More \u2193",
 ];
 
@@ -101,7 +97,7 @@ export const ExploreAllSportsCategoryHeader = () => {
           >
             <View className="items-center">
               <Text
-                className={`text-xl px-4 py-2 text-center rounded-xl overflow-hidden text-[#ABABAB] ${
+                className={`text-xl px-3.5 py-1 text-center rounded-xl overflow-hidden text-[#ABABAB] ${
                   sportsCategory === selectedExploreSportsCategory
                     ? "text-white"
                     : ""
@@ -110,7 +106,7 @@ export const ExploreAllSportsCategoryHeader = () => {
                 {sportsCategory}
               </Text>
               {sportsCategory === selectedExploreSportsCategory && (
-                <View className="w-3/5 h-1 bg-green-500 rounded-full mt-1" />
+                <View className="w-3/4 h-1 bg-[#12956B] rounded-full mt-1" />
               )}
             </View>
           </TouchableOpacity>

@@ -8,7 +8,7 @@ interface SelectedSportProps {
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   return (
-    <View>
+    <View className="flex-1">
       <ComingSoon text="Groups" />
     </View>
   );

@@ -1,10 +1,10 @@
-import TextScallingFalse from "../CentralText";
-import CountryFlag from "react-native-country-flag";
 import { Image, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
+import TextScallingFalse from "../../CentralText";
+import CountryFlag from "react-native-country-flag";
 import { countryCodes } from "~/constants/countryCodes";
 import teamLogos from "~/constants/teamLogos";
-import NameFlagSubCard from "./nameFlagSubCard";
+import NameFlagSubCard from ".././nameFlagSubCard";
 
 interface MatchCardProps {
   match: {
@@ -22,7 +22,7 @@ interface MatchCardProps {
   isLive?: boolean;
 }
 
-const NextMatchCard = ({ match }: MatchCardProps) => {
+const CricketNextMatchCard = ({ match }: MatchCardProps) => {
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
@@ -82,7 +82,7 @@ const NextMatchCard = ({ match }: MatchCardProps) => {
   };
 
   const getTeamLogo = (teamShortName: string) => {
-    return teamLogos[teamShortName] || require("../../assets/images/logo2.png"); // Fallback image
+    return teamLogos[teamShortName] || require("~/assets/images/logo2.png"); // Fallback image
   };
 
   return (
@@ -154,4 +154,4 @@ const NextMatchCard = ({ match }: MatchCardProps) => {
     </>
   );
 };
-export default NextMatchCard;
+export default CricketNextMatchCard;

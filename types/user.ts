@@ -45,6 +45,7 @@ export interface ProfileState {
   posts: Array<any>;
   followings: string[];
   currentPost: Post | null;
+  associates?: Member[] | [];
   [key: string]: any;
 }
 
@@ -99,6 +100,8 @@ export type Member = {
   type: string;
   firstName: string;
   lastName: string;
+  username: string;
+  headline: string;
   profilePic: string;
   role: string;
 };

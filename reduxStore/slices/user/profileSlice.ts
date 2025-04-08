@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { ProfileState, TargetUser, User } from "@/types/user";
+import { Member, ProfileState, TargetUser, User } from "@/types/user";
 import { loginUser, logoutUser } from "./authSlice";
 import { PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
@@ -15,7 +15,6 @@ const initialState: ProfileState = {
   msgBackend: null,
   posts: [],
   currentPost: null,
-  isUserInfoModalOpen: false,
 };
 
 // Edit user profile details
@@ -300,6 +299,48 @@ export const removePic = createAsyncThunk<any, string, { rejectValue: string }>(
   }
 );
 
+// Fetch Associates/Members list of page
+export const fetchAssociates = createAsyncThunk<
+  Member[],
+  any,
+  { rejectValue: string }
+>("profile/fetchAssociates", async (page, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+
+    // Dynamically build the URL based on whether page is null or not
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+    const url =
+      page !== null
+        ? `${baseUrl}/api/v1/page-members?pageId=${page.pageId}`
+        : `${baseUrl}/api/v1/page-members`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    console.log("Data after fetching associates : ", data);
+
+    if (!response.ok) {
+      console.log("Error fetching associates :", response.json());
+      return rejectWithValue(data.message || "Error fetching associates");
+    }
+
+    return data.data;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
+  }
+});
+
 const profileSlice = createSlice({
   name: "profile",
   initialState,
@@ -337,9 +378,6 @@ const profileSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.posts = [];
-    },
-    setOpenUserInfoModal: (state, action) => {
-      state.isUserInfoModalOpen = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -521,6 +559,21 @@ const profileSlice = createSlice({
       state.loading = false;
       state.error = action.payload as string;
     });
+
+    // Fetch associates
+    builder.addCase(fetchAssociates.pending, (state) => {
+      state.error = null;
+      state.loading = true;
+    });
+    builder.addCase(fetchAssociates.fulfilled, (state, action) => {
+      state.user.associates = action.payload;
+      state.error = null;
+      state.loading = false;
+    });
+    builder.addCase(fetchAssociates.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 
@@ -533,7 +586,6 @@ export const {
   pullFollowings,
   pushFollowings,
   setCurrentPost,
-  setOpenUserInfoModal,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

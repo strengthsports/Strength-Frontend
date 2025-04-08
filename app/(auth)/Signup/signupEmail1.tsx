@@ -27,6 +27,7 @@ import { signupUser } from "~/reduxStore/slices/user/signupSlice";
 import { AppDispatch, RootState } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
+import { dateFormatter } from "~/utils/dateFormatter";
 
 const SignupEmail1 = () => {
   const router = useRouter();
@@ -43,10 +44,12 @@ const SignupEmail1 = () => {
   const [maleSelected, setMaleSelected] = useState(false);
   const [femaleSelected, setFemaleSelected] = useState(false);
 
-  const handleDateChange = (selectedDate: string) => {
-    setDateOfBirth(selectedDate);
+  const handleDateChange = (selectedDate: Date) => {
+    const formatted = dateFormatter(selectedDate, "date");
+    setDateOfBirth(formatted);
     setIsDatePickerVisible(false);
   };
+  
 
   const [gender, setGender] = useState("");
   const handleMalePress = () => {

@@ -275,11 +275,11 @@ function EditOverview() {
       if (filledFieldsCount < 3 && !hasSkippedAlert) {
         handleOpenAlertModal(
           "Add More Key Details",
-          "We recommend adding at least 3 key details to your Sports Overview for a complete and impactful profile.",
+          "Atleast 3 key details are recommended to add for a complete and impactful profile.",
           () => setAlertModal(false),
           "  Skip  ",
           "Add more",
-          { bg: "transparent", text: "#808080" },
+          { bg: "#12956B", text: "white" },
         );
         return; // Don't proceed
       }
@@ -700,7 +700,9 @@ function EditOverview() {
                           <TextScallingFalse style={styles.selectButton}>
                             {propValue || "Select"}
                           </TextScallingFalse>
+                          <View style={{paddingTop: 5}}>
                           <DownArrow />
+                          </View>
                         </TouchableOpacity>
                       </View>
                     );

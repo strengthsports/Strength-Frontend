@@ -9,6 +9,7 @@ import {
   ToastAndroid,
   Platform,
   Keyboard,
+  Text,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import PageThemeView from "~/components/PageThemeView";

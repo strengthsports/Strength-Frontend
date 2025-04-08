@@ -408,15 +408,15 @@ function EditOverview() {
         {/* Sports overview */}
         {user?.type === "User" && (
           <View
-            style={{ width: "90%", paddingVertical: 15 }}
-            className="mx-auto flex justify-center gap-y-2 border-b-[0.5px] border-[#808080]"
+            style={{ width: "90%", paddingVertical: 7 }}
+            className="mx-auto flex justify-center gap-y-2"
           >
             <TextScallingFalse
               style={{ color: "white", fontSize: 16, fontWeight: "bold" }}
             >
               Sports Overview
             </TextScallingFalse>
-            <View className="w-full justify-start gap-x-2.5 gap-y-2 flex-row items-center flex-wrap">
+            <View className="w-full justify-start gap-x-2.5 gap-y-2 py-[5px] flex-row items-center flex-wrap">
               {finalSelectedSports && finalSelectedSports.length > 0 ? (
                 finalSelectedSports.map((sport, index) => (
                   <TouchableOpacity
@@ -433,7 +433,7 @@ function EditOverview() {
                     style={{ justifyContent: "center", alignItems: "center" }}
                   >
                     <View
-                      className={`p-2.5 min-w-[8rem] bg-[#12956B] rounded-md flex-row items-center justify-between gap-x-2`}
+                      className={`p-2.5 min-w-[8rem] bg-[#12956B] rounded-md flex-row px-4 items-center justify-between gap-x-2`}
                       style={{ zIndex: 10 }}
                     >
                       <Image
@@ -444,7 +444,7 @@ function EditOverview() {
                         }}
                         resizeMode="contain"
                       />
-                      <TextScallingFalse className="text-3xl text-white">
+                      <TextScallingFalse className="text-3xl font-medium text-white">
                         {sport.sportsName}
                       </TextScallingFalse>
                     </View>
@@ -505,9 +505,10 @@ function EditOverview() {
         )}
 
         {/* About section */}
+        <View style={{paddingTop: 20}}>
         <View
-          style={{ width: "90%", padding: 20 }}
-          className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+          style={{ width: "90%", padding: 20}}
+          className="mx-auto py-2 px-0 border-t-[0.5px] border-b-[0.5px] border-[#808080]"
         >
           <TouchableOpacity
             activeOpacity={0.8}
@@ -521,6 +522,7 @@ function EditOverview() {
             </TextScallingFalse>
             <RightArrow />
           </TouchableOpacity>
+        </View>
         </View>
 
         {/* Members section */}
@@ -877,11 +879,7 @@ function EditOverview() {
   transparent
   onRequestClose={handleCloseAboutModal}
 >
-  <TouchableOpacity
-    className="flex-1"
-    activeOpacity={1}
-    onPress={handleCloseAboutModal}
-  >
+  <View>
     <View className="bg-black h-full">
       {/* Modal Header */}
       <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
@@ -922,7 +920,7 @@ function EditOverview() {
         </View>
       </View>
     </View>
-  </TouchableOpacity>
+  </View>
 </Modal>
       </PageThemeView >
     </SafeAreaView >

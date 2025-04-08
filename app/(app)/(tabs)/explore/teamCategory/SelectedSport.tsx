@@ -1,5 +1,7 @@
 import { View, Text } from "react-native";
 import React from "react";
+import TextScallingFalse from "~/components/CentralText";
+import ComingSoon from "~/components/explorePage/comingSoon";
 
 interface SelectedSportProps {
   sportsName: string;
@@ -7,8 +9,8 @@ interface SelectedSportProps {
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   return (
-    <View>
-      <Text className="text-white">{sportsName}</Text>
+    <View className="flex-1 items-center">
+      <ComingSoon text="Teams" />
     </View>
   );
 };

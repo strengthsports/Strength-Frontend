@@ -4,6 +4,7 @@ import TextScallingFalse from "~/components/CentralText";
 import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import SwiperTop from "~/components/explorePage/SwiperTop";
+import ArticleContent from "~/components/explorePage/article/ArticleContent";
 
 interface SelectedSportProps {
   sportsName: string;
@@ -27,22 +28,50 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     if (error) {
       return (
         <TextScallingFalse className="text-white">
-          Error loading articles.
+          Error loading swipper slides.
         </TextScallingFalse>
       );
     }
     return <SwiperTop swiperData={articles ?? []} />;
   };
-  const sections = [{ type: "swiper", content: renderSwiper() }];
+
+  const renderArticles = () => {
+    const {
+      data: articles,
+      error,
+      isLoading,
+    } = useGetSportArticleQuery(sportsName);
+    if (isLoading) {
+      return (
+        <TextScallingFalse className="text-white self-center text-center pr-7">
+          No articles available
+        </TextScallingFalse>
+      );
+    }
+
+    if (error) {
+      return (
+        <TextScallingFalse className="text-white">
+          Error loading articles.
+        </TextScallingFalse>
+      );
+    }
+    return <ArticleContent articleData={articles ?? []} />;
+  };
+
+  const sections = [
+    { type: "swiper", content: renderSwiper() },
+    { type: "article", content: renderArticles() },
+  ];
 
   return (
-    <View>
-      <Text className="text-white">{sportsName}</Text>
+    <View className="flex-1">
       <FlatList
         data={sections}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => item.content}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

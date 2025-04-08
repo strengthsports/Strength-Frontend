@@ -4,10 +4,6 @@ export type ExploreSportsCategoriesKeys =
   | "Cricket"
   | "Football"
   | "Badminton"
-  | "Hockey"
   | "Basketball"
-  | "Kabbadi"
-  | "Tennis"
-  | "Table Tennis"
   | "More \u2193"
   | "Default";

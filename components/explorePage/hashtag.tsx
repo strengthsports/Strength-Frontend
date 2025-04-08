@@ -21,23 +21,23 @@ const Hashtag: React.FC<HashtagProps> = ({ data }) => {
         <View key={hashData.id}>
           <View className="px-5 flex-row">
             {/* Index */}
-            <TextScallingFalse className="text-theme text-5xl font-bold mr-5">
+            <TextScallingFalse className="text-theme text-5xl font-semibold mr-5 mt-0.5">
               {hashData.id}
             </TextScallingFalse>
 
             {/* Hashtag and Posts Count */}
             <View className="flex-col justify-center">
-              <TextScallingFalse className="text-[#CECECE] text-3xl font-bold ">
+              <TextScallingFalse className="text-[#CECECE] text-3xl font-semibold ">
                 {hashData.hashtag}
               </TextScallingFalse>
-              <TextScallingFalse className="text-[#6E6E6E] text-2xl mt-1">
+              <TextScallingFalse className="text-[#6E6E6E] text-2xl mt-2.5">
                 {hashData.postsCount} posts
               </TextScallingFalse>
             </View>
           </View>
 
           {/* Divider */}
-          <View className=" h-[0.6px] bg-[#474747] my-3 ml-14 mr-6" />
+          <View className=" h-[0.6px] bg-[#474747] my-3 ml-12 mr-6" />
         </View>
       ))}
     </>

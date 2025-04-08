@@ -6,7 +6,7 @@ import ComingSoon from "~/components/explorePage/comingSoon";
 
 const TrendingClip = () => {
   return (
-    <View>
+    <View className="flex-1">
       <ComingSoon text="Clips" />
     </View>
   );

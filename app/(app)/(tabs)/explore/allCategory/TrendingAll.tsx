@@ -22,6 +22,8 @@ import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatc
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
+import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
+import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
@@ -40,7 +42,7 @@ const TrendingAll = () => {
     if (error) {
       return (
         <TextScallingFalse className="text-white">
-          Error loading articles.
+          Error loading swipper slides.
         </TextScallingFalse>
       );
     }
@@ -51,17 +53,17 @@ const TrendingAll = () => {
     <View className="mt-10">
       <Hashtag data={hashtagData.slice(0, 3)} />
       <TouchableOpacity
-        className="bg-[#303030] my-5 py-3 px-14 w-full max-w-96 flex self-center rounded-full"
+        className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
         activeOpacity={0.6}
         onPress={() => setModalVisible(true)}
       >
         <View className="flex-row items-center justify-center">
-          <Text className="text-[#E9E9E9] font-semibold">See more</Text>
+          <Text className="text-white">See more</Text>
           <MaterialCommunityIcons
             name="chevron-right"
-            size={20}
+            size={18}
             color="#E9E9E9"
-            className="mt-1 ml-1.5"
+            className="mt-0.5 ml-1.5"
           />
         </View>
       </TouchableOpacity>
@@ -75,6 +77,32 @@ const TrendingAll = () => {
     </View>
   );
 
+  const renderMatches = () => {
+    return (
+      <View className="flex-row items-center pl-7 mt-3">
+        <TextScallingFalse className="text-white text-5xl font-bold">
+          Matches
+        </TextScallingFalse>
+        <MaterialCommunityIcons
+          name="chevron-double-right"
+          size={22}
+          color="white"
+          className="-mb-1"
+        />
+      </View>
+    );
+  };
+
+  const renderDontMiss = () => {
+    return (
+      <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
+        <TextScallingFalse className="text-white text-5xl font-bold">
+          Don’t Miss
+        </TextScallingFalse>
+      </View>
+    );
+  };
+
   const {
     data: cricketData,
     isFetching: isCricketFetching,
@@ -83,14 +111,33 @@ const TrendingAll = () => {
   const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
     cricketData || {};
 
-  // const renderTrendingLiveMatches = () => {};
+  const {
+    data: footballData,
+    isFetching: isFootballFetching,
+    refetch: refetchFootball,
+  } = useGetFootballMatchesQuery({});
+  const { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } =
+    footballData || {};
 
-  const renderCricketLiveMatches = () => {
+  const singleLiveCricketMatch = liveCricketMatches?.slice(1, 2);
+  const singleLiveFootballMatch = liveFootballMatches?.slice(0, 1);
+
+  const renderTrendingLiveMatches = () => {
+    const isLoading = isCricketFetching || isFootballFetching;
+
+    if (isLoading) {
+      return (
+        <View className="mt-5">
+          <ScoresSkeletonLoader />
+        </View>
+      );
+    }
     return (
-      <CricketLiveMatch
-        liveMatches={liveCricketMatches}
-        isFetching={isCricketFetching}
-        onRefetch={refetchLiveCricket}
+      <TrendingLiveMatch
+        liveCricketMatches={singleLiveCricketMatch}
+        liveFootballMatches={singleLiveFootballMatch}
+        isCricketFetching={isCricketFetching}
+        isFootballFetching={isFootballFetching}
       />
     );
   };
@@ -104,24 +151,6 @@ const TrendingAll = () => {
     );
   };
 
-  const {
-    data: footballData,
-    isFetching: isFootballFetching,
-    refetch: refetchFootball,
-  } = useGetFootballMatchesQuery({});
-  const { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } =
-    footballData || {};
-
-  const renderFootballLiveMatches = () => {
-    return (
-      <FootballLiveMatch
-        liveMatches={liveFootballMatches}
-        isFetching={isFootballFetching}
-        onRefetch={refetchFootball}
-      />
-    );
-  };
-
   const renderFootballNextMatches = () => {
     return <FootballNextMatch />;
   };
@@ -131,10 +160,11 @@ const TrendingAll = () => {
     { type: "divider", content: <View className="h-[0.6px] bg-neutral-600" /> },
     { type: "hashtags", content: renderHashtags() },
     { type: "discoverPeople", content: <DiscoverPeopleList /> },
-    { type: "CricketLiveMatches", content: renderCricketLiveMatches() },
-    { type: "FootballLiveMatches", content: renderFootballLiveMatches() },
-    { type: "CricketNextMatches", content: renderCricketNextMatches() },
-    { type: "FootballNextMatches", content: renderFootballNextMatches() },
+    { type: "matches", content: renderMatches() },
+    { type: "trendingLiveMatches", content: renderTrendingLiveMatches() },
+    { type: "dontMiss", content: renderDontMiss() },
+    { type: "cricketNextMatches", content: renderCricketNextMatches() },
+    { type: "footballNextMatches", content: renderFootballNextMatches() },
   ];
 
   return (
@@ -144,7 +174,8 @@ const TrendingAll = () => {
         keyExtractor={(item) => item.type}
         // keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => item.content}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

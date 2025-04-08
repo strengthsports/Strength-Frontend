@@ -6,7 +6,7 @@ import SearchBar from "~/components/search/searchbar";
 import { RootState } from "~/reduxStore";
 import TrendingAll from "./allCategory";
 import TrendingMatch from "./matchCategory";
-import TrendingArticle from "./articleCateogry";
+import TrendingArticle from "./articleCategory";
 import TrendingTeam from "./teamCategory";
 import TrendingClip from "./clipCategory";
 import TrendingGroup from "./groupCategory";

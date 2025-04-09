@@ -5,6 +5,7 @@ import {
   View,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
@@ -13,33 +14,25 @@ import TextScallingFalse from "~/components/CentralText";
 import SearchBar from "~/components/search/searchbar";
 import InviteUser from "~/components/common/InviteUser";
 import PageThemeView from "~/components/PageThemeView";
-
-// Sample users data – replace with real data as needed.
-const sampleUsers = [
-  {
-    _id: "user1",
-    firstName: "John",
-    lastName: "Doe",
-    profilePic: "",
-    headline: "Software Engineer",
-    type: "associate",
-  },
-  {
-    _id: "user2",
-    firstName: "Jane",
-    lastName: "Smith",
-    profilePic: "",
-    headline: "Product Manager",
-    type: "associate",
-  },
-  // Add more users as needed.
-];
+import { useGetPopularUsersQuery } from "~/reduxStore/api/community/communityApi";
+import { Colors } from "~/constants/Colors";
+import { useDispatch, useSelector } from "react-redux";
+import { inviteAssociates } from "~/reduxStore/slices/user/profileSlice";
+import { showFeedback } from "~/utils/feedbackToast";
+import { AppDispatch, RootState } from "~/reduxStore";
 
 const InviteAssociates = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading } = useSelector((state: RootState) => state.profile);
   const { searchRole } = useLocalSearchParams();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [isInvitationSending, setInvitationSending] = useState(loading);
+
+  const { data: users, isLoading: loadingUsers } = useGetPopularUsersQuery({
+    limit: 20,
+  });
 
   // Toggle selection for a user ID.
   const handleSelectUser = (userId: string) => {
@@ -53,34 +46,27 @@ const InviteAssociates = () => {
   // Handler for Send button to call API with selected IDs.
   const handleSendInvites = async () => {
     if (!selectedUsers.length) {
-      Alert.alert("No Users Selected", "Please select at least one user.");
+      showFeedback("No Users Selected");
       return;
     }
 
-    try {
-      // Replace the URL and payload structure with what your API expects.
-      const response = await fetch("https://your-api-url.com/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userIds: selectedUsers }),
-      });
+    setInvitationSending(true);
+    await dispatch(
+      inviteAssociates({
+        receiverIds: selectedUsers,
+        roleInPage: searchRole as string,
+      })
+    );
 
-      if (response.ok) {
-        Alert.alert("Success", "Invitations sent successfully.");
-        router.back();
-      } else {
-        Alert.alert("Error", "Failed to send invitations.");
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "An error occurred while sending invitations.");
-    }
+    setInvitationSending(false);
+    showFeedback(
+      `${selectedUsers.length} ${searchRole}es invited successfully`,
+      "success"
+    );
   };
 
   // Filter users based on search text.
-  const filteredUsers = sampleUsers.filter((user) => {
+  const filteredUsers = users?.filter((user) => {
     const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
     return fullName.includes(searchText.toLowerCase());
   });
@@ -93,11 +79,23 @@ const InviteAssociates = () => {
         </TouchableOpacity>
         <TextScallingFalse className="text-white text-5xl font-normal">
           Invite {searchRole}
+          {searchRole === "Coach" ? `es` : `s`}
         </TextScallingFalse>
-        <TouchableOpacity onPress={handleSendInvites}>
-          <TextScallingFalse className="text-[#12956B] text-4xl font-medium">
-            Send
-          </TextScallingFalse>
+        <TouchableOpacity
+          onPress={handleSendInvites}
+          disabled={selectedUsers.length === 0}
+        >
+          {isInvitationSending ? (
+            <ActivityIndicator size="small" color={Colors.themeColor} />
+          ) : (
+            <TextScallingFalse
+              className={`${
+                selectedUsers.length === 0 ? "text-[#808080]" : "text-[#12956B]"
+              } text-4xl font-medium`}
+            >
+              Send
+            </TextScallingFalse>
+          )}
         </TouchableOpacity>
       </View>
       <View>
@@ -107,18 +105,22 @@ const InviteAssociates = () => {
           onChangeSearchText={setSearchText}
         />
         {/* FlatList of InviteUser components */}
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <InviteUser
-              user={item}
-              selected={selectedUsers.includes(item._id)}
-              onSelect={handleSelectUser}
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-        />
+        {loadingUsers ? (
+          <ActivityIndicator size="large" color={Colors.themeColor} />
+        ) : (
+          <FlatList
+            data={filteredUsers}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <InviteUser
+                user={item}
+                selected={selectedUsers.includes(item._id)}
+                onSelect={handleSelectUser}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+          />
+        )}
       </View>
     </PageThemeView>
   );

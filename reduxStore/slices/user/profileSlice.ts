@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
 import { Member, ProfileState, TargetUser, User } from "@/types/user";
 import { loginUser, logoutUser } from "./authSlice";
-import { PicData } from "~/types/others";
+import { InviteMember, PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser, resetOnboardingData } from "./onboardingSlice";
 
@@ -341,6 +341,87 @@ export const fetchAssociates = createAsyncThunk<
   }
 });
 
+// Invite Associate/s
+export const inviteAssociates = createAsyncThunk<
+  any,
+  InviteMember,
+  { rejectValue: string }
+>(
+  "profile/inviteAssociates",
+  async (users: InviteMember, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/send-pageJoinInvitation`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(users),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.log("Error sending associates invitation :", response.json());
+        return rejectWithValue(
+          data.message || "Error sending invitations to associates"
+        );
+      }
+
+      return data.data;
+    } catch (error: unknown) {
+      console.log("Actual api error : ", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Remove Associate/s
+export const removeAssociates = createAsyncThunk<
+  any,
+  string[],
+  { rejectValue: string }
+>("profile/removeAssociates", async (users: string[], { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/remove-pageAssociates`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ associateIds: users }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.log("Error removing associates :", response.json());
+      return rejectWithValue(data.message || "Error removing associates");
+    }
+
+    return users;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
+  }
+});
+
 const profileSlice = createSlice({
   name: "profile",
   initialState,
@@ -571,6 +652,33 @@ const profileSlice = createSlice({
       state.loading = false;
     });
     builder.addCase(fetchAssociates.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Invite associates
+    builder.addCase(inviteAssociates.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(inviteAssociates.fulfilled, (state) => {
+      state.loading = false;
+    });
+    builder.addCase(inviteAssociates.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Remove associates
+    builder.addCase(removeAssociates.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(removeAssociates.fulfilled, (state, action) => {
+      state.loading = false;
+      state.user.associates = state.user.associates.filter(
+        (associate: Member) => !action.payload.includes(associate._id)
+      );
+    });
+    builder.addCase(removeAssociates.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

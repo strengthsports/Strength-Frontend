@@ -6,14 +6,15 @@ import TextScallingFalse from "~/components/CentralText";
 import SearchBar from "~/components/search/searchbar";
 import MembersSection from "~/components/profilePage/MembersSection";
 import { useRouter } from "expo-router";
-import { useSelector } from "react-redux";
-import { RootState } from "~/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { Member } from "~/types/user";
 import { AssociateProvider, useAssociate } from "~/context/UseAssociate";
 import Divider from "~/components/ui/CustomDivider";
 import AlertModal from "~/components/modals/AlertModal";
 import UserInfoModal from "~/components/modals/UserInfoModal";
 import AssociatesInviteModal from "~/components/modals/AssociatesInviteModal";
+import { removeAssociates } from "~/reduxStore/slices/user/profileSlice";
 
 const alertConfig = {
   title: "Remove Associates",
@@ -24,6 +25,7 @@ const alertConfig = {
 
 const AssociateContent = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   // Get associates list
   const associates = useSelector(
     (state: RootState) => (state.profile.user?.associates as Member[]) || []
@@ -69,7 +71,7 @@ const AssociateContent = () => {
     // Add any additional cleanup logic
   };
 
-  // Handle remove action
+  // Handle remove action 1
   const handleRemoveSelected = () => {
     // Implement removal logic here
     console.log("Selected member IDs to remove : ", selectedMembers);
@@ -83,6 +85,14 @@ const AssociateContent = () => {
       }`,
     });
     setAlertModalVisible(true);
+  };
+
+  // Handle remove action 2
+  const handleRemoveAssociates = async () => {
+    const users = selectedMembers.map((member) => member.memberId);
+    await dispatch(removeAssociates(users));
+    setSelectMode(false);
+    handleCloseAlertModal();
   };
 
   // Handle close alert modal
@@ -144,8 +154,17 @@ const AssociateContent = () => {
             Associates
           </TextScallingFalse>
           {isSelectModeEnabled ? (
-            <TouchableOpacity onPress={handleRemoveSelected}>
-              <TextScallingFalse className="text-4xl text-[#D44044]">
+            <TouchableOpacity
+              onPress={handleRemoveSelected}
+              disabled={selectedMembers.length === 0}
+            >
+              <TextScallingFalse
+                className={`text-4xl ${
+                  selectedMembers.length === 0
+                    ? "text-[#d440459d]"
+                    : "text-[#D44044]"
+                }`}
+              >
                 Remove
               </TextScallingFalse>
             </TouchableOpacity>
@@ -235,9 +254,7 @@ const AssociateContent = () => {
         <AlertModal
           alertConfig={{
             ...alertConfigSet,
-            confirmAction: () => {
-              console.log("Confirm Remove");
-            },
+            confirmAction: handleRemoveAssociates,
             discardAction: handleCloseAlertModal,
           }}
           isVisible={isAlertModalVisible}

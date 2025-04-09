@@ -59,7 +59,7 @@ const InviteUser = ({ user, selected = false, onSelect }: InviteUserProps) => {
               fontWeight: "300", // Regular
             }}
           >
-            {user.headline}
+            {user.headline.slice(0, 40)}
           </TextScallingFalse>
         </View>
         <TouchableOpacity

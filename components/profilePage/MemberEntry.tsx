@@ -55,7 +55,7 @@ const MemberEntry = ({
         />
         {/* Member Details */}
         <View
-          className={`flex flex-1 flex-col ml-2 items-start justify-between gap-2 ${
+          className={`flex-1 flex-row ml-2 items-center justify-between gap-2 ${
             !isLast && "border-b-[0.5px] border-[#3B3B3B]"
           } py-5`}
         >
@@ -79,27 +79,27 @@ const MemberEntry = ({
               {member.headline}
             </TextScallingFalse>
           </View>
-        </View>
-        {isEditView && !isSelectModeEnabled && (
-          <TouchableOpacity onPress={() => openModal(member)}>
-            <RightArrow />
-          </TouchableOpacity>
-        )}
+          {isEditView && !isSelectModeEnabled && (
+            <TouchableOpacity onPress={() => openModal(member)}>
+              <RightArrow />
+            </TouchableOpacity>
+          )}
 
-        {isSelectModeEnabled && (
-          <TouchableOpacity
-            className={`w-8 h-8 rounded-md border ${
-              selectedMembers.some((m) => m.memberId === member._id)
-                ? "border-[#12956B] bg-[#12956B]"
-                : "border-[#4B5563]"
-            } items-center justify-center`}
-            onPress={handleSelectMember}
-          >
-            {selectedMembers.some((m) => m.memberId === member._id) && (
-              <Icon name="check" size={20} color="white" />
-            )}
-          </TouchableOpacity>
-        )}
+          {isSelectModeEnabled && (
+            <TouchableOpacity
+              className={`w-8 h-8 rounded-md border ${
+                selectedMembers.some((m) => m.memberId === member._id)
+                  ? "border-[#12956B] bg-[#12956B]"
+                  : "border-[#4B5563]"
+              } items-center justify-center`}
+              onPress={handleSelectMember}
+            >
+              {selectedMembers.some((m) => m.memberId === member._id) && (
+                <Icon name="check" size={20} color="white" />
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </>
   );

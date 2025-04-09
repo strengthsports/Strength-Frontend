@@ -8,7 +8,7 @@ import RightArrow from "../Arrows/RightArrow";
 const roleViews =
   "rounded-2xl bg-[#141414] w-full p-5 flex-row justify-between items-center";
 
-const roles = ["Coaches", "Athletes", "Trainers"];
+const roles = ["Coach", "Athlete", "Trainer"];
 
 const AssociatesInviteModal = ({ visible, onClose }: any) => {
   const router = useRouter();
@@ -26,6 +26,7 @@ const AssociatesInviteModal = ({ visible, onClose }: any) => {
           <View className={roleViews} key={index}>
             <TextScallingFalse className="text-[#CFCFCF]">
               {role}
+              {role === "Coach" ? `es` : `s`}
             </TextScallingFalse>
             <TouchableOpacity
               onPress={() =>

@@ -4,6 +4,7 @@ import TextScallingFalse from "../CentralText";
 import { useRouter } from "expo-router";
 import ModalLayout1 from "./layout/ModalLayout1";
 import { MaterialIcons } from "@expo/vector-icons";
+import nopic from "@/assets/images/nopic.jpg";
 
 const btn = "rounded-xl border border-[#12956B] py-2 w-[40%]";
 const roleViews =
@@ -11,7 +12,6 @@ const roleViews =
 
 const UserInfoModal = ({ visible, onClose, member }: any) => {
   const router = useRouter();
-  const profilePic = member?.profilePic || "https://via.placeholder.com/150";
   const [isFollowing, setIsFollowing] = useState(false);
 
   const serializedUser = encodeURIComponent(
@@ -23,6 +23,7 @@ const UserInfoModal = ({ visible, onClose, member }: any) => {
   };
 
   const handleViewProfile = () => {
+    console.log("Handle view profile");
     onClose();
     router.push(`/(app)/(profile)/profile/${serializedUser}`);
   };
@@ -33,7 +34,10 @@ const UserInfoModal = ({ visible, onClose, member }: any) => {
     <ModalLayout1 onClose={onClose} visible={visible} heightValue={1.8}>
       <View className="pt-10">
         <View>
-          <Image source={{ uri: profilePic }} style={styles.profileImage} />
+          <Image
+            source={member?.profilePic ? { uri: member.profilePic } : nopic}
+            style={styles.profileImage}
+          />
           <TextScallingFalse className="mt-2 text-white text-5xl font-semibold">
             {member?.firstName} {member?.lastName}
           </TextScallingFalse>

@@ -27,7 +27,13 @@ const AssociatesInviteModal = ({ visible, onClose }: any) => {
             <TextScallingFalse className="text-[#CFCFCF]">
               {role}
             </TextScallingFalse>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                router.push(
+                  `/(app)/(profile)/edit-overview/(modal)/invite-associates?searchRole=${role}`
+                )
+              }
+            >
               <RightArrow />
             </TouchableOpacity>
           </View>

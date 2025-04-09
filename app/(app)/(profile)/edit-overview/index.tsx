@@ -59,7 +59,7 @@ function EditOverview() {
   );
   // Get associates list length
   const associatesLength = useSelector(
-    (state: RootState) => state.profile.user?.associates.length
+    (state: RootState) => state.profile.user?.associates?.length
   );
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();

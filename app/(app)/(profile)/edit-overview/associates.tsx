@@ -11,6 +11,16 @@ import { RootState } from "~/reduxStore";
 import { Member } from "~/types/user";
 import { AssociateProvider, useAssociate } from "~/context/UseAssociate";
 import Divider from "~/components/ui/CustomDivider";
+import AlertModal from "~/components/modals/AlertModal";
+import UserInfoModal from "~/components/modals/UserInfoModal";
+import AssociatesInviteModal from "~/components/modals/AssociatesInviteModal";
+
+const alertConfig = {
+  title: "Remove Associates",
+  message: "Remove @mrinal and 2 others?",
+  confirmMessage: "Remove",
+  cancelMessage: "Cancel",
+};
 
 const AssociateContent = () => {
   const router = useRouter();
@@ -23,9 +33,17 @@ const AssociateContent = () => {
     isSelectModeEnabled,
     selectedMembers,
     openInviteModal,
+    isModalOpen,
+    selectedMember,
+    isInviteModalOpen,
+    closeModal,
+    closeInviteModal,
   } = useAssociate();
 
   const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [isAlertModalVisible, setAlertModalVisible] = useState(false);
+  const [alertConfigSet, setAlertConfig] = useState(alertConfig);
+  const [searchText, setSearchText] = useState("");
 
   const toggleTooltip = () => {
     setTooltipVisible(!tooltipVisible);
@@ -55,7 +73,21 @@ const AssociateContent = () => {
   const handleRemoveSelected = () => {
     // Implement removal logic here
     console.log("Selected member IDs to remove : ", selectedMembers);
-    setSelectMode(false);
+    // setSelectMode(false);
+    setAlertConfig({
+      ...alertConfig,
+      message: `Remove @${selectedMembers[0].memberUsername} ${
+        selectedMembers.length > 1
+          ? `${selectedMembers.length - 1}` + ` and others`
+          : ""
+      }`,
+    });
+    setAlertModalVisible(true);
+  };
+
+  // Handle close alert modal
+  const handleCloseAlertModal = () => {
+    setAlertModalVisible(false);
   };
 
   // Memoized athlete and coach data
@@ -69,11 +101,32 @@ const AssociateContent = () => {
     [associates]
   );
 
+  // Apply search filter on coaches and athletes based on searchText
+  const filteredCoaches = useMemo(
+    () =>
+      coaches.filter((member) =>
+        `${member.firstName} ${member.lastName}`
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
+      ),
+    [coaches, searchText]
+  );
+
+  const filteredAthletes = useMemo(
+    () =>
+      athletes.filter((member) =>
+        `${member.firstName} ${member.lastName}`
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
+      ),
+    [athletes, searchText]
+  );
+
   return (
     <>
-      <View className="h-full">
-        {/* Modal Header */}
-        <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
+      <PageThemeView>
+        {/* Header */}
+        <View className="flex-row justify-between items-center h-16 px-5 border-b border-[#2B2B2B]">
           <View className="flex-row items-center">
             {isSelectModeEnabled ? (
               <TouchableOpacity onPress={handleCancelSelect}>
@@ -108,8 +161,13 @@ const AssociateContent = () => {
         </View>
 
         <View>
-          <SearchBar placeholder="Search associated members..." />
-          {coaches.length > 0 && (
+          <SearchBar
+            mode="search"
+            placeholder="Search associated members..."
+            searchText={searchText}
+            onChangeSearchText={setSearchText}
+          />
+          {filteredCoaches.length > 0 && (
             <>
               <TextScallingFalse
                 className="text-[#8A8A8A]"
@@ -123,10 +181,10 @@ const AssociateContent = () => {
               >
                 Coaches
               </TextScallingFalse>
-              <MembersSection members={coaches} isEditView={true} />
+              <MembersSection members={filteredCoaches} isEditView={true} />
             </>
           )}
-          {athletes.length > 0 && (
+          {filteredAthletes.length > 0 && (
             <>
               <TextScallingFalse
                 className="text-[#8A8A8A]"
@@ -140,11 +198,11 @@ const AssociateContent = () => {
               >
                 Athletes
               </TextScallingFalse>
-              <MembersSection members={athletes} isEditView={true} />
+              <MembersSection members={filteredAthletes} isEditView={true} />
             </>
           )}
         </View>
-      </View>
+      </PageThemeView>
 
       {/* Blackish overlay with tooltip */}
       {tooltipVisible && (
@@ -171,6 +229,31 @@ const AssociateContent = () => {
           </View>
         </View>
       )}
+
+      {/* Alert modal */}
+      {isAlertModalVisible && (
+        <AlertModal
+          alertConfig={{
+            ...alertConfigSet,
+            confirmAction: () => {
+              console.log("Confirm Remove");
+            },
+            discardAction: handleCloseAlertModal,
+          }}
+          isVisible={isAlertModalVisible}
+        />
+      )}
+
+      <UserInfoModal
+        visible={isModalOpen}
+        onClose={closeModal}
+        member={selectedMember}
+      />
+
+      <AssociatesInviteModal
+        visible={isInviteModalOpen}
+        onClose={closeInviteModal}
+      />
     </>
   );
 };

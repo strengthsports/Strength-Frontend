@@ -26,7 +26,10 @@ const MemberEntry = ({
 
   // Handle select member
   const handleSelectMember = () => {
-    toggleMemberSelection(member._id);
+    toggleMemberSelection({
+      memberId: member._id,
+      memberUsername: member.username,
+    });
   };
 
   return (
@@ -85,15 +88,14 @@ const MemberEntry = ({
 
         {isSelectModeEnabled && (
           <TouchableOpacity
-            className={`w-8 h-8 rounded-md border 
-                ${
-                  selectedMembers.includes(member._id)
-                    ? "border-[#12956B] bg-[#12956B]"
-                    : "border-[#4B5563]"
-                } items-center justify-center`}
+            className={`w-8 h-8 rounded-md border ${
+              selectedMembers.some((m) => m.memberId === member._id)
+                ? "border-[#12956B] bg-[#12956B]"
+                : "border-[#4B5563]"
+            } items-center justify-center`}
             onPress={handleSelectMember}
           >
-            {selectedMembers.includes(member._id) && (
+            {selectedMembers.some((m) => m.memberId === member._id) && (
               <Icon name="check" size={20} color="white" />
             )}
           </TouchableOpacity>

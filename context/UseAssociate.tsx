@@ -12,8 +12,16 @@ type AssociateContextType = {
   closeInviteModal: () => void;
   isSelectModeEnabled?: boolean;
   setSelectMode: (state: boolean) => void;
-  selectedMembers: string[];
-  toggleMemberSelection: (memberId: string) => void;
+  selectedMembers: MemberSelectionType[];
+  toggleMemberSelection: ({
+    memberId,
+    memberUsername,
+  }: MemberSelectionType) => void;
+};
+
+type MemberSelectionType = {
+  memberId: string;
+  memberUsername: string;
 };
 
 const AssociateContext = createContext<AssociateContextType>({
@@ -39,7 +47,9 @@ export const AssociateProvider = ({
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isSelectModeEnabled, setSelectModeEnabled] = useState<boolean>(false);
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<MemberSelectionType[]>(
+    []
+  );
 
   const openModal = (member: Member) => {
     setSelectedMember(member);
@@ -59,16 +69,23 @@ export const AssociateProvider = ({
     setIsInviteModalOpen(false);
   };
 
-  const setSelectMode = (state: boolean) => {
-    console.log("Called");
-    setSelectModeEnabled(state);
+  const clearSelectedMembers = () => {
+    setSelectedMembers([]);
   };
 
-  const toggleMemberSelection = (memberId: string) => {
+  const setSelectMode = (state: boolean) => {
+    setSelectModeEnabled(state);
+    if (!state) clearSelectedMembers();
+  };
+
+  const toggleMemberSelection = ({
+    memberId,
+    memberUsername,
+  }: MemberSelectionType) => {
     setSelectedMembers((prev) =>
-      prev.includes(memberId)
-        ? prev.filter((id) => id !== memberId)
-        : [...prev, memberId]
+      prev.some((m) => m.memberId === memberId)
+        ? prev.filter((m) => m.memberId !== memberId)
+        : [...prev, { memberId, memberUsername }]
     );
   };
 

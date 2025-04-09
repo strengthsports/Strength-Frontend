@@ -26,6 +26,7 @@ const ModalLayout1 = ({
   const screenHeight = Dimensions.get("window").height;
   const translateY = new Animated.Value(0);
 
+  // Create a pan responder only for the drag handle area
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
@@ -68,19 +69,25 @@ const ModalLayout1 = ({
               transform: [{ translateY }],
             },
           ]}
-          {...panResponder.panHandlers}
         >
-          <Divider
-            color="#545454"
-            marginVertical={2}
-            thickness={4.5}
-            style={{
-              width: "20%",
-              marginHorizontal: "auto",
-              borderRadius: 20,
-            }}
-          />
-          {children}
+          {/* Drag handle area */}
+          <View
+            {...panResponder.panHandlers}
+            style={styles.dragHandleContainer}
+          >
+            <Divider
+              color="#545454"
+              marginVertical={2}
+              thickness={4.5}
+              style={{
+                width: "20%",
+                marginHorizontal: "auto",
+                borderRadius: 20,
+              }}
+            />
+          </View>
+          {/* Content area */}
+          <View style={styles.contentContainer}>{children}</View>
         </Animated.View>
       </View>
     </Modal>
@@ -89,7 +96,6 @@ const ModalLayout1 = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    // marginTop: 20,
     flex: 1,
     justifyContent: "flex-end",
   },
@@ -103,6 +109,14 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 20,
+  },
+  // New style: drag area for the pan responder
+  dragHandleContainer: {
+    paddingVertical: 5,
+    // Optionally add a backgroundColor or other styling to indicate the drag area
+  },
+  contentContainer: {
+    flex: 1,
   },
 });
 

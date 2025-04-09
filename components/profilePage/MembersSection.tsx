@@ -8,9 +8,6 @@ import MemberEntry from "./MemberEntry";
 import EditIcon from "../SvgIcons/profilePage/EditIcon";
 import { useRouter } from "expo-router";
 import { FlatList } from "react-native";
-import { useAssociate } from "~/context/UseAssociate";
-import UserInfoModal from "../modals/UserInfoModal";
-import AssociatesInviteModal from "../modals/AssociatesInviteModal";
 
 const MembersList = ({
   members,
@@ -52,13 +49,6 @@ const MembersSection = ({
   isEditView?: boolean;
 }) => {
   const router = useRouter();
-  const {
-    isModalOpen,
-    selectedMember,
-    isInviteModalOpen,
-    closeModal,
-    closeInviteModal,
-  } = useAssociate();
   return (
     <View className="bg-[#121212] w-[93%] mx-auto px-5 py-4 rounded-xl mb-3">
       {/* Header */}
@@ -129,17 +119,6 @@ const MembersSection = ({
           <EditIcon />
         </TouchableOpacity>
       )}
-
-      <UserInfoModal
-        visible={isModalOpen}
-        onClose={closeModal}
-        member={selectedMember}
-      />
-
-      <AssociatesInviteModal
-        visible={isInviteModalOpen}
-        onClose={closeInviteModal}
-      />
     </View>
   );
 };

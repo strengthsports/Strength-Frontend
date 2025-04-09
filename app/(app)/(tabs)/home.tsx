@@ -93,6 +93,25 @@ const Home = () => {
   const flatListRef = useRef<FlatList>(null);
   const { scrollY } = useScroll();
 
+  // state for visible posts; assume each post has a unique id in item.data.id
+  const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
+
+  // viewabilityConfig: consider an item visible if 80% of it is onscreen
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 80,
+  });
+
+  // Handle updates to visible items
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: Array<any> }) => {
+      // Extract post IDs of visible items that are of type "post"
+      const visibleIds = viewableItems
+        .filter((vi) => vi.item.data && vi.item.data._id)
+        .map((vi) => vi.item.data._id);
+      setVisiblePostIds(visibleIds);
+    }
+  ).current;
+
   // Refresh posts handler
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -130,7 +149,7 @@ const Home = () => {
 
   // On progress complete show feedback and refresh
   const onProgressComplete = useCallback(() => {
-    showFeedback("Post uploaded successfully!","success");
+    showFeedback("Post uploaded successfully!", "success");
     handleRefresh();
     // Dispatch an action to update isPostProgressOn to false
     dispatch(setPostProgressOn(false));
@@ -205,14 +224,18 @@ const Home = () => {
       if (item.type === "post" && item.data) {
         return (
           <View style={styles.fullWidth}>
-            <PostContainer item={item.data} isFeedPage={true} />
+            <PostContainer
+              item={item.data}
+              isFeedPage={true}
+              isVisible={visiblePostIds.includes(item.data._id)}
+            />
             <Divider style={styles.divider} width={0.4} color="#282828" />
           </View>
         );
       }
       return <DiscoverPeopleList key={item.id} />;
     },
-    []
+    [visiblePostIds]
   );
 
   // Key extractor based on item type
@@ -268,6 +291,8 @@ const Home = () => {
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
               { useNativeDriver: true }
             )}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig.current}
             scrollEventThrottle={16}
             renderItem={renderItem}
             initialNumToRender={5}

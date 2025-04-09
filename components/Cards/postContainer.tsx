@@ -52,11 +52,19 @@ interface PostContainerProps {
   isMyActivity?: boolean;
   handleBottomSheet?: (state: boolean) => void;
   isVideo?: boolean;
+  isVisible?: boolean;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
   (
-    { item, highlightedHashtag, isFeedPage, handleBottomSheet, isVideo },
+    {
+      item,
+      highlightedHashtag,
+      isFeedPage,
+      handleBottomSheet,
+      isVideo,
+      isVisible,
+    },
     ref
   ) => {
     const router = useRouter();
@@ -444,7 +452,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
           {/* Assets section */}
           {item.isVideo ? (
-            <CustomVideoPlayer videoUri={item.assets[0].url} />
+            <CustomVideoPlayer
+              videoUri={item.assets[0].url}
+              autoPlay={isVisible}
+            />
           ) : (
             item.assets &&
             item.assets.length > 0 &&

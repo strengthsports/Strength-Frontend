@@ -483,13 +483,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
           {/* Interaction Bar */}
           <InteractionBar
-            postId={item._id}
+            post={item}
             onPressLike={handleLike}
             onPressComment={() => setIsCommentCountModalVisible(true)}
-            isLiked={item.isLiked}
-            likesCount={item.likesCount}
-            commentsCount={item.commentsCount}
-            assetsCount={item.assets?.length || 0}
             activeSlideIndex={activeIndex}
             isPostContainer={true}
             isFeedPage={isFeedPage}

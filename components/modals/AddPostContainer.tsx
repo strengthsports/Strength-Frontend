@@ -38,6 +38,7 @@ import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
 import { showFeedback } from "~/utils/feedbackToast";
+import Svg, { Path } from "react-native-svg";
 import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
 import FeatureUnderDev from "./FeatureUnderDev";
 
@@ -130,6 +131,7 @@ export default function AddPostContainer({
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
   const [showFeatureModal, setShowFeatureModal] = useState(false);
 
+  const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
 
   // Improved regex pattern for tag detection
   const parseTags = (text: string) => {
@@ -185,7 +187,7 @@ export default function AddPostContainer({
         const file = {
           uri,
           name: `image_${index}.jpg`,
-          type: "image/jpeg",
+          type: isTypeVideo ? "video/mp4" : "image/jpeg",
         };
         formData.append(`assets${index + 1}`, file);
       });
@@ -237,10 +239,11 @@ export default function AddPostContainer({
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images", "videos"],
         aspect: Platform.OS === "ios" ? ratio : ratio,
         quality: 0.8,
         allowsEditing: true,
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        // mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 
       if (!result.canceled && result.assets.length > 0) {
@@ -328,7 +331,6 @@ export default function AddPostContainer({
     }
   };
 
-
   const handleDiscard = () => {
     setAlertModalOpen(false);
     setAddPostContainerOpen(false),
@@ -348,8 +350,9 @@ export default function AddPostContainer({
           <View className="flex flex-row items-center justify-between p-4">
             <AddPostHeader onBackPress={handleCloseAddPostContainer} />
             <TouchableOpacity
-              className={`px-6 py-1 rounded-full ${isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-                }`}
+              className={`px-6 py-1 rounded-full ${
+                isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+              }`}
               onPress={handlePostSubmit}
               disabled={!isPostButtonEnabled}
             >
@@ -357,8 +360,9 @@ export default function AddPostContainer({
                 <ActivityIndicator color={"white"} />
               ) : (
                 <TextScallingFalse
-                  className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                    } text-3xl font-semibold`}
+                  className={`${
+                    isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                  } text-3xl font-semibold`}
                 >
                   Post
                 </TextScallingFalse>
@@ -474,8 +478,8 @@ export default function AddPostContainer({
           )}
 
           {/* Footer */}
-          <View className="flex flex-row justify-between items-center p-5">
-            <TouchableOpacity onPress={() => setShowFeatureModal(true)} className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+          <View className="flex flex-row justify-between items-center p-3">
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setShowFeatureModal(true)} className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
               <MaterialCommunityIcons
                 name="earth"
                 size={20}
@@ -493,14 +497,30 @@ export default function AddPostContainer({
 
             <View className="flex flex-row justify-between items-center gap-2">
               <TouchableOpacity
-                activeOpacity={0.5}
+                activeOpacity={0.7}
                 className="p-[5px] w-[35px]"
               >
                 <TagsIcon />
               </TouchableOpacity>
               <TouchableOpacity
+                activeOpacity={0.7}
+                className="p-[5px] w-[35px]"
+                onPress={() => {
+                  handlePickImageOrAddMore();
+                  setTypeVideo(true);
+                }}
+                disabled={showPollInput || isTypeVideo}
+              >
+                <MaterialCommunityIcons
+                  name="play-circle-outline"
+                  size={25}
+                  color={showPollInput ? "#737373" : Colors.themeColor}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={handlePickImageOrAddMore}
                 disabled={showPollInput}
+                activeOpacity={0.7}
               >
                 <AddImageIcon />
                 {pickedImageUris.length > 0 && (
@@ -526,7 +546,7 @@ export default function AddPostContainer({
               <TouchableOpacity
                 onPress={() => setShowPollInput(true)}
                 className="p-[5px]"
-                activeOpacity={0.5}
+                activeOpacity={0.7}
               >
                 <PollsIcon />
               </TouchableOpacity>

@@ -181,13 +181,15 @@ const post = () => {
           }`}
         >
           <InteractionBar
-            postId={postId}
+            post={post}
             isPostContainer={false}
-            isLiked={post.isLiked}
-            commentsCount={post.commentsCount}
-            likesCount={post.likesCount}
             onPressLike={handleLike}
             isFeedPage={false}
+            onPressComment={() =>
+              router.push({
+                pathname: `/post-details/${postId}` as RelativePathString,
+              })
+            }
           />
         </View>
 

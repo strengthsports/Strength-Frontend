@@ -8,7 +8,7 @@ import {
   TextInput,
   ToastAndroid,
   Platform,
-  Keyboard
+  Keyboard,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import PageThemeView from "~/components/PageThemeView";
@@ -232,7 +232,6 @@ const EditProfile = () => {
         setHeightInMeters(initialM > 0 ? initialM.toFixed(2) : "");
         const baseCm = initialFeet * 30.48 + initialInches * 2.54;
         setInitialMeasurement(baseCm);
-
       } else {
         if (parsed.unit === "kg") {
           initialKg = parsed.value;
@@ -247,12 +246,16 @@ const EditProfile = () => {
         setWeightInLbs(initialLbs > 0 ? initialLbs.toFixed(2) : "");
 
         //calculate initial measurement in a base unit (kg)
-        const baseKg = parsed.unit === 'kg' ? parsed.value : (parsed.unit === 'lbs' ? parsed.value / 2.20462 : 0);
+        const baseKg =
+          parsed.unit === "kg"
+            ? parsed.value
+            : parsed.unit === "lbs"
+            ? parsed.value / 2.20462
+            : 0;
         setInitialMeasurement(baseKg);
       }
 
       setSelectedField(selectedUnit);
-
     } else {
       const value =
         type === "address"
@@ -264,7 +267,9 @@ const EditProfile = () => {
     setModalVisible(true);
   };
 
-  const parseMeasurement = (value: string): { feet: number; inches: number; value: number; unit: string } => {
+  const parseMeasurement = (
+    value: string
+  ): { feet: number; inches: number; value: number; unit: string } => {
     if (!value) return { feet: 0, inches: 0, value: 0, unit: "" };
     const parts = value.trim().split(" ");
 
@@ -275,17 +280,32 @@ const EditProfile = () => {
         const inches = parseFloat(parts[2]);
         if (!isNaN(feet) && !isNaN(inches)) {
           const totalValueInches = feet * 12 + inches;
-          return { feet: feet, inches: inches, value: totalValueInches / 12, unit: "ft in" };
+          return {
+            feet: feet,
+            inches: inches,
+            value: totalValueInches / 12,
+            unit: "ft in",
+          };
         }
       } else if (parts.length === 2) {
         const numericValue = parseFloat(parts[0]);
         const unit = parts[1];
         if (!isNaN(numericValue)) {
-          if (unit === 'ft') {
+          if (unit === "ft") {
             //handle "X ft" treat as X ft 0 in
-            return { feet: numericValue, inches: 0, value: numericValue, unit: "ft in" };
+            return {
+              feet: numericValue,
+              inches: 0,
+              value: numericValue,
+              unit: "ft in",
+            };
           }
-          if (unit === 'cm' || unit === 'm' || unit === 'kg' || unit === 'lbs') {
+          if (
+            unit === "cm" ||
+            unit === "m" ||
+            unit === "kg" ||
+            unit === "lbs"
+          ) {
             // Other units (keep value as is, feet/inches not applicable directly)
             return { feet: 0, inches: 0, value: numericValue, unit: unit };
           }
@@ -483,7 +503,6 @@ const EditProfile = () => {
       } else {
         finalUploadData.delete("height");
       }
-
     } else if (field === "weight") {
       // weight field
       const weightValue = renderFieldValue(selectedField || "");
@@ -665,7 +684,7 @@ const EditProfile = () => {
         return;
       }
 
-      const numericString = value.replace(/[^0-9]/g, '');
+      const numericString = value.replace(/[^0-9]/g, "");
       let feet = parseInt(numericString, 10);
 
       if (isNaN(feet)) {
@@ -684,7 +703,6 @@ const EditProfile = () => {
         }
         feet = 0;
       }
-
 
       const MAX_FEET = 9;
       if (feet > MAX_FEET) {
@@ -719,7 +737,7 @@ const EditProfile = () => {
         return;
       }
 
-      const numericString = value.replace(/[^0-9]/g, '');
+      const numericString = value.replace(/[^0-9]/g, "");
 
       let inches = parseInt(numericString, 10);
 
@@ -873,7 +891,7 @@ const EditProfile = () => {
 
       if (selectedField === "kilograms") {
         return kg;
-      } else if (selectedField === 'pounds') {
+      } else if (selectedField === "pounds") {
         return lbs / 2.20462;
       }
     }
@@ -930,10 +948,11 @@ const EditProfile = () => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${Array.from(finalUploadData.entries()).length
-                    ? "text-[#12956B]"
-                    : "text-[#808080]"
-                    } text-4xl font-medium`}
+                  className={`${
+                    Array.from(finalUploadData.entries()).length
+                      ? "text-[#12956B]"
+                      : "text-[#808080]"
+                  } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -1299,7 +1318,8 @@ const EditProfile = () => {
                               />
                               <TextScallingFalse
                                 style={{ top: 6 }}
-                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none">
+                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
+                              >
                                 ft
                               </TextScallingFalse>
                             </View>
@@ -1314,15 +1334,20 @@ const EditProfile = () => {
                               />
                               <TextScallingFalse
                                 style={{ top: 6 }}
-                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none">
+                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
+                              >
                                 in
                               </TextScallingFalse>
                             </View>
                             <CustomButton
                               field={"feetInches"}
                               selectedField={selectedField || ""}
-                              toggleSelectedField={() => toggleSelectedField("feetInches")}
-                              renderFieldValue={() => `${heightFeet || 0} ft ${heightInches || 0} in`}
+                              toggleSelectedField={() =>
+                                toggleSelectedField("feetInches")
+                              }
+                              renderFieldValue={() =>
+                                `${heightFeet || 0} ft ${heightInches || 0} in`
+                              }
                             />
                           </View>
                         </View>
@@ -1408,15 +1433,26 @@ const EditProfile = () => {
                     </TextScallingFalse>
                     {/* Date picker component */}
                     {isDatePickerVisible && (
-                      <View style={{ width: '100%', height: '100%', paddingTop: 30, alignItems: 'center', }}>
+                      <View
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          paddingTop: 30,
+                          alignItems: "center",
+                        }}
+                      >
                         <DateTimePicker
                           value={inputValue ? new Date(inputValue) : maxDOB}
                           mode="date"
-                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                          display={
+                            Platform.OS === "ios" ? "spinner" : "default"
+                          }
                           maximumDate={maxDOB} // restrict to users at least 13
                           onChange={(event, selectedDate) => {
                             if (selectedDate) {
-                              const formattedDate = selectedDate.toISOString().split("T")[0];
+                              const formattedDate = selectedDate
+                                .toISOString()
+                                .split("T")[0];
                               setInputValue(formattedDate);
                             }
                             if (Platform.OS === "android") {
@@ -1424,16 +1460,18 @@ const EditProfile = () => {
                             }
                           }}
                         />
-
                       </View>
                     )}
                   </>
                 ) : (
                   <>
-                    <TextScallingFalse className="text-gray-500 text-xl">{label}</TextScallingFalse>
+                    <TextScallingFalse className="text-gray-500 text-xl">
+                      {label}
+                    </TextScallingFalse>
                     <View
-                      className={`flex-row border-b border-white ${picType === "headline" ? "" : "h-[50px]"
-                        }`}
+                      className={`flex-row border-b border-white ${
+                        picType === "headline" ? "" : "h-[50px]"
+                      }`}
                     >
                       <TextInput
                         value={inputValue}
@@ -1488,14 +1526,11 @@ const EditProfile = () => {
                   </>
                 )}
 
-                {picType === "dateOfBirth" ? (
-                  null
-                ) : (
+                {picType === "dateOfBirth" ? null : (
                   <TextScallingFalse className="text-gray-500 text-base mt-4">
                     {description}
                   </TextScallingFalse>
-                )
-                }
+                )}
                 {picType === "address" ? (
                   <TouchableOpacity
                     activeOpacity={0.5}
@@ -1724,8 +1759,9 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
-      }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${
+      !isLast ? "border-b border-[#3030309a]" : ""
+    }`}
   >
     <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
       {label}
@@ -1736,8 +1772,9 @@ const FormField = ({
       className="flex-row items-center justify-between h-full w-2/3"
     >
       <TextScallingFalse
-        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
-          }`}
+        className={`text-2xl font-light ${
+          value ? "text-white" : "text-gray-500"
+        }`}
       >
         {isDate ? dateFormatter(value as any, "date") : value || placeholder}
       </TextScallingFalse>
@@ -1822,22 +1859,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-                ? "Cm"
-                : field === "meters"
-                  ? "m"
-                  : field === "kilograms"
-                    ? "kg"
-                    : "lbs"}
+              ? "Cm"
+              : field === "meters"
+              ? "m"
+              : field === "kilograms"
+              ? "kg"
+              : "lbs"}
           </TextScallingFalse>
         </View>
         <CustomButton
           field={
             field as
-            | "feetInches"
-            | "centimeters"
-            | "meters"
-            | "kilograms"
-            | "pounds"
+              | "feetInches"
+              | "centimeters"
+              | "meters"
+              | "kilograms"
+              | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

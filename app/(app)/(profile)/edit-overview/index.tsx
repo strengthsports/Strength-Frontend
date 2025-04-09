@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Image,
   Modal,
-  Pressable,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -24,13 +23,14 @@ import RightArrow from "~/components/Arrows/RightArrow";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
 import TopBar from "~/components/TopBar";
-import { AppDispatch } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { useGetSportsQuery } from "~/reduxStore/api/sportsApi";
 import {
   editUserSportsOverview,
   fetchMyProfile,
   editUserAbout,
 } from "~/reduxStore/slices/user/profileSlice";
+import { Member } from "~/types/user";
 import AlertModal from "~/components/modals/AlertModal";
 import KeyDetailsMenu from "~/components/modals/KeyDetailsMenu";
 import DownArrow from "~/components/SvgIcons/Edit-Overview/DownArrow";
@@ -43,12 +43,28 @@ interface SelectedSport {
   [key: string]: any;
 }
 
+// ✅ Define the type above your component
+type AlertConfigType = {
+  title: string;
+  message: string;
+  discardAction: () => void;
+  confirmMessage: string;
+  cancelMessage: string;
+  onSkip?: () => void;
+};
+
 function EditOverview() {
-  const { loading, error, user } = useSelector((state: any) => state?.profile);
+  const { loading, error, user, isUserInfoModalOpen } = useSelector(
+    (state: RootState) => state?.profile
+  );
+  // Get associates list length
+  const associatesLength = useSelector(
+    (state: RootState) => state.profile.user?.associates?.length
+  );
   const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { about } = useLocalSearchParams();
+  const query = useLocalSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -73,7 +89,7 @@ function EditOverview() {
   const [alertConfig, setAlertConfig] = useState<AlertConfigType>({
     title: "Discard changes?",
     message: "If you go back now, you will lose your changes.",
-    discardAction: () => { },
+    discardAction: () => {},
     confirmMessage: "Discard Changes",
     cancelMessage: "Continue editing",
   });
@@ -88,9 +104,9 @@ function EditOverview() {
   const [initialAbout, setAbout] = useState(user?.about);
   const [isAboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
 
-  // Check if about edit request has came
+  // Check which edit request has came
   useEffect(() => {
-    if (about) {
+    if (query.about) {
       setAboutModalOpen((prev) => !prev);
     }
   }, []);
@@ -275,11 +291,11 @@ function EditOverview() {
       if (filledFieldsCount < 3 && !hasSkippedAlert) {
         handleOpenAlertModal(
           "Add More Key Details",
-          "We recommend adding at least 3 key details to your Sports Overview for a complete and impactful profile.",
+          "Atleast 3 key details are recommended to add for a complete and impactful profile.",
           () => setAlertModal(false),
           "  Skip  ",
           "Add more",
-          { bg: "transparent", text: "#808080" },
+          { bg: "#12956B", text: "white" }
         );
         return; // Don't proceed
       }
@@ -337,7 +353,7 @@ function EditOverview() {
         console.log(sportsData);
         await dispatch(editUserSportsOverview(sportsData));
         await dispatch(
-          fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
+          fetchMyProfile({ targetUserId: user?._id, targetUserType: user.type })
         );
         router.push("/(app)/(tabs)/profile");
         setLocalLoading(false);
@@ -506,28 +522,67 @@ function EditOverview() {
         )}
 
         {/* About section */}
-        <View style={{paddingTop: 20}}>
-        <View
-          style={{ width: "90%", padding: 20}}
-          className="mx-auto py-2 px-0 border-t-[0.5px] border-b-[0.5px] border-[#808080]"
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-            onPress={handleOpenAboutModal}
+        <View style={{ paddingTop: 20 }}>
+          <View
+            style={{ width: "90%", padding: 20 }}
+            className="mx-auto py-2 px-0 border-t-[0.5px] border-b-[0.5px] border-[#808080]"
           >
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+              onPress={handleOpenAboutModal}
             >
-              About
-            </TextScallingFalse>
-            <RightArrow />
-          </TouchableOpacity>
-        </View>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+              >
+                About
+              </TextScallingFalse>
+              <RightArrow />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Members section */}
-        <View></View>
+        {user?.type === "Page" && (
+          <>
+            <View
+              style={{ width: "90%", padding: 20 }}
+              className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+                onPress={handleOpenAboutModal}
+              >
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                >
+                  Teams
+                </TextScallingFalse>
+                <RightArrow />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{ width: "90%", padding: 20 }}
+              className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+                onPress={() =>
+                  router.push("/(app)/(profile)/edit-overview/associates")
+                }
+              >
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                >
+                  Associates {`[${associatesLength}]`}
+                </TextScallingFalse>
+                <RightArrow />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         {/* Edit sports details modal */}
         <Modal
@@ -588,8 +643,23 @@ function EditOverview() {
           onRequestClose={handleCloseKeyDetailsForm}
         >
           <PageThemeView>
-            <View style={{ paddingHorizontal: 20, paddingVertical: 18, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+            <View
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 18,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 12,
+                }}
+              >
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
@@ -607,7 +677,7 @@ function EditOverview() {
                         handleCloseKeyDetailsForm,
                         "Discard",
                         "Cancel",
-                        { bg: "transparent", text: "#E4080A" },
+                        { bg: "transparent", text: "#E4080A" }
                       );
                     }
                   }}
@@ -618,9 +688,7 @@ function EditOverview() {
               <TextScallingFalse className="text-6xl text-white">
                 {selectedSport ? selectedSport.sportsName : ""}
               </TextScallingFalse>
-              <TouchableOpacity
-                onPress={handleSaveFinalSportsData}
-              >
+              <TouchableOpacity onPress={handleSaveFinalSportsData}>
                 <MaterialIcons
                   name="done"
                   size={30}
@@ -657,13 +725,13 @@ function EditOverview() {
             </View>
 
             {isKeyValueDropdownOpen && (
-            <KeyDetailsMenu
-              isVisible={isKeyValueDropdownOpen}
-              keyOptions={keyOptions ?? []}
-              handleKeyValueSelect={handleKeyValueSelect}
-              handleClose={handleCloseKeyValueDropdown}
-            />
-          )}
+              <KeyDetailsMenu
+                isVisible={isKeyValueDropdownOpen}
+                keyOptions={keyOptions ?? []}
+                handleKeyValueSelect={handleKeyValueSelect}
+                handleClose={handleCloseKeyValueDropdown}
+              />
+            )}
 
             <View style={{ width: "100%", paddingHorizontal: 20, gap: 1 }}>
               {sports
@@ -700,7 +768,9 @@ function EditOverview() {
                           <TextScallingFalse style={styles.selectButton}>
                             {propValue || "Select"}
                           </TextScallingFalse>
-                          <DownArrow />
+                          <View style={{ paddingTop: 5 }}>
+                            <DownArrow />
+                          </View>
                         </TouchableOpacity>
                       </View>
                     );
@@ -712,7 +782,13 @@ function EditOverview() {
               !Object.values(selectedSport.keyDetails).every(
                 (value) => value === ""
               ) && (
-                <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                <View
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <TouchableOpacity
                     activeOpacity={0.7}
                     className="flex-row justify-center items-center w-[70%] rounded-[20px] mt-12"
@@ -723,7 +799,7 @@ function EditOverview() {
                         handleDeleteSportsOverview,
                         "Delete",
                         "Cancel",
-                        { bg: "transparent", text: "#D44044" },
+                        { bg: "transparent", text: "#D44044" }
                       )
                     }
                   >
@@ -759,172 +835,186 @@ function EditOverview() {
           </PageThemeView>
         </Modal>
 
-{/* Sports selection options modal */ }
-<Modal
-  visible={isSportsOptionModalOpen}
-  transparent={true}
-  onRequestClose={handleCloseSportsOptionModal}
->
-  <PageThemeView>
-    {/* Top header */}
-    <View className="px-5 py-2 flex-row justify-start items-center">
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={handleCloseSportsOptionModal}
-      >
-        <AntDesign name="arrowleft" size={24} color="white" />
-      </TouchableOpacity>
-    </View>
-    {/* Headings */}
-    <View style={{ width: "100%", padding: 20 }}>
-      <TextScallingFalse
-        style={{ color: "white", fontSize: 20, fontWeight: "500" }}
-      >
-        Select Your Sport..
-      </TextScallingFalse>
-      <TextScallingFalse className="text-[#808080] text-lg font-normal pt-2">
-        Choose the sport you want to showcase in your Overview Your
-        sports profile is your story; let's make it legendary!
-      </TextScallingFalse>
-    </View>
-    {/* Search bar */}
-    <View className="w-full justify-center items-center flex-row mx-auto h-[80px]">
-      <TextInput
-        placeholder="Search for sports"
-        placeholderTextColor={"grey"}
-        className="bg-[#181818] w-3/4 h-12 pl-5 rounded-l-md text-white"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        cursorColor="#12956B"
-      />
-      <View className="bg-[#181818] h-12 w-12 justify-center rounded-r-md">
-        <Feather
-          name="search"
-          style={{ paddingLeft: 10 }}
-          size={23}
-          color="grey"
-        />
-      </View>
-    </View>
-    {/* Sports options */}
-    {isLoading ? (
-      <ActivityIndicator size="small" color="#12956B" />
-    ) : (
-      <ScrollView showsVerticalScrollIndicator={true}>
-        <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-3 p-5">
-          {[...filteredSports]
-            .sort((a, b) => {
-              const aSelected = finalSelectedSports.some(s => s.sportsName === a.name);
-              const bSelected = finalSelectedSports.some(s => s.sportsName === b.name);
-              return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
-            })
-            .map((sport) => {
-              const keyDetails = sport.defaultProperties.reduce((acc: any, dp) => {
-                acc[dp.name] = "";
-                return acc;
-              }, {});
+        {/* Sports selection options modal */}
+        <Modal
+          visible={isSportsOptionModalOpen}
+          transparent={true}
+          onRequestClose={handleCloseSportsOptionModal}
+        >
+          <PageThemeView>
+            {/* Top header */}
+            <View className="px-5 py-2 flex-row justify-start items-center">
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={handleCloseSportsOptionModal}
+              >
+                <AntDesign name="arrowleft" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+            {/* Headings */}
+            <View style={{ width: "100%", padding: 20 }}>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 20, fontWeight: "500" }}
+              >
+                Select Your Sport..
+              </TextScallingFalse>
+              <TextScallingFalse className="text-[#808080] text-lg font-normal pt-2">
+                Choose the sport you want to showcase in your Overview Your
+                sports profile is your story; let's make it legendary!
+              </TextScallingFalse>
+            </View>
+            {/* Search bar */}
+            <View className="w-full justify-center items-center flex-row mx-auto h-[80px]">
+              <TextInput
+                placeholder="Search for sports"
+                placeholderTextColor={"grey"}
+                className="bg-[#181818] w-3/4 h-12 pl-5 rounded-l-md text-white"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                cursorColor="#12956B"
+              />
+              <View className="bg-[#181818] h-12 w-12 justify-center rounded-r-md">
+                <Feather
+                  name="search"
+                  style={{ paddingLeft: 10 }}
+                  size={23}
+                  color="grey"
+                />
+              </View>
+            </View>
+            {/* Sports options */}
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#12956B" />
+            ) : (
+              <ScrollView showsVerticalScrollIndicator={true}>
+                <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-3 p-5">
+                  {[...filteredSports]
+                    .sort((a, b) => {
+                      const aSelected = finalSelectedSports.some(
+                        (s) => s.sportsName === a.name
+                      );
+                      const bSelected = finalSelectedSports.some(
+                        (s) => s.sportsName === b.name
+                      );
+                      return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
+                    })
+                    .map((sport) => {
+                      const keyDetails = sport.defaultProperties.reduce(
+                        (acc: any, dp) => {
+                          acc[dp.name] = "";
+                          return acc;
+                        },
+                        {}
+                      );
 
-              const isSelected = finalSelectedSports.some(s => s.sportsName === sport.name);
+                      const isSelected = finalSelectedSports.some(
+                        (s) => s.sportsName === sport.name
+                      );
 
-              return (
-                <TouchableOpacity
-                  onPress={() =>
-                    handleOpenEditModal(
-                      sport._id,
-                      sport.name,
-                      keyDetails,
-                      sport.logo
-                    )
-                  }
-                  activeOpacity={0.7}
-                  key={sport._id}
-                  style={{
-                    height: 100,
-                    width: 110,
-                    borderWidth: 0.3,
-                    borderColor: "#606060",
-                    borderRadius: 7,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 10,
-                    backgroundColor: isSelected ? "#12956B" : "transparent",
-                  }}
-                  className="w-[30%]"
-                >
-                  <Image
-                    source={{ uri: sport.logo }}
-                    style={{ width: 28, height: 28 }}
+                      return (
+                        <TouchableOpacity
+                          onPress={() =>
+                            handleOpenEditModal(
+                              sport._id,
+                              sport.name,
+                              keyDetails,
+                              sport.logo
+                            )
+                          }
+                          activeOpacity={0.7}
+                          key={sport._id}
+                          style={{
+                            height: 100,
+                            width: 110,
+                            borderWidth: 0.3,
+                            borderColor: "#606060",
+                            borderRadius: 7,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: 10,
+                            backgroundColor: isSelected
+                              ? "#12956B"
+                              : "transparent",
+                          }}
+                          className="w-[30%]"
+                        >
+                          <Image
+                            source={{ uri: sport.logo }}
+                            style={{ width: 28, height: 28 }}
+                          />
+                          <TextScallingFalse
+                            style={{
+                              color: "white",
+                              fontSize: 13,
+                              fontWeight: "500",
+                            }}
+                          >
+                            {sport.name}
+                          </TextScallingFalse>
+                        </TouchableOpacity>
+                      );
+                    })}
+                </View>
+              </ScrollView>
+            )}
+          </PageThemeView>
+        </Modal>
+
+        {/* About Modal */}
+        <Modal
+          visible={isAboutModalOpen}
+          transparent
+          onRequestClose={handleCloseAboutModal}
+        >
+          <View>
+            <View className="bg-black h-full">
+              {/* Modal Header */}
+              <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
+                <View className="flex-row items-center">
+                  <TouchableOpacity onPress={handleCloseAboutModal}>
+                    <AntDesign name="arrowleft" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={handleSaveAbout}>
+                  <MaterialIcons
+                    name="done"
+                    size={28}
+                    color={initialAbout === user?.about ? "grey" : "#12956B"}
                   />
-                  <TextScallingFalse
-                    style={{
-                      color: "white",
-                      fontSize: 13,
-                      fontWeight: "500",
-                    }}
-                  >
-                    {sport.name}
-                  </TextScallingFalse>
                 </TouchableOpacity>
-              );
-            })}
-        </View>
-      </ScrollView>
+              </View>
+              {/* Modal Content */}
+              <View className="p-5">
+                <Text className="text-white font-bold text-5xl">
+                  Edit About
+                </Text>
+                <Text className="text-gray-500 text-base mb-5 mt-1.5">
+                  Use this space to showcase who you are as a professional
+                  athlete. You can share your sports background, achievements,
+                  and the essence of your athletic journey.
+                </Text>
+                <View className="border border-white h-72 rounded-sm justify-start">
+                  <TextInput
+                    value={initialAbout}
+                    onChangeText={setAbout}
+                    placeholder="Write about yourself..."
+                    placeholderTextColor="gray"
+                    multiline
+                    numberOfLines={15}
+                    className="text-white text-xl flex-1 p-3"
+                    style={{ textAlignVertical: "top" }}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
-    )}
-  </PageThemeView>
-</Modal>
-
-{/* About Modal */ }
-<Modal
-  visible={isAboutModalOpen}
-  transparent
-  onRequestClose={handleCloseAboutModal}
->
-  <View>
-    <View className="bg-black h-full">
-      {/* Modal Header */}
-      <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
-        <View className="flex-row items-center">
-          <TouchableOpacity onPress={handleCloseAboutModal}>
-            <AntDesign name="arrowleft" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity onPress={handleSaveAbout}>
-          <MaterialIcons
-            name="done"
-            size={28}
-            color={initialAbout === user?.about ? "grey" : "#12956B"}
-          />
-        </TouchableOpacity>
-      </View>
-      {/* Modal Content */}
-      <View className="p-5">
-        <Text className="text-white font-bold text-5xl">
-          Edit About
-        </Text>
-        <Text className="text-gray-500 text-base mb-5 mt-1.5">
-          Use this space to showcase who you are as a professional
-          athlete. You can share your sports background, achievements,
-          and the essence of your athletic journey.
-        </Text>
-        <View className="border border-white h-72 rounded-sm justify-start">
-          <TextInput
-            value={initialAbout}
-            onChangeText={setAbout}
-            placeholder="Write about yourself..."
-            placeholderTextColor="gray"
-            multiline
-            numberOfLines={15}
-            className="text-white text-xl flex-1 p-3"
-            style={{ textAlignVertical: "top" }}
-          />
-        </View>
-      </View>
-    </View>
-  </View>
-</Modal>
-      </PageThemeView >
-    </SafeAreaView >
+        {/* {isUserInfoModalOpen && (
+          <UserInfoModal isUserInfoModalOpen={isUserInfoModalOpen} />
+        )} */}
+      </PageThemeView>
+    </SafeAreaView>
   );
 }
 

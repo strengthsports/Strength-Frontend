@@ -1,42 +1,56 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, TouchableOpacity, TextInput } from "react-native";
-import {
-  MaterialCommunityIcons,
-  Feather,
-  FontAwesome5,
-} from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
-import { FilterModal } from "../explorePage/filter";
 import SearchIcon from "../SvgIcons/Common_Icons/SearchIcon";
+import { Colors } from "~/constants/Colors";
 
-const SearchBar = ({ searchText }: { searchText?: string }) => {
+type SearchBarProps = {
+  mode?: "show" | "search";
+  searchText?: string;
+  placeholder?: string;
+  onChangeSearchText?: (text: string) => void;
+};
+
+const SearchBar = ({
+  mode = "show",
+  searchText,
+  placeholder,
+  onChangeSearchText,
+}: SearchBarProps) => {
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const applyFilters = () => {
-    // Apply filter logic here
-    setModalVisible(false);
-  };
 
   return (
     <View className="flex-row my-3 px-5">
-      <TouchableOpacity
-        activeOpacity={0.8}
-        className="flex-row bg-[#1E1E1E] rounded-3xl px-4 py-[10.2px] items-center flex-1"
-        onPress={() => router.push("/(app)/searchPage")}
-      >
-        {/* <Feather name="search" size={22} color="grey" /> */}
-        <SearchIcon />
-        <TextScallingFalse
-          className={`text-3xl pl-3 ${
-            searchText ? "text-white" : "text-[#808080]"
-          }`}
-          aria-disabled={true}
+      {mode === "show" ? (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          className="flex-row bg-[#1E1E1E] rounded-3xl px-4 py-[10.2px] items-center flex-1"
+          onPress={() => router.push("/(app)/searchPage")}
         >
-          {searchText || "Search..."}
-        </TextScallingFalse>
-      </TouchableOpacity>
+          <SearchIcon />
+          <TextScallingFalse
+            className={`text-3xl pl-3 ${
+              searchText ? "text-white" : "text-[#808080]"
+            }`}
+            aria-disabled={true}
+          >
+            {searchText || placeholder || "Search..."}
+          </TextScallingFalse>
+        </TouchableOpacity>
+      ) : (
+        <View className="flex-row bg-[#1E1E1E] rounded-3xl px-4 items-center flex-1">
+          <SearchIcon />
+          <TextInput
+            value={searchText}
+            onChangeText={onChangeSearchText}
+            placeholder={placeholder || "Search..."}
+            placeholderTextColor="#808080"
+            className="text-3xl pl-3 text-white flex-1"
+            cursorColor={Colors.themeColor}
+          />
+        </View>
+      )}
     </View>
   );
 };

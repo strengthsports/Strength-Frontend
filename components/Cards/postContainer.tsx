@@ -1,13 +1,11 @@
 import React, { useState, useRef, forwardRef, useMemo, memo } from "react";
 import {
   View,
-  Text,
   Animated,
   TouchableOpacity,
   NativeSyntheticEvent,
   TextLayoutEventData,
-  Dimensions,
-  BackHandler,
+  StyleSheet,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -36,6 +34,7 @@ import StickyInput from "../ui/StickyInput";
 import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
+import CustomVideoPlayer from "../PostContainer/VideoPlayer";
 
 type TaggedUser = {
   _id: string;
@@ -52,10 +51,14 @@ interface PostContainerProps {
   isFeedPage?: boolean;
   isMyActivity?: boolean;
   handleBottomSheet?: (state: boolean) => void;
+  isVideo?: boolean;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
-  ({ item, highlightedHashtag, isFeedPage, handleBottomSheet }, ref) => {
+  (
+    { item, highlightedHashtag, isFeedPage, handleBottomSheet, isVideo },
+    ref
+  ) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const { user } = useSelector((state: RootState) => state?.profile);
@@ -79,6 +82,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       commentId: string;
       name: string;
     } | null>(null);
+
     const progress = useRef(new Animated.Value(0)).current;
 
     const { refetch: refetchComments } = useFetchCommentsQuery({
@@ -426,7 +430,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               )}
             </View>
 
-            {item.isPoll && (
+            {!isVideo && item.isPoll && (
               <PollsContainer
                 options={item.poll.options}
                 mode="view"
@@ -438,8 +442,11 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             )}
           </View>
 
-          {/* Image Swiper */}
-          {item.assets &&
+          {/* Assets section */}
+          {item.isVideo ? (
+            <CustomVideoPlayer videoUri={item.assets[0].url} />
+          ) : (
+            item.assets &&
             item.assets.length > 0 &&
             (() => {
               const imageUrls = item.assets.map((asset) => asset.url);
@@ -454,7 +461,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   onDoubleTap={handleDoubleTap}
                 />
               );
-            })()}
+            })()
+          )}
 
           {/* Like Animation */}
           <Animated.View
@@ -475,13 +483,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
           {/* Interaction Bar */}
           <InteractionBar
-            postId={item._id}
+            post={item}
             onPressLike={handleLike}
             onPressComment={() => setIsCommentCountModalVisible(true)}
-            isLiked={item.isLiked}
-            likesCount={item.likesCount}
-            commentsCount={item.commentsCount}
-            assetsCount={item.assets?.length || 0}
             activeSlideIndex={activeIndex}
             isPostContainer={true}
             isFeedPage={isFeedPage}
@@ -505,3 +509,5 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 );
 
 export default PostContainer;
+
+const styles = StyleSheet.create({});

@@ -6,7 +6,6 @@ import {
   ScrollView,
   Dimensions,
   Text,
-  useWindowDimensions,
 } from "react-native";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
@@ -20,12 +19,15 @@ import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { TeamEntry } from "~/app/(app)/(tabs)/profile";
+import TeamEntry from "~/components/profilePage/TeamEntry";
 import { AppDispatch, RootState } from "~/reduxStore";
 import {
   fetchUserPosts,
   selectPostsByUserId,
 } from "~/reduxStore/slices/feed/feedSlice";
+import MembersSection from "~/components/profilePage/MembersSection";
+import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
+import { Member } from "~/types/user";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -38,6 +40,13 @@ const Overview = () => {
       : null;
   }, [params.userId]);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const { profileData, isLoading, error } = useContext(ProfileContext);
+
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
@@ -45,6 +54,11 @@ const Overview = () => {
   const postsWithImages = useMemo(
     () => userPosts?.filter((post) => post.assets.length > 0) || [],
     [userPosts]
+  );
+
+  // Get associates list
+  const associates = useSelector(
+    (state: RootState) => (state.profile.user?.associates as Member[]) || []
   );
 
   // Fetch initial posts
@@ -59,22 +73,31 @@ const Overview = () => {
     );
   }, [fetchedUserId, dispatch]);
 
-  const { width: screenWidth2 } = useWindowDimensions();
-  const scaleFactor = screenWidth2 / 410;
+  // Fetch page associates
+  useEffect(() => {
+    dispatch(
+      fetchAssociates({
+        pageId: fetchedUserId.id,
+      })
+    );
+  }, [fetchedUserId, dispatch]);
 
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const { profileData, isLoading, error } = useContext(ProfileContext);
-  console.log("User data on Overview page : ", profileData);
-
+  // Valid Sports data
   const validSports =
     profileData?.selectedSports?.filter((s: any) => s.sport) || [];
   const [activeSubSection, setActiveSubSection] = useState(
     validSports[0]?.sport.name || null
+  );
+
+  // Memoized athlete and coach data
+  const athletes = useMemo(
+    () => associates.filter((member) => member.role === "Athlete"),
+    [associates]
+  );
+
+  const coaches = useMemo(
+    () => associates.filter((member) => member.role === "Coach"),
+    [associates]
   );
 
   if (error) {
@@ -298,6 +321,22 @@ const Overview = () => {
           posts={postsWithImages}
           onSeeAllPress={() => {}}
           scaleFactor={scaleFactor}
+        />
+      )}
+
+      {/* members */}
+      {profileData?.type === "Page" && coaches.length > 0 && (
+        <MembersSection
+          members={coaches}
+          sectionHeader="Coaches"
+          moreText="Show all coaches"
+        />
+      )}
+      {profileData?.type === "Page" && athletes.length > 0 && (
+        <MembersSection
+          members={athletes}
+          sectionHeader="Athletes"
+          moreText="Show all athletes"
         />
       )}
 

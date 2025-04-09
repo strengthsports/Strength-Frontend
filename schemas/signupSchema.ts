@@ -13,11 +13,23 @@ export const signupSchema = z.object({
     .optional()
     .refine(
       (date) => {
-        if (date === "") return true; // Allow empty value
-        const parsedDate = new Date(date);
-        return !isNaN(parsedDate.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(date); // Check valid date and 'YYYY-MM-DD' format
+        if (date === "") return true;
+
+        const regex = /^\d{2}-\d{2}-\d{4}$/;
+        if (!regex.test(date)) return false;
+
+        const [day, month, year] = date.split("-").map(Number);
+        const parsedDate = new Date(year, month - 1, day);
+
+        // Validate that parsed date components match exactly
+        return (
+          !isNaN(parsedDate.getTime()) &&
+          parsedDate.getDate() === day &&
+          parsedDate.getMonth() === month - 1 &&
+          parsedDate.getFullYear() === year
+        );
       },
-      { message: "Invalid date format. Use 'YYYY-MM-DD'." }
+      { message: "Invalid date format. Use 'DD-MM-YYYY'." }
     ),
 
   gender: z.union([z.enum(["male", "female"]), z.literal("")]).optional(),

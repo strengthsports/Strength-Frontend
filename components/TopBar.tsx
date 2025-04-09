@@ -27,7 +27,7 @@ function TopBar({
             router.push(backRoute);
           }
         }}
-        className="basis-[15%] py-4"
+        className="basis-[15%]"
         activeOpacity={0.5}
       >
         <AntDesign name="arrowleft" size={24} color="white" />

@@ -39,6 +39,7 @@ import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
 import { showFeedback } from "~/utils/feedbackToast";
 import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
+import FeatureUnderDev from "./FeatureUnderDev";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -127,6 +128,8 @@ export default function AddPostContainer({
   const [inputHeight, setInputHeight] = useState(40);
   const [showPollInput, setShowPollInput] = useState(false);
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+
 
   // Improved regex pattern for tag detection
   const parseTags = (text: string) => {
@@ -329,7 +332,7 @@ export default function AddPostContainer({
   const handleDiscard = () => {
     setAlertModalOpen(false);
     setAddPostContainerOpen(false),
-    console.log("Discard pressed. isAlertModalOpen will become false.");
+      console.log("Discard pressed. isAlertModalOpen will become false.");
   };
 
   return (
@@ -339,206 +342,213 @@ export default function AddPostContainer({
       onRequestClose={handleCloseAddPostContainer}
       transparent={true}
     >
-        <PageThemeView>
-          <View className="h-full">
-            {/* Header */}
-            <View className="flex flex-row items-center justify-between p-4">
-              <AddPostHeader onBackPress={handleCloseAddPostContainer} />
-              <TouchableOpacity
-                className={`px-6 py-1 rounded-full ${
-                  isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+      <PageThemeView>
+        <View className="h-full">
+          {/* Header */}
+          <View className="flex flex-row items-center justify-between p-4">
+            <AddPostHeader onBackPress={handleCloseAddPostContainer} />
+            <TouchableOpacity
+              className={`px-6 py-1 rounded-full ${isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
                 }`}
-                onPress={handlePostSubmit}
-                disabled={!isPostButtonEnabled}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color={"white"} />
-                ) : (
-                  <TextScallingFalse
-                    className={`${
-                      isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                    } text-3xl font-semibold`}
-                  >
-                    Post
-                  </TextScallingFalse>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              className="px-0"
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              removeClippedSubviews={true}
+              onPress={handlePostSubmit}
+              disabled={!isPostButtonEnabled}
             >
-              <View style={{ minHeight: 100 }}>
-                {/* Overlay text with highlighting */}
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    pointerEvents: "none",
-                    paddingHorizontal: 16,
-                    paddingTop: Platform.OS === "ios" ? 8 : 4,
-                  }}
+              {isLoading ? (
+                <ActivityIndicator color={"white"} />
+              ) : (
+                <TextScallingFalse
+                  className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                    } text-3xl font-semibold`}
                 >
-                  <TextScallingFalse
-                    style={{
-                      fontSize: 16,
-                      color: "transparent",
-                      lineHeight: 24,
-                      // Match TextInput's text alignment behavior
-                      textAlignVertical: "top",
-                      includeFontPadding: false,
-                    }}
-                  >
-                    {parseTags(postText)}
-                  </TextScallingFalse>
-                </View>
-
-                {/* Actual text input */}
-                <TextInput
-                  ref={inputRef}
-                  multiline
-                  autoFocus
-                  placeholder={placeholderText}
-                  placeholderTextColor="grey"
-                  value={postText}
-                  onChangeText={setPostText}
-                  onContentSizeChange={(e) => {
-                    setInputHeight(e.nativeEvent.contentSize.height);
-                  }}
-                  style={{
-                    fontSize: 16,
-                    color: "white",
-                    paddingHorizontal: 16,
-                    height: Math.max(40, inputHeight),
-                    opacity: 0.99, // Needs to be almost opaque to hide overlay
-                    lineHeight: 24,
-                    textAlignVertical: "top",
-                  }}
-                  textBreakStrategy="highQuality"
-                  keyboardAppearance="dark"
-                />
-              </View>
-
-              {/* Only render PollsContainer when polls is selected */}
-              {showPollInput && (
-                <PollsContainer
-                  onClose={handleClosePoll}
-                  mode="create"
-                  options={newPollOptions}
-                  onOptionsChange={handleOptionsChange}
-                />
-              )}
-
-              {/* Only render CustomImageSlider when there are images */}
-              {pickedImageUris.length > 0 && (
-                <CustomImageSlider
-                  images={pickedImageUris}
-                  aspectRatio={selectedAspectRatio}
-                  onRemoveImage={removeImage}
-                  setIndex={handleSetActiveIndex}
-                />
-              )}
-
-              {/* Pagination */}
-              {pickedImageUris.length > 1 && (
-                <View className="flex-row justify-center mt-2">
-                  {Array.from({ length: pickedImageUris.length }).map(
-                    (_, i) => (
-                      <View
-                        key={`dot-${i}`}
-                        className={
-                          i === activeIndex
-                            ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                            : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-                        }
-                      />
-                    )
-                  )}
-                </View>
-              )}
-            </ScrollView>
-
-            {/* Footer */}
-            <View className="flex flex-row justify-between items-center p-5">
-              <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
-                <MaterialCommunityIcons
-                  name="earth"
-                  size={20}
-                  color={Colors.themeColor}
-                />
-                <TextScallingFalse className="text-theme text-3xl">
-                  Public
+                  Post
                 </TextScallingFalse>
-                <MaterialCommunityIcons
-                  name="menu-down"
-                  size={24}
-                  color={Colors.themeColor}
-                />
-              </TouchableOpacity>
-
-              <View className="flex flex-row justify-between items-center gap-2">
-                <TouchableOpacity
-                  activeOpacity={0.5}
-                  className="p-[5px] w-[35px]"
-                >
-                  <TagsIcon />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handlePickImageOrAddMore}
-                  disabled={showPollInput}
-                >
-                  <AddImageIcon />
-                  {pickedImageUris.length > 0 && (
-                    <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
-                      <FontAwesome6 name="add" size={12} color="#12956B" />
-                    </View>
-                  )}
-                </TouchableOpacity>
-                <Modal
-                  visible={isImageRatioModalVisible}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={closeRatioModal}
-                >
-                  <TouchableOpacity
-                    className="flex-1 justify-end bg-black/50"
-                    activeOpacity={1}
-                    onPress={closeRatioModal}
-                  >
-                    <ImageRatioModal pickImage={selectFirstImage} />
-                  </TouchableOpacity>
-                </Modal>
-                <TouchableOpacity
-                  onPress={() => setShowPollInput(true)}
-                  className="p-[5px]"
-                  activeOpacity={0.5}
-                >
-                  <PollsIcon />
-                </TouchableOpacity>
-              </View>
-            </View>
+              )}
+            </TouchableOpacity>
           </View>
 
-      {/* alert modal */}
-      {isAlertModalOpen && (
-      <AlertModal
-        isVisible={isAlertModalOpen}
-        alertConfig={{
-          title: "Discard Post ?",
-          message: "All your changes will be deleted",
-          cancelMessage: "Cancel",
-          confirmMessage: "Discard",
-          confirmAction: () => setAlertModalOpen(false), 
-          discardAction: handleDiscard,
-        }}
-      />
-      )}
-    </PageThemeView>
+          <ScrollView
+            className="px-0"
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={true}
+          >
+            <View style={{ minHeight: 100 }}>
+              {/* Overlay text with highlighting */}
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  pointerEvents: "none",
+                  paddingHorizontal: 16,
+                  paddingTop: Platform.OS === "ios" ? 8 : 4,
+                }}
+              >
+                <TextScallingFalse
+                  style={{
+                    fontSize: 16,
+                    color: "transparent",
+                    lineHeight: 24,
+                    // Match TextInput's text alignment behavior
+                    textAlignVertical: "top",
+                    includeFontPadding: false,
+                  }}
+                >
+                  {parseTags(postText)}
+                </TextScallingFalse>
+              </View>
+
+              {/* Actual text input */}
+              <TextInput
+                ref={inputRef}
+                multiline
+                autoFocus
+                placeholder={placeholderText}
+                placeholderTextColor="grey"
+                value={postText}
+                onChangeText={setPostText}
+                onContentSizeChange={(e) => {
+                  setInputHeight(e.nativeEvent.contentSize.height);
+                }}
+                style={{
+                  fontSize: 16,
+                  color: "white",
+                  paddingHorizontal: 16,
+                  height: Math.max(40, inputHeight),
+                  opacity: 0.99, // Needs to be almost opaque to hide overlay
+                  lineHeight: 24,
+                  textAlignVertical: "top",
+                }}
+                textBreakStrategy="highQuality"
+                keyboardAppearance="dark"
+              />
+            </View>
+
+            {/* Only render PollsContainer when polls is selected */}
+            {showPollInput && (
+              <PollsContainer
+                onClose={handleClosePoll}
+                mode="create"
+                options={newPollOptions}
+                onOptionsChange={handleOptionsChange}
+              />
+            )}
+
+            {/* Only render CustomImageSlider when there are images */}
+            {pickedImageUris.length > 0 && (
+              <CustomImageSlider
+                images={pickedImageUris}
+                aspectRatio={selectedAspectRatio}
+                onRemoveImage={removeImage}
+                setIndex={handleSetActiveIndex}
+              />
+            )}
+
+            {/* Pagination */}
+            {pickedImageUris.length > 1 && (
+              <View className="flex-row justify-center mt-2">
+                {Array.from({ length: pickedImageUris.length }).map(
+                  (_, i) => (
+                    <View
+                      key={`dot-${i}`}
+                      className={
+                        i === activeIndex
+                          ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
+                          : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
+                      }
+                    />
+                  )
+                )}
+              </View>
+            )}
+
+          </ScrollView>
+
+          {/* only render when any feature which is under development is clicked */}
+          {showFeatureModal && (
+            <FeatureUnderDev
+              isVisible={showFeatureModal}
+              onClose={() => setShowFeatureModal(false)}
+            />
+          )}
+
+          {/* Footer */}
+          <View className="flex flex-row justify-between items-center p-5">
+            <TouchableOpacity onPress={() => setShowFeatureModal(true)} className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+              <MaterialCommunityIcons
+                name="earth"
+                size={20}
+                color={Colors.themeColor}
+              />
+              <TextScallingFalse className="text-theme text-3xl">
+                Public
+              </TextScallingFalse>
+              <MaterialCommunityIcons
+                name="menu-down"
+                size={24}
+                color={Colors.themeColor}
+              />
+            </TouchableOpacity>
+
+            <View className="flex flex-row justify-between items-center gap-2">
+              <TouchableOpacity
+                activeOpacity={0.5}
+                className="p-[5px] w-[35px]"
+              >
+                <TagsIcon />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handlePickImageOrAddMore}
+                disabled={showPollInput}
+              >
+                <AddImageIcon />
+                {pickedImageUris.length > 0 && (
+                  <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
+                    <FontAwesome6 name="add" size={12} color="#12956B" />
+                  </View>
+                )}
+              </TouchableOpacity>
+              <Modal
+                visible={isImageRatioModalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={closeRatioModal}
+              >
+                <TouchableOpacity
+                  className="flex-1 justify-end bg-black/50"
+                  activeOpacity={1}
+                  onPress={closeRatioModal}
+                >
+                  <ImageRatioModal pickImage={selectFirstImage} />
+                </TouchableOpacity>
+              </Modal>
+              <TouchableOpacity
+                onPress={() => setShowPollInput(true)}
+                className="p-[5px]"
+                activeOpacity={0.5}
+              >
+                <PollsIcon />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* alert modal */}
+        {isAlertModalOpen && (
+          <AlertModal
+            isVisible={isAlertModalOpen}
+            alertConfig={{
+              title: "Discard Post ?",
+              message: "All your changes will be deleted",
+              cancelMessage: "Cancel",
+              confirmMessage: "Discard",
+              confirmAction: () => setAlertModalOpen(false),
+              discardAction: handleDiscard,
+            }}
+          />
+        )}
+      </PageThemeView>
     </Modal>
   );
 }

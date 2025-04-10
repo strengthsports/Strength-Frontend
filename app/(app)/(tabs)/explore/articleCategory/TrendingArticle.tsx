@@ -9,8 +9,8 @@ import ArticleContent from "~/components/explorePage/article/ArticleContent";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
 const TrendingArticle = () => {
+  const { data: articles, error, isLoading } = useGetSportArticleQuery();
   const renderSwiper = () => {
-    const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
       return (
         <TextScallingFalse className="text-white self-center text-center pr-7">
@@ -30,7 +30,6 @@ const TrendingArticle = () => {
   };
 
   const renderArticles = () => {
-    const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
       return (
         <TextScallingFalse className="text-white self-center text-center pr-7">

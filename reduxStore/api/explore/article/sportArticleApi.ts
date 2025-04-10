@@ -3,7 +3,6 @@ import { articleApi } from "./articleApi";
 interface Article {
   _id: string;
   title: string;
-  content: string;
   isTrending: boolean;
   sportsName: string;
   imageUrl: string;

@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { View, ActivityIndicator, Image } from "react-native";
+import { View, ActivityIndicator, Image, Pressable } from "react-native";
 // import { Image } from "expo-image";
 import Swiper from "react-native-swiper";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "~/constants/Colors"; // Ensure this path is correct
 import TextScallingFalse from "@/components/CentralText"; // Ensure this path is correct
+import { useRouter } from "expo-router";
 import {
   ExploreImageBanner,
   hashtagData,
@@ -18,7 +19,6 @@ interface SwipperSlide {
   sportsName: string;
   isTrending: boolean;
   createdAt: string;
-  content: string;
   date?: string; // Add date & time fields
   time?: string;
 }
@@ -67,6 +67,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
   //     });
   //   }
   // }, []);
+  const router = useRouter();
 
   const formattedData = useMemo(
     () =>
@@ -101,7 +102,18 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
     >
       {formattedData.length > 0 ? (
         formattedData.map((slide) => (
-          <View key={slide._id} className="flex-1">
+          <Pressable
+            onPress={() => {
+              router.push({
+                pathname: `/(app)/(tabs)/articlePage`,
+                params: {
+                  id: slide._id,
+                },
+              });
+            }}
+            key={slide._id}
+            className="flex-1"
+          >
             <Image
               source={{ uri: slide.imageUrl }}
               className="w-full h-72"
@@ -129,7 +141,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 </TextScallingFalse>
               </View>
             </View>
-          </View>
+          </Pressable>
         ))
       ) : (
         <View className="h-full flex justify-center self-center items-center">

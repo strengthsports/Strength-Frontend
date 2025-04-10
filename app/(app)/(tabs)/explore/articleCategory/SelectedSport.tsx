@@ -11,12 +11,12 @@ interface SelectedSportProps {
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
+  const {
+    data: articles,
+    error,
+    isLoading,
+  } = useGetSportArticleQuery(sportsName);
   const renderSwiper = () => {
-    const {
-      data: articles,
-      error,
-      isLoading,
-    } = useGetSportArticleQuery(sportsName);
     if (isLoading) {
       return (
         <TextScallingFalse className="text-white self-center text-center pr-7">
@@ -36,11 +36,6 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   };
 
   const renderArticles = () => {
-    const {
-      data: articles,
-      error,
-      isLoading,
-    } = useGetSportArticleQuery(sportsName);
     if (isLoading) {
       return (
         <TextScallingFalse className="text-white self-center text-center pr-7">

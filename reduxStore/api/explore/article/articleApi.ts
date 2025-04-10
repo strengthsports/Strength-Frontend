@@ -9,6 +9,6 @@ export const articleApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["SportArticle"],
+  tagTypes: ["SportArticle", "SportArticleById"],
   endpoints: () => ({}),
 });

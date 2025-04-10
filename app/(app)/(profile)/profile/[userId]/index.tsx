@@ -310,7 +310,7 @@ const Overview = () => {
               </TextScallingFalse>
               <TouchableOpacity onPress={handleToggle}>
                 <TextScallingFalse style={styles.seeMore}>
-                  {profileData?.about.length > 140 &&
+                  {profileData?.about?.length > 140 &&
                     (isExpanded ? "see less" : "see more")}
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -320,7 +320,7 @@ const Overview = () => {
       )}
 
       {/* recent posts */}
-      {postsWithImages.length > 0 && (
+      {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
           onSeeAllPress={() => {}}
@@ -329,14 +329,14 @@ const Overview = () => {
       )}
 
       {/* members */}
-      {profileData?.type === "Page" && coaches.length > 0 && (
+      {profileData?.type === "Page" && coaches?.length > 0 && (
         <MembersSection
           members={coaches}
           sectionHeader="Coaches"
           moreText="Show all coaches"
         />
       )}
-      {profileData?.type === "Page" && athletes.length > 0 && (
+      {profileData?.type === "Page" && athletes?.length > 0 && (
         <MembersSection
           members={athletes}
           sectionHeader="Athletes"

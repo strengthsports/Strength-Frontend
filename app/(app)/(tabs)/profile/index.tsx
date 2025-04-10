@@ -54,7 +54,7 @@ const Overview = () => {
     selectPostsByUserId(state.feed.posts as any, user?._id)
   );
   const postsWithImages = useMemo(
-    () => userPosts?.filter((post) => post.assets.length > 0) || [],
+    () => userPosts?.filter((post) => post.assets?.length > 0) || [],
     [userPosts]
   );
 
@@ -323,7 +323,7 @@ const Overview = () => {
       )}
 
       {/* members */}
-      {user?.type === "Page" && coaches.length > 0 && (
+      {user?.type === "Page" && coaches?.length > 0 && (
         <MembersSection
           members={coaches}
           sectionHeader="Coaches"
@@ -331,7 +331,7 @@ const Overview = () => {
           isOwnProfile={true}
         />
       )}
-      {user?.type === "Page" && athletes.length > 0 && (
+      {user?.type === "Page" && athletes?.length > 0 && (
         <MembersSection
           members={athletes}
           sectionHeader="Athletes"
@@ -340,7 +340,7 @@ const Overview = () => {
         />
       )}
 
-      {postsWithImages.length === 0 && <AddPostFTU />}
+      {postsWithImages?.length === 0 && <AddPostFTU />}
     </ScrollView>
   );
 };

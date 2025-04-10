@@ -41,6 +41,7 @@ import { showFeedback } from "~/utils/feedbackToast";
 import Svg, { Path } from "react-native-svg";
 import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
 import FeatureUnderDev from "./FeatureUnderDev";
+import ClipsIcon from "../SvgIcons/addpost/ClipsIcon";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -479,7 +480,7 @@ export default function AddPostContainer({
 
           {/* Footer */}
           <View className="flex flex-row justify-between items-center p-3">
-            <TouchableOpacity activeOpacity={0.7} onPress={() => setShowFeatureModal(true)} className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setShowFeatureModal(true)} className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-lg">
               <MaterialCommunityIcons
                 name="earth"
                 size={20}
@@ -498,7 +499,7 @@ export default function AddPostContainer({
             <View className="flex flex-row justify-between items-center gap-2">
               <TouchableOpacity
                 activeOpacity={0.7}
-                className="p-[5px] w-[35px]"
+                className="p-[5px] w-[30px]"
               >
                 <TagsIcon />
               </TouchableOpacity>
@@ -511,11 +512,7 @@ export default function AddPostContainer({
                 }}
                 disabled={showPollInput || isTypeVideo}
               >
-                <MaterialCommunityIcons
-                  name="play-circle-outline"
-                  size={25}
-                  color={showPollInput ? "#737373" : Colors.themeColor}
-                />
+                <ClipsIcon/>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handlePickImageOrAddMore}

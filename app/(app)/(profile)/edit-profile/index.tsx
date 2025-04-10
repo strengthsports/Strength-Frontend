@@ -36,6 +36,7 @@ import { ActivityIndicator } from "react-native";
 import useGetAddress from "~/hooks/useGetAddress";
 import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
+import AlertModal from "~/components/modals/AlertModal";
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -1085,6 +1086,29 @@ const EditProfile = () => {
             )
           )}
 
+          {/* Alert Modal */}
+          {isAlertModalSet && (
+            <AlertModal
+              isVisible={isAlertModalSet}
+              alertConfig={{
+                title: "Discard changes?",
+                message: "If you go back now, you will lose your changes.",
+                confirmAction: () => router.push("/profile"),
+                discardAction: () => setAlertModal(false),
+                confirmMessage: "Discard",
+                cancelMessage: "Continue",
+                discardButtonColor: {
+                  bg: "transparent",
+                  text: "#FF0000",
+                },
+                cancelButtonColor: {
+                  bg: "transparent",
+                  text: "#808080",
+                },
+              }}
+            />
+          )}
+
           {/* Profile pic, cover pic modal */}
           <Modal
             visible={picModalVisible.coverPic}
@@ -1233,42 +1257,6 @@ const EditProfile = () => {
             </TouchableOpacity>
           </Modal>
         </ScrollView>
-
-        {/* Alert modal */}
-        <Modal visible={isAlertModalSet} transparent animationType="fade">
-          <View style={styles.AlertModalView}>
-            <View
-              style={styles.AlertModalContainer}
-              className="h-full flex items-center justify-center gap-y-3 pt-5"
-            >
-              <TextScallingFalse className="text-[20px] font-semibold">
-                Discard changes?
-              </TextScallingFalse>
-              <TextScallingFalse className="text-[16px] text-center">
-                If you go back now, you will lose your changes.
-              </TextScallingFalse>
-              <View className="w-full">
-                <TouchableOpacity
-                  onPress={() => router.push("/profile")}
-                  className="w-full py-2 items-center border-t border-[#8080808b]"
-                >
-                  <TextScallingFalse className="font-semibold text-4xl text-red-600">
-                    Discard changes
-                  </TextScallingFalse>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => setAlertModal(false)}
-                  className="w-full py-2 items-center border-t border-[#8080808b]"
-                >
-                  <TextScallingFalse className="font-semibold text-4xl text-[#808080]">
-                    Continue editing
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
 
         {/* Edit Modal */}
         <Modal

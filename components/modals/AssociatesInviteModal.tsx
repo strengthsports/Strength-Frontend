@@ -29,11 +29,12 @@ const AssociatesInviteModal = ({ visible, onClose }: any) => {
               {role === "Coach" ? `es` : `s`}
             </TextScallingFalse>
             <TouchableOpacity
-              onPress={() =>
+              onPress={() => {
+                onClose();
                 router.push(
                   `/(app)/(profile)/edit-overview/(modal)/invite-associates?searchRole=${role}`
-                )
-              }
+                );
+              }}
             >
               <RightArrow />
             </TouchableOpacity>

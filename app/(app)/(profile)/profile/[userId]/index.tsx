@@ -28,6 +28,7 @@ import {
 import MembersSection from "~/components/profilePage/MembersSection";
 import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
 import { Member } from "~/types/user";
+import { useGetPageMembersQuery } from "~/reduxStore/api/profile/profileApi.profile";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -57,9 +58,9 @@ const Overview = () => {
   );
 
   // Get associates list
-  const associates = useSelector(
-    (state: RootState) => (state.profile.user?.associates as Member[]) || []
-  );
+  // const associates = useSelector(
+  //   (state: RootState) => (state.profile.user?.associates as Member[]) || []
+  // );
 
   // Fetch initial posts
   useEffect(() => {
@@ -73,14 +74,17 @@ const Overview = () => {
     );
   }, [fetchedUserId, dispatch]);
 
-  // Fetch page associates
-  useEffect(() => {
-    dispatch(
-      fetchAssociates({
-        pageId: fetchedUserId.id,
-      })
-    );
-  }, [fetchedUserId, dispatch]);
+  // // Fetch page associates
+  const { data: associates } = useGetPageMembersQuery({
+    pageId: fetchedUserId.id,
+  });
+  // useEffect(() => {
+  //   dispatch(
+  //     fetchAssociates({
+  //       pageId: fetchedUserId.id,
+  //     })
+  //   );
+  // }, [fetchedUserId, dispatch]);
 
   // Valid Sports data
   const validSports =
@@ -91,12 +95,12 @@ const Overview = () => {
 
   // Memoized athlete and coach data
   const athletes = useMemo(
-    () => associates.filter((member) => member.role === "Athlete"),
+    () => associates?.filter((member: Member) => member.role === "Athlete"),
     [associates]
   );
 
   const coaches = useMemo(
-    () => associates.filter((member) => member.role === "Coach"),
+    () => associates?.filter((member: Member) => member.role === "Coach"),
     [associates]
   );
 
@@ -306,7 +310,7 @@ const Overview = () => {
               </TextScallingFalse>
               <TouchableOpacity onPress={handleToggle}>
                 <TextScallingFalse style={styles.seeMore}>
-                  {profileData?.about.length > 140 &&
+                  {profileData?.about?.length > 140 &&
                     (isExpanded ? "see less" : "see more")}
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -316,7 +320,7 @@ const Overview = () => {
       )}
 
       {/* recent posts */}
-      {postsWithImages.length > 0 && (
+      {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
           onSeeAllPress={() => {}}
@@ -325,14 +329,14 @@ const Overview = () => {
       )}
 
       {/* members */}
-      {profileData?.type === "Page" && coaches.length > 0 && (
+      {profileData?.type === "Page" && coaches?.length > 0 && (
         <MembersSection
           members={coaches}
           sectionHeader="Coaches"
           moreText="Show all coaches"
         />
       )}
-      {profileData?.type === "Page" && athletes.length > 0 && (
+      {profileData?.type === "Page" && athletes?.length > 0 && (
         <MembersSection
           members={athletes}
           sectionHeader="Athletes"

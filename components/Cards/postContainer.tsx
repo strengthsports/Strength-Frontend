@@ -35,6 +35,21 @@ import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.co
 import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
 import CustomVideoPlayer from "../PostContainer/VideoPlayer";
+import { Platform } from "react-native";
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 10,
+    shadowColor: "#000000",
+    shadowOpacity: 0.25,
+  },
+});
 
 type TaggedUser = {
   _id: string;
@@ -52,11 +67,19 @@ interface PostContainerProps {
   isMyActivity?: boolean;
   handleBottomSheet?: (state: boolean) => void;
   isVideo?: boolean;
+  isVisible?: boolean;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
   (
-    { item, highlightedHashtag, isFeedPage, handleBottomSheet, isVideo },
+    {
+      item,
+      highlightedHashtag,
+      isFeedPage,
+      handleBottomSheet,
+      isVideo,
+      isVisible,
+    },
     ref
   ) => {
     const router = useRouter();
@@ -259,77 +282,124 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     // Function to render caption with clickable hashtags and mention tags
     const renderCaptionWithTags = (
       caption: string,
-      taggedUsers: TaggedUser[] // Array of user objects with _id and username
+      taggedUsers: TaggedUser[],
+      isExpanded: boolean,
+      onPressSeeMore: () => void
     ) => {
-      // Split on both hashtags and mentions using regex
-      return caption
-        ?.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g)
-        .map((word, index) => {
-          if (word.startsWith("#")) {
-            return (
+      if (!caption) return null;
+
+      const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+      const elements = [];
+      let remainingChars = isExpanded ? Infinity : 94;
+      let showSeeMore = false;
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part || remainingChars <= 0) continue;
+
+        if (part.startsWith("#")) {
+          if (part.length <= remainingChars) {
+            elements.push(
               <TextScallingFalse
-                key={index}
+                key={i}
                 onPress={() =>
-                  router.push(`/(app)/(post)/hashtag/${word.split("#")[1]}`)
+                  router.push(`/(app)/(post)/hashtag/${part.slice(1)}`)
                 }
-                className={`text-xl text-[#12956B] ${
-                  highlightedHashtag?.toLowerCase() === word.toLowerCase() &&
-                  "font-semibold"
-                }`}
+                className="text-2xl text-[#12956B]"
               >
-                {word}
+                {part}
               </TextScallingFalse>
             );
-          } else if (word.startsWith("@")) {
-            // Find the tagged user by username
-            // console.log(taggedUsers);
-            const user = taggedUsers.find(
-              (u) => u.username === word.split("@")[1]
-            );
-            // console.log(user);
-            const serializedUser = encodeURIComponent(
-              JSON.stringify({ id: user?._id, type: user?.type })
-            );
-            // console.log(serializedUser);
-            return (
+            remainingChars -= part.length;
+          } else {
+            showSeeMore = true;
+            break;
+          }
+        } else if (part.startsWith("@")) {
+          const user = taggedUsers.find((u) => u.username === part.slice(1));
+          const serializedUser = encodeURIComponent(
+            JSON.stringify({ id: user?._id, type: user?.type })
+          );
+          if (part.length <= remainingChars) {
+            elements.push(
               <TextScallingFalse
-                key={index}
+                key={i}
                 onPress={() =>
                   serializedUser &&
                   router.push(`/(app)/(profile)/profile/${serializedUser}`)
                 }
-                className="text-xl text-[#12956B]"
+                className="text-2xl text-[#12956B]"
               >
-                {word}
+                {part}
               </TextScallingFalse>
             );
+            remainingChars -= part.length;
+          } else {
+            showSeeMore = true;
+            break;
           }
+        } else {
+          const allowed = Math.min(remainingChars, part.length);
+          const visibleText = part.slice(0, allowed);
+          if (visibleText) {
+            elements.push(
+              <TextScallingFalse key={i} className="text-white">
+                {visibleText}
+              </TextScallingFalse>
+            );
+            remainingChars -= allowed;
 
-          // Return regular text for non-tag parts
-          return <TextScallingFalse key={index}>{word}</TextScallingFalse>;
-        });
+            // Add see more immediately if we're truncating
+            if (allowed < part.length) {
+              showSeeMore = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!isExpanded && showSeeMore) {
+        elements.push(
+          <TextScallingFalse
+            key="see-more"
+            onPress={onPressSeeMore}
+            className="text-[#808080] text-2xl"
+          >
+            ...see more
+          </TextScallingFalse>
+        );
+      }
+
+      return elements;
     };
 
     // Memoized Caption
     const memoizedCaption = useMemo(
-      () => renderCaptionWithTags(item.caption, item.taggedUsers || []),
-      [item.caption, item.taggedUsers]
+      () =>
+        renderCaptionWithTags(
+          item.caption,
+          item.taggedUsers || [],
+          isExpanded,
+          () => setIsExpanded(true)
+        ),
+      [item.caption, item.taggedUsers, isExpanded]
     );
 
     return (
       <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
         <View className="flex">
           {/* Profile Section */}
-          <View className="relative ml-[5%] flex flex-row gap-2 z-20 pb-0">
+          <View className="relative ml-[4%] flex flex-row gap-2 z-20 pb-0">
             {/* Profile Picture */}
             <TouchableOpacity
               activeOpacity={0.5}
-              className="w-[14%] h-[14%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-700"
+              className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
               onPress={() =>
                 user?._id === item.postedBy?._id
                   ? router.push("/(app)/(tabs)/profile")
                   : router.push(`/(app)/(profile)/profile/${serializedUser}`)
               }
+              style={shadowStyle}
             >
               <Image
                 source={
@@ -339,16 +409,21 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                       }
                     : nopic
                 }
-                style={{ width: "100%", height: "100%", borderRadius: 100 }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 100,
+                  borderWidth: 0.5,
+                  borderColor: "#151515",
+                }}
                 transition={500}
                 cachePolicy="memory-disk"
                 placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
-            <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[6px] ml-[1px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />
 
             {/* Name, Headline, post date */}
-            <View className="w-64 flex flex-col justify-between">
+            <View className="w-64 flex flex-col gap-y-4 justify-between">
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() =>
@@ -369,17 +444,23 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 </TextScallingFalse>
               </TouchableOpacity>
               <View className="flex flex-row items-center">
-                <TextScallingFalse className="text-base text-neutral-400">
+                <TextScallingFalse className="text-sm text-neutral-400">
+                  {" "}
                   {formatTimeAgo(item.createdAt)} &bull;{" "}
                 </TextScallingFalse>
-                <MaterialIcons name="public" size={12} color="gray" />
+                <MaterialIcons
+                  name="public"
+                  size={10}
+                  style={{ marginTop: 2 }}
+                  color="gray"
+                />
               </View>
             </View>
 
             {/* Follow button */}
             {user?._id !== item.postedBy?._id && !item.isFollowing && (
               <TouchableOpacity
-                className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
+                className="absolute top-[2px] right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
                 onPress={handleFollow}
                 activeOpacity={0.6}
               >
@@ -391,43 +472,18 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-22] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
+          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-24] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
             <TouchableOpacity
-              className="absolute right-8 p-2 pt-1.5 z-30"
+              className="absolute right-8 p-2 pt-2 z-30"
               onPress={() => handleOpenBottomSheet({ type: "settings" })}
             >
-              <MaterialIcons name="more-horiz" size={20} color="white" />
+              <MaterialIcons name="more-horiz" size={22} color="white" />
             </TouchableOpacity>
 
-            <View
-              className={`${isExpanded ? "pl-6" : "pl-10"} pr-8 pt-12 pb-4`}
-            >
-              <TextScallingFalse
-                onPress={() => {
-                  isFeedPage &&
-                    router.push({
-                      pathname:
-                        `/post-details/${item._id}` as RelativePathString,
-                    });
-                }}
-                className="text-xl leading-5 text-neutral-200"
-                numberOfLines={isExpanded ? undefined : 2}
-                ellipsizeMode="tail"
-                onTextLayout={handleTextLayout}
-              >
+            <View className="pl-7 pr-10 pt-12 pb-2">
+              <TextScallingFalse className="text-2xl flex-wrap flex-row">
                 {memoizedCaption}
               </TextScallingFalse>
-              {showSeeMore && !isExpanded && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => setIsExpanded(true)}
-                  className="mt-1"
-                >
-                  <TextScallingFalse className="text-theme text-sm">
-                    See more
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              )}
             </View>
 
             {!isVideo && item.isPoll && (
@@ -444,7 +500,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
           {/* Assets section */}
           {item.isVideo ? (
-            <CustomVideoPlayer videoUri={item.assets[0].url} />
+            <CustomVideoPlayer
+              videoUri={item.assets[0].url}
+              autoPlay={isVisible}
+            />
           ) : (
             item.assets &&
             item.assets.length > 0 &&

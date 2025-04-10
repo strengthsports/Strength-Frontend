@@ -348,14 +348,17 @@ const EditProfile = () => {
         };
       case "headline":
         return {
-          label: "Headline",
-          placeholder: "Enter your headline",
+          label: user?.type === "User" ? "Headline" : "Tagline",
+          placeholder:
+            user?.type === "User"
+              ? "Enter your headline"
+              : "Enter your tagline",
           description:
             "Your headline is the perfect way to showcase your identity in sports. keep it concise and impactful to let others instantly know who you are!",
         };
       case "dateOfBirth":
         return {
-          label: "Date of Birth",
+          label: user?.type === "User" ? "Date of Birth" : "Established",
           placeholder: "DD-MM-YYYY",
           description:
             "Keep your date of birth original and maintain a healthy, trusted, and standard community.",
@@ -1530,6 +1533,13 @@ const EditProfile = () => {
                   <TextScallingFalse className="text-gray-500 text-base mt-4">
                     {description}
                   </TextScallingFalse>
+                )}
+                {picType === "websiteLink" && (
+                  <TouchableOpacity className="self-center">
+                    <TextScallingFalse className="text-[#D44044] text-xl mt-4">
+                      Remove Link
+                    </TextScallingFalse>
+                  </TouchableOpacity>
                 )}
                 {picType === "address" ? (
                   <TouchableOpacity

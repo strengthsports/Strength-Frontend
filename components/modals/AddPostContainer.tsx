@@ -40,6 +40,7 @@ import PollsContainer from "../Cards/PollsContainer";
 import { showFeedback } from "~/utils/feedbackToast";
 import Svg, { Path } from "react-native-svg";
 import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
+import FeatureUnderDev from "./FeatureUnderDev";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -128,6 +129,8 @@ export default function AddPostContainer({
   const [inputHeight, setInputHeight] = useState(40);
   const [showPollInput, setShowPollInput] = useState(false);
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+
   const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
 
   // Improved regex pattern for tag detection
@@ -449,23 +452,34 @@ export default function AddPostContainer({
             {/* Pagination */}
             {pickedImageUris.length > 1 && (
               <View className="flex-row justify-center mt-2">
-                {Array.from({ length: pickedImageUris.length }).map((_, i) => (
-                  <View
-                    key={`dot-${i}`}
-                    className={
-                      i === activeIndex
-                        ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                        : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-                    }
-                  />
-                ))}
+                {Array.from({ length: pickedImageUris.length }).map(
+                  (_, i) => (
+                    <View
+                      key={`dot-${i}`}
+                      className={
+                        i === activeIndex
+                          ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
+                          : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
+                      }
+                    />
+                  )
+                )}
               </View>
             )}
+
           </ScrollView>
 
+          {/* only render when any feature which is under development is clicked */}
+          {showFeatureModal && (
+            <FeatureUnderDev
+              isVisible={showFeatureModal}
+              onClose={() => setShowFeatureModal(false)}
+            />
+          )}
+
           {/* Footer */}
-          <View className="flex flex-row justify-between items-center p-5">
-            <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+          <View className="flex flex-row justify-between items-center p-3">
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setShowFeatureModal(true)} className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
               <MaterialCommunityIcons
                 name="earth"
                 size={20}
@@ -483,13 +497,13 @@ export default function AddPostContainer({
 
             <View className="flex flex-row justify-between items-center gap-2">
               <TouchableOpacity
-                activeOpacity={0.5}
+                activeOpacity={0.7}
                 className="p-[5px] w-[35px]"
               >
                 <TagsIcon />
               </TouchableOpacity>
               <TouchableOpacity
-                activeOpacity={0.5}
+                activeOpacity={0.7}
                 className="p-[5px] w-[35px]"
                 onPress={() => {
                   handlePickImageOrAddMore();
@@ -499,19 +513,16 @@ export default function AddPostContainer({
               >
                 <MaterialCommunityIcons
                   name="play-circle-outline"
-                  size={24}
+                  size={25}
                   color={showPollInput ? "#737373" : Colors.themeColor}
                 />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handlePickImageOrAddMore}
                 disabled={showPollInput}
+                activeOpacity={0.7}
               >
-                <MaterialCommunityIcons
-                  name="image-outline"
-                  size={24}
-                  color={showPollInput ? "#737373" : Colors.themeColor}
-                />
+                <AddImageIcon />
                 {pickedImageUris.length > 0 && (
                   <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
                     <FontAwesome6 name="add" size={12} color="#12956B" />
@@ -535,7 +546,7 @@ export default function AddPostContainer({
               <TouchableOpacity
                 onPress={() => setShowPollInput(true)}
                 className="p-[5px]"
-                activeOpacity={0.5}
+                activeOpacity={0.7}
               >
                 <PollsIcon />
               </TouchableOpacity>

@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -13,6 +7,7 @@ import {
   View,
   ScrollView,
   Platform,
+  Alert,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
@@ -22,11 +17,8 @@ import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
 import { useAddPostMutation } from "~/reduxStore/api/feed/features/feedApi.addPost";
-import { SafeAreaView } from "react-native-safe-area-context";
 import CustomImageSlider from "~/components/Cards/imageSlideContainer";
 import AlertModal from "~/components/modals/AlertModal";
-import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
 import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
@@ -34,12 +26,12 @@ import {
   setAddPostContainerOpen,
   setPostProgressOn,
 } from "~/reduxStore/slices/post/postSlice";
-import TagsIcon from "../SvgIcons/addpost/TagIcon";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
 import { showFeedback } from "~/utils/feedbackToast";
-import Svg, { Path } from "react-native-svg";
 import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
+import FeatureUnderDev from "./FeatureUnderDev";
+import ClipsIcon from "../SvgIcons/addpost/ClipsIcon";
 import { ResizeMode, Video } from "expo-av";
 import Slider from "@react-native-community/slider";
 
@@ -258,6 +250,8 @@ export default function AddPostContainer({
   const [inputHeight, setInputHeight] = useState(40);
   const [showPollInput, setShowPollInput] = useState(false);
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+
   const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
 
   // Improved regex pattern for tag detection
@@ -514,7 +508,7 @@ export default function AddPostContainer({
   };
 
   const handleCloseAddPostContainer = () => {
-    if (isPostButtonEnabled && !isAlertModalOpen) {
+    if ((isPostButtonEnabled || showPollInput) && !isAlertModalOpen) {
       setAlertModalOpen(true);
     } else if (isAlertModalOpen) {
       setPostText("");
@@ -526,6 +520,8 @@ export default function AddPostContainer({
   };
 
   const handleDiscard = () => {
+    setShowPollInput(false);
+    setTypeVideo(false);
     setAlertModalOpen(false);
     handleCloseAddPostContainer();
     console.log("Discard pressed. isAlertModalOpen will become false.");
@@ -660,9 +656,21 @@ export default function AddPostContainer({
             )}
           </ScrollView>
 
+          {/* only render when any feature which is under development is clicked */}
+          {showFeatureModal && (
+            <FeatureUnderDev
+              isVisible={showFeatureModal}
+              onClose={() => setShowFeatureModal(false)}
+            />
+          )}
+
           {/* Footer */}
-          <View className="flex flex-row justify-between items-center p-5">
-            <TouchableOpacity className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-md">
+          <View className="flex flex-row justify-between items-center p-3">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setShowFeatureModal(true)}
+              className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-lg"
+            >
               <MaterialCommunityIcons
                 name="earth"
                 size={20}
@@ -690,9 +698,7 @@ export default function AddPostContainer({
                   (isTypeVideo && pickedVideoUri !== null)
                 }
               >
-                <MaterialCommunityIcons
-                  name="play-circle-outline"
-                  size={24}
+                <ClipsIcon
                   color={
                     showPollInput ||
                     pickedImageUris.length > 0 ||
@@ -706,11 +712,14 @@ export default function AddPostContainer({
               <TouchableOpacity
                 onPress={handlePickImageOrAddMore}
                 disabled={showPollInput || isTypeVideo}
+                activeOpacity={0.7}
               >
-                <MaterialCommunityIcons
-                  name="image-outline"
-                  size={24}
-                  color={showPollInput ? "#737373" : Colors.themeColor}
+                <AddImageIcon
+                  color={
+                    showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                      ? "#737373"
+                      : Colors.themeColor
+                  }
                 />
                 {pickedImageUris.length > 0 && (
                   <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
@@ -735,14 +744,16 @@ export default function AddPostContainer({
               <TouchableOpacity
                 onPress={() => setShowPollInput(true)}
                 className="p-[5px]"
-                activeOpacity={0.5}
+                activeOpacity={0.7}
                 disabled={
+                  showPollInput ||
                   pickedImageUris.length > 0 ||
                   (isTypeVideo && pickedVideoUri !== null)
                 }
               >
                 <PollsIcon
                   color={
+                    showPollInput ||
                     pickedImageUris.length > 0 ||
                     (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"

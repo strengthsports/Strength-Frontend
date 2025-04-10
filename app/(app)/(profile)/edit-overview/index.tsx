@@ -5,7 +5,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Text } from "react-native";
 import {
   ActivityIndicator,
@@ -34,6 +34,8 @@ import { Member } from "~/types/user";
 import AlertModal from "~/components/modals/AlertModal";
 import KeyDetailsMenu from "~/components/modals/KeyDetailsMenu";
 import DownArrow from "~/components/SvgIcons/Edit-Overview/DownArrow";
+import isEqual from "lodash.isequal";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 interface SelectedSport {
   sportsId: string;
@@ -89,7 +91,7 @@ function EditOverview() {
   const [alertConfig, setAlertConfig] = useState<AlertConfigType>({
     title: "Discard changes?",
     message: "If you go back now, you will lose your changes.",
-    discardAction: () => {},
+    discardAction: () => { },
     confirmMessage: "Discard Changes",
     cancelMessage: "Continue editing",
   });
@@ -139,7 +141,7 @@ function EditOverview() {
 
       const mergedKeyDetails =
         existingSport &&
-        Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
+          Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
           ? existingSport.keyDetails
           : keyDetails;
 
@@ -169,6 +171,7 @@ function EditOverview() {
   }, []);
 
   const handleCloseKeyDetailsForm = useCallback(() => {
+    originalKeyDetailsRef.current = null;
     setKeyDetailsFormOpen((prev) => !prev);
     setAlertModal(false);
   }, []);
@@ -293,8 +296,8 @@ function EditOverview() {
           "Add More Key Details",
           "Atleast 3 key details are recommended to add for a complete and impactful profile.",
           () => setAlertModal(false),
-          "  Skip  ",
           "Add more",
+          "  Skip  ",
           { bg: "#12956B", text: "white" }
         );
         return; // Don't proceed
@@ -376,10 +379,55 @@ function EditOverview() {
     </View>;
   }
 
+
+  const originalKeyDetailsRef = useRef(null);
+
+  // Only store original data when modal opens
+  if (
+    isKeyDetailsFormOpen &&
+    !originalKeyDetailsRef.current &&
+    selectedSport?.keyDetails
+  ) {
+    originalKeyDetailsRef.current = JSON.parse(JSON.stringify(selectedSport.keyDetails));
+  }
+
+
+  const handleBackPress = () => {
+    const isDataUnchanged =
+      isEqual(initialSportsData, finalSelectedSports) &&
+      initialAbout === user?.about;
+
+    if (isDataUnchanged) {
+      router.push("/(app)/(tabs)/profile");
+    } else {
+      setAlertConfig({
+        title: "Discard changes?",
+        message: "If you go back now, you will lose your changes.",
+        confirmMessage: "Discard",
+        cancelMessage: "Cancel",
+        discardButtonColor: {
+          bg: "transparent",
+          text: "#FF0000",
+        },
+        cancelButtonColor: {
+          bg: "transparent",
+          text: "#808080",
+        },
+        discardAction: () => router.push("/(app)/(tabs)/profile"),
+      });
+      setAlertModal(true);
+    }
+  };
+
+  // Compare current keyDetails to original
+  const isKeyDetailsUnchanged =
+    JSON.stringify(selectedSport?.keyDetails) ===
+    JSON.stringify(originalKeyDetailsRef.current);
+
   return (
     <SafeAreaView>
       <PageThemeView>
-        <TopBar heading="Edit Overview" backRoute="/(app)/(tabs)/profile">
+        <TopBar heading="Edit Overview" backHandler={handleBackPress}>
           {isLocalLoading ? (
             <ActivityIndicator size="small" color="#12956B" />
           ) : (
@@ -387,18 +435,17 @@ function EditOverview() {
               onPress={handleSubmitOverviewData}
               disabled={
                 JSON.stringify(initialSportsData) ===
-                  JSON.stringify(finalSelectedSports) &&
+                JSON.stringify(finalSelectedSports) &&
                 initialAbout === user?.about
               }
             >
               <TextScallingFalse
-                className={`${
-                  JSON.stringify(initialSportsData) ===
-                    JSON.stringify(finalSelectedSports) &&
+                className={`${JSON.stringify(initialSportsData) ===
+                  JSON.stringify(finalSelectedSports) &&
                   initialAbout === user?.about
-                    ? "text-[#808080]"
-                    : "text-[#12956B]"
-                } text-4xl text-right`}
+                  ? "text-[#808080]"
+                  : "text-[#12956B]"
+                  } text-4xl text-right`}
               >
                 Save
               </TextScallingFalse>
@@ -584,6 +631,30 @@ function EditOverview() {
           </>
         )}
 
+        {/* Alert modal */}
+        {isAlertModalSet && (
+          <AlertModal
+            alertConfig={{
+              ...alertConfig,
+              confirmAction: () => {
+                if (alertConfig.title === "Add More Key Details") {
+                  setHasSkippedAlert(true);
+                }
+                alertConfig.discardAction?.(); // optional chaining for safety
+                handleCloseAlertModal();
+              },
+              discardAction: () => {
+                if (alertConfig.title === "Add More Key Details") {
+                  setHasSkippedAlert(true);
+                }
+                handleCloseAlertModal();
+              },
+            }}
+            isVisible={isAlertModalSet}
+          />
+        )}
+
+
         {/* Edit sports details modal */}
         <Modal
           visible={isEditModalOpen}
@@ -663,12 +734,7 @@ function EditOverview() {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
-                    if (
-                      selectedSport?.keyDetails &&
-                      Object.values(selectedSport.keyDetails).every(
-                        (value) => value === ""
-                      )
-                    ) {
+                    if (isKeyDetailsUnchanged) {
                       handleCloseKeyDetailsForm();
                     } else {
                       handleOpenAlertModal(
@@ -682,30 +748,17 @@ function EditOverview() {
                     }
                   }}
                 >
-                  <AntDesign name="arrowleft" size={24} color="white" />
+                  <BackIcon />
                 </TouchableOpacity>
               </View>
               <TextScallingFalse className="text-6xl text-white">
                 {selectedSport ? selectedSport.sportsName : ""}
               </TextScallingFalse>
-              <TouchableOpacity onPress={handleSaveFinalSportsData}>
+              <TouchableOpacity disabled={isKeyDetailsUnchanged} onPress={handleSaveFinalSportsData}>
                 <MaterialIcons
                   name="done"
                   size={30}
-                  color={
-                    selectedSport?.keyDetails &&
-                    Object.values(selectedSport.keyDetails).every(
-                      (value) => value === ""
-                    )
-                      ? "#353535"
-                      : "green"
-                  }
-                  disabled={
-                    selectedSport?.keyDetails &&
-                    Object.values(selectedSport.keyDetails).every(
-                      (value) => value === ""
-                    )
-                  }
+                  color={isKeyDetailsUnchanged ? "#353535" : "#12956B"}
                 />
               </TouchableOpacity>
             </View>
@@ -847,12 +900,13 @@ function EditOverview() {
               <TouchableOpacity
                 activeOpacity={0.5}
                 onPress={handleCloseSportsOptionModal}
+                style={{ width: '30%', height: 50, paddingVertical: 5.5}}
               >
-                <AntDesign name="arrowleft" size={24} color="white" />
+                <BackIcon />
               </TouchableOpacity>
             </View>
             {/* Headings */}
-            <View style={{ width: "100%", padding: 20 }}>
+            <View style={{ width: "100%", paddingHorizontal: 20 }}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 20, fontWeight: "500" }}
               >

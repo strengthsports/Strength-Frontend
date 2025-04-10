@@ -4,6 +4,7 @@ import {
   View,
   FlatList,
   TouchableOpacity,
+  Pressable,
   Image,
 } from "react-native";
 import React, { useMemo } from "react";
@@ -19,7 +20,6 @@ interface ArticleData {
   sportsName: string;
   isTrending: boolean;
   createdAt: string;
-  content: string;
   date?: string; // Add date & time fields
   time?: string;
 }
@@ -63,17 +63,13 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
   const renderItem = ({ item }: { item: (typeof formattedData)[0] }) => {
     return (
       <View className="">
-        <TouchableOpacity
+        <Pressable
           onPress={() => {
-            console.log(
-              "Article clicked with id:",
-              item._id,
-              "and title: ",
-              item.title
-            );
             router.push({
-              pathname: `/(app)/(tabs)/explore/articleCategory/[article]`,
-              params: { article: JSON.stringify(item) },
+              pathname: `/(app)/(tabs)/articlePage`,
+              params: {
+                id: item._id,
+              },
             });
           }}
           className="flex-row pt-2 h-28 gap-5 px-2 mt-2"
@@ -105,7 +101,7 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
               </TextScallingFalse>
             </View>
           </View>
-        </TouchableOpacity>
+        </Pressable>
         <View className=" h-[0.6px] bg-[#313131] m-3" />
       </View>
     );

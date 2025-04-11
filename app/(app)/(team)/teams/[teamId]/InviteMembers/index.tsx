@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Divider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
+
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,6 +50,8 @@ const InviteMember: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation();
   const { teamId = "" } = useLocalSearchParams<{ teamId: string }>();
+  const { role } = useLocalSearchParams();
+
 
   // Redux State
   const { user } = useSelector((state: RootState) => state.profile);
@@ -93,7 +96,7 @@ const InviteMember: React.FC = () => {
         sendInvitations({
           teamId,
           receiverIds: selectedMemberIds,
-          role: "All-Rounder",
+          role: role,
           limit,
           page,
         })
@@ -157,6 +160,21 @@ const InviteMember: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [searchQuery, dispatch, teamId, user, page, limit]);
 
+
+  const getPluralRole = (role: string) => {
+    switch (role?.toLowerCase()) {
+      case "batter":
+        return "Batters";
+      case "bowler":
+        return "Bowlers";
+      case "all-rounder":
+        return "All-Rounders";
+      default:
+        return role?.charAt(0).toUpperCase() + role?.slice(1);
+    }
+  };
+  
+
   // Filtered List
   const filteredMembers = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -212,7 +230,8 @@ const InviteMember: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={28} color={colors.text} />
         </TouchableOpacity>
-        <TextScallingFalse style={styles.headerTitle}>Invite Member</TextScallingFalse>
+        <TextScallingFalse style={styles.headerTitle}>Invite {getPluralRole(role)}</TextScallingFalse>
+
         <TouchableOpacity onPress={handleSendInvites} disabled={sending}>
           <TextScallingFalse style={[styles.sendBtn, sending && { opacity: 0.5 }]}>
             {sending ? "Sending..." : "Send"}

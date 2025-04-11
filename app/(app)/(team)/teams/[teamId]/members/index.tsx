@@ -14,6 +14,7 @@ interface User {
   firstName: string;
   lastName: string;
   profilePic?: string;
+  headline:string;
 }
 
 interface Member {
@@ -128,7 +129,10 @@ const Members: React.FC = () => {
                       router.push({
                         pathname: `/teams/${team._id}/members/${member.user._id}`,
                         params: {
-                          member: JSON.stringify(member.user), // Serialize member data
+                          memberId: member.user._id,
+                          member: JSON.stringify(member.user),
+                          role: JSON.stringify(member.role),
+                          
                         },
                       });
                     } else {
@@ -145,6 +149,7 @@ const Members: React.FC = () => {
                     <Text className="text-white text-2xl font-medium">
                       {member.user.firstName} {member.user.lastName}
                     </Text>
+                    <Text className="text-gray-400 text-sm">{member.user.headline}</Text>
                     <Text className="text-gray-400 text-sm">{member.role}</Text>
                   </View>
                   <Icon name="right" size={12} color="gray" />

@@ -20,6 +20,8 @@ interface TeamState {
   loading: boolean;
   user: any | null;
   memberSuggestionsState: MemberSuggestionsState;
+  positionUpdateLoading?: boolean;
+  positionUpdateError?: string | null;
 }
 
 export type TeamPayload = {
@@ -156,31 +158,25 @@ export const deleteTeam = createAsyncThunk<string, string, { rejectValue: string
 
 export const updateTeam = createAsyncThunk<
   Team,
-  { teamId: string; teamData: Partial<TeamPayload> },
+  { teamId: string; formData: FormData },
   { rejectValue: string }
 >(
   "team/updateTeam",
-  async ({ teamId, teamData }, { rejectWithValue }) => {
+  async ({ teamId, formData }, { rejectWithValue }) => {
     try {
       const token = await getToken("accessToken");
-      const formData = new FormData();
-      if (teamData.name) formData.append("name", teamData.name);
-      if (teamData.sport) formData.append("sport", JSON.stringify(teamData.sport));
-      if (teamData.establishedOn) formData.append("establishedOn", convertToDate(teamData.establishedOn));
-      if (teamData.gender) formData.append("gender", teamData.gender);
-      if (teamData.description) formData.append("description", teamData.description);
-      if (teamData.address) formData.append("address", JSON.stringify(teamData.address));
-      if (teamData.logo) formData.append("assets", teamData.logo);
-
+      
       const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        },
         body: formData,
       });
 
       const data = await response.json();
       if (!response.ok) return rejectWithValue(data.message);
-      return data;
+      return data.data;
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -296,6 +292,40 @@ const initialState: TeamState = {
   },
 };
 
+
+//change user position 
+export const changeUserPosition = createAsyncThunk<
+  TeamMember,
+  { teamId: string; userId: string; position: string },
+  { rejectValue: string }
+>(
+  "team/changeUserPosition",
+  async ({ teamId, userId, position }, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+
+      const response = await fetch(`${BASE_URL}/api/v1/team/change-position`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, position }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) return rejectWithValue(data.message || "Failed to change position");
+
+      return data.data; // Expected to return updated member
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+
+
 // --- Slice ---
 const teamSlice = createSlice({
   name: "team",
@@ -349,7 +379,46 @@ const teamSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? "Error sending invitations";
       })
+    // 👇 Update Team Slice Handlers
+    .addCase(updateTeam.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(updateTeam.fulfilled, (state, action) => {
+      state.loading = false;
+      state.team = action.payload;
+    })
+    .addCase(updateTeam.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? "Error updating team details";
+    })
+
+    // --- changeUserPosition ---
+.addCase(changeUserPosition.pending, (state) => {
+  state.positionUpdateLoading = true;
+  state.positionUpdateError = null;
+})
+.addCase(changeUserPosition.fulfilled, (state, action) => {
+  state.positionUpdateLoading = false;
+  const updatedMember = action.payload;
+
+  if (state.team && state.team.members) {
+    state.team.members = state.team.members.map((member) =>
+      member._id === updatedMember._id ? updatedMember : member
+    );
+  }
+})
+.addCase(changeUserPosition.rejected, (state, action) => {
+  state.positionUpdateLoading = false;
+  state.positionUpdateError = action.payload || "Could not update position";
+})
+
+   
+
+    
+    
   },
+  
 });
 
 export const { resetTeamState } = teamSlice.actions;

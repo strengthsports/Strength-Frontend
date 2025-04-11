@@ -49,6 +49,7 @@ import { Image } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { Animated } from "react-native";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import CustomVideoPlayer from "../PostContainer/VideoPlayer";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -132,7 +133,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
 
   const videoRef = useRef<Video | null>(null);
   const scrollViewRef = useRef(null);
-  const trimAreaWidth = Dimensions.get("window").width - 48; // Total width minus padding
+  const trimAreaWidth = Dimensions.get("window").width; // Total width minus padding
   const thumbnailWidth = 60; // Width of each thumbnail
   const maxTrimDuration = 60; // Maximum trim duration in seconds (adjust as needed)
 
@@ -284,8 +285,11 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
       <View className="flex-1">
         <View className="flex-1 flex-col justify-between bg-neutral-900 rounded-t-lg p-4">
           <View className="flex-row justify-between items-center mb-4">
-            <TouchableOpacity onPress={onCancel}>
-              <TextScallingFalse className="text-white text-lg">
+            <TouchableOpacity
+              onPress={onCancel}
+              className="px-3 py-1 border border-white rounded-full"
+            >
+              <TextScallingFalse className="text-white font-medium">
                 Cancel
               </TextScallingFalse>
             </TouchableOpacity>
@@ -295,7 +299,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             <TouchableOpacity
               onPress={trimVideo}
               disabled={isTrimming}
-              className="px-3 py-1 bg-theme rounded-full"
+              className="px-3 py-1 bg-theme border border-theme rounded-full"
             >
               {isTrimming ? (
                 <ActivityIndicator color="white" size="small" />
@@ -308,11 +312,11 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
           </View>
 
           {/* Video preview */}
-          <View className="relative flex-1 justify-center aspect-video">
+          <View className="relative flex-1 justify-center">
             <Video
               ref={videoRef}
               source={{ uri: videoUri }}
-              className="w-full bg-black aspect-video"
+              className="w-full"
               style={{ flex: 1 }}
               resizeMode={ResizeMode.CONTAIN}
               shouldPlay={false}
@@ -401,7 +405,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                         ? "flex"
                         : "none",
                   }}
-                  className="absolute top-0 bottom-0 w-0.5 bg-blue-500"
+                  className="absolute top-0 bottom-0 w-1 bg-theme"
                 />
               </View>
 
@@ -436,7 +440,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   className="absolute top-0 bottom-0 w-5 flex justify-center items-center"
                 >
                   <View className="w-1 h-full bg-white" />
-                  <View className="absolute w-5 h-16 bg-blue-500 rounded-full opacity-30" />
+                  <View className="absolute w-5 h-16 bg-theme rounded-full opacity-30" />
                   <View className="absolute w-1 h-16 bg-white" />
                   <View className="absolute -left-1 top-6 w-3 h-4 bg-white rounded" />
                 </Animated.View>
@@ -882,6 +886,11 @@ export default function AddPostContainer({
                 setIndex={handleSetActiveIndex}
               />
             )}
+
+            {/* Only render VideoPlayer when there is a video */}
+            {/* {isTypeVideo && pickedVideoUri !== null && (
+              <CustomVideoPlayer autoPlay={true} videoUri={pickedVideoUri} />
+            )} */}
 
             {/* Pagination */}
             {pickedImageUris.length > 1 && (

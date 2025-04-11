@@ -1,159 +1,150 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import { TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatusSuccess } from "expo-av";
-import Slider from "@react-native-community/slider";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { RelativePathString } from "expo-router";
 
-export default function CustomVideoPlayer({
-  videoUri,
-  autoPlay,
-}: {
+type VideoPlayerProps = {
   videoUri: string;
+  postId?: string;
   autoPlay: boolean;
-}) {
-  const videoRef = useRef<Video | null>(null);
+  isFeedPage?: boolean;
+  onPlaybackStatusUpdate?: (status: AVPlaybackStatusSuccess) => void;
+};
 
-  const [status, setStatus] = useState<AVPlaybackStatusSuccess>({
-    isLoaded: false,
-    isPlaying: false,
-    durationMillis: 0,
-    positionMillis: 0,
-    isBuffering: true,
-    // Dummy defaults for required fields (can be ignored during actual runtime)
-    didJustFinish: false,
-    isLooping: false,
-    rate: 1,
-    shouldCorrectPitch: false,
-    pitchCorrectionQuality: undefined,
-    volume: 1,
-    isMuted: false,
-    isLoopingMuted: false,
-    progressUpdateIntervalMillis: 1000,
-    shouldPlay: false,
-    isPlaybackAllowed: true,
-    isPlayingBackward: false,
-    androidImplementation: "MediaPlayer",
-    uri: videoUri,
-  });
+export type VideoPlayerHandle = {
+  play: () => Promise<void>;
+  pause: () => Promise<void>;
+  toggleMute: () => Promise<void>;
+  seek: (position: number) => Promise<void>;
+  getStatus: () => AVPlaybackStatusSuccess | null;
+};
 
-  const [loading, setLoading] = useState(true);
-  const [isControllerVisible, setIsControllerVisble] = useState(true);
+const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
+  (
+    { videoUri, postId, autoPlay, isFeedPage = false, onPlaybackStatusUpdate },
+    ref
+  ) => {
+    const videoRef = useRef<Video | null>(null);
+    const router = useRouter();
+    const [status, setStatus] = useState<AVPlaybackStatusSuccess | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      if (autoPlay) {
-        videoRef.current.playAsync();
-      } else {
-        videoRef.current.pauseAsync();
-      }
-    }
-  }, [autoPlay]);
-
-  const formatTime = (timeMillis: number) => {
-    if (!timeMillis) return "0:00";
-    const totalSeconds = Math.floor(timeMillis / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-
-  const onPlaybackStatusUpdate = (playbackStatus: AVPlaybackStatusSuccess) => {
-    setStatus(playbackStatus);
-
-    if (playbackStatus.isBuffering || !playbackStatus.isLoaded) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  };
-
-  const handlePlayPause = async () => {
-    if (status.isPlaying) {
-      await videoRef.current?.pauseAsync();
-    } else {
-      await videoRef.current?.playAsync();
-    }
-  };
-
-  const handleSeek = async (value: number) => {
-    if (videoRef.current) {
-      await videoRef.current.setPositionAsync(value);
-    }
-  };
-
-  const handleConrollersVisibility = () => {
-    setIsControllerVisble((prev) => !prev);
-  };
-
-  return (
-    <Pressable style={styles.container} onPress={handleConrollersVisibility}>
-      <Video
-        ref={videoRef}
-        source={{ uri: videoUri }}
-        style={styles.video}
-        resizeMode={ResizeMode.CONTAIN}
-        onPlaybackStatusUpdate={(status) =>
-          onPlaybackStatusUpdate(status as AVPlaybackStatusSuccess)
+    // Expose methods via ref
+    useImperativeHandle(ref, () => ({
+      play: async () => {
+        await videoRef.current?.playAsync();
+      },
+      pause: async () => {
+        await videoRef.current?.pauseAsync();
+      },
+      toggleMute: async () => {
+        if (videoRef.current && status) {
+          await videoRef.current.setIsMutedAsync(!status.isMuted);
         }
-        useNativeControls={false}
-        isLooping
-      />
+      },
+      seek: async (position: number) => {
+        if (videoRef.current) {
+          await videoRef.current.setPositionAsync(position);
+        }
+      },
+      getStatus: () => status,
+    }));
 
-      {loading && (
-        <ActivityIndicator style={styles.loader} size="large" color="#fff" />
-      )}
+    useEffect(() => {
+      if (videoRef.current) {
+        if (autoPlay) {
+          videoRef.current.playAsync();
+        } else {
+          videoRef.current.pauseAsync();
+        }
+      }
+    }, [autoPlay]);
 
-      {!loading && (
-        <TouchableOpacity
-          style={styles.centerPlayButton}
-          className={`${isControllerVisible ? "opacity-1" : "opacity-0"}`}
-          onPress={handlePlayPause}
-        >
-          <Ionicons
-            name={status.isPlaying ? "pause" : "play"}
-            size={20}
-            color="#fff"
-          />
-        </TouchableOpacity>
-      )}
+    const handlePlaybackStatusUpdate = (
+      playbackStatus: AVPlaybackStatusSuccess
+    ) => {
+      setStatus(playbackStatus);
 
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.8)"]}
-        style={styles.controlsContainer}
-        className={`${isControllerVisible ? "opacity-1" : "opacity-0"}`}
+      const isBuffering =
+        playbackStatus.isBuffering || !playbackStatus.isLoaded;
+      setLoading(isBuffering);
+
+      if (onPlaybackStatusUpdate) {
+        onPlaybackStatusUpdate(playbackStatus);
+      }
+    };
+
+    const renderFeedControls = () => (
+      <TouchableOpacity
+        style={styles.muteButton}
+        onPress={async () => {
+          if (videoRef.current && status) {
+            await videoRef.current.setIsMutedAsync(!status.isMuted);
+          }
+        }}
       >
-        <Slider
-          style={styles.slider}
-          minimumValue={0}
-          maximumValue={status.durationMillis || 0}
-          value={status.positionMillis || 0}
-          onSlidingComplete={handleSeek}
-          minimumTrackTintColor="#fff"
-          maximumTrackTintColor="rgba(255,255,255,0.4)"
-          thumbTintColor="#fff"
+        <Ionicons
+          name={status?.isMuted ? "volume-mute" : "volume-high"}
+          size={12}
+          color="#fff"
         />
-        <Text style={styles.timeText}>
-          {formatTime(status.positionMillis)} /{" "}
-          {formatTime(status.durationMillis as number)}
-        </Text>
-        <TouchableOpacity
-          style={styles.fullscreen}
-          onPress={() => videoRef.current?.presentFullscreenPlayer()}
-        >
-          <MaterialCommunityIcons name="fullscreen" size={20} color="#fff" />
-        </TouchableOpacity>
-      </LinearGradient>
-    </Pressable>
-  );
-}
+      </TouchableOpacity>
+    );
+
+    return (
+      <TouchableOpacity
+        style={styles.container}
+        className={isFeedPage ? "ml-2" : "ml-0"}
+        activeOpacity={0.7}
+        onPress={() => {
+          isFeedPage &&
+            postId &&
+            router.push({
+              pathname: `/post-view/${postId}` as RelativePathString,
+            });
+        }}
+      >
+        <Video
+          ref={videoRef}
+          source={{ uri: videoUri }}
+          style={[
+            styles.video,
+            isFeedPage
+              ? {
+                  borderTopLeftRadius: 16,
+                  borderBottomLeftRadius: 16,
+                  borderTopWidth: 0.5,
+                  borderBottomWidth: 0.5,
+                  borderLeftWidth: 0.5,
+                  borderColor: "#2F2F2F",
+                }
+              : {},
+          ]}
+          resizeMode={ResizeMode.CONTAIN}
+          onPlaybackStatusUpdate={(status) =>
+            handlePlaybackStatusUpdate(status as AVPlaybackStatusSuccess)
+          }
+          useNativeControls={false}
+          isLooping
+        />
+
+        {loading && (
+          <ActivityIndicator style={styles.loader} size="large" color="#fff" />
+        )}
+
+        {isFeedPage && renderFeedControls()}
+      </TouchableOpacity>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -161,54 +152,23 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     backgroundColor: "#000000",
     position: "relative",
-    marginLeft: 8,
   },
   video: {
     flex: 1,
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
-    borderColor: "#2F2F2F",
   },
   loader: {
     position: "absolute",
     alignSelf: "center",
     top: "45%",
   },
-  centerPlayButton: {
+  muteButton: {
     position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -20 }, { translateY: -20 }],
+    bottom: 10,
+    right: 20,
     backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 10,
-    borderRadius: 30,
-  },
-  controlsContainer: {
-    position: "absolute",
-    bottom: 0,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    columnGap: 5,
-  },
-  slider: {
-    flex: 7.5,
-    height: 20,
-  },
-  timeText: {
-    flex: 2,
-    color: "#fff",
-    textAlign: "right",
-    fontWeight: "400",
-    fontSize: 13,
-  },
-  fullscreen: {
-    flex: 0.5,
-    alignItems: "center",
+    padding: 8,
+    borderRadius: 20,
   },
 });
+
+export default CustomVideoPlayer;

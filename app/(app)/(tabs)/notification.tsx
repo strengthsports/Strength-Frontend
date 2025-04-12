@@ -1,5 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, SectionList, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  View,
+  Text,
+  SectionList,
+  ActivityIndicator,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import {
@@ -12,7 +19,6 @@ import moment from "moment";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
-import { RefreshControl } from "react-native";
 import { Notification, NotificationType } from "~/types/others";
 import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 
@@ -27,6 +33,13 @@ export type Cluster = {
   notifications: Notification[];
   latestNotification: Notification;
 };
+
+const TIME_CATEGORIES = {
+  TODAY: "Today",
+  YESTERDAY: "Yesterday",
+  ONE_WEEK_AGO: "1 Week Ago",
+  TWO_WEEKS_AGO: "2 Weeks Ago",
+} as const;
 
 const NotificationPage = () => {
   const { hasNewNotification } = useSelector(
@@ -203,7 +216,8 @@ const NotificationPage = () => {
               progressBackgroundColor="#181A1B"
             />
           }
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.listContent}
+          stickySectionHeadersEnabled={false}
         />
       ) : (
         <EmptyState />

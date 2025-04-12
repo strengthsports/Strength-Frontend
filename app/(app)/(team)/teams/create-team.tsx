@@ -23,6 +23,10 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import LocationModal from "@/components/teamPage/LocationModal";
+import {
+  sendInvitations,
+  fetchMemberSuggestions,
+} from "~/reduxStore/slices/team/teamSlice";
 // import { useSelector } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
@@ -147,7 +151,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
-  const [suggestedMembers, setSuggestedMembers] = useState([]);
 
   const { sports, loading, error } = useSelector(
     (state: RootState) => state.sports
@@ -159,8 +162,14 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   }, [dispatch]);
 
   const { user } = useSelector((state: RootState) => state?.profile);
+
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
+
+
+
+
   const load = useSelector((state) => state.team.loading);
+
   useEffect(() => {
     if (user?.id) {
       setFormData((prevFormData) => ({
@@ -174,9 +183,9 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   useEffect(() => {
     dispatch(
       fetchUserSuggestions({
-        sportsData: ["67cd0bb8970c518cc730d485"],
-        limit: 20,
-        page: 1,
+        sportsData: ["67cd0bb8970c518cc730d485","6771941c77a19c8141f2f1b7"],
+        limit: 50,
+        page: 8,
       })
     );
   }, [dispatch, formData?.sport]);
@@ -198,21 +207,6 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     members: [],
     createdBy: user?.id as string,
   });
-
-  const getGameIcon = (game: string) => {
-    switch (game) {
-      case "Cricket":
-        return require("@/assets/images/Sports Icons/okcricket.png");
-      case "Kabaddi":
-        return require("@/assets/images/Sports Icons/okkabaddi.png");
-      case "Basketball":
-        return require("@/assets/images/Sports Icons/okbasketball.png");
-      case "Hockey":
-        return require("@/assets/images/Sports Icons/okhockey.png");
-      case "Volleyball":
-        return require("@/assets/images/Sports Icons/okvollyball.png");
-    }
-  };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
@@ -246,7 +240,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
           country: country,
           location: {
             ...prevFormData.address.location,
-            coordinates: coordinates, // New coordinates for Mumbai
+            coordinates: coordinates,
           },
         },
       }));
@@ -266,8 +260,8 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       }));
     }
 
-    // Close the picker after selection for both iOS & Android
-    setShow(false);
+    setTimeout(() => {
+    setShow(false);}, 3000);
   };
 
   const selectImage = async () => {
@@ -318,23 +312,45 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
   };
 
   const handleCreateTeam = async () => {
-    if (
-      !formData.name ||
-      !formData.sport ||
-      !formData.address ||
-      !formData.establishedOn ||
-      !formData.description
-    ) {
-      alert("Please fill all required fields.");
-      return;
-    }
+  if (
+    !formData.name ||
+    !formData.sport ||
+    !formData.address ||
+    !formData.establishedOn ||
+    !formData.description
+  ) {
+    alert("Please fill all required fields.");
+    return;
+  }
 
+  // First navigate to the success page with the form data
+  router.push({
+    pathname: "./team-creation-success",
+    params: { 
+      teamData: JSON.stringify({
+        logo: formData.logo,
+        name: formData.name,
+        sport: sports.find(s => s._id === formData.sport)?.name || formData.sport,
+        establishedOn: formData.establishedOn,
+        address: formData.address,
+        gender: formData.gender,
+        description: formData.description,
+        members: formData.members,
+      }) 
+    }
+  });
+
+  // Then submit to your backend
+  try {
     const response = await dispatch(createTeam(formData));
-
-    if (response.payload.success) {
-      router.push("./team-creation-success");
+    if (!response.payload.success) {
+      // Optionally handle error case
+      console.error("Team creation failed on backend");
     }
-  };
+  } catch (error) {
+    console.error("Error creating team:", error);
+  }
+};
 
   return (
     <SafeAreaView className="flex-1 bg-black px-2">
@@ -349,7 +365,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
               <Icon name="arrowleft" size={30} color="white" />
             </TouchableOpacity>
           </View>
-          <ScrollView className="flex-1">
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
             <View className="px-4 py-2 lg:px-20">
               <Text className="text-white text-7xl font-bold mb-2">
                 Create New Team
@@ -373,7 +389,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                       <View className="relative">
                         <Image
                           source={{ uri: formData.logo.uri }}
-                          className="w-32 h-28 rounded"
+                          className="w-32 h-32 rounded"
                         />
                       </View>
                     </View>
@@ -395,7 +411,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
               {/* Form Fields */}
               <View className="space-y-6">
                 {/* Name */}
-                <View>
+                <View className="mt-2">
                   <Text className="text-white text-2xl mb-1">Name*</Text>
                   <TextInput
                     value={formData.name}
@@ -409,7 +425,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                 </View>
 
                 {/* Sport */}
-                <View>
+                <View className="mt-4">
                   <Text className="text-white text-2xl mt-2 mb-1">Sport*</Text>
                   <TouchableOpacity
                     onPress={toggleDropdown}
@@ -444,6 +460,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
                   {/* Dropdown Games List */}
                   {isDropdownOpen && (
+             
                     <View className="mt-2 border border-[#515151] rounded-lg p-4">
                       {sports.length > 0 &&
                         sports.map((sport, index) => (
@@ -470,11 +487,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                           </TouchableOpacity>
                         ))}
                     </View>
+                  
                   )}
                 </View>
 
                 {/* Location */}
-                <View>
+                <View className="mt-4">
                   <Text className="text-white text-2xl mt-2 mb-1">
                     Location*
                   </Text>
@@ -503,7 +521,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   />
                 </SafeAreaView>
                 {/*Established */}
-                <View>
+                <View className="mt-4">
                   <Text className="text-white text-2xl mt-2 mb-1">
                     Established On*
                   </Text>
@@ -534,6 +552,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                 </View>
 
                 {/* Gender Selection */}
+                <View className="mt-4">
                 <Text style={{ color: "white", fontSize: 14, marginTop: 8 }}>
                   Gender*
                 </Text>
@@ -568,8 +587,10 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     />
                   </TouchableOpacity>
                 </View>
+                </View>
+
                 {/* Description */}
-                <View>
+                <View className="mt-4">
                   <Text className="text-white text-2xl mt-2 mb-1">
                     Description*
                   </Text>
@@ -588,18 +609,18 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
               </View>
 
               {/* Members Section */}
-              <View className="">
+              <View className="mt-4">
                 <Text className="text-white text-2xl mt-4 mb-4">
                   Add members
                 </Text>
 
-                <View className="flex-row flex-wrap -mx-2 mb-4">
+                <View className="flex-row flex-wrap -mx-2 mb-4 ">
                   {/* Add Members Card */}
 
                   {formData.members.map((member) => (
                     <MemberCard
-                      key={member._id}
-                      imageUrl={member.profilePic}
+                      key={member?._id}
+                      imageUrl={member?.profilePic}
                       name={member.firstName}
                       description={member?.headline}
                       isAdmin={true}
@@ -608,7 +629,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                     />
                   ))}
 
-                  <View className="w-1/2 px-2 h-44 flex-shrink-0 mb-4">
+                  <View className="w-1/2 px-2 h-44 flex-shrink-0 mt-2 mb-4">
                     <TouchableOpacity
                       className="bg-black border border-[#515151] w-48 rounded-lg p-4 items-center justify-center h-52"
                       onPress={() => setShowMembersModal(true)}
@@ -635,9 +656,10 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
 
           {/* Create Team Button */}
           <View
-            className="bg-black h-32"
+            className="bg-black border-[#515151] border-t-[0.5px] h-20"
             style={{
               position: "relative",
+              // borderColor:"606060",
               bottom: 0,
               left: 0,
               right: 0,
@@ -648,7 +670,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
               <ActivityIndicator size="large" color="#fff" />
             ) : (
               <TouchableOpacity
-                className="bg-[#12956B] rounded-lg p-4 mt-8 mb-6 absolute bottom-0 left-0 right-0"
+                className="bg-[#12956B] rounded-lg p-3  mb-2 absolute bottom-0 left-6 right-6"
                 onPress={handleCreateTeam}
               >
                 <Text className="text-white text-center text-2xl">

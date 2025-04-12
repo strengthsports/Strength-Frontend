@@ -145,26 +145,29 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
 
       {/* Live Indicator */}
       {isLive && (
-        <View className="rounded-full absolute right-5 top-5 bg-[#BC3D40] px-2 py-0.5 flex-row items-center justify-center">
+        <View className="rounded-full absolute right-5 top-5 bg-[#BC3D40] px-[9px] flex-row items-center justify-center">
           <Animated.Text
             className="text-lg text-white font-bold"
-            style={{ opacity: opacityValue }}
+            style={[
+              { opacity: opacityValue },
+              { fontSize: 19, textAlign: "center", paddingTop: 6 },
+            ]}
           >
             &bull;{" "}
           </Animated.Text>
-          <TextScallingFalse className="text-lg text-white font-bold">
+          <TextScallingFalse className="text-[11px] text-white font-bold">
             LIVE
           </TextScallingFalse>
         </View>
       )}
 
       {/* Border */}
-      <View className="h-[0.8] bg-[#454545] my-1" />
+      <View className="h-[0.8] bg-[#252525] my-1" />
 
       {/* Teams Section */}
       <View className="px-4 mt-1">
         {/* Team 1 */}
-        <View className="flex-row items-center justify-between my-2">
+        <View className="flex-row items-center justify-between mt-2 mb-1">
           <NameFlagSubCard
             flag={getCountryCode(match.t1)}
             teamName={extractShortName(match.t1)}
@@ -200,7 +203,7 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
         </View>
 
         {/* Team 2 */}
-        <View className="flex-row items-center justify-between my-2">
+        <View className="flex-row items-center justify-between mt-1 mb-2">
           <NameFlagSubCard
             flag={getCountryCode(match.t2)}
             teamName={extractShortName(match.t2)}
@@ -236,7 +239,7 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
         </View>
       </View>
       {/* Match Status */}
-      <TextScallingFalse className="p-1 ml-4 text-neutral-400 text-base">
+      <TextScallingFalse className="py-2 px-1 ml-4 text-neutral-400 text-base">
         {match.status}
       </TextScallingFalse>
     </>

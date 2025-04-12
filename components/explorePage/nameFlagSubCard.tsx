@@ -11,14 +11,23 @@ const NameFlagSubCard = ({
   teamName: string;
 }) => {
   const teamLogo = teamLogos[teamName]; // Fetch team logo if available
+  const imgUrl = require("../../assets/images/IN.png");
 
   return (
     <View style={styles.nameCard}>
       {/* Display country flag if it's not "Unknown", otherwise fallback to team logo */}
-      {flag !== "Unknown" ? (
-        <CountryFlag isoCode={flag} size={14} style={styles.countryFlag} />
+      {flag === "Unknown" ? (
+        <View style={styles.logoContainer}>
+          <Image source={imgUrl} style={styles.teamLogo} resizeMode="contain" />
+        </View>
       ) : teamLogo ? (
-        <Image source={teamLogo} style={styles.teamLogo} resizeMode="contain" />
+        <View style={styles.logoContainer}>
+          <Image
+            source={teamLogo}
+            style={styles.teamLogo}
+            resizeMode="contain"
+          />
+        </View>
       ) : null}
       <Text style={styles.teamName}>{teamName}</Text>
     </View>
@@ -32,10 +41,14 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   countryFlag: { borderRadius: 2 },
+  logoContainer: {
+    width: 27,
+    height: 20,
+    borderRadius: 2,
+  },
   teamLogo: {
-    width: 26,
-    height: 26,
-    borderRadius: 12,
+    width: "100%",
+    height: "100%",
   },
   teamName: {
     color: "white",

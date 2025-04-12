@@ -279,7 +279,7 @@ const Overview = () => {
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
-                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center"
+                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center mr-40"
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
                 onPress={handleScrollToStart}
               >

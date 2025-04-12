@@ -41,11 +41,11 @@ const Media = () => {
     );
 
   return (
-    <View className="h-full">
+    <View className="flex-1">
       <FlatList
         data={imageUrls}
         keyExtractor={(item, index) => `${item}-${index}`}
-        numColumns={3} // Adjusts for responsiveness
+        numColumns={3}
         renderItem={({ item }) => (
           <Image
             source={{ uri: item }}
@@ -65,8 +65,8 @@ const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   image: {
-    width: width / 2 - 10, // Responsive grid layout (2 columns)
-    height: 105, // Fixed height (adjust if needed)
-    margin: 5,
+    width: width / 3 - 4,
+    height: width / 3 - 4,
+    margin: 2,
   },
 });

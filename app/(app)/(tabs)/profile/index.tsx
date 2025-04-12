@@ -116,7 +116,7 @@ const Overview = () => {
               ))}
               {/* Add Tab Button */}
               <TouchableOpacity
-                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center mr-52"
+                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center mr-40"
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
                 onPress={() => router.push("/(app)/(profile)/edit-overview")}
               >

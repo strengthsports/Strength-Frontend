@@ -1,0 +1,110 @@
+import React from "react";
+import { View, Text, Image } from "react-native";
+import { ThemedText } from "~/components/ThemedText";
+import img from "@/assets/images/teams/Vector 64.png";
+
+type TeamCardProps = {
+  teamName: string;
+  sportCategory: string;
+  captain: string;
+  viceCapt: string;
+  location: string;
+  teamLogo: string;
+  sportLogo: string;
+};
+const TeamCard: React.FC<TeamCardProps> = ({
+  teamName,
+  sportCategory,
+  captain,
+  viceCapt,
+  location,
+  teamLogo,
+  sportLogo,
+}) => {
+  return (
+    <>
+      <View className="rounded-lg max-width-[500] mb-3 p-3 pt-[-8]">
+        <View className="flex flex-row py-4 w-64 max-w-84">
+          <Image source={{ uri: teamLogo }} className="w-32 h-32 mt-1 rounded ml-8" />
+          <View className="flex flex-row items-center pl-10">
+          <Image source={img} className="mr-3 ml-[-6px] h-[120px] fill-red-500" />
+
+            <View className="flex flex-col pl-4">
+              <Text className="text-white font-bold  items-center text-5xl">
+                {(teamName).toUpperCase()}
+              </Text>
+            </View>
+          </View>
+        </View>
+        {/* Team Details */}
+        <View >
+          <View className="flex flex-row items-center  h-12 bg-[#191919] text-white px-1 mt-1 rounded-t-[10px]">
+            <View className="flex-1" >
+              <Text className="text-left   ml-4 text-white font-bold text-2xl w-[200px]">
+                SPORT CATEGORY
+              </Text>
+            </View>
+            <View className="flex-1  justify-center items-center">
+             <View className="w-[14px] border-t-2 border-white"></View>
+            </View>
+            <View className="flex-1 flex-row items-center justify-center space-x-2">
+              <Image
+                source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
+                className="h-6 w-6 mr-2"
+              />
+              <ThemedText className="text-white text-xl">
+                {sportCategory}
+              </ThemedText>
+            </View>
+          </View>
+          {/* Captain */}
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919] px-1 mt-1  text-white">
+            <View className="flex-1">
+            <Text className="text-left   ml-4 text-white font-bold text-2xl w-[200px]">
+                CAPTAIN
+              </Text>
+            </View>
+            <View className="flex-1  justify-center items-center">
+             <View className="w-[14px] border-t-2 border-white"></View>
+            </View>
+            <View className="flex-1 justify-end items-center">
+              <ThemedText className="text-white text-xl">{captain}</ThemedText>
+            </View>
+          </View>
+
+          {/* Vice Captain */}
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-1 mt-1">
+            <View className="flex-1">
+            <Text className="text-left   ml-4 text-white font-bold text-2xl w-[200px]">
+               VICE CAPTAIN
+              </Text>
+            </View>
+            <View className="flex-1  justify-center items-center">
+             <View className="w-[14px] border-t-2 border-white"></View>
+            </View>
+            <View className="flex-1 justify-end items-center">
+              <ThemedText className="text-white text-xl">{viceCapt}</ThemedText>
+            </View>
+          </View>
+
+          {/* Location */}
+          <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-1 mt-1 rounded-b-[10px]">
+            <View className="flex-1">
+            <Text className="text-left   ml-4 text-white font-bold text-2xl w-[200px]">
+                LOCATION
+              </Text>
+            </View>
+            <View className="flex-1  justify-center items-center">
+             <View className="w-[14px] border-t-2 border-white"></View>
+            </View>
+            <View className="flex-1 justify-end items-center">
+              <ThemedText className="text-white text-xl">{location}</ThemedText>
+            </View>
+          </View>
+        </View>
+      </View>
+    </>
+  );
+};
+
+export default TeamCard;

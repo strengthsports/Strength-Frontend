@@ -11,11 +11,7 @@ import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
-import { Post } from "~/types/post";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
-import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "~/reduxStore";
 import { Image } from "expo-image";
 
 const blurhash =
@@ -25,7 +21,8 @@ interface CustomImageSliderProps {
   aspectRatio: [number, number];
   onRemoveImage: (index: number) => void;
   isFeedPage?: boolean;
-  postDetails?: Post;
+  isMyActivity?: boolean;
+  postId?: string;
   setIndex: (index: any) => any;
   onDoubleTap?: () => any;
 }
@@ -45,9 +42,9 @@ const ImageSlide = memo(
     index,
     onRemove,
     isFirstSlide,
-    totalSlides,
     isFeedPage,
-    postDetails,
+    isMyActivity,
+    postId,
     onDoubleTap,
   }: {
     uri: string;
@@ -56,63 +53,51 @@ const ImageSlide = memo(
     isFirstSlide: boolean;
     totalSlides: number;
     isFeedPage?: boolean;
-    postDetails?: Post;
+    isMyActivity?: boolean;
+    postId?: string;
     onDoubleTap?: () => any;
   }) => {
     const router = useRouter();
-    const dispatch = useDispatch<AppDispatch>();
     const [isError, setIsError] = useState(false);
     return (
       <TouchableWithDoublePress
         className={`flex-1 relative overflow-hidden ${
-          isFirstSlide ? "ml-2" : ""
+          !isMyActivity && isFirstSlide ? "ml-2" : ""
         }`}
         activeOpacity={0.95}
         onSinglePress={() => {
           isFeedPage &&
             router.push({
-              pathname: "/post-view/1" as RelativePathString,
+              pathname: `/post-view/${postId}` as RelativePathString,
             });
-          dispatch(setCurrentPost(postDetails));
         }}
         onDoublePress={onDoubleTap}
       >
-        {isError ? (
-          <Image
-            source={require("../../assets/images/nocover.png")}
-            contentFit="cover"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              inset: 0,
-              borderTopLeftRadius: isFirstSlide ? 16 : 0,
-              borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-            }}
-          />
-        ) : (
-          <Image
-            source={{ uri }}
-            contentFit="cover"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              inset: 0,
-              borderTopLeftRadius: isFirstSlide ? 16 : 0,
-              borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-            }}
-            placeholder={require("../../assets/images/nocover.png")}
-            // placeholder={{ blurhash }}
-            placeholderContentFit="cover"
-            transition={500}
-            cachePolicy="memory-disk"
-            onError={(e) => {
-              setIsError(true);
-              console.log(e);
-            }}
-          />
-        )}
+        <Image
+          source={{ uri }}
+          contentFit="cover"
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            inset: 0,
+            borderTopLeftRadius: isFirstSlide ? 16 : 0,
+            borderBottomLeftRadius: isFirstSlide ? 16 : 0,
+            borderTopWidth: isFirstSlide ? 0.5 : 0.4,
+            borderBottomWidth: isFirstSlide ? 0.5 : 0.4,
+            borderLeftWidth: isFirstSlide ? 0.5 : 0,
+            borderColor: "#2F2F2F",
+          }}
+          placeholder={require("../../assets/images/nocover.png")}
+          // placeholder={{ blurhash }}
+          placeholderContentFit="cover"
+          transition={500}
+          cachePolicy="memory-disk"
+          onError={(e) => {
+            setIsError(true);
+            console.log(e);
+          }}
+        />
         {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
       </TouchableWithDoublePress>
     );
@@ -124,7 +109,7 @@ const CustomImageSlider = ({
   aspectRatio,
   onRemoveImage,
   isFeedPage,
-  postDetails,
+  postId,
   setIndex,
   onDoubleTap,
 }: // renderPagination
@@ -245,7 +230,7 @@ CustomImageSliderProps) => {
               isFirstSlide={index === 0}
               totalSlides={images.length}
               isFeedPage={isFeedPage}
-              postDetails={postDetails}
+              postId={postId}
               onDoubleTap={onDoubleTap}
             />
           ))}

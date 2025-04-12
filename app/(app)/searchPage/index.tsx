@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,22 @@ import SearchInput from "~/components/search/searchInput";
 import SearchHistoryText from "~/components/search/searchHistoryText";
 import SearchHistoryProfile from "~/components/search/searchHistoryProfile";
 import nopic from "@/assets/images/nopic.jpg";
+import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
+import { createSelector } from "@reduxjs/toolkit";
+
+// Memoized Redux selectors
+const selectFilteredSearchHistory = createSelector(
+  (state: RootState) => state.search.searchHistory,
+  (searchHistory) => searchHistory.filter((item) => item !== null)
+);
+
+const selectUserLocation = createSelector(
+  (state: RootState) => state.profile.user?.address?.location,
+  (location) => ({
+    latitude: location?.coordinates?.[1] ?? null,
+    longitude: location?.coordinates?.[0] ?? null,
+  })
+);
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
@@ -35,174 +51,150 @@ const SearchPage: React.FC = () => {
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchBarHeight, setSearchBarHeight] = useState(0);
 
-  // Redux State: Extract user info & search history
+  // Memoized Redux state selections
   const userId = useSelector((state: RootState) => state.profile.user?._id);
-  const location = useSelector(
-    (state: RootState) => state.profile.user?.address?.location
-  );
-  const latitude = location?.coordinates?.[1] ?? null;
-  const longitude = location?.coordinates?.[0] ?? null;
-
-  const searchHistory = useSelector(
-    (state: RootState) =>
-      state.search.searchHistory.filter((item) => item !== null) // Filter out null values
-  );
+  const { latitude, longitude } = useSelector(selectUserLocation);
+  const searchHistory = useSelector(selectFilteredSearchHistory);
   const recentSearches = useSelector(
     (state: RootState) => state.search.recentSearches
   );
 
-  // console.log("Search History (Stored Users):", searchHistory);
+  const [searchUsers] = useSearchUsersMutation();
 
-  // Search API Mutation Hook
-  const [searchUsers, { isLoading }] = useSearchUsersMutation();
-
+  // API call with proper cleanup
   useEffect(() => {
-    if (searchText.length > 0) {
-      setIsSearching(true);
-      console.log("Search Text : ", searchText);
-      const fetchResults = async () => {
-        try {
-          const response = await searchUsers({
-            username: searchText,
-            limit: 10,
-            page: 1,
-            latitude,
-            longitude,
-            userId,
-          }).unwrap();
-
-          console.log("Response :", response);
-          if (!response || response.length === 0) {
-            console.warn("⚠ No results found from API!");
-          }
-
-          setSearchResults(response || []);
-        } catch (err) {
-          console.error("Search error:", err);
-        } finally {
-          setIsSearching(false);
-        }
-      };
-
-      // console.log(fetchResults);
-
-      const debounce = setTimeout(fetchResults, 300); // Add debounce to reduce API calls
-      return () => clearTimeout(debounce);
-    } else {
+    if (!searchText.trim()) {
       setSearchResults([]);
-    }
-  }, [searchText, latitude, longitude, userId]);
-  const clearSearchHistory = () => {
-    dispatch(resetSearchHistory());
-  };
-  console.log(searchResults);
-
-  // Handle Item Click (Save to Search History & Recent Searches)
-  const handleItemPress = (user: any) => {
-    const serializedUser = encodeURIComponent(
-      JSON.stringify({ id: user._id, type: "User" })
-    );
-    console.log("Selected User:", user); // Debug log
-
-    if (!user?._id) {
-      console.error("Invalid user:", user); // Log invalid data
       return;
     }
 
-    setSearchText(`${user.firstName} ${user.lastName}`);
-    dispatch(addSearchHistory(user)); // Store full user object in Redux
-    dispatch(addRecentSearch(`${user.firstName} ${user.lastName}`));
+    const fetchResults = async () => {
+      setIsSearching(true);
+      try {
+        const response = await searchUsers({
+          username: searchText,
+          limit: 10,
+          page: 1,
+          latitude,
+          longitude,
+          userId,
+        }).unwrap();
 
-    router.push(`/(app)/(profile)/profile/${serializedUser}`);
-  };
+        setSearchResults((prev) =>
+          JSON.stringify(prev) === JSON.stringify(response)
+            ? prev
+            : response || []
+        );
+      } catch (err) {
+        console.error("Search error:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchResults, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchText, latitude, longitude, userId]);
+
+  // Stable event handler
+  const handleItemPress = useCallback(
+    (user: any) => {
+      if (!user?._id) return;
+
+      const fullName = `${user.firstName} ${user.lastName}`;
+      setSearchText(fullName);
+      dispatch(addSearchHistory(user));
+      dispatch(addRecentSearch(fullName));
+
+      const serializedUser = encodeURIComponent(
+        JSON.stringify({ id: user._id, type: user.type })
+      );
+      router.push(`/(app)/(profile)/profile/${serializedUser}`);
+    },
+    [dispatch, router]
+  );
+
+  const clearSearchHistory = useCallback(() => {
+    dispatch(resetSearchHistory());
+  }, [dispatch]);
+
+  // Memoized list renderers
+  const renderSearchResult = useCallback(
+    ({ item }: { item: any }) => (
+      <SearchResultItem item={item} onPress={handleItemPress} />
+    ),
+    [handleItemPress]
+  );
+
+  const renderHistoryProfile = useCallback(
+    ({ item }: { item: any }) => (
+      <SearchHistoryProfile
+        name={item.firstName}
+        username={item.username}
+        profilePic={item.profilePic}
+      />
+    ),
+    []
+  );
+
+  const renderRecentSearch = useCallback(
+    ({ item }: { item: string }) => (
+      <SearchHistoryText searchText={item} setSearchText={setSearchText} />
+    ),
+    []
+  );
 
   return (
     <SafeAreaView>
-      {/* Header Section */}
       <View
-        className="flex-row items-center my-4 gap-x-2 max-w-[640px] w-[90%] mx-auto"
-        onLayout={(event) => {
-          const { height } = event.nativeEvent.layout;
-          setSearchBarHeight(height); // 🟢 Store search bar height dynamically
-        }}
+        className="flex-row items-center my-3 gap-x-2 max-w-[640px] w-[95%] mx-auto"
+        onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
       >
         <TouchableOpacity onPress={() => router.back()}>
-          <AntDesign name="arrowleft" size={24} color="white" />
+          <BackIcon2 />
         </TouchableOpacity>
-        <SearchInput searchText={searchText} setSearchText={setSearchText} />
+        <MemoizedSearchInput
+          searchText={searchText}
+          setSearchText={setSearchText}
+        />
       </View>
 
-      {/* Live Search Results Dropdown */}
-      {searchText.length > 0 && (
-        <View className="px-5">
-          {isLoading ? (
+      {searchText ? (
+        <View className="px-5 mt-3">
+          {isSearching ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
             <FlatList
-              data={searchResults || []}
-              renderItem={({ item }) =>
-                item ? (
-                  <TouchableOpacity
-                    onPress={() => handleItemPress(item)}
-                    className="flex-row items-center py-2 px-4 border-b border-black"
-                  >
-                    <Image
-                      source={
-                        item?.profilePic && item.profilePic.trim() !== ""
-                          ? { uri: item.profilePic }
-                          : nopic
-                      }
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
-
-                    <Text className="text-white text-lg font-light">
-                      {item.firstName} {item.lastName}
-                    </Text>
-                  </TouchableOpacity>
-                ) : null
-              }
-              keyExtractor={(item, index) =>
-                item?._id ? item._id.toString() : index.toString()
-              }
+              data={searchResults}
+              renderItem={renderSearchResult}
+              keyExtractor={(item) => item._id}
             />
           )}
         </View>
-      )}
-
-      {/* Recent Profiles and Search History */}
-
-      {searchText.length === 0 && (
+      ) : (
         <View className="px-5">
           <View className="flex-row justify-between items-center">
             <Text className="text-2xl text-[#808080] mb-2">Recent</Text>
+            <Text
+              onPress={clearSearchHistory}
+              className="text-2xl text-[#808080] mb-2"
+            >
+              Clear
+            </Text>
           </View>
 
-          {/* Search History Profiles */}
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
             data={searchHistory}
-            renderItem={({ item }) =>
-              item ? (
-                <SearchHistoryProfile
-                  name={item.firstName ?? "Mrinal"}
-                  username={item.username ?? "Anand"}
-                  profilePic={item.profilePic}
-                />
-              ) : null
-            }
-            keyExtractor={(item, index) => `${item?._id || index}-${index}`}
-            contentContainerStyle={{
-              paddingHorizontal: 0,
-              gap: 16,
-            }}
+            renderItem={renderHistoryProfile}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={{ gap: 16 }}
           />
 
-          {/* Recent Searches */}
           <FlatList
-            showsVerticalScrollIndicator={false}
             data={recentSearches}
-            renderItem={({ item }) => <SearchHistoryText searchText={item} />}
+            renderItem={renderRecentSearch}
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={{ gap: 14, paddingVertical: 16 }}
           />
@@ -211,5 +203,25 @@ const SearchPage: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+// Memoized components
+const MemoizedSearchInput = memo(SearchInput);
+
+const SearchResultItem = memo(
+  ({ item, onPress }: { item: any; onPress: (user: any) => void }) => (
+    <TouchableOpacity
+      onPress={() => onPress(item)}
+      className="flex-row items-center py-2 px-4 border-b border-black"
+    >
+      <Image
+        source={item?.profilePic?.trim() ? { uri: item.profilePic } : nopic}
+        className="w-10 h-10 rounded-full mr-3"
+      />
+      <Text className="text-white text-lg font-light">
+        {item.firstName} {item.lastName}
+      </Text>
+    </TouchableOpacity>
+  )
+);
 
 export default SearchPage;

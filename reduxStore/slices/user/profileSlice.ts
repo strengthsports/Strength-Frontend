@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
-import { ProfileState, TargetUser, User } from "@/types/user";
+import { Member, ProfileState, TargetUser, User } from "@/types/user";
 import { loginUser, logoutUser } from "./authSlice";
-import { PicData } from "~/types/others";
+import { InviteMember, PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser, resetOnboardingData } from "./onboardingSlice";
 
@@ -27,7 +27,7 @@ export const editUserProfile = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
-    console.log("User data input :", userdata);
+    // console.log("User data input :", userdata);
 
     // userdata.forEach((value, key) => {
     //   console.log(`${key}: ${value}`);
@@ -44,16 +44,16 @@ export const editUserProfile = createAsyncThunk<
       }
     );
 
-    console.log("Response:", response);
+    // console.log("Response:", response);
     const data = await response.json();
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error getting user");
     }
-    console.log("Data : ", data.data.updatedUser);
+    // console.log("Data : ", data.data.updatedUser);
     return data.data.updatedUser;
   } catch (error: unknown) {
-    console.log("Actual api error : ", error);
+    // console.log("Actual api error : ", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unexpected error occurred";
     return rejectWithValue(errorMessage);
@@ -67,7 +67,7 @@ export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(
     try {
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      console.log("Token : ", token);
+      // console.log("Token : ", token);
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post`,
@@ -80,13 +80,13 @@ export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(
         }
       );
 
-      console.log("Response:", response);
+      // console.log("Response:", response);
       const data = await response.json();
 
       if (!response.ok) {
         return rejectWithValue(data.message || "Error getting posts");
       }
-      console.log("Data : ", data?.data?.formattedPosts);
+      // console.log("Data : ", data?.data?.formattedPosts);
       return data?.data?.formattedPosts;
     } catch (error: unknown) {
       console.log("Actual api error : ", error);
@@ -122,13 +122,13 @@ export const fetchMyProfile = createAsyncThunk<
         }
       );
 
-      console.log("Response:", response);
+      // console.log("Response:", response);
       const data = await response.json();
 
       if (!response.ok) {
         return rejectWithValue(data.message || "Error getting profile");
       }
-      console.log("Data : ", data.data);
+      // console.log("Data : ", data.data);
       return data.data;
     } catch (error: unknown) {
       console.log("Actual api error : ", error);
@@ -149,7 +149,7 @@ export const editUserSportsOverview = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
-    console.log("User data input :", sportsData);
+    // console.log("User data input :", sportsData);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/add-sport`,
@@ -163,13 +163,13 @@ export const editUserSportsOverview = createAsyncThunk<
       }
     );
 
-    console.log("Response:", response);
+    // console.log("Response:", response);
     const data = await response.json();
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error editing sports overview");
     }
-    console.log("Data : ", data.data);
+    // console.log("Data : ", data.data);
     return data.data;
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
@@ -189,7 +189,7 @@ export const editUserAbout = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
     console.log("Token : ", token);
-    console.log("User data input :", userAbout);
+    // console.log("User data input :", userAbout);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateAbout`,
@@ -203,13 +203,13 @@ export const editUserAbout = createAsyncThunk<
       }
     );
 
-    console.log("Response:", response);
+    // console.log("Response:", response);
     const data = await response.json();
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error editing sports overview");
     }
-    console.log("Data : ", data);
+    // console.log("Data : ", data);
     return data.data.about;
   } catch (error: unknown) {
     console.log("Actual api error : ", error);
@@ -249,7 +249,7 @@ export const uploadPic = createAsyncThunk<
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("Error updating pic :", response.json());
+      // console.log("Error updating pic :", response.json());
       return rejectWithValue(data.message || "Error updating pic");
     }
 
@@ -282,10 +282,10 @@ export const removePic = createAsyncThunk<any, string, { rejectValue: string }>(
       );
 
       const data = await response.json();
-      console.log("Data after removing pic api call : ", data);
+      // console.log("Data after removing pic api call : ", data);
 
       if (!response.ok) {
-        console.log("Error removing pic :", response.json());
+        // console.log("Error removing pic :", response.json());
         return rejectWithValue(data.message || "Error removing pic");
       }
 
@@ -298,6 +298,129 @@ export const removePic = createAsyncThunk<any, string, { rejectValue: string }>(
     }
   }
 );
+
+// Fetch Associates/Members list of page
+export const fetchAssociates = createAsyncThunk<
+  Member[],
+  any,
+  { rejectValue: string }
+>("profile/fetchAssociates", async (page, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+
+    // Dynamically build the URL based on whether page is null or not
+    const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+    const url =
+      page !== null
+        ? `${baseUrl}/api/v1/page-members?pageId=${page.pageId}`
+        : `${baseUrl}/api/v1/page-members`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    console.log("Data after fetching associates : ", data);
+
+    if (!response.ok) {
+      console.log("Error fetching associates :", response.json());
+      return rejectWithValue(data.message || "Error fetching associates");
+    }
+
+    return data.data;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
+  }
+});
+
+// Invite Associate/s
+export const inviteAssociates = createAsyncThunk<
+  any,
+  InviteMember,
+  { rejectValue: string }
+>(
+  "profile/inviteAssociates",
+  async (users: InviteMember, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/send-pageJoinInvitation`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(users),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.log("Error sending associates invitation :", response.json());
+        return rejectWithValue(
+          data.message || "Error sending invitations to associates"
+        );
+      }
+
+      return data.data;
+    } catch (error: unknown) {
+      console.log("Actual api error : ", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Remove Associate/s
+export const removeAssociates = createAsyncThunk<
+  any,
+  string[],
+  { rejectValue: string }
+>("profile/removeAssociates", async (users: string[], { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/remove-pageAssociates`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ associateIds: users }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.log("Error removing associates :", response.json());
+      return rejectWithValue(data.message || "Error removing associates");
+    }
+
+    return users;
+  } catch (error: unknown) {
+    console.log("Actual api error : ", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unexpected error occurred";
+    return rejectWithValue(errorMessage);
+  }
+});
 
 const profileSlice = createSlice({
   name: "profile",
@@ -400,7 +523,11 @@ const profileSlice = createSlice({
       })
       .addCase(onboardingUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = { ...state.user, ...action.payload };
+        console.log("Onboard response : ", action.payload);
+        state.user = {
+          ...state.user,
+          profilePic: action.payload.data,
+        };
         state.msgBackend = action.payload.message;
         resetOnboardingData();
         state.error = null;
@@ -510,6 +637,48 @@ const profileSlice = createSlice({
       state.loading = false;
     });
     builder.addCase(getOwnPosts.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Fetch associates
+    builder.addCase(fetchAssociates.pending, (state) => {
+      state.error = null;
+      state.loading = true;
+    });
+    builder.addCase(fetchAssociates.fulfilled, (state, action) => {
+      state.user.associates = action.payload;
+      state.error = null;
+      state.loading = false;
+    });
+    builder.addCase(fetchAssociates.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Invite associates
+    builder.addCase(inviteAssociates.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(inviteAssociates.fulfilled, (state) => {
+      state.loading = false;
+    });
+    builder.addCase(inviteAssociates.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Remove associates
+    builder.addCase(removeAssociates.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(removeAssociates.fulfilled, (state, action) => {
+      state.loading = false;
+      state.user.associates = state.user.associates.filter(
+        (associate: Member) => !action.payload.includes(associate._id)
+      );
+    });
+    builder.addCase(removeAssociates.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

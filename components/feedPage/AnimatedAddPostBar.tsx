@@ -1,22 +1,26 @@
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, TouchableOpacity, Animated, Easing } from "react-native";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
+import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
 
-const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
-  const router = useRouter();
-
+const AnimatedAddPostBar = ({
+  suggestionText = "What's on your mind...",
+}: {
+  suggestionText: string;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
   // Use layout animation approach instead of mixing native and JS drivers
-  const [expanded, setExpanded] = useState(false);
   const containerWidthAnim = useRef(new Animated.Value(37)).current;
   const textOpacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // All animations will use the JS driver (useNativeDriver: false)
+    // Animation should run only once
     Animated.parallel([
       // Expand the width
       Animated.timing(containerWidthAnim, {
-        toValue: expanded ? 280 : 37, // Fixed width in pixels instead of percentage
+        toValue: 280, // Fixed width in pixels instead of percentage
         duration: 400,
         easing: Easing.out(Easing.ease),
         useNativeDriver: false, // Width changes must use JS driver
@@ -24,24 +28,17 @@ const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
 
       // Fade in text
       Animated.timing(textOpacityAnim, {
-        toValue: expanded ? 1 : 0,
+        toValue: 1,
         duration: 350,
-        delay: expanded ? 100 : 0,
+        delay: 100,
         useNativeDriver: false, // Consistent with other animations
       }),
-    ]).start(() => {
-      // Animation completed
-    });
+    ]).start();
+  }, []); // Empty dependency array ensures this runs only once
 
-    // Start expanded after a brief delay when component mounts
-    if (!expanded) {
-      const timer = setTimeout(() => {
-        setExpanded(true);
-      }, 300);
-
-      return () => clearTimeout(timer);
-    }
-  }, [expanded, containerWidthAnim, textOpacityAnim]);
+  const handleOpenAddPostContainer = () => {
+    dispatch(setAddPostContainerOpen(true));
+  };
 
   return (
     <View style={{ alignItems: "center" }}>
@@ -63,9 +60,10 @@ const AnimatedAddPostBar = ({ suggestionText = "What's on your mind..." }) => {
             justifyContent: "space-between",
             paddingHorizontal: 6,
           }}
-          onPress={() => router.push(`/addPost?text=${suggestionText}`)}
+          onPress={handleOpenAddPostContainer}
         >
           <Animated.Text
+            allowFontScaling={false}
             style={{
               color: "grey",
               fontSize: 14,

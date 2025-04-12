@@ -16,6 +16,7 @@ export type Post = {
     firstName: string;
     lastName: string;
     headline: string;
+    username: string;
   };
   createdAt: string;
   likesCount: number;
@@ -25,3 +26,31 @@ export type Post = {
   isReported: boolean;
   [key: string]: any;
 };
+
+export interface FeedResponse {
+  data: {
+    posts: Post[];
+    lastTimestamp: string | null;
+    nextPage: number;
+  };
+  message: string;
+  statusCode: number;
+  success: boolean;
+}
+
+export interface Comment {
+  _id: string;
+  postedBy: {
+    _id: string;
+    type: string;
+    profilePic: string;
+    firstName: string;
+    lastName: string;
+    headline: string;
+    username: string;
+  };
+  text: string;
+  commentsCount: number;
+  likesCount: number;
+  [key: string]: any;
+}

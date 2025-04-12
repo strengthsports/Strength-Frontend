@@ -1,3 +1,4 @@
+// store.ts
 import { enableMapSet } from "immer";
 enableMapSet();
 
@@ -12,6 +13,7 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./slices/user/authSlice";
 import signupReducer from "./slices/user/signupSlice";
@@ -21,28 +23,39 @@ import exploreReducer from "./slices/explore/exploreSlice";
 import hashtagReducer from "./slices/hashtagPage/hashtagPageSlice";
 import profileReducer from "./slices/user/profileSlice";
 import teamReducer from "./slices/team/teamSlice";
-import searchReducer from "./slices/explore/searchSlice"
+import searchReducer from "./slices/explore/searchSlice";
+import sportsReducer from "./slices/team/sportSlice";
+import teamForumReducer from "./slices/team/teamForumSlice";
+import feedReducer from "./slices/feed/feedSlice";
+import postReducer from "./slices/post/postSlice";
 import { profileApi } from "./api/profile/profileApi";
+import { feedApi } from "./api/feed/services/feedApi";
 import { sportsApi } from "./api/sportsApi";
 import { postsApi } from "./api/posts/postsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { cricketApi } from "./api/explore/cricketApi";
 import { searchApi } from "./api/explore/searchApi";
-
-// Single feedApi
-import { feedApi } from "./api/feed/services/feedApi";
+import notificationReducer from "./slices/notification/notificationSlice";
 import { footballApi } from "./api/explore/footballApi";
-
+import { articleApi } from "./api/explore/article/articleApi";
 
 // Persist configuration
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "signup", "onboarding", "forgotPassword", "profile","search"],
+  whitelist: [
+    "auth",
+    "signup",
+    "onboarding",
+    "forgotPassword",
+    "profile", 
+    "search", "teamForum",
+    "feed",
+  ],
+  blacklist: [], // Add any API reducers here
 };
 
-// Combine reducers
 const rootReducer = combineReducers({
   auth: authReducer,
   signup: signupReducer,
@@ -52,7 +65,12 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   hashtagPage: hashtagReducer,
   team: teamReducer,
-  search:searchReducer,
+  sports: sportsReducer,
+  search:  searchReducer,
+  teamForum: teamForumReducer,
+  feed: feedReducer,
+  post: postReducer,
+  notification: notificationReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,
@@ -61,21 +79,18 @@ const rootReducer = combineReducers({
   [footballApi.reducerPath]: footballApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
-  [searchApi.reducerPath]: searchApi.reducer, 
- 
-  // Use feedApi as the single reducer for all feed-related features
+  [searchApi.reducerPath]: searchApi.reducer,
+  [articleApi.reducerPath]: articleApi.reducer,
 });
 
-// Create persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const store = configureStore({
+export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        ignoredPaths: ["profile.user.followings"],
       },
     }).concat(
       profileApi.middleware,
@@ -86,16 +101,12 @@ const store = configureStore({
       footballApi.middleware,
       feedApi.middleware,
       postsApi.middleware,
-      searchApi.middleware
-
-      // Single middleware for all feed features
+      searchApi.middleware,
+      articleApi.middleware
     ),
 });
 
-// Create persistor
 export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-export default store;

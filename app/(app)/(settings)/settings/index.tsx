@@ -30,6 +30,8 @@ import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import { ToastAndroid } from "react-native";
 import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Platform } from "react-native";
+import { resetFeed } from "~/reduxStore/slices/feed/feedSlice";
 
 const index = () => {
   const router = useRouter();
@@ -46,13 +48,6 @@ const index = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: any) => state?.profile);
 
-  // Check if modal close request has came
-  useEffect(() => {
-    if (accountSettingsModal === "true") {
-      setModalVisible((prev) => !prev);
-    }
-  }, []);
-
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
     try {
@@ -65,7 +60,7 @@ const index = () => {
             visibilityTime: 1500,
             autoHide: true,
           });
-      router.push("/(auth)/login");
+      dispatch(resetFeed());
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
@@ -78,6 +73,13 @@ const index = () => {
           });
     }
   };
+
+  // Check if modal close request has came
+  useEffect(() => {
+    if (accountSettingsModal === "true") {
+      setModalVisible((prev) => !prev);
+    }
+  }, []);
 
   const closeModal = () => setModalVisible(false);
   const openModal = (type: React.SetStateAction<string>) => {
@@ -104,7 +106,7 @@ const index = () => {
   };
 
   return (
-    <SafeAreaView>
+    <PageThemeView>
       <View style={styles.TopBarView}>
         <TouchableOpacity
           activeOpacity={0.5}
@@ -139,7 +141,7 @@ const index = () => {
             borderColor: "white",
           }}
         />
-        <View style={{ paddingVertical: 17 }}>
+        <View style={{ paddingVertical: 17, width: 220}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 18, fontWeight: "600" }}
           >
@@ -205,10 +207,22 @@ const index = () => {
           <Ionicons name="exit-outline" size={31} color="white" />
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push("/(auth)/login")}
+            // onPress={() => router.push("/(auth)/login")}
+            onPress={handleLogout}
           >
             <TextScallingFalse style={styles.OptionText}>
               Log Out
+            </TextScallingFalse>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.OptionButtonView}>
+          <Ionicons name="exit-outline" size={31} color="white" />
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push("/(auth)/login")}
+          >
+            <TextScallingFalse style={styles.OptionText}>
+              Log Out (bypass)
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
@@ -612,7 +626,7 @@ const index = () => {
           </View>
         </PageThemeView>
       </Modal>
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

@@ -11,7 +11,7 @@ import React, { memo } from "react";
 import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 
-const Images = () => {
+const Posts = () => {
   const { posts, error, loading } = useSelector((state: any) => state?.profile);
 
   const memoizedEmptyComponent = memo(() => (
@@ -59,7 +59,7 @@ const Images = () => {
   );
 };
 
-export default Images;
+export default Posts;
 
 const { width } = Dimensions.get("window");
 

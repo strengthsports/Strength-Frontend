@@ -1,5 +1,5 @@
 import { profileApi } from "./profileApi";
-import { TargetUser, User } from "~/types/user";
+import { Member, TargetUser, User } from "~/types/user";
 
 export const profileEndpoints = profileApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -13,7 +13,15 @@ export const profileEndpoints = profileApi.injectEndpoints({
       providesTags: (result, error, arg) =>
         result ? [{ type: "UserProfile", id: arg.targetUserId }] : [],
     }),
+    getPageMembers: builder.query<any, { pageId: string }>({
+      query: ({ pageId }) => ({
+        url: "/api/v1/page-members",
+        params: { pageId },
+      }),
+      transformResponse: (response: any) => response.data,
+    }),
   }),
 });
 
-export const { useLazyGetUserProfileQuery } = profileEndpoints;
+export const { useLazyGetUserProfileQuery, useGetPageMembersQuery } =
+  profileEndpoints;

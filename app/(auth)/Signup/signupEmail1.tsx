@@ -27,6 +27,7 @@ import { signupUser } from "~/reduxStore/slices/user/signupSlice";
 import { AppDispatch, RootState } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
+import { dateFormatter } from "~/utils/dateFormatter";
 
 const SignupEmail1 = () => {
   const router = useRouter();
@@ -43,10 +44,12 @@ const SignupEmail1 = () => {
   const [maleSelected, setMaleSelected] = useState(false);
   const [femaleSelected, setFemaleSelected] = useState(false);
 
-  const handleDateChange = (selectedDate: string) => {
-    setDateOfBirth(selectedDate);
+  const handleDateChange = (selectedDate: Date) => {
+    const formatted = dateFormatter(selectedDate, "date");
+    setDateOfBirth(formatted);
     setIsDatePickerVisible(false);
   };
+
 
   const [gender, setGender] = useState("");
   const handleMalePress = () => {
@@ -68,6 +71,7 @@ const SignupEmail1 = () => {
     lastName,
     dateOfBirth,
     gender,
+    userType: "User",
   };
   const feedback = (message: string, type: "error" | "success" = "error") => {
     if (type === "error") {
@@ -75,11 +79,11 @@ const SignupEmail1 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-            type,
-            text1: message,
-            visibilityTime: 3000,
-            autoHide: true,
-          });
+          type,
+          text1: message,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
     } else
       Toast.show({
         type,
@@ -92,6 +96,17 @@ const SignupEmail1 = () => {
   const validateSignupForm = async () => {
     try {
       const SignupPayload = signupSchema.parse(formData);
+
+      // ✅ NOW convert to ISO only for sending to backend
+      const payloadForBackend = {
+        ...SignupPayload,
+        dateOfBirth: SignupPayload.dateOfBirth
+          ? (() => {
+            const [day, month, year] = SignupPayload.dateOfBirth.split("-");
+            return `${year}-${month}-${day}`;
+          })()
+          : undefined,
+      };
 
       const response = await dispatch(signupUser(SignupPayload)).unwrap();
       // console.log('frontend response',response)
@@ -106,7 +121,7 @@ const SignupEmail1 = () => {
         // console.log('Zod response',validationError)
         feedback(validationError, "error");
       } else {
-        console.log('Backend response: ',err)
+        console.log("Backend response: ", err);
         feedback(err || "An error occurred. Please try again.");
       }
     }
@@ -198,7 +213,7 @@ const SignupEmail1 = () => {
             <TextScallingFalse
               style={{ color: "white", fontSize: 14, fontWeight: "500" }}
             >
-              Email or phone number
+              Email
             </TextScallingFalse>
             <TextInputSection
               placeholder=""
@@ -237,7 +252,9 @@ const SignupEmail1 = () => {
                 activeOpacity={0.5}
               >
                 <AntDesign name="calendar" size={25} color="white" />
-                <Text style={{ color: "white", fontSize: 14, fontWeight: "400" }}>
+                <Text
+                  style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+                >
                   {dateOfBirth}
                 </Text>
               </TouchableOpacity>
@@ -395,7 +412,7 @@ const SignupEmail1 = () => {
             <DateTimePicker
               value={new Date()} // Set an initial value for the date picker
               mode="date" // Set the picker mode to 'date'
-              display="spinner" // Default display style
+              display={Platform.OS === "ios" ? "default" : "calendar"} // Default display style
               onChange={(event, selectedDate) => {
                 if (selectedDate) {
                   handleDateChange(selectedDate.toISOString().split("T")[0]); // Pass only the date part
@@ -403,6 +420,7 @@ const SignupEmail1 = () => {
                 setIsDatePickerVisible(false); // Close the date picker
               }}
               themeVariant="dark"
+              maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 13))}
             />
           </View>
         )}

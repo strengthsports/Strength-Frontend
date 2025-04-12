@@ -10,12 +10,13 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
-import Posts from "./posts";
-import Images from "./images";
-import Comments from "./comments";
 import WrittenPost from "./writtenpost";
 import { MotiView } from "moti";
 import Polls from "./polls";
+import Posts from "./posts";
+import Comments from "./comments";
+import Clips from "./clips";
+import Articles from "./articles";
 
 const ActivityLayout = () => {
   const router = useRouter();
@@ -31,10 +32,11 @@ const ActivityLayout = () => {
   const tabs = useMemo(
     () => [
       { name: "Posts" },
-      { name: "Images" },
-      { name: "Comments" },
-      { name: "Polls" },
       { name: "Thoughts" },
+      { name: "Polls" },
+      { name: "Comments" },
+      { name: "Clips" },
+      { name: "Articles" },
     ],
     []
   );
@@ -44,14 +46,16 @@ const ActivityLayout = () => {
     switch (activeTab) {
       case "Posts":
         return <Posts />;
-      case "Images":
-        return <Images />;
-      case "Comments":
-        return <Comments />;
       case "Polls":
         return <Polls />;
       case "Thoughts":
         return <WrittenPost />;
+      case "Comments" :
+        return <Comments />;
+      case "Clips":
+        return <Clips />;
+      case "Articles":
+        return <Articles />;
       default:
         return <Posts />;
     }
@@ -82,7 +86,7 @@ const ActivityLayout = () => {
               onPress={() => {
                 setActiveTab(tab.name);
               }}
-              className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-full ${
+              className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-lg ${
                 isActive ? "bg-[#12956B]" : "bg-black border-gray-600"
               } border`}
             >

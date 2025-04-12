@@ -26,10 +26,10 @@ const SuggestionCard = ({
 }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: user._id, type: user.type }),
+    JSON.stringify({ id: user._id, type: user.type })
   );
   const isFollowing = useSelector((state: RootState) =>
-    state.profile?.followings?.includes(user._id),
+    state.profile?.followings?.includes(user._id)
   );
   // console.log(userFollowings);
   const [followingStatus, setFollowingStatus] = useState(isFollowing);
@@ -49,11 +49,10 @@ const SuggestionCard = ({
       setFollowingStatus(true);
       const followData: FollowUser = {
         followingId: user._id,
-        followingType: user.type || "User",
+        followingType: user.type,
       };
 
       await followUser(followData);
-     
     } catch (err) {
       setFollowingStatus(false);
       console.error("Follow error:", err);
@@ -67,14 +66,13 @@ const SuggestionCard = ({
       setFollowingStatus(false);
       const unfollowData: FollowUser = {
         followingId: user._id,
-        followingType: user.type || "User",
+        followingType: user.type,
       };
       if (isSelected) {
         isSelected(user._id); // Remove from selected players
       }
 
       await unFollowUser(unfollowData);
-     
     } catch (err) {
       setFollowingStatus(true);
       console.error("Unfollow error:", err);
@@ -89,7 +87,6 @@ const SuggestionCard = ({
       isSelected(user._id);
     }
   };
- 
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -156,12 +153,12 @@ const SuggestionCard = ({
                 {user.firstName} {user.lastName}
               </TextScallingFalse>
               <TextScallingFalse
-                className={`text-gray-400 ${
+                className={`text-[#EAEAEA] ${
                   size === "small" ? "text-xs" : "text-sm"
                 } text-center`}
               >
-                {user.headline && user.headline.length >= 50
-                  ? user.headline.substring(0, 49).concat("...")
+                {user.headline && user.headline.length >= 25
+                  ? user.headline.substring(0, 24).concat("...")
                   : user.headline}
               </TextScallingFalse>
             </View>

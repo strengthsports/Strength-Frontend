@@ -10,6 +10,7 @@ import {
   Pressable,
   Modal,
   SafeAreaView,
+  RefreshControl,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import PostButton from "~/components/PostButton";
@@ -27,15 +28,19 @@ import { dateFormatter } from "~/utils/dateFormatter";
 import { MotiView } from "moti";
 import Overview from ".";
 import Activity from "./activity/_layout";
-import Teams from "./teams";
 import PicModal from "~/components/profilePage/PicModal";
 import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
 import { AppDispatch } from "~/reduxStore";
-import { removePic } from "~/reduxStore/slices/user/profileSlice";
+import {
+  fetchMyProfile,
+  removePic,
+} from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
-import Boost from "./boost";
+import Tags from "./tags";
+import Media from "./media";
+import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -48,14 +53,25 @@ const ProfileLayout = () => {
       status: false,
       message: "",
     });
+  const [refreshing, setRefreshing] = useState(false);
+
+  // On refresh Profile Page
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await dispatch(
+      fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
+    );
+
+    setRefreshing(false);
+  };
 
   // Define the available tabs.
   const tabs = useMemo(
     () => [
       { name: "Overview" },
       { name: "Activity" },
-      { name: "Teams" },
-      { name: "Boost" },
+      { name: "Tags" },
+      { name: "Media" },
     ],
     []
   );
@@ -67,10 +83,10 @@ const ProfileLayout = () => {
         return <Overview />;
       case "Activity":
         return <Activity />;
-      case "Teams":
-        return <Teams />;
-      case "Boost":
-        return <Boost />;
+      case "Tags":
+        return <Tags />;
+      case "Media":
+        return <Media />;
       default:
         return <Overview />;
     }
@@ -79,6 +95,11 @@ const ProfileLayout = () => {
   // Handle remove cover/profile pic
   const handleRemovePic = async (picType: string) => {
     await dispatch(removePic(picType));
+  };
+
+  // Handle open post container
+  const handleOpenPostContainer = () => {
+    dispatch(setAddPostContainerOpen(true));
   };
 
   if (loading) {
@@ -98,13 +119,21 @@ const ProfileLayout = () => {
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[5]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        <Header username={user?.username} isBackButtonVisible={false} />
-
+        <View>
+          <Header
+            username={user?.username}
+            isBackButtonVisible={false}
+            handlePostContainerOpen={handleOpenPostContainer}
+          />
+        </View>
         {/* profile pic and cover image */}
         <View
           className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-yellow-300 relative"
-          style={{ alignItems: "flex-end", height: 135 * scaleFactor }}
+          style={{ alignItems: "flex-end", height: 137 * scaleFactor }}
         >
           <TouchableOpacity
             className="w-full h-full"
@@ -118,7 +147,10 @@ const ProfileLayout = () => {
               style={{ width: "100%", height: "100%" }}
             />
           </TouchableOpacity>
-          <View className="absolute h-full z-50 flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]">
+          <View
+            className="absolute h-full flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]"
+            style={{ zIndex: 1 }}
+          >
             <View
               style={{
                 width: responsiveWidth(31),
@@ -158,16 +190,21 @@ const ProfileLayout = () => {
           <View
             style={{
               width: "95.12%",
-              backgroundColor: "#171717",
+              backgroundColor: "#181818",
               borderRadius: 33,
               padding: 25,
             }}
           >
             {/* first name, last name, country */}
             <View
-              style={{ position: "relative", top: -9, flexDirection: "row" }}
+              style={{
+                position: "relative",
+                top: -9,
+                flexDirection: "row",
+                gap: 4,
+              }}
             >
-              <View style={{ width: "47.1%" }}>
+              <View style={{ width: "50%", flexDirection: "row", gap: 15 }}>
                 <TextScallingFalse
                   style={{
                     color: "white",
@@ -177,33 +214,39 @@ const ProfileLayout = () => {
                 >
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
-              </View>
-              <View style={{ width: "19.70%" }}>
-                <View style={{ height: 7 }} />
-                <View style={{ flexDirection: "row", gap: 3 }}>
-                  <Image
-                    source={flag}
-                    style={{ width: "23.88%", height: "90%" }}
-                  />
-                  <TextScallingFalse
-                    style={{
-                      color: "white",
-                      fontSize: responsiveFontSize(1.41),
-                      fontWeight: "400",
-                    }}
-                  >
-                    {user?.address?.country || "undefined"}
-                  </TextScallingFalse>
+
+                <View style={{ marginTop: 6, marginRight: 5, height: "auto" }}>
+                  <View style={{ flexDirection: "row", gap: 3 }}>
+                    <Image
+                      source={flag}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 5,
+                        marginBottom: 5,
+                      }}
+                    />
+                    <TextScallingFalse
+                      style={{
+                        marginTop: 2,
+                        color: "#EAEAEA",
+                        fontSize: responsiveFontSize(1.41),
+                        fontWeight: "400",
+                      }}
+                    >
+                      {user?.address?.country || "undefined"}
+                    </TextScallingFalse>
+                  </View>
                 </View>
               </View>
             </View>
 
             {/* headline */}
-            <View style={{ width: "67.64%", position: "relative", top: -9 }}>
+            <View style={{ width: "67.64%", position: "relative", top: -12 }}>
               <TextScallingFalse
                 style={{
-                  color: "white",
-                  fontSize: responsiveFontSize(1.3),
+                  color: "#EAEAEA",
+                  fontSize: responsiveFontSize(1.5),
                   fontWeight: "400",
                 }}
               >
@@ -211,82 +254,162 @@ const ProfileLayout = () => {
               </TextScallingFalse>
             </View>
 
-            <View style={{ paddingTop: "3.6%" }}>
-              {/* age, height, weight, teams */}
-              <View style={{ position: "relative", left: -3 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Age: {user?.age}{" "}
-                      <TextScallingFalse style={{ color: "grey" }}>
-                        ({dateFormatter(user?.dateOfBirth, "text")})
+            <View style={{ paddingTop: 5 }}>
+              {/* age, height, weight, teams for user profile */}
+              {user.type === "User" && (
+                <View style={{ position: "relative", left: -5 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Age: {user?.age}{" "}
+                        <TextScallingFalse style={{ color: "grey" }}>
+                          ({dateFormatter(user?.dateOfBirth, "text")})
+                        </TextScallingFalse>
                       </TextScallingFalse>
-                    </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Height:{" "}
+                        {user?.height || (
+                          <Text style={{ color: "grey" }}>undefined</Text>
+                        )}
+                      </TextScallingFalse>
+                    </View>
+
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Weight:{" "}
+                        {user?.weight || (
+                          <Text style={{ color: "grey" }}>undefined</Text>
+                        )}
+                      </TextScallingFalse>
+                    </View>
                   </View>
 
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Height:{" "}
-                      {user?.height || (
-                        <Text style={{ color: "grey" }}>undefined</Text>
-                      )}
-                    </TextScallingFalse>
-                  </View>
-
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Weight:{" "}
-                      {user?.weight || (
-                        <Text style={{ color: "grey" }}>undefined</Text>
-                      )}
-                    </TextScallingFalse>
+                  <View style={{ paddingTop: "3%" }}>
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Teams:{" "}
+                        {user?.createdTeams?.length > 0 &&
+                          user.createdTeams.map((team: any) => (
+                            <TextScallingFalse key={team.team._id} style={{ color: "grey" }}>
+                              {" "}
+                              {team.name}
+                            </TextScallingFalse>
+                          ))}
+                      </TextScallingFalse>
+                    </View>
                   </View>
                 </View>
+              )}
 
-                <View style={{ paddingTop: "3%" }}>
-                  <View style={{ flexDirection: "row" }}>
-                    <Entypo
-                      name="dot-single"
-                      size={responsiveDotSize}
-                      color="white"
-                    />
-                    <TextScallingFalse style={styles.ProfileKeyPoints}>
-                      {" "}
-                      Teams:{" "}
-                      {user?.createdTeams?.length > 0 &&
-                        user.createdTeams.map((team: any) => (
-                          <TextScallingFalse style={{ color: "grey" }}>
-                            {" "}
-                            {team.name}
-                          </TextScallingFalse>
-                        ))}
-                    </TextScallingFalse>
+              {/* page type, established on, sports category for page profile */}
+              {user.type === "Page" && (
+                <View style={{ position: "relative", left: -5 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      rowGap: 14,
+                    }}
+                  >
+                    {/* page category/type */}
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        {user?.category}
+                      </TextScallingFalse>
+                    </View>
+                    {/* sports category */}
+                    <View style={{ flexDirection: "row" }}>
+                      <Entypo
+                        name="dot-single"
+                        size={responsiveDotSize}
+                        color="white"
+                      />
+                      <TextScallingFalse style={styles.ProfileKeyPoints}>
+                        {" "}
+                        Sports Category:{" "}
+                        <Text style={{ color: "grey" }}>
+                          {user?.favouriteSports?.map(
+                            (sport: any) => `${sport.sport.name} `
+                          )}
+                        </Text>
+                      </TextScallingFalse>
+                    </View>
+                    {/* website */}
+                    {user?.websiteLink && (
+                      <View style={{ flexDirection: "row" }}>
+                        <Entypo
+                          name="dot-single"
+                          size={responsiveDotSize}
+                          color="white"
+                        />
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          Website:{" "}
+                          <Text style={{ color: "#12956B" }}>
+                            https://www.eastbengal.in
+                          </Text>
+                        </TextScallingFalse>
+                      </View>
+                    )}
+                    {/* established on */}
+                    {user?.dateOfBirth && (
+                      <View style={{ flexDirection: "row" }}>
+                        <Entypo
+                          name="dot-single"
+                          size={responsiveDotSize}
+                          color="white"
+                        />
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          Established On:{" "}
+                          <Text style={{ color: "grey" }}>
+                            {dateFormatter(user?.dateOfBirth, "text")}
+                          </Text>
+                        </TextScallingFalse>
+                      </View>
+                    )}
                   </View>
                 </View>
-              </View>
+              )}
 
               {/* address and followings */}
               <View
@@ -302,7 +425,7 @@ const ProfileLayout = () => {
                   <TextScallingFalse
                     style={{
                       color: "grey",
-                      fontSize: responsiveFontSize(1.35),
+                      fontSize: responsiveFontSize(1.4),
                       width: "63.25%",
                     }}
                   >
@@ -326,7 +449,7 @@ const ProfileLayout = () => {
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
-                        fontSize: responsiveFontSize(1.64),
+                        fontSize: responsiveFontSize(1.6),
                       }}
                     >
                       {user?.followerCount} Followers
@@ -346,7 +469,7 @@ const ProfileLayout = () => {
                     <TextScallingFalse
                       style={{
                         color: "#12956B",
-                        fontSize: responsiveFontSize(1.64),
+                        fontSize: responsiveFontSize(1.6),
                       }}
                     >
                       {" "}
@@ -455,7 +578,7 @@ const ProfileLayout = () => {
         ></View>
         {/* Tabs Header */}
         <View
-          className="flex-row justify-evenly my-2 border-b-[0.5px] border-gray-600"
+          className="flex-row justify-evenly mt-2 border-b-[1px] border-[#4E4E4E]"
           style={{
             backgroundColor: "black",
             zIndex: 1,
@@ -485,7 +608,7 @@ const ProfileLayout = () => {
         </View>
 
         {/* Animated Tab Content */}
-        <MotiView className="flex-1">{renderContent()}</MotiView>
+        <MotiView className="flex-1 mt-2">{renderContent()}</MotiView>
 
         {/* Profile/Cover Pic modal */}
         <Modal
@@ -554,8 +677,8 @@ const scaleFactor = screenWidth2 / 410;
 
 const styles = StyleSheet.create({
   ProfileKeyPoints: {
-    color: "white",
-    fontSize: responsiveFontSize(1.17),
+    color: "#E1E1E1",
+    fontSize: responsiveFontSize(1.4),
     fontWeight: "semibold",
   },
 });

@@ -1,0 +1,174 @@
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  ScrollView,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import TeamMember from "./TeamMember";
+import Icon from "react-native-vector-icons/Entypo";
+import { useFonts } from "expo-font";
+import AddMembersModal from "@/components/teamPage/AddMembersModal";
+import DownwardDrawer from "@/components/teamPage/DownwardDrawer"; // Import new component
+import { useSelector } from "react-redux";
+import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
+import { BackgroundImage } from "react-native-elements/dist/config";
+
+interface SquadProps {
+  teamDetails: any;
+}
+
+const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
+  const [fontsLoaded] = useFonts({
+    "Sansation-Regular": require("../../assets/fonts/Sansation_Bold_Italic.ttf"),
+  });
+
+  const { user } = useSelector((state: any) => state?.profile);
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+
+  useEffect(() => {
+    if (teamDetails && teamDetails.admin) {
+      const adminCheck = teamDetails.admin.some(
+        (admin) => admin._id === user?._id
+      );
+      setIsAdmin(adminCheck);
+    }
+  }, [teamDetails]);
+
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="white" />;
+  }
+
+  if (!teamDetails) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="white" />
+        <Text className="text-white mt-4">Loading team details...</Text>
+      </View>
+    );
+  }
+
+  const categorizeMembers = (playerType: string) => {
+    return (
+      teamDetails.members?.filter((member: any) =>
+        member.role.toLowerCase().includes(playerType.toLowerCase())
+      ) || []
+    );
+  };
+
+  const renderMemberSection = (title: string, members: any[]) => (
+    <View className="mb-0">
+      <Text
+        style={{
+          fontFamily: "Sansation-Regular",
+          color: "#CECECE",
+          fontSize: 26,
+          marginTop:16,
+
+        }}
+      >
+        {title}
+      </Text>
+      <View className="flex mt-6 mb-5  flex-row flex-wrap">
+        {members.length > 0 ? (
+          members.map((member, index) => {
+            const user = member.user;
+            return (
+              <View
+                key={user?._id || member._id || Math.random().toString()}
+                className="w-1/2 p-1 "
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedMember(member);
+                    setShowDownwardDrawer(true);
+                  }}
+                >
+                  <TeamMember
+                    imageUrl={user?.profilePic}
+                    name={`${user?.firstName || "Unknown"} ${
+                      user?.lastName || ""
+                    }`}
+                    description={user?.headline || "No description available"}
+                    isAdmin={isAdmin}
+                    onRemove={() => console.log("Remove user:", user?._id)}
+                  />
+                </TouchableOpacity>
+              </View>
+            );
+          })
+        ) : (
+          <View>
+            <TouchableOpacity
+              className="w-1/2 p-2"
+              onPress={() => setShowMembersModal(true)}
+            >
+              <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 30,
+                    fontFamily: "Sansation-Regular",
+                  }}
+                >
+                  +
+                </Text>
+                <Text
+                  style={{ color: "white", fontFamily: "Sansation-Regular" }}
+                >
+                  Add Member
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
+  return (
+<ScrollView style={{ flex: 1,
+   maxWidth: "100%",
+    paddingHorizontal: 16, 
+    backgroundColor:"#0B0B0B",
+    }}>
+  {/* Header Section */}
+  <View style={{ flexDirection: "end", justifyContent: "space-between", alignItems: "flex-end", paddingHorizontal: 16, top:36 }}>
+
+    <ThreeDot />
+  </View>
+
+  {/* Render Player Sections */}
+  {teamDetails?.sport?.playerTypes?.map((playerType: any) =>
+    renderMemberSection(playerType.name, categorizeMembers(playerType.name))
+  )}
+
+  {/* Add Members Modal */}
+  <AddMembersModal
+    visible={showMembersModal}
+    buttonName="Invite"
+    multiselect={true}
+    player={teamDetails?.members || []}
+    onInvite={(selectedUsers: any) => {
+      console.log("Inviting users:", selectedUsers);
+      setShowMembersModal(false);
+    }}
+    onClose={() => setShowMembersModal(false)}
+  />
+
+  {/* Downward Drawer */}
+  <DownwardDrawer
+    visible={showDownwardDrawer}
+    onClose={() => setShowDownwardDrawer(false)}
+    member={selectedMember}
+  />
+</ScrollView>
+
+  );
+};
+
+export default Squad;

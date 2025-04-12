@@ -11,7 +11,11 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
-import { RelativePathString, useRouter } from "expo-router";
+import {
+  RelativePathString,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import {
   AntDesign,
   Feather,
@@ -23,19 +27,24 @@ import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
 import nopic from "@/assets/images/nopic.jpg";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSelector } from "react-redux";
-import { RootState } from "~/reduxStore";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
+import InteractionBar from "~/components/PostContainer/InteractionBar";
+import { AppDispatch, RootState } from "~/reduxStore";
+import { selectPostById, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 
-const PostDetails = () => {
-  const postDetails = useSelector(
-    (state: RootState) => state.profile.currentPost
-  );
+const post = () => {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const postId = params?.postId as string; // Extract postId from URL params
+  console.log("Post ID : ", postId);
+  const post = useSelector((state: RootState) => selectPostById(state, postId));
+  const dispatch = useDispatch<AppDispatch>();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
-  const [isPostDetailsModalOpen, setPostDetailsModalOpen] = useState(false);
+  const [ispostModalOpen, setpostModalOpen] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
 
   // Enable LayoutAnimation on Android
@@ -87,6 +96,10 @@ const PostDetails = () => {
       : setHeaderFooterVisible(true);
   };
 
+  const handleLike = () => {
+    dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
+  };
+
   return (
     <Pressable
       className="h-screen flex justify-center items-center bg-black"
@@ -108,8 +121,8 @@ const PostDetails = () => {
             <View className="w-10 h-10 rounded-full overflow-hidden">
               <Image
                 source={
-                  postDetails?.postedBy?.profilePic
-                    ? { uri: postDetails.postedBy.profilePic }
+                  post?.postedBy?.profilePic
+                    ? { uri: post.postedBy.profilePic }
                     : nopic
                 }
                 style={{ width: "100%", height: "100%" }}
@@ -119,8 +132,7 @@ const PostDetails = () => {
               />
             </View>
             <TextScallingFalse className="text-white font-light text-4xl">
-              {postDetails?.postedBy?.firstName}{" "}
-              {postDetails?.postedBy?.lastName}
+              {post?.postedBy?.firstName} {post?.postedBy?.lastName}
             </TextScallingFalse>
           </TouchableOpacity>
           <TouchableOpacity>
@@ -139,14 +151,14 @@ const PostDetails = () => {
           <View
             className="relative w-full"
             style={{
-              aspectRatio: postDetails?.aspectRatio
-                ? postDetails.aspectRatio[0] / postDetails.aspectRatio[1]
+              aspectRatio: post?.aspectRatio
+                ? post.aspectRatio[0] / post.aspectRatio[1]
                 : 3 / 2,
             }}
           >
-            {postDetails?.assets && postDetails.assets.length > 0 && (
+            {post?.assets && post.assets.length > 0 && (
               <Swiper {...swiperConfig} className="w-full h-auto">
-                {postDetails.assets.map((asset: { url: string }) => (
+                {post.assets.map((asset: { url: string }) => (
                   <Image
                     key={asset.url}
                     source={{ uri: asset.url }}
@@ -161,75 +173,26 @@ const PostDetails = () => {
             )}
           </View>
         </ScrollView>
+
         {/* Interaction Bar */}
         <View
-          className={`basis-[18%] w-full p-4 pt-10 transition-opacity ease-in-out ${
+          className={`transition-opacity ease-in-out ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
-          onStartShouldSetResponder={() => true}
         >
-          <View className="w-full px-4 py-3 flex flex-row justify-between items-center">
-            {/* like */}
-            <View className="flex flex-row items-center gap-2">
-              <AntDesign name="like1" size={16} color="#fbbf24" />
-              <TextScallingFalse className="text-base text-white">
-                {postDetails?.likesCount}{" "}
-                {postDetails?.likesCount && postDetails.likesCount > 1
-                  ? "Likes"
-                  : "Like"}
-              </TextScallingFalse>
-            </View>
-
-            {/* comment count */}
-            <View className="flex flex-row items-center gap-2">
-              <TextScallingFalse className="text-base text-white">
-                {postDetails?.commentsCount} Comments
-              </TextScallingFalse>
-            </View>
-          </View>
-
-          <View className="w-full mx-auto py-4 flex-row gap-x-6 border-t-[0.5px] border-[#5C5C5C]">
-            <TouchableOpacity>
-              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <AntDesign
-                  name={postDetails?.isLiked ? "like1" : "like2"}
-                  size={16}
-                  color={postDetails?.isLiked ? "#fbbf24" : "white"}
-                />
-                <TextScallingFalse
-                  className={`text-base ${
-                    postDetails?.isLiked ? "text-amber-400" : "text-white"
-                  }`}
-                >
-                  {postDetails?.isLiked ? "Liked" : "Like"}
-                </TextScallingFalse>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex flex-row items-center gap-2"
-              onPress={() =>
-                router.push({
-                  pathname: "/post-details/1" as RelativePathString,
-                })
-              }
-            >
-              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <Feather name="message-square" size={16} color="white" />
-                <TextScallingFalse className="text-base text-white">
-                  Comment
-                </TextScallingFalse>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-2 rounded-3xl">
-                <FontAwesome5 name="location-arrow" size={16} color="white" />
-                <TextScallingFalse className="text-base text-white">
-                  Share
-                </TextScallingFalse>
-              </View>
-            </TouchableOpacity>
-          </View>
+          <InteractionBar
+            post={post}
+            isPostContainer={false}
+            onPressLike={handleLike}
+            isFeedPage={false}
+            onPressComment={() =>
+              router.push({
+                pathname: `/post-details/${postId}` as RelativePathString,
+              })
+            }
+          />
         </View>
+
         {/*Caption Bar */}
         <LinearGradient
           colors={["rgba(0,0,0,0.0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,0.8)"]}
@@ -255,8 +218,7 @@ const PostDetails = () => {
                 toggleExpand();
               }}
             >
-              {postDetails?.caption &&
-                renderCaptionWithHashtags(postDetails?.caption)}
+              {post?.caption && renderCaptionWithHashtags(post?.caption)}
             </Text>
           </ScrollView>
         </LinearGradient>
@@ -265,4 +227,4 @@ const PostDetails = () => {
   );
 };
 
-export default PostDetails;
+export default post;

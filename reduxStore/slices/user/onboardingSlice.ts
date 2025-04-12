@@ -72,7 +72,7 @@ export const fetchUserSuggestions = createAsyncThunk<
     try {
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      console.log("sports : ", sportsData);
+      // console.log("sports : ", sportsData);
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions?limit=${limit}&page=${page}`,
         {
@@ -101,7 +101,7 @@ export const fetchUserSuggestions = createAsyncThunk<
           data.message || "Error fetching user suggestions"
         );
       }
-      console.log("Data fetched : ", data.data.users);
+      // console.log("Data fetched : ", data.data.users);
       return data.data.users;
     } catch (error: unknown) {
       // Type assertion to Error
@@ -122,7 +122,7 @@ export const onboardingUser = createAsyncThunk<
   try {
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
-    console.log("Onboard data : ", data);
+    // console.log("Onboard data : ", data);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`,

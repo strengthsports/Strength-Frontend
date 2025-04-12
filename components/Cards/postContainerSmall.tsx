@@ -5,12 +5,16 @@ import {
   Image,
   LayoutChangeEvent,
   ImageStyle,
+  Dimensions,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import Swiper from "react-native-swiper";
 import { Divider } from "react-native-elements";
 import { useCallback, useState, memo, useMemo } from "react";
+import { Post } from "~/types/post";
+import { formatTimeAgo } from "~/utils/formatTime";
+import { responsiveFontSize } from "react-native-responsive-dimensions";
 
 // Type definitions for components
 interface ActionButtonProps {
@@ -30,19 +34,21 @@ const ActionButton = memo<ActionButtonProps>(({ iconName, text }) => (
 ));
 
 const SwiperImage = memo<SwiperImageProps>(({ uri }) => (
-  <Image
-    className="w-full h-full object-cover"
-    source={{ uri }}
-    resizeMode="cover"
-  />
+    <Image
+      className="w-full h-full"
+      source={{ uri }}
+      resizeMode="cover" // Try both cover/contain
+      onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+    />
 ));
 
-export default function PostContainerSmall() {
+export default function PostContainerSmall({ post }: { post: Post }) {
 
-  const imageUris = useMemo<string[]>(() => [
-    "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
-    "https://images.unsplash.com/photo-1547469447-4afec158715b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-  ], []);
+  const imageUrls = post.assets.filter(asset => asset.url).map(asset => asset.url);
+  // console.log(imageUrls);
+
+  const { width: screenWidth2 } = Dimensions.get('window');
+  const scaleFactor = screenWidth2 / 410;
 
   const swiperConfig = useMemo(() => ({
     autoplay: false,
@@ -75,7 +81,7 @@ export default function PostContainerSmall() {
         <View className={`ml-[5%] flex flex-row gap-2 z-20 pb-0' `}>
           <Image
             className="w-[16%] h-[16%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-400"
-            source={{ uri: imageUris[1] }}
+            source={{ uri: post.postedBy?.profilePic }}
             style={{
               elevation: 8, // Shadow for Android
               shadowColor: 'black', // Shadow color for iOS
@@ -87,11 +93,11 @@ export default function PostContainerSmall() {
 
           <View className="flex flex-col justify-between ">
             <View>
-              <TextScallingFalse className="text-white text-xl font-bold">Rahul Sharma</TextScallingFalse>
-              <TextScallingFalse className="text-neutral-300 text-sm">Cricketer | Right hand batsman</TextScallingFalse>
+              <TextScallingFalse className="text-white text-xl font-bold">{post.postedBy?.firstName} {post.postedBy?.lastName}</TextScallingFalse>
+              <TextScallingFalse numberOfLines={1} style={{color:'white', fontSize: responsiveFontSize(1.19), fontWeight:'200'}}>{post.postedBy?.headline}</TextScallingFalse>
             </View>
             <View className="flex flex-row  items-center">
-              <TextScallingFalse className="text-base text-neutral-400">8 h ago  &bull;  </TextScallingFalse>
+              <TextScallingFalse className="text-base text-neutral-400">{formatTimeAgo(post.createdAt)} &bull;{" "}</TextScallingFalse>
               <MaterialIcons name="public" size={12} color="gray" />
             </View>
           </View>
@@ -103,25 +109,32 @@ export default function PostContainerSmall() {
         <View className={`relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[50px] rounded-tr-[16px]  pb-3 bg-neutral-900`}>
           <MaterialIcons className="absolute right-6 top-2" name="more-horiz" size={18} color="white" />
           <TextScallingFalse className=" pl-10 pr-6 pt-10 pb-3 text-sm text-white ">
-            A lon asd asd asd  iksad fsafjkakj sfjh hja  h    j a asdss jhasd jhasd hja sdh asd hjaksdkjh
+            {post?.caption}
           </TextScallingFalse>
         </View>
 
         {/* Swiper Section */}
-        <Swiper {...swiperConfig} className="aspect-[3/2] w-full h-auto rounded-l-[20px] bg-slate-400">
-          {imageUris.map((uri) => (
-            <SwiperImage key={uri} uri={uri} />
-          ))}
-        </Swiper>
+        <View style={{height: 210 * scaleFactor}}>
+          <Swiper {...swiperConfig} 
+            style={{
+              width: "100%",
+              height: 300,
+            }}
+          >
+            {imageUrls.map((url) => (
+              <SwiperImage key={url} uri={url} />
+            ))}
+          </Swiper>
+        </View>
 
         {/* Bottom Grey Div */}
         <View className={`relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-b-[50px]  bg-neutral-900`}>
           <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
             <View className="flex flex-row justify-between items-center gap-2">
             <FontAwesome name="thumbs-up" size={16} color="yellow" />
-            <TextScallingFalse className="text-base text-white ">40 likes</TextScallingFalse>
+            <TextScallingFalse className="text-base text-white ">{post.likesCount} Likes</TextScallingFalse>
             </View>
-            <TextScallingFalse className="text-base text-white ">3 Comments</TextScallingFalse>
+            <TextScallingFalse className="text-base text-white ">{post.commentsCount} Comments</TextScallingFalse>
           </View>
 
           <Divider style={{ marginLeft: '12%', width: '80%' }} width={0.2} color="grey" />

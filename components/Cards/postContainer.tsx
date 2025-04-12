@@ -1,154 +1,214 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import React, { useState, useRef, forwardRef, useMemo, memo } from "react";
 import {
   View,
-  Text,
   Animated,
   TouchableOpacity,
-  Modal,
   NativeSyntheticEvent,
   TextLayoutEventData,
-  BackHandler,
+  StyleSheet,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import {
-  MaterialIcons,
-  FontAwesome,
-  AntDesign,
-  Feather,
-  FontAwesome5,
-} from "@expo/vector-icons";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
-import CommentModal from "../feedPage/CommentModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
+import nopic from "@/assets/images/nopic.jpg";
+import { Post } from "~/types/post";
+import CustomImageSlider from "@/components/Cards/imageSlideContainer";
+import { RelativePathString } from "expo-router";
+import { Image } from "expo-image";
+import InteractionBar from "../PostContainer/InteractionBar";
 import {
-  useLikeContentMutation,
-  useUnLikeContentMutation,
-} from "~/reduxStore/api/feed/features/feedApi.likeUnlike";
+  postComment,
+  toggleLike,
+  voteInPoll,
+} from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
-import nopic from "@/assets/images/nopic.jpg";
-import { Post, ReportPost } from "~/types/post";
-import { useReport } from "~/hooks/useReport";
-import CustomImageSlider from "@/components/Cards/imageSlideContainer";
-import CustomBottomSheet from "../ui/CustomBottomSheet";
-import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
-import { RelativePathString } from "expo-router";
 import { showFeedback } from "~/utils/feedbackToast";
-import { Image } from "expo-image";
+import { useBottomSheet } from "~/context/BottomSheetContext";
+import CommentModal from "../feedPage/CommentModal";
+import StickyInput from "../ui/StickyInput";
+import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
+import { Modal } from "react-native";
+import PollsContainer from "./PollsContainer";
+import CustomVideoPlayer from "../PostContainer/VideoPlayer";
+import { Platform } from "react-native";
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 10,
+    shadowColor: "#000000",
+    shadowOpacity: 0.25,
+  },
+});
 
 type TaggedUser = {
   _id: string;
   username: string;
   type: string;
 };
+export interface PostContainerHandles {
+  closeBottomSheet: (params: { type: string }) => void;
+}
 
 interface PostContainerProps {
   item: Post;
   highlightedHashtag?: string;
   isFeedPage?: boolean;
+  isMyActivity?: boolean;
   handleBottomSheet?: (state: boolean) => void;
-}
-
-export interface PostContainerHandles {
-  closeBottomSheet: (params: { type: string }) => void;
+  isVideo?: boolean;
+  isVisible?: boolean;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
-  ({ item, highlightedHashtag, isFeedPage, handleBottomSheet }, ref) => {
+  (
+    {
+      item,
+      highlightedHashtag,
+      isFeedPage,
+      handleBottomSheet,
+      isVideo,
+      isVisible,
+    },
+    ref
+  ) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
-    const { user, followings } = useSelector(
-      (state: RootState) => state?.profile
-    );
-    const isFollowingGlobal = followings?.includes(item.postedBy?._id) ?? false;
+    const { user } = useSelector((state: RootState) => state?.profile);
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
+
+    const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
+      useState(false);
+
     const { followUser, unFollowUser } = useFollow();
-    const { reportPost } = useReport();
+
     // State for individual post
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSeeMore, setShowSeeMore] = useState(false);
-    const [followingStatus, setFollowingStatus] =
-      useState<boolean>(isFollowingGlobal);
-    const [isReported, setIsReported] = useState<boolean>(item?.isReported);
-    const [isLiked, setIsLiked] = useState(item?.isLiked);
-    const [likeCount, setLikeCount] = useState(item?.likesCount);
-    const [commentCount, setCommentCount] = useState(item?.commentsCount);
-    const [likePost, message] = useLikeContentMutation();
-    const [unlikePost] = useUnLikeContentMutation();
-    const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
-    const [isPostLikersModalVisible, setIsPostLikersModalVisible] =
-      useState(false);
-    const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-    const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
-      useState(false);
     const [activeIndex, setActiveIndex] = useState<any>(0);
-    // State to hold the selected data from the button press
-    const [isBottomSheetOpen, setBottomSheetOpen] = useState<any>({
-      type: "",
-      status: false,
+    // Comment for individual post
+    const [commentText, setCommentText] = useState("");
+    const [isPosting, setIsPosting] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<{
+      commentId: string;
+      name: string;
+    } | null>(null);
+
+    const progress = useRef(new Animated.Value(0)).current;
+
+    const { refetch: refetchComments } = useFetchCommentsQuery({
+      targetId: item._id,
+      targetType: "Post",
     });
 
-    // Ref for the bottom sheet
-    const likeBottomSheetRef = useRef(null);
-    const settingsBottomSheetRef = useRef(null);
-
-    const handleSetActiveIndex = (index: any) => {
-      setActiveIndex(index);
-    };
-
-    const scaleAnim = useRef(new Animated.Value(0)).current;
-
-    // Sync local state with global state changes
-    useEffect(() => {
-      setFollowingStatus(isFollowingGlobal);
-    }, [isFollowingGlobal]);
-
-    const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-      const { lines } = e.nativeEvent;
-      const shouldShowSeeMore =
-        lines.length > 2 || (lines as any).some((line: any) => line.truncated);
-      setShowSeeMore(shouldShowSeeMore);
-    };
-
-    const handleLikeAction = async () => {
-      try {
-        // Optimistic update
-        setIsLiked(!isLiked);
-        setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
-
-        // API call
-        const action = isLiked ? unlikePost : likePost;
-        await action({
-          targetId: item?._id,
-          targetType: "Post",
-        }).unwrap();
-        // console.log("Message", message);
-        // console.log(message?.data?.message);
-      } catch (error) {
-        // Rollback on error
-        setIsLiked(isLiked);
-        setLikeCount(likeCount);
-        console.error("Like action failed:", error);
+    const handleTextChange = (text: string) => {
+      setCommentText(text);
+      if (text === "" && replyingTo) {
+        setReplyingTo(null);
       }
     };
 
-    const handleDoubleTap = () => {
-      if (!isLiked) {
-        // setIsLiked(true);
-        // setLikeCount(prev => prev + 1);
+    const handlePostComment = async () => {
+      if (!commentText.trim()) return;
+      setIsPosting(true);
+      const isReply = replyingTo !== null;
+      const textToPost = commentText;
+      // Clear the input and reply context.
+      setCommentText("");
+      if (isReply) setReplyingTo(null);
+      try {
+        await dispatch(
+          postComment({
+            targetId: isReply ? replyingTo!.commentId : item._id,
+            targetType: isReply ? "Comment" : "Post",
+            text: textToPost,
+          })
+        ).unwrap();
+        await refetchComments();
+      } catch (error) {
+        console.log("Failed to post comment:", error);
+      }
+      setCommentText("");
+      setIsPosting(false);
+    };
 
-        handleLikeAction();
+    // Get the openBottomSheet function from context
+    const { openBottomSheet, closeBottomSheet } = useBottomSheet();
+
+    // Define the menu items for this specific post
+    const handleOpenBottomSheet = ({ type }: { type: string }) => {
+      // Open the bottom sheet with these items
+      if (type === "settings") {
+        openBottomSheet({
+          isVisible: true,
+          content: (
+            <MoreModal
+              firstName={item.postedBy.firstName}
+              followingStatus={item.isFollowing}
+              isOwnPost={item.postedBy._id === user?._id}
+              postId={item._id}
+              isReported={item.isReported}
+              handleFollow={handleFollow}
+              handleUnfollow={handleUnfollow}
+            />
+          ),
+          height: item.postedBy._id === user?._id ? "20%" : "25%",
+          bgcolor: "#151515", // Ensure bgcolor is always defined
+          border: false,
+          maxHeight: item.postedBy._id === user?._id ? "20%" : "25%",
+          draggableDirection: "down",
+        });
+      } else if (type === "comment") {
+        // openBottomSheet({
+        //   isVisible: true,
+        //   content: (
+        //     <>
+        //       <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+        //       <StickyInput
+        //         user={user}
+        //         value={commentText}
+        //         onChangeText={handleTextChange}
+        //         onSubmit={handlePostComment}
+        //         isPosting={isPosting}
+        //         replyingTo={replyingTo}
+        //         progress={progress}
+        //         placeholder="Type your comment here"
+        //         autoFocus={true}
+        //       />
+        //     </>
+        //   ),
+        //   height: "80%",
+        //   bgcolor: "#000",
+        //   border: true,
+        //   maxHeight: "100%",
+        //   draggableDirection: "both",
+        // });
+
+        <Modal transparent visible={true} animationType="slide">
+          <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+        </Modal>;
+      }
+    };
+
+    // Ref for the like animation
+    const scaleAnim = useRef(new Animated.Value(0)).current;
+
+    // Handle like on double tap on post
+    const handleDoubleTap = () => {
+      if (!item.isLiked) {
+        dispatch(toggleLike({ targetId: item._id, targetType: "Post" }));
       }
       scaleAnim.setValue(0);
       Animated.sequence([
@@ -166,177 +226,180 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       ]).start();
     };
 
-    //handle follow
+    // Handle like on button press
+    const handleLike = () => {
+      dispatch(toggleLike({ targetId: item._id, targetType: "Post" }));
+    };
+
+    // Handle Follow
     const handleFollow = async () => {
-      try {
-        setFollowingStatus(true);
-        const followData: FollowUser = {
-          followingId: item.postedBy?._id,
-          followingType: item.postedBy?.type,
-        };
-
-        showFeedback(
-          `You are now following ${item?.postedBy?.firstName}`,
-          "success"
-        );
-
-        await followUser(followData);
-      } catch (err) {
-        setFollowingStatus(false);
-        console.error("Follow error:", err);
-      }
-    };
-
-    //handle unfollow
-    const handleUnfollow = async () => {
-      try {
-        setFollowingStatus(false);
-        const unfollowData: FollowUser = {
-          followingId: item.postedBy?._id,
-          followingType: item.postedBy?.type,
-        };
-
-        await unFollowUser(unfollowData);
-      } catch (err) {
-        setFollowingStatus(true);
-        console.error("Unfollow error:", err);
-      }
-    };
-
-    //handle report
-    const handleReport = async (reason: string) => {
-      setIsReported((prev) => !prev);
-      const reportData: ReportPost = {
-        targetId: item._id,
-        targetType: "Post",
-        reason,
+      const followData: FollowUser = {
+        followingId: item.postedBy._id,
+        followingType: item.postedBy.type,
       };
 
-      await reportPost(reportData);
+      showFeedback(
+        `You are now following ${item.postedBy.firstName}`,
+        "success"
+      );
+      await followUser(followData);
+    };
+
+    // Handle Unfollow
+    const handleUnfollow = async () => {
+      const unfollowData: FollowUser = {
+        followingId: item.postedBy._id,
+        followingType: item.postedBy.type,
+      };
+
+      await unFollowUser(unfollowData);
+    };
+
+    // Handle vote
+    const handleVote = async (optionIndex: number) => {
+      await dispatch(
+        voteInPoll({
+          targetId: item._id,
+          targetType: "Post",
+          selectedOption: optionIndex,
+        })
+      );
+    };
+
+    // Set slider active index
+    const handleSetActiveIndex = (index: any) => {
+      setActiveIndex(index);
+    };
+
+    // Caption expanding
+    const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
+      const { lines } = e.nativeEvent;
+      const shouldShowSeeMore =
+        lines.length > 2 || (lines as any).some((line: any) => line.truncated);
+      setShowSeeMore(shouldShowSeeMore);
     };
 
     // Function to render caption with clickable hashtags and mention tags
     const renderCaptionWithTags = (
       caption: string,
-      taggedUsers: TaggedUser[] // Array of user objects with _id and username
+      taggedUsers: TaggedUser[],
+      isExpanded: boolean,
+      onPressSeeMore: () => void
     ) => {
-      // Split on both hashtags and mentions using regex
-      return caption
-        ?.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g)
-        .map((word, index) => {
-          if (word.startsWith("#")) {
-            return (
-              <Text
-                key={index}
+      if (!caption) return null;
+
+      const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+      const elements = [];
+      let remainingChars = isExpanded ? Infinity : 94;
+      let showSeeMore = false;
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part || remainingChars <= 0) continue;
+
+        if (part.startsWith("#")) {
+          if (part.length <= remainingChars) {
+            elements.push(
+              <TextScallingFalse
+                key={i}
                 onPress={() =>
-                  router.push(`/(app)/(post)/hashtag/${word.split("#")[1]}`)
+                  router.push(`/(app)/(post)/hashtag/${part.slice(1)}`)
                 }
-                className={`text-xl text-[#12956B] ${
-                  highlightedHashtag?.toLowerCase() === word.toLowerCase() &&
-                  "font-semibold"
-                }`}
+                className="text-2xl text-[#12956B]"
               >
-                {word}
-              </Text>
+                {part}
+              </TextScallingFalse>
             );
-          } else if (word.startsWith("@")) {
-            // Find the tagged user by username
-            // console.log(taggedUsers);
-            const user = taggedUsers.find(
-              (u) => u.username === word.split("@")[1]
-            );
-            // console.log(user);
-            const serializedUser = encodeURIComponent(
-              JSON.stringify({ id: user?._id, type: user?.type })
-            );
-            // console.log(serializedUser);
-            return (
-              <Text
-                key={index}
+            remainingChars -= part.length;
+          } else {
+            showSeeMore = true;
+            break;
+          }
+        } else if (part.startsWith("@")) {
+          const user = taggedUsers.find((u) => u.username === part.slice(1));
+          const serializedUser = encodeURIComponent(
+            JSON.stringify({ id: user?._id, type: user?.type })
+          );
+          if (part.length <= remainingChars) {
+            elements.push(
+              <TextScallingFalse
+                key={i}
                 onPress={() =>
                   serializedUser &&
                   router.push(`/(app)/(profile)/profile/${serializedUser}`)
                 }
-                className="text-xl text-[#12956B]"
+                className="text-2xl text-[#12956B]"
               >
-                {word}
-              </Text>
+                {part}
+              </TextScallingFalse>
             );
+            remainingChars -= part.length;
+          } else {
+            showSeeMore = true;
+            break;
           }
+        } else {
+          const allowed = Math.min(remainingChars, part.length);
+          const visibleText = part.slice(0, allowed);
+          if (visibleText) {
+            elements.push(
+              <TextScallingFalse key={i} className="text-white">
+                {visibleText}
+              </TextScallingFalse>
+            );
+            remainingChars -= allowed;
 
-          // Return regular text for non-tag parts
-          return <Text key={index}>{word}</Text>;
-        });
-    };
-
-    const handleDeletePost = () => {
-      console.log(`Post ${item._id} deleted successfully.`);
-      setIsMoreModalVisible(false);
-    };
-
-    // To open bottom sheet
-    const handleOpenBottomSheet = ({ type }: { type: string }) => {
-      console.log(`${type} Bottom sheet opens...`);
-      handleBottomSheet && handleBottomSheet(true);
-      setBottomSheetOpen({ type, status: true });
-      type === "like"
-        ? likeBottomSheetRef.current?.scrollTo(-550)
-        : type === "settings"
-        ? settingsBottomSheetRef.current?.scrollTo(-220)
-        : null;
-    };
-
-    // To close bottom sheet
-    const handleCloseBottomSheet = ({ type }: { type: string }) => {
-      console.log("Called");
-      console.log(type);
-      console.log(likeBottomSheetRef);
-      type === "like"
-        ? likeBottomSheetRef.current?.scrollTo(0)
-        : type === "settings"
-        ? settingsBottomSheetRef.current?.scrollTo(0)
-        : null;
-      setBottomSheetOpen({ type, status: false });
-      handleBottomSheet && handleBottomSheet(false);
-    };
-
-    // Expose the handleCloseBottomSheet function to the parent
-    useImperativeHandle(ref, () => ({
-      closeBottomSheet: (params: { type: string }) =>
-        handleCloseBottomSheet(params),
-    }));
-
-    // Handle hardware back press
-    useEffect(() => {
-      const handleBackPress = () => {
-        if (isBottomSheetOpen.status) {
-          handleCloseBottomSheet({ type: isBottomSheetOpen.type });
-          return true; // Prevent default back behavior
+            // Add see more immediately if we're truncating
+            if (allowed < part.length) {
+              showSeeMore = true;
+              break;
+            }
+          }
         }
-        return false; // Default back behavior
-      };
+      }
 
-      BackHandler.addEventListener("hardwareBackPress", handleBackPress);
+      if (!isExpanded && showSeeMore) {
+        elements.push(
+          <TextScallingFalse
+            key="see-more"
+            onPress={onPressSeeMore}
+            className="text-[#808080] text-2xl"
+          >
+            ...see more
+          </TextScallingFalse>
+        );
+      }
 
-      // Cleanup on component unmount
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
-      };
-    }, [isBottomSheetOpen]);
+      return elements;
+    };
+
+    // Memoized Caption
+    const memoizedCaption = useMemo(
+      () =>
+        renderCaptionWithTags(
+          item.caption,
+          item.taggedUsers || [],
+          isExpanded,
+          () => setIsExpanded(true)
+        ),
+      [item.caption, item.taggedUsers, isExpanded]
+    );
 
     return (
       <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
         <View className="flex">
           {/* Profile Section */}
-          <View className="relative ml-[5%] flex flex-row gap-2 z-20 pb-0">
+          <View className="relative ml-[4%] flex flex-row gap-2 z-20 pb-0">
+            {/* Profile Picture */}
             <TouchableOpacity
               activeOpacity={0.5}
-              className="w-[14%] h-[14%] min-w-[54] max-w-[64px] mt-[2px] aspect-square rounded-full bg-slate-700"
+              className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
               onPress={() =>
                 user?._id === item.postedBy?._id
                   ? router.push("/(app)/(tabs)/profile")
                   : router.push(`/(app)/(profile)/profile/${serializedUser}`)
               }
+              style={shadowStyle}
             >
               <Image
                 source={
@@ -346,15 +409,21 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                       }
                     : nopic
                 }
-                style={{ width: "100%", height: "100%", borderRadius: 100 }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 100,
+                  borderWidth: 0.5,
+                  borderColor: "#151515",
+                }}
                 transition={500}
                 cachePolicy="memory-disk"
                 placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
-            <TouchableOpacity className="absolute w-[54px] h-[54px] z-[-1] mt-[5px] ml-[0px] aspect-square rounded-full bg-black opacity-[8%] blur-3xl" />
 
-            <View className="w-64 flex flex-col justify-between">
+            {/* Name, Headline, post date */}
+            <View className="w-64 flex flex-col gap-y-4 justify-between">
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() =>
@@ -367,26 +436,33 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   {item.postedBy?.firstName} {item.postedBy?.lastName}
                 </TextScallingFalse>
                 <TextScallingFalse
-                  className="text-neutral-300 text-sm"
+                  className="text-[#EAEAEA] text-sm"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.postedBy?.headline}
+                  @{item.postedBy.username} | {item.postedBy?.headline}
                 </TextScallingFalse>
               </TouchableOpacity>
               <View className="flex flex-row items-center">
-                <TextScallingFalse className="text-base text-neutral-400">
+                <TextScallingFalse className="text-sm text-neutral-400">
+                  {" "}
                   {formatTimeAgo(item.createdAt)} &bull;{" "}
                 </TextScallingFalse>
-                <MaterialIcons name="public" size={12} color="gray" />
+                <MaterialIcons
+                  name="public"
+                  size={10}
+                  style={{ marginTop: 2 }}
+                  color="gray"
+                />
               </View>
             </View>
 
             {/* Follow button */}
-            {user?._id !== item.postedBy?._id && !followingStatus && (
+            {user?._id !== item.postedBy?._id && !item.isFollowing && (
               <TouchableOpacity
-                className="absolute top-0 right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
+                className="absolute top-[2px] right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
                 onPress={handleFollow}
+                activeOpacity={0.6}
               >
                 <TextScallingFalse className="text-white text-sm">
                   + Follow
@@ -396,65 +472,40 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[95%] min-h-16 h-auto mt-[-22] rounded-tl-[40px] rounded-tr-[16px] pb-3 bg-neutral-900">
+          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-24] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
             <TouchableOpacity
-              className="absolute right-4 p-2 z-30"
+              className="absolute right-8 p-2 pt-2 z-30"
               onPress={() => handleOpenBottomSheet({ type: "settings" })}
             >
-              <MaterialIcons name="more-horiz" size={18} color="white" />
-              <CustomBottomSheet
-                ref={settingsBottomSheetRef}
-                onClose={() => handleCloseBottomSheet({ type: "settings" })}
-                animationSpeed={20}
-                controllerVisibility={true}
-                isFixed={true}
-                fixedHeight={220}
-              >
-                {isBottomSheetOpen.type === "settings" &&
-                  isBottomSheetOpen.status && (
-                    <MoreModal
-                      firstName={item.postedBy.firstName}
-                      followingStatus={item.followingStatus}
-                      isOwnPost={item.postedBy._id === item.currUser}
-                      postId={item._id}
-                      isReported={item.isReported}
-                    />
-                  )}
-              </CustomBottomSheet>
+              <MaterialIcons name="more-horiz" size={22} color="white" />
             </TouchableOpacity>
 
-            <View
-              className={`${isExpanded ? "pl-8" : "pl-12"} pr-6 pt-12 pb-4`}
-            >
-              <Text
-                onPress={() => {
-                  isFeedPage &&
-                    router.push({
-                      pathname: "/post-details/1" as RelativePathString,
-                    });
-                  dispatch(setCurrentPost(item));
-                }}
-                className="text-xl leading-5 text-neutral-200"
-                numberOfLines={isExpanded ? undefined : 2}
-                ellipsizeMode="tail"
-                onTextLayout={handleTextLayout}
-              >
-                {renderCaptionWithTags(item.caption, item.taggedUsers || [])}
-              </Text>
-              {showSeeMore && !isExpanded && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => setIsExpanded(true)}
-                  className="mt-1"
-                >
-                  <Text className="text-theme text-sm">See more</Text>
-                </TouchableOpacity>
-              )}
+            <View className="pl-7 pr-10 pt-12 pb-2">
+              <TextScallingFalse className="text-2xl flex-wrap flex-row">
+                {memoizedCaption}
+              </TextScallingFalse>
             </View>
+
+            {!isVideo && item.isPoll && (
+              <PollsContainer
+                options={item.poll.options}
+                mode="view"
+                voteCounts={item.poll.voteCounts}
+                userVoted={item.isVoted}
+                selectedOption={Number(item.votedOption)}
+                onVote={handleVote}
+              />
+            )}
           </View>
 
-          {/* Image Swiper */}
-          {item.assets &&
+          {/* Assets section */}
+          {item.isVideo ? (
+            <CustomVideoPlayer
+              videoUri={item.assets[0].url}
+              autoPlay={isVisible}
+            />
+          ) : (
+            item.assets &&
             item.assets.length > 0 &&
             (() => {
               const imageUrls = item.assets.map((asset) => asset.url);
@@ -464,12 +515,13 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   aspectRatio={item.aspectRatio || [3, 2]}
                   images={imageUrls}
                   isFeedPage={true}
-                  postDetails={item}
+                  postId={item._id}
                   setIndex={handleSetActiveIndex}
                   onDoubleTap={handleDoubleTap}
                 />
               );
-            })()}
+            })()
+          )}
 
           {/* Like Animation */}
           <Animated.View
@@ -489,146 +541,32 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </Animated.View>
 
           {/* Interaction Bar */}
-          <View className="bg-neutral-900 relative left-[5%] bottom-1 z-[-10] pt-1 w-[95%] min-h-12 h-auto rounded-bl-[40px] rounded-br-[16px]">
-            <View className="w-full px-8 pr-6 py-3 flex flex-row justify-between items-center">
-              {/* like */}
-              <TouchableOpacity
-                className="flex flex-row items-center gap-2"
-                onPress={() => {
-                  router.push("/post-details/1/likes");
-                  dispatch(setCurrentPost(item));
-                }}
-              >
-                <AntDesign name="like1" size={16} color="#fbbf24" />
-                <TextScallingFalse className="text-base text-white font-light">
-                  {likeCount} {likeCount > 1 ? "Likes" : "Like"}
-                </TextScallingFalse>
-                {/* <CustomBottomSheet
-                  ref={likeBottomSheetRef}
-                  onClose={() => handleCloseBottomSheet({ type: "like" })}
-                  animationSpeed={20}
-                  controllerVisibility={false}
-                  bgColor="bg-[#000]"
-                >
-                  {isBottomSheetOpen.type === "like" &&
-                    isBottomSheetOpen.status && (
-                      <LikerModal targetId={item?._id} targetType="Post" />
-                    )}
-                </CustomBottomSheet> */}
-              </TouchableOpacity>
-
-              {item.assets && item.assets.length > 1 && (
-                <View className="flex-row justify-center">
-                  {Array.from({ length: item.assets.length }).map((_, i) => (
-                    <View
-                      key={`dot-${i}`}
-                      className={
-                        i === activeIndex
-                          ? "w-1.5 h-1.5 rounded-full bg-white mx-0.5"
-                          : "w-1.5 h-1.5 rounded-full bg-white/50 mx-0.5"
-                      }
-                    />
-                  ))}
-                </View>
-              )}
-
-              {/* comment count */}
-              <TouchableOpacity
-                className="flex flex-row items-center gap-2"
-                onPress={() => {
-                  router.push({
-                    pathname: "/post-details/1" as RelativePathString,
-                  });
-                  dispatch(setCurrentPost(item));
-                }}
-              >
-                <TextScallingFalse className="text-base text-white font-light">
-                  {commentCount} Comments
-                </TextScallingFalse>
-                {/* <CustomBottomSheet
-                ref={commentBottomSheetRef}
-                onClose={() => handleCloseBottomSheet({ type: "comment" })}
-                animationSpeed={20}
-                controllerVisibility={false}
-                bgColor="bg-[#000]"
-              >
-                {isBottomSheetOpen.type === "comment" &&
-                  isBottomSheetOpen.status && (
-                    <CommentModal
-                      targetId={item?._id}
-                      setCommentCount={setCommentCount}
-                    />
-                  )}
-              </CustomBottomSheet> */}
-              </TouchableOpacity>
-            </View>
-
-            <View className="w-[90%] mx-auto py-5 mb-1 flex flex-row justify-end gap-x-5 items-center border-t-[0.5px] border-[#5C5C5C]">
-              {/* like */}
-              <TouchableOpacity onPress={handleLikeAction}>
-                <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-1.5 rounded-3xl">
-                  <AntDesign
-                    name={isLiked ? "like1" : "like2"}
-                    size={16}
-                    color={isLiked ? "#FABE25" : "white"}
-                  />
-                  <TextScallingFalse
-                    className={`text-base ${
-                      isLiked ? "text-amber-400" : "text-white"
-                    }`}
-                  >
-                    {isLiked ? "Liked" : "Like"}
-                  </TextScallingFalse>
-                </View>
-              </TouchableOpacity>
-              {/* comment now */}
-              <TouchableOpacity
-                className="flex flex-row items-center gap-2"
-                onPress={() => setIsCommentModalVisible(true)}
-              >
-                <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-1.5 rounded-3xl">
-                  {/* <FontAwesome name="comment" size={16} color="grey" /> */}
-                  <Feather name="message-square" size={16} color="white" />
-                  <TextScallingFalse className="text-base text-white">
-                    Comment
-                  </TextScallingFalse>
-                </View>
-                {isFeedPage && isCommentModalVisible && (
-                  <Modal
-                    visible={isCommentModalVisible}
-                    transparent
-                    animationType="slide"
-                    onRequestClose={() => setIsCommentModalVisible(false)}
-                  >
-                    <TouchableOpacity
-                      className="flex-1 justify-end bg-black/50"
-                      activeOpacity={1}
-                      onPress={() => setIsCommentModalVisible(false)}
-                    >
-                      <CommentModal
-                        targetId={item?._id}
-                        autoFocusKeyboard={isCommentModalVisible}
-                        setCommentCount={setCommentCount}
-                      />
-                    </TouchableOpacity>
-                  </Modal>
-                )}
-              </TouchableOpacity>
-              {/* share */}
-              <TouchableOpacity className="mr-3">
-                <View className="flex flex-row justify-between items-center gap-2 bg-black px-4 py-1.5 rounded-3xl">
-                  <FontAwesome5 name="location-arrow" size={16} color="white" />
-                  <TextScallingFalse className="text-base text-white">
-                    Share
-                  </TextScallingFalse>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <InteractionBar
+            post={item}
+            onPressLike={handleLike}
+            onPressComment={() => setIsCommentCountModalVisible(true)}
+            activeSlideIndex={activeIndex}
+            isPostContainer={true}
+            isFeedPage={isFeedPage}
+          />
         </View>
+        <Modal
+          visible={isCommentCountModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsCommentCountModalVisible(false)}
+        >
+          <CommentModal
+            targetId={item._id}
+            autoFocusKeyboard={true}
+            onClose={() => setIsCommentCountModalVisible(false)}
+          />
+        </Modal>
       </View>
     );
   }
 );
 
 export default PostContainer;
+
+const styles = StyleSheet.create({});

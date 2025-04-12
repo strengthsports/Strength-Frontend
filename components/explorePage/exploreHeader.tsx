@@ -10,12 +10,11 @@ import {
 
 const exploreCategories = [
   "All",
-  "News",
   "Matches",
-  "Transfers",
-  "Leagues",
-  "Ranking",
   "Articles",
+  "Teams",
+  "Clips",
+  "Groups",
 ];
 
 export const ExploreCategoryHeader = () => {
@@ -34,7 +33,7 @@ export const ExploreCategoryHeader = () => {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{
         alignItems: "center",
-        marginVertical: 8,
+        marginVertical: 4,
         paddingStart: 10,
         paddingEnd: 10,
       }}
@@ -47,10 +46,10 @@ export const ExploreCategoryHeader = () => {
         >
           <View>
             <Text
-              className={`px-6 py-2.5 rounded-[24px] mx-1 text-xl text-center overflow-hidden border-[#2E2E2E] border ${
+              className={`px-4 py-2.5 rounded-[8px] mx-1.5 text-xl text-center overflow-hidden ${
                 category === selectedExploreCategory
-                  ? "text-black bg-white"
-                  : "text-[#ABABAB] bg-black"
+                  ? "text-black bg-white font-semibold"
+                  : "text-white bg-[#262626]"
               }`}
             >
               {category}
@@ -67,11 +66,7 @@ const exploreSportsCategories = [
   "Cricket",
   "Football",
   "Badminton",
-  "Hockey",
   "Basketball",
-  "Kabbadi",
-  "Tennis",
-  "Table Tennis",
   "More \u2193",
 ];
 
@@ -87,30 +82,33 @@ export const ExploreAllSportsCategoryHeader = () => {
 
   return (
     <View className=" bg-black">
-      <Text className="text-white ml-2 mt-3">Sports</Text>
       {/* Sportscategory ScrollView */}
       <ScrollView
-        showsVerticalScrollIndicator={false}
+        horizontal
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 8 }}
       >
         {exploreSportsCategories.map((sportsCategory, index) => (
           <TouchableOpacity
             key={index}
             onPress={() => handleSportsCategoryClick(sportsCategory)}
-            className="flex-row justify-between items-center px-1 my-1.5"
-            activeOpacity={0.7}>
-            {/* sport category name */}
-            <Text className={`text-[#ABABAB] text-xl mx-5 my-2 `}>
-              {sportsCategory}
-            </Text>
-            {/* check Box of that sport*/}
-            <View
-              className={`w-5 h-5 border rounded-xl mr-3 ${
-                sportsCategory === selectedExploreSportsCategory
-                  ? "bg-theme border-[#ABABAB]"
-                  : "bg-gray-700 border-[#ABABAB]"
-              }`}
-            />
+            className="px-1"
+            activeOpacity={0.7}
+          >
+            <View className="items-center">
+              <Text
+                className={`text-xl px-3.5 py-1 text-center rounded-xl overflow-hidden text-[#ABABAB] ${
+                  sportsCategory === selectedExploreSportsCategory
+                    ? "text-white"
+                    : ""
+                }`}
+              >
+                {sportsCategory}
+              </Text>
+              {sportsCategory === selectedExploreSportsCategory && (
+                <View className="w-3/4 h-1 bg-[#12956B] rounded-full mt-1" />
+              )}
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>

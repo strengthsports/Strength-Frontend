@@ -5,11 +5,8 @@ import {
   useFollowUserMutation,
   useUnFollowUserMutation,
 } from "~/reduxStore/api/profile/profileApi.follow";
-import {
-  setFollowingCount,
-  pushFollowings,
-  pullFollowings,
-} from "~/reduxStore/slices/user/profileSlice";
+import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
+import { setFollowingCount } from "~/reduxStore/slices/user/profileSlice";
 import { FollowUser } from "~/types/user";
 
 export const useFollow = () => {
@@ -23,11 +20,21 @@ export const useFollow = () => {
     async (followData: FollowUser) => {
       try {
         dispatch(setFollowingCount("follow"));
-        dispatch(pushFollowings(followData.followingId));
+        dispatch(
+          updateAllPostsFollowStatus({
+            userId: followData.followingId,
+            isFollowing: true,
+          })
+        );
         await followUserMutation(followData).unwrap();
       } catch (error) {
         dispatch(setFollowingCount("unfollow"));
-        dispatch(pullFollowings(followData.followingId));
+        dispatch(
+          updateAllPostsFollowStatus({
+            userId: followData.followingId,
+            isFollowing: false,
+          })
+        );
         console.error("Failed to follow user:", error);
       }
     },
@@ -39,11 +46,21 @@ export const useFollow = () => {
     async (unfollowData: FollowUser) => {
       try {
         dispatch(setFollowingCount("unfollow"));
-        dispatch(pullFollowings(unfollowData.followingId));
+        dispatch(
+          updateAllPostsFollowStatus({
+            userId: unfollowData.followingId,
+            isFollowing: false,
+          })
+        );
         await unFollowUserMutation(unfollowData).unwrap();
       } catch (error) {
         dispatch(setFollowingCount("follow"));
-        dispatch(pushFollowings(unfollowData.followingId));
+        dispatch(
+          updateAllPostsFollowStatus({
+            userId: unfollowData.followingId,
+            isFollowing: true,
+          })
+        );
         console.error("Failed to unfollow user:", error);
       }
     },

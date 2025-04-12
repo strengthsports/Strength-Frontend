@@ -31,3 +31,22 @@ export type Notification = {
   isNotificationRead: boolean;
   [key: string]: any;
 };
+
+export type Target = {
+  targetId: string;
+  targetType: string;
+};
+
+export type InviteMember = {
+  receiverIds: string[];
+  roleInPage: string;
+};
+
+export type NotificationType =
+  | "Like"
+  | "Comment"
+  | "Follow"
+  | "TeamInvitation"
+  | "JoinTeamRequest"
+  | "Report"
+  | "Tag";

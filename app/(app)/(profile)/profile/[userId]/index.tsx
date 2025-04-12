@@ -6,163 +6,102 @@ import {
   ScrollView,
   Dimensions,
   Text,
-  useWindowDimensions,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
-import PostSmallCard from "@/components/Cards/PostSmallCard";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
 import { ProfileContext } from "./_layout";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
-
-const posts = [
-  {
-    id: 1,
-    firstName: "Sebastian",
-    lastName: "Cilb",
-    profilepic:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-    headline:
-      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-    caption:
-      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2Fec810ca3-96d1-4101-981e-296240d60437.jpg?alt=media&token=da6e81af-e2d0-49c0-8ef0-fe923f837a07",
-    likes: ["harshal_123", "Miraj_123"],
-    comments: [
-      {
-        id: 1,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "amazing",
-      },
-      {
-        id: 2,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "agg laga deya",
-      },
-    ],
-  },
-  {
-    id: 2,
-    firstName: "Sebastian",
-    lastName: "Cilb",
-    profilepic:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-    headline:
-      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-    caption:
-      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-    likes: ["harshal_123", "Miraj_123"],
-    comments: [
-      {
-        id: 1,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "amazing",
-      },
-      {
-        id: 2,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "agg laga deya",
-      },
-    ],
-  },
-  {
-    id: 3,
-    firstName: "Sebastian",
-    lastName: "Cilb",
-    profilepic:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-    headline:
-      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-    caption:
-      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-    likes: ["harshal_123", "Miraj_123"],
-    comments: [
-      {
-        id: 1,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "amazing",
-      },
-      {
-        id: 2,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "agg laga deya",
-      },
-    ],
-  },
-  {
-    id: 4,
-    firstName: "Sebastian",
-    lastName: "Cilb",
-    profilepic:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F7ec7c81f-dedc-4a0f-8d4e-ddc6544dc96b.jpeg?alt=media&token=141060d7-b533-4e92-bce0-7e317a6ae9d8",
-    headline:
-      "Elite Performance | Specialized in Climbing, Sprinting/Time Trails | Driven By Precesion, Power, and Calmness",
-    caption:
-      "Another day, another ride. Focus, train,repeat. Pursing Peformance one mile at a time. The journey countinues",
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/strength-55c80.appspot.com/o/uploads%2F409857d8-56c3-465f-9cac-dffddf0575e2.jpeg?alt=media&token=f3aa7516-8dac-4de5-90a5-b057c5d8703c",
-    likes: ["harshal_123", "Miraj_123"],
-    comments: [
-      {
-        id: 1,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "amazing",
-      },
-      {
-        id: 2,
-        firstName: "harshl",
-        lastName: "mishra",
-        description: "kjaskjdashdkasjndjansjndjan",
-        comment: "agg laga deya",
-      },
-    ],
-  },
-];
+import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+import TeamEntry from "~/components/profilePage/TeamEntry";
+import { AppDispatch, RootState } from "~/reduxStore";
+import {
+  fetchUserPosts,
+  selectPostsByUserId,
+} from "~/reduxStore/slices/feed/feedSlice";
+import MembersSection from "~/components/profilePage/MembersSection";
+import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
+import { Member } from "~/types/user";
+import { useGetPageMembersQuery } from "~/reduxStore/api/profile/profileApi.profile";
 
 const Overview = () => {
-  // const { width: screenWidth2 } = Dimensions.get("window");
-  const { width: screenWidth2 } = useWindowDimensions();
-  const scaleFactor = screenWidth2 / 410;
+  const params = useLocalSearchParams();
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
-  const gap = 10; // Space between posts
-  const postWidth = (screenWidth2 - gap) / 1.25; // Width of each post
-  const spacerWidth = (screenWidth2 - postWidth) / 1.5; //spacer width for the end of the ScrollView
+  const fetchedUserId = useMemo(() => {
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params?.userId as string))
+      : null;
+  }, [params.userId]);
 
   const [isExpanded, setIsExpanded] = useState(false);
-
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
 
   const { profileData, isLoading, error } = useContext(ProfileContext);
-  // console.log("User data on Overview page : ", profileData);
 
+  // Get filtered posts from Redux
+  const userPosts = useSelector((state: RootState) =>
+    selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
+  );
+  const postsWithImages = useMemo(
+    () => userPosts?.filter((post) => post.assets.length > 0) || [],
+    [userPosts]
+  );
+
+  // Get associates list
+  // const associates = useSelector(
+  //   (state: RootState) => (state.profile.user?.associates as Member[]) || []
+  // );
+
+  // Fetch initial posts
+  useEffect(() => {
+    dispatch(
+      fetchUserPosts({
+        postedBy: fetchedUserId.id,
+        postedByType: fetchedUserId.type,
+        limit: 10,
+        skip: 0,
+      })
+    );
+  }, [fetchedUserId, dispatch]);
+
+  // // Fetch page associates
+  const { data: associates } = useGetPageMembersQuery({
+    pageId: fetchedUserId.id,
+  });
+  // useEffect(() => {
+  //   dispatch(
+  //     fetchAssociates({
+  //       pageId: fetchedUserId.id,
+  //     })
+  //   );
+  // }, [fetchedUserId, dispatch]);
+
+  // Valid Sports data
   const validSports =
     profileData?.selectedSports?.filter((s: any) => s.sport) || [];
   const [activeSubSection, setActiveSubSection] = useState(
     validSports[0]?.sport.name || null
+  );
+
+  // Memoized athlete and coach data
+  const athletes = useMemo(
+    () => associates?.filter((member: Member) => member.role === "Athlete"),
+    [associates]
+  );
+
+  const coaches = useMemo(
+    () => associates?.filter((member: Member) => member.role === "Coach"),
+    [associates]
   );
 
   if (error) {
@@ -176,6 +115,7 @@ const Overview = () => {
       </PageThemeView>
     );
   }
+
   if (isLoading) {
     return (
       <PageThemeView>
@@ -190,7 +130,7 @@ const Overview = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {validSports.length > 0 && (
+      {fetchedUserId?.type !== "Page" && validSports.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
             horizontal
@@ -206,7 +146,7 @@ const Overview = () => {
                   className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
                     activeSubSection === sport.sport?.name
                       ? "bg-[#12956B]"
-                      : "bg-black border-gray-600"
+                      : "bg-black border-[0.5px] border-[#686868]"
                   } border`}
                   style={{
                     borderRadius:
@@ -222,18 +162,29 @@ const Overview = () => {
                     resizeMode="contain"
                   />
                   <TextScallingFalse
-                    className={`text-sm font-medium ${
+                    className={`text-lg font-medium ${
                       activeSubSection === sport.sport?.name
                         ? "text-white"
-                        : "text-gray-400"
+                        : "text-[#CCCCCC]"
                     }`}
-                    style={styles.buttonText}
+                    // style={styles.buttonText}
                   >
-                    {sport.sport?.name.charAt(0).toUpperCase() +
-                      sport.sport?.name.slice(1)}
+                    {sport.sport?.name?.charAt(0).toUpperCase() +
+                      sport.sport?.name?.slice(1)}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
+              <TouchableOpacity
+                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center"
+                style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
+                onPress={() => router.push("/(app)/(profile)/edit-overview")}
+              >
+                <Feather
+                  name="chevron-right"
+                  size={20 * scaleFactor}
+                  color="#CCCCCC"
+                />
+              </TouchableOpacity>
             </TabsList>
           </ScrollView>
 
@@ -241,9 +192,9 @@ const Overview = () => {
           {validSports.map((sport: any) => (
             <TabsContent key={sport.sport._id} value={sport.sport.name}>
               {/* Sports Overview */}
-              <View className="w-full flex-1 items-center p-2">
+              <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
-                  <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl">
+                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-[15px]">
                     <View className="flex-row justify-start flex-wrap gap-y-4">
                       {Object.entries(sport.details).map(
                         ([key, value], idx) => (
@@ -270,92 +221,62 @@ const Overview = () => {
                   </View>
                 )}
 
-                {sport.teams?.length > 0 && (
+                {sport.teams.length > 0 && (
                   <View className="bg-[#121212] w-[96%] px-5 py-4 rounded-xl mt-2">
                     {/* Two-Column Header */}
                     <View className="flex-row justify-between items-center mb-3">
                       <TextScallingFalse
-                        className="text-white font-bold"
-                        style={styles.HeadingText}
+                        className="text-[#8A8A8A]"
+                        style={{
+                          fontFamily: "Montserrat",
+                          fontWeight: 700,
+                          fontSize: responsiveFontSize(1.8),
+                        }}
                       >
                         CURRENT TEAMS
-                      </TextScallingFalse>
-                      <TextScallingFalse
-                        className="text-white font-bold"
-                        style={styles.HeadingText}
-                      >
-                        QUICK INFO
                       </TextScallingFalse>
                     </View>
 
                     {/* Teams Mapping */}
                     {sport.teams.map((team: any, index: any) => (
-                      <View
-                        key={team._id || index}
-                        className="flex-row justify-between items-center py-3 border-b border-gray-800"
-                      >
-                        {/* Left Column - Team Info */}
-                        <View className="flex-row items-center gap-x-3 w-[50%]">
-                          {/* Team Logo */}
-                          <Image
-                            source={{ uri: team.team.logo?.url }}
-                            style={{
-                              width: 45 * scaleFactor,
-                              height: 45 * scaleFactor,
-                              borderRadius: 100,
-                            }}
-                          />
-                          <View>
-                            <TextScallingFalse
-                              className="text-white font-bold"
-                              style={{
-                                fontSize: responsiveFontSize(1.76),
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {team.team.name}
-                            </TextScallingFalse>
-                            <TextScallingFalse
-                              className="text-gray-400"
-                              style={{ fontSize: 13 * scaleFactor }}
-                            >
-                              {team.location || "Location Not Available"}
-                            </TextScallingFalse>
-                          </View>
-                        </View>
-
-                        {/* Right Column - Quick Info */}
-                        <View className="w-[50%] flex items-end">
-                          <TextScallingFalse
-                            className="text-white font-medium"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            Position:{" "}
-                            <TextScallingFalse className="font-light">
-                              {team.position || team.role || "Not Specified"}
-                            </TextScallingFalse>
-                          </TextScallingFalse>
-
-                          <TextScallingFalse
-                            className="text-white font-light pt-2"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            {team.creationDate || team.joiningDate
-                              ? `${new Date(
-                                  team.creationDate || team.joiningDate
-                                ).getFullYear()} - Present`
-                              : "Joining Date Not Available"}
-                          </TextScallingFalse>
-
-                          <TextScallingFalse
-                            className="text-gray-400 pt-2"
-                            style={{ fontSize: 13 * scaleFactor }}
-                          >
-                            Present:
-                          </TextScallingFalse>
-                        </View>
+                      <View key={index} style={{ marginVertical: 1 }}>
+                        <TeamEntry team={team} />
+                        <View
+                          style={{
+                            height: 0.5,
+                            backgroundColor: "#3B3B3B",
+                            marginVertical: 16,
+                          }}
+                        />
                       </View>
                     ))}
+                    <TouchableOpacity
+                      activeOpacity={0.3}
+                      onPress={() => console.log("Navigate to Full Insights")}
+                      style={{
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginVertical: 6,
+                      }}
+                    >
+                      <TextScallingFalse
+                        style={{
+                          color: "#808080",
+                          fontSize: 15,
+                          fontWeight: "700", // Bold
+                        }}
+                      >
+                        Full Insights
+                      </TextScallingFalse>
+                      <Feather
+                        name="arrow-right"
+                        size={20}
+                        color={"#808080"}
+                        style={{ marginLeft: 5 }}
+                      />
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
@@ -371,28 +292,25 @@ const Overview = () => {
             <View style={{ padding: 2 }}>
               <TextScallingFalse
                 style={{
-                  color: "grey",
-                  fontSize: responsiveFontSize(2.23),
+                  color: "#808080",
+                  fontSize: responsiveFontSize(1.9),
                   fontWeight: "bold",
                 }}
               >
-                About
+                ABOUT
               </TextScallingFalse>
               <TextScallingFalse
+                className="text-white font-light pt-4 leading-5"
                 style={{
-                  fontSize: responsiveFontSize(1.52),
-                  color: "white",
-                  fontWeight: "300",
-                  paddingTop: "3%",
-                  lineHeight: 17.5,
+                  fontSize: responsiveFontSize(1.6),
                 }}
-                numberOfLines={isExpanded ? undefined : 3}
+                numberOfLines={isExpanded ? undefined : 2}
               >
                 {profileData?.about}
               </TextScallingFalse>
               <TouchableOpacity onPress={handleToggle}>
                 <TextScallingFalse style={styles.seeMore}>
-                  {profileData?.about.length > 140 &&
+                  {profileData?.about?.length > 140 &&
                     (isExpanded ? "see less" : "see more")}
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -402,47 +320,28 @@ const Overview = () => {
       )}
 
       {/* recent posts */}
-      {posts && posts.length > 0 && (
-        <View className="py-4 items-center">
-          <View
-            className="ml-1.5 w-auto border-[#494949] border-[0.3px] rounded-l-[20px] border-r-0"
-            style={{ height: 582 * scaleFactor }}
-          >
-            <View className="w-full h-12 justify-end pl-5">
-              <TextScallingFalse className="text-gray-500 text-[18px] font-bold">
-                RECENT POSTS
-              </TextScallingFalse>
-            </View>
+      {postsWithImages?.length > 0 && (
+        <RecentPostsSection
+          posts={postsWithImages}
+          onSeeAllPress={() => {}}
+          scaleFactor={scaleFactor}
+        />
+      )}
 
-            <ScrollView
-              horizontal
-              snapToInterval={postWidth + gap}
-              decelerationRate="normal"
-              showsHorizontalScrollIndicator={false}
-            >
-              <View className="flex-row ml-4" style={{ gap }}>
-                {posts.map((post) => (
-                  <View
-                    key={post.id}
-                    style={{ width: postWidth, height: "100%" }}
-                  >
-                    <PostSmallCard post={post} />
-                  </View>
-                ))}
-                <View style={{ width: spacerWidth }} />
-              </View>
-            </ScrollView>
-
-            <View className="w-auto h-[15%] justify-center items-center">
-              <View className="h-[0.5] w-[90%] bg-gray-400" />
-              <TouchableOpacity activeOpacity={0.3} className="pt-4">
-                <TextScallingFalse className="text-[#12956B] text-[13px] font-normal">
-                  See all posts...
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+      {/* members */}
+      {profileData?.type === "Page" && coaches?.length > 0 && (
+        <MembersSection
+          members={coaches}
+          sectionHeader="Coaches"
+          moreText="Show all coaches"
+        />
+      )}
+      {profileData?.type === "Page" && athletes?.length > 0 && (
+        <MembersSection
+          members={athletes}
+          sectionHeader="Athletes"
+          moreText="Show all athletes"
+        />
       )}
 
       <DiscoverPeopleList />
@@ -474,13 +373,13 @@ const styles = StyleSheet.create({
     padding: "2%",
   },
   HeadingText: {
-    fontSize: responsiveFontSize(1.41),
+    fontSize: responsiveFontSize(1.3),
     color: "white",
     fontWeight: "bold",
   },
   DetailText: {
-    fontSize: responsiveFontSize(1.52),
-    color: "white",
+    fontSize: responsiveFontSize(1.5),
+    color: "#C1C1C1",
     fontWeight: "300",
     paddingTop: 2,
   },

@@ -1,6 +1,18 @@
-import { getToken, removeToken, saveToken } from "@/utils/secureStore";
+import {
+  getToken,
+  removeToken,
+  removeUserId,
+  saveToken,
+  saveUserId,
+} from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { User, AuthState } from "@/types/user";
+
+type LoginPayload = {
+  email?: string;
+  username?: string;
+  password: string;
+};
 
 // Initial State
 const initialState: AuthState = {
@@ -28,9 +40,9 @@ export const initializeAuth = createAsyncThunk(
 // Login User
 export const loginUser = createAsyncThunk<
   { user: User; message: string },
-  { email: string; password: string },
+  LoginPayload,
   { rejectValue: string }
->("auth/loginUser", async ({ email, password }, { rejectWithValue }) => {
+>("auth/loginUser", async (LoginPayload, { rejectWithValue }) => {
   try {
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/login`,
@@ -39,7 +51,7 @@ export const loginUser = createAsyncThunk<
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(LoginPayload),
       }
     );
     const data = await response.json();
@@ -49,9 +61,10 @@ export const loginUser = createAsyncThunk<
     }
 
     // Convert tokens to strings and save in Secure Store
-    console.log("saving accessToken");
-    // console.log("accessToken", data.data.accessToken);
+    console.log("saving accessToken and user id");
     saveToken("accessToken", data.data.accessToken);
+    console.log("user id ", data.data.user._id);
+    saveUserId("user_id", data.data.user._id);
 
     return { user: data.data.user, message: data.message };
   } catch (err: any) {
@@ -84,8 +97,12 @@ export const logoutUser = createAsyncThunk(
         );
       }
 
+      // Disconnect socket connection
+      // disconnectSocket();
+
       // Clear Secure Store
       removeToken("accessToken");
+      removeUserId("user_id");
       console.log("From Redux - Logged out successfully!");
 
       return;

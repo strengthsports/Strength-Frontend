@@ -12,7 +12,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import "../global.css";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import store, { persistor } from "@/reduxStore";
+import { store, persistor } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/configs/toastConfig";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -25,6 +25,9 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Poppins: require("../assets/fonts/Poppins-Regular.ttf"),
+    Inter: require("../assets/fonts/Inter-Regular.ttf"),
+    Montserrat: require("../assets/fonts/Montserrat-Bold.ttf"),
   });
 
   useEffect(() => {

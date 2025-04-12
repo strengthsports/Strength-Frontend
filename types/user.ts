@@ -45,6 +45,7 @@ export interface ProfileState {
   posts: Array<any>;
   followings: string[];
   currentPost: Post | null;
+  associates?: Member[] | [];
   [key: string]: any;
 }
 
@@ -93,3 +94,14 @@ export interface ReportUser {
   targetType: string;
   reason: string;
 }
+
+export type Member = {
+  _id: string;
+  type: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  headline: string;
+  profilePic: string;
+  role: string;
+};

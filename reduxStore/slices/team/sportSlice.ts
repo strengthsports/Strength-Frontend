@@ -12,7 +12,7 @@ export const fetchSports = createAsyncThunk(
             });
 
       const data = await response.json();
-      console.log("API Response:", data);
+      // console.log("API Response:", data);
 
       if (!response.ok) return rejectWithValue(data.message || "Error fetching sports");
       return data?.data ?? [];  // Ensure data is an array

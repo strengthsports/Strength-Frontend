@@ -5,6 +5,7 @@ import React, {
   useRef,
   ReactNode,
   useState,
+  useEffect,
 } from "react";
 import {
   View,
@@ -13,73 +14,124 @@ import {
   Text,
   Platform,
   ToastAndroid,
+  ScrollView,
 } from "react-native";
 import { Ionicons, AntDesign, Feather } from "@expo/vector-icons";
 import CustomDrawer, { DrawerRefProps } from "~/components/ui/CustomDrawer";
 import nopic from "@/assets/images/nopic.jpg";
-import { useRouter } from "expo-router"; 
+import { useRouter } from "expo-router";
+import { RootState } from "~/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTeams } from "~/reduxStore/slices/team/teamSlice";
+import CustomDivider from "~/components/ui/CustomDivider";
+import { logoutUser } from "~/reduxStore/slices/user/authSlice";
+import Toast from "react-native-toast-message";
 
 interface DrawerContextProps {
   handleOpenDrawer: () => void;
   handleCloseDrawer: () => void;
+  isDrawerOpen: boolean;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  url: string;
 }
 
 const DrawerContext = createContext<DrawerContextProps>({
   handleOpenDrawer: () => {},
   handleCloseDrawer: () => {},
+  isDrawerOpen: false,
 });
 
 export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   const drawerRef = useRef<DrawerRefProps>(null);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showAllTeams, setShowAllTeams] = useState(false);
+
+  const user = useSelector((state: RootState) => state.profile.user);
+  const teams = useSelector((state: RootState) => state.team.teams);
+  const [teamList, setTeamList] = useState<Team[]>([]);
 
   const handleOpenDrawer = () => {
     drawerRef.current?.open();
+    setIsDrawerOpen(true);
   };
 
   const handleCloseDrawer = () => {
     drawerRef.current?.close();
+    setIsDrawerOpen(false);
   };
 
-  // For demonstration, we’re using dummy data.
-  //   In a real-world scenario, you might pull this from redux, props, or other contexts.
-  const user = {
-    profilePic: null,
-    firstName: "John",
-    lastName: "Doe",
-    username: "johndoe",
+  const processTeams = () => {
+    const uniqueTeams = new Map<string, Team>();
+    
+    [...(teams?.createdTeams || []), ...(teams?.joinedTeams || [])].forEach((teamEntry) => {
+      if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
+        uniqueTeams.set(teamEntry.team._id, {
+          name: teamEntry.team.name,
+          url: teamEntry.team.logo?.url || "",
+          id: teamEntry.team._id,
+        });
+      }
+    });
+
+    setTeamList(Array.from(uniqueTeams.values()));
   };
 
-  const teamDetails: any[] = [
-    // Example team object:
-    // { id: 1, name: "Team One", url: "https://example.com/team-one.png" }
-  ];
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT);
+      } else {
+        Toast.show({
+          type: "success",
+          text1: "Logged out successfully",
+          visibilityTime: 1500,
+        });
+      }
+      router.replace("/(auth)/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
-  // Dummy implementations; replace these with your actual logic
-  const handleLogout = () => console.log("Logout");
-  const router = useRouter();
+  useEffect(() => {
+    dispatch(fetchTeams());
+  }, []);
+
+  useEffect(() => {
+    processTeams();
+  }, [teams]);
+
+  const visibleTeams = showAllTeams ? teamList : teamList.slice(0, 4);
 
   return (
-    <DrawerContext.Provider value={{ handleOpenDrawer, handleCloseDrawer }}>
-      {/* Render the drawer with your desired content */}
-      <CustomDrawer ref={drawerRef} onClose={handleCloseDrawer}>
-        <View
-          className="w-full h-full bg-black pt-6"
-          onStartShouldSetResponder={() => true}
-        >
-          {/* Close Button */}
+    <DrawerContext.Provider 
+      value={{ handleOpenDrawer, handleCloseDrawer, isDrawerOpen }}
+    >
+      <CustomDrawer 
+        ref={drawerRef} 
+        onClose={handleCloseDrawer}
+        onOpen={handleOpenDrawer}
+      >
+        <View className="w-full h-full bg-black pt-6">
           <TouchableOpacity
             onPress={handleCloseDrawer}
-            className="absolute top-4 right-4"
+            className="absolute top-4 right-4 z-10"
           >
             <Ionicons name="close" size={25} color="white" />
           </TouchableOpacity>
 
-          {/* Sidebar Content */}
-          <View className="flex-1 pt-12">
+          <ScrollView className="flex-1 pt-12">
             {/* Profile Section */}
-            <View className="flex-row items-center justify-start pl-6 space-x-4 mb-6">
+            <View className="flex-row items-center pl-6 mb-6">
               <Image
-                source={user?.profilePic ? { uri: user?.profilePic } : nopic} // replace with user?.profilePic or defaultPic
+                source={user?.profilePic ? { uri: user.profilePic } : nopic}
                 className="w-14 h-14 rounded-full"
                 resizeMode="cover"
               />
@@ -87,128 +139,117 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 <Text className="text-white text-xl font-semibold">
                   {user?.firstName} {user?.lastName}
                 </Text>
-                <Text className="text-gray-400 text-lg">@{user?.username}</Text>
+                <Text className="text-gray-400 text-lg">
+                  @{user?.username}
+                </Text>
               </View>
             </View>
 
-            {/* <CustomDivider
-                color="#5C5C5C"
-                thickness={0.2}
-                style={{ marginHorizontal: "auto", width: "90%", opacity: 0.5 }}
-              /> */}
+            <CustomDivider
+              color="#5C5C5C"
+              thickness={0.2}
+              style={{ width: '90%', opacity: 0.5, alignSelf: 'center' }}
+            />
 
-            {/* Teams section */}
+            {/* Teams Section */}
             <View className="mt-2 w-[90%] mx-auto">
-              <Text className="text-white text-4xl font-bold">
+              <Text className="text-white text-4xl font-bold mb-4">
                 Manage Teams
               </Text>
 
-              {teamDetails.map((team: any, index: any) => (
-                <View
-                  className={
-                    index === teamDetails.length - 1 ? "mb-4 mx-2" : "mb-2 mx-2"
-                  }
-                  key={index}
-                >
-                  {/* Replace teamDetails mapping with your data */}
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      router.push(`../(team)/teams/${team.id}`);
-                      handleCloseDrawer();
-                    }}
-                  >
-                    <View className="flex-row items-center mt-4">
-                      <Image
-                        source={{ uri: team.url }}
-                        className="w-10 h-10 rounded-full"
-                        resizeMode="cover"
-                      />
-                      <Text className="text-white text-3xl font-medium ml-4">
-                        {team.name}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              <View className="flex-row mb-4 px-3">
-                {/* Create Team Button */}
-                <View className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center">
-                  <TouchableOpacity
-                    onPress={() => {
-                      router.push("/(app)/(team)/teams/InitiateCreateTeam");
-                      handleCloseDrawer();
-                    }}
-                  >
-                    <Text className="text-[#12956B] text-base font-semibold">
-                      Create Team
-                    </Text>
-                  </TouchableOpacity>
-                  <AntDesign
-                    className="ml-1"
-                    name="plus"
-                    size={10}
-                    color="#12956B"
-                  />
-                </View>
-
-                {/* Join Team Button */}
+              {visibleTeams.map((team, index) => (
                 <TouchableOpacity
+                  key={team.id}
                   onPress={() => {
-                    // your join team logic here
+                    router.push(`../(team)/teams/${team.id}`);
+                    handleCloseDrawer();
                   }}
-                  className="ml-4"
+                  className={`mb-${index === visibleTeams.length - 1 ? 4 : 2} mx-2`}
                 >
-                  <View className="bg-[#12956B] px-4 py-2 rounded-md items-center">
-                    <Text className="text-white text-base font-semibold">
-                      Join Team
+                  <View className="flex-row items-center mt-4">
+                    <Image
+                      source={{ uri: team.url }}
+                      className="w-10 h-10 rounded-full"
+                      resizeMode="cover"
+                    />
+                    <Text className="text-white text-3xl font-medium ml-4">
+                      {team.name}
                     </Text>
                   </View>
                 </TouchableOpacity>
-              </View>
+              ))}
 
-              {/* <CustomDivider
-                  color="#5C5C5C"
-                  thickness={0.2}
-                  style={{
-                    marginHorizontal: "auto",
-                    width: "100%",
-                    opacity: 0.5,
+              {teamList.length > 4 && (
+                <TouchableOpacity 
+                  onPress={() => setShowAllTeams(!showAllTeams)}
+                  className="mt-2"
+                >
+                  <Text className="text-cyan-400 text-2xl font-semibold">
+                    {showAllTeams ? "See Less" : "See More"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <View className="flex-row mb-4 mt-7">
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push("/(app)/(team)/teams");
+                    handleCloseDrawer();
                   }}
-                /> */}
-            </View>
-            <TouchableOpacity
-              onPress={() => {router.push("/(auth)/login");}}
-              className="mb-2 w-[90%] mx-auto"
-            >
-              <Text className="text-white text-4xl font-semibold">Logout</Text>
-            </TouchableOpacity>
-          </View>
+                  className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center mr-4"
+                >
+                  <Text className="text-[#12956B] text-base font-semibold">
+                    Create Team
+                  </Text>
+                  <AntDesign name="plus" size={10} color="#12956B" />
+                </TouchableOpacity>
 
-          {/* <CustomDivider
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push("/(app)/(team)/join-team");
+                    handleCloseDrawer();
+                  }}
+                  className="bg-[#12956B] px-4 py-2 rounded-md"
+                >
+                  <Text className="text-white text-base font-semibold">
+                    Join Team
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <CustomDivider
               color="#5C5C5C"
               thickness={0.2}
-              style={{ marginHorizontal: "auto", width: "90%", opacity: 0.5 }}
-            /> */}
+              style={{ width: '90%', opacity: 0.5, alignSelf: 'center' }}
+            />
 
-          <View className="pb-24 w-[90%] mx-auto">
-            <TouchableOpacity
-              className="flex-row items-center"
-              onPress={() => {
-                router.push("/(app)/(settings)/settings");
-                handleCloseDrawer();
-              }}
-            >
-              <Feather
-                name="settings"
-                size={20}
-                color="white"
-                className="mr-2"
-              />
-              <Text className="text-white text-4xl font-medium">Settings</Text>
-            </TouchableOpacity>
-          </View>
+            {/* Settings and Logout */}
+            <View className="w-[90%] mx-auto">
+              <TouchableOpacity
+                className="flex-row items-center py-6"
+                onPress={() => {
+                  router.push("/(app)/(settings)/settings");
+                  handleCloseDrawer();
+                }}
+              >
+                <Feather name="settings" size={20} color="white" />
+                <Text className="text-white text-4xl font-medium ml-2">
+                  Settings
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleLogout}
+                className="flex-row items-center py-6"
+              >
+                <Ionicons name="log-out-outline" size={20} color="white" />
+                <Text className="text-white text-4xl font-semibold ml-2">
+                  Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </CustomDrawer>
       {children}
@@ -216,4 +257,10 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useDrawer = () => useContext(DrawerContext);
+export const useDrawer = () => {
+  const context = useContext(DrawerContext);
+  if (!context) {
+    throw new Error("useDrawer must be used within a DrawerProvider");
+  }
+  return context;
+};

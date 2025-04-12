@@ -322,7 +322,7 @@ const ProfileLayout = () => {
                         Teams:{" "}
                         {user?.createdTeams?.length > 0 &&
                           user.createdTeams.map((team: any) => (
-                            <TextScallingFalse key={team.team._id} style={{ color: "grey" }}>
+                            <TextScallingFalse key={team?.team?._id} style={{ color: "grey" }}>
                               {" "}
                               {team.name}
                             </TextScallingFalse>

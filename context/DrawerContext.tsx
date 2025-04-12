@@ -102,7 +102,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     dispatch(fetchTeams());
-  }, []);
+  }, [isDrawerOpen]);
 
   useEffect(() => {
     processTeams();

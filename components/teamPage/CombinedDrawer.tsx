@@ -22,7 +22,7 @@ interface DrawerProps {
   teamId: string; // Accepting menu items as an array of objects
 }
 
-const HEADER_HEIGHT = 60; // Adjust this height based on your drawer's height
+const HEADER_HEIGHT = 40; // Adjust this height based on your drawer's height
 
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
@@ -70,11 +70,11 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
     <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
-        className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
+        className="flex-row justify-between items-center px-4 py-1 bg-black fixed top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
         <TouchableOpacity onPress={() => router.back()}>
-          <Icon name="arrowleft" size={30} color="white" />
+          <Icon name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
         <View className="flex-row items-center gap-x-5">
           <TouchableOpacity
@@ -86,13 +86,13 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
           >
             <MaterialCommunityIcons
               name="message-reply-text-outline"
-              size={27.5}
+              size={24}
               color="white"
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={toggleSidebar}>
             <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>
-              <Icon name="bars" size={30} color="white" />
+              <Icon name="bars" size={24} color="white" />
             </Animated.View>
           </TouchableOpacity>
         </View>
@@ -118,7 +118,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
               >
               <View className="flex flex-row justify-between mr-4">
               <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
-              {item?.logo && <item.logo width={24} height={24} fill="white" className="mr-2" />}
+              {item?.logo && <item.logo width={32} height={32} fill="white" className="mr-2" />}
              
 
               </View>

@@ -64,41 +64,33 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         {description}
       </Text>
 
-      {/* Remove Button */}
-      {isAdmin && onRemove && (
-        <TouchableOpacity
-          onPress={onRemove}
-          style={styles.removeButton}
-          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-        >
-          <Icon name="cross" size={16} color="white" />
-        </TouchableOpacity>
-      )}
+     
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#0004",
+    backgroundColor: "#000000",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 6,
     alignItems: "center",
     justifyContent: "space-between",
     width: 170,
-    height: 200,
-    borderWidth: 0.2,
-    borderColor: "#4B5563", // Tailwind: border-gray-700
+    height: 202,
+    borderWidth: 1,
+    borderColor: "#272727",
+  
     position: "relative",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    // shadowColor: "#000",
+    // shadowOpacity: 1,
+    // shadowRadius: 4,
+    // shadowOffset: { width: 0, height: 2 },
+    // elevation: 4,
   },
   image: {
-    height: 94,
-    width: 94,
+    height: 92,
+    width: 92,
     borderRadius: 100,
     marginTop: 8,
     marginBottom: 8,
@@ -119,23 +111,20 @@ const styles = StyleSheet.create({
   },
   name: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
+    marginBottom:-10,
+    
   },
   description: {
-    color: "#9CA3AF",
+    color: "#717171",
     fontSize: 12,
     textAlign: "center",
+
+    
   },
-  removeButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    padding: 4,
-    borderRadius: 9999,
-    backgroundColor: "#1F2937", // Tailwind: bg-gray-800
-  },
+  
 });
 
 export default TeamMember;

@@ -74,6 +74,7 @@ function EditOverview() {
   const filteredSports = sports?.filter((sport) =>
     sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  console.log("sports-", sports)
 
   const [isLocalLoading, setLocalLoading] = useState<boolean>(false);
   const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -353,7 +354,7 @@ function EditOverview() {
           sportsId: sp.sportsId,
         }));
         const sportsData = { sports: dataToSubmit };
-        console.log(sportsData);
+        console.log("sportsData-", sportsData);
         await dispatch(editUserSportsOverview(sportsData));
         await dispatch(
           fetchMyProfile({ targetUserId: user?._id, targetUserType: user.type })

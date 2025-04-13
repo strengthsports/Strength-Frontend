@@ -305,7 +305,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onPress={() =>
                   router.push(`/(app)/(post)/hashtag/${part.slice(1)}`)
                 }
-                className="text-2xl text-[#12956B]"
+                className={`text-2xl text-[#12956B] ${
+                  highlightedHashtag === part && "font-semibold"
+                } active:bg-gray-600`}
               >
                 {part}
               </TextScallingFalse>
@@ -328,7 +330,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   serializedUser &&
                   router.push(`/(app)/(profile)/profile/${serializedUser}`)
                 }
-                className="text-2xl text-[#12956B]"
+                className="text-2xl text-[#12956B] active:bg-gray-600"
               >
                 {part}
               </TextScallingFalse>
@@ -502,7 +504,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           {item.isVideo ? (
             <CustomVideoPlayer
               videoUri={item.assets[0].url}
-              autoPlay={isVisible}
+              autoPlay={isVisible as boolean}
+              isFeedPage={true}
+              postId={item._id}
             />
           ) : (
             item.assets &&

@@ -46,6 +46,8 @@ export const editUserProfile = createAsyncThunk<
 
     // console.log("Response:", response);
     const data = await response.json();
+    console.log(data);
+    console.log(data.data);
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Error getting user");
@@ -549,11 +551,13 @@ const profileSlice = createSlice({
       .addCase(editUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = { ...state.user, ...action.payload };
+        console.log(action.payload)
         state.msgBackend = action.payload.message;
         state.error = null;
       })
       .addCase(editUserProfile.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
         state.success = false;
         state.error =
           action.payload || "Unexpected error occurred during updating user.";
@@ -694,6 +698,8 @@ export const {
   pullFollowings,
   pushFollowings,
   setCurrentPost,
+  optimisticallyUpdateUser,
+  rollbackUserUpdate,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

@@ -96,9 +96,9 @@ const Home = () => {
   // state for visible posts; assume each post has a unique id in item.data.id
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
-  // viewabilityConfig: consider an item visible if 80% of it is onscreen
+  // viewabilityConfig: consider an item visible if 100% of it is onscreen
   const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 80,
+    itemVisiblePercentThreshold: 100,
   });
 
   // Handle updates to visible items
@@ -368,6 +368,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingTop: 60,
+    paddingBottom: 60,
   },
 });
 

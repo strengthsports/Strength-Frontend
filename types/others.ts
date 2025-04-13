@@ -37,6 +37,11 @@ export type Target = {
   targetType: string;
 };
 
+export type InviteMember = {
+  receiverIds: string[];
+  roleInPage: string;
+};
+
 export type NotificationType =
   | "Like"
   | "Comment"

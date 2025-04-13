@@ -23,7 +23,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-black p-4 rounded-lg items-center shadow-md border border-[#515151] relative"
+      className="bg-black p-4 mt-2 rounded-lg items-center shadow-md border border-[#515151] relative"
       style={{
         width: 170, // Fixed width for each card
         height: 182, // Adjusted height for the card

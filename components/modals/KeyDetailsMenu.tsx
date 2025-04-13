@@ -44,6 +44,7 @@ const KeyDetailsMenu: React.FC<KeyDetailsMenuProps> = ({
                             key={index}
                             style={styles.option}
                             onPress={() => handleKeyValueSelect(option)}
+                            activeOpacity={0.5}
                         >
                             <TextScallingFalse style={styles.optionText} allowFontScaling={false}>
                                 {option}
@@ -55,6 +56,7 @@ const KeyDetailsMenu: React.FC<KeyDetailsMenuProps> = ({
                     <TouchableOpacity
                         style={[styles.option, styles.unselectOption]}
                         onPress={() => handleKeyValueSelect('')}
+                        activeOpacity={0.5}
                     >
                         <TextScallingFalse style={[styles.optionText, { color: 'red' }]} allowFontScaling={false}>
                             Unselect Option

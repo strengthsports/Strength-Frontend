@@ -1,67 +1,66 @@
 import React from "react";
-import Svg, { Path, G, Defs, ClipPath } from "react-native-svg";
+import Svg, { Path, Mask, Rect } from "react-native-svg";
 
-const PollsIcon = ({ color }: { color?: string }) => {
-    return (
-        <Svg width="23" height="23" viewBox="0 0 682.667 682.667">
-            <Defs>
-                <ClipPath id="a">
-                    <Path d="M0 512h512V0H0Z" fill="#12956B" />
-                </ClipPath>
-            </Defs>
-            <G>
-                <Path
-                    d="m0 0 60 60"
-                    transform="matrix(1.33333 0 0 -1.33333 100 221.333)"
-                    stroke="#12956B"
-                    strokeWidth={30}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-                <Path
-                    d="m0 0 60-60"
-                    transform="matrix(1.33333 0 0 -1.33333 100 141.333)"
-                    stroke="#12956B"
-                    strokeWidth={30}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-                <Path
-                    d="m0 0 24.999-25.002L75 24.999"
-                    transform="matrix(1.33333 0 0 -1.33333 90 504.665)"
-                    stroke="#12956B"
-                    strokeWidth={30}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-                <G clipPath="url(#a)" transform="matrix(1.33333 0 0 -1.33333 0 682.667)">
-                    <Path
-                        d="M0 0v-180"
-                        transform="translate(195 466)"
-                        stroke="#12956B"
-                        strokeWidth={30}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                    <Path
-                        d="M0 0v-180"
-                        transform="translate(195 226)"
-                        stroke="#12956B"
-                        strokeWidth={30}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                    <Path
-                        d="M377 46H15v180h362zM497 286H15v180h482z"
-                        stroke="#12956B"
-                        strokeWidth={30}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </G>
-            </G>
-        </Svg>
-    );
+const PollsIcon = ({ color = "#12956B" }: { color?: string }) => {
+  return (
+    <Svg width="25" height="20" viewBox="0 0 20 20">
+      <Mask id="path-1-inside-1_2523_1217" fill="white">
+        <Rect width="25" height="9.09091" rx="0.865849" />
+      </Mask>
+      <Rect
+        width="22"
+        height="9.09091"
+        rx="0.865849"
+        stroke={color || "#12956B"}
+        strokeWidth={2.5}
+        mask="url(#path-1-inside-1_2523_1217)"
+      />
+
+      <Mask id="path-2-inside-2_2523_1217" fill="white">
+        <Rect width="8.18182" height="9.09091" rx="0.865849" />
+      </Mask>
+      <Rect
+        width="8.18182"
+        height="9.09091"
+        rx="0.865849"
+        stroke={color || "#12956B"}
+        strokeWidth={2.5}
+        mask="url(#path-2-inside-2_2523_1217)"
+      />
+
+      <Path d="M5.40332 2.37109L2.38805 5.84773" stroke={color || "#12956B"} />
+      <Path d="M5.41699 5.83984L2.37348 2.3879" stroke={color || "#12956B"} />
+
+      <Mask id="path-5-inside-3_2523_1217" fill="white">
+        <Rect y="10.9102" width="18" height="9.09091" rx="0.865849" />
+      </Mask>
+      <Rect
+        y="10.9102"
+        width="17"
+        height="9.09091"
+        rx="0.865849"
+        stroke={color || "#12956B"}
+        strokeWidth={2.5}
+        mask="url(#path-5-inside-3_2523_1217)"
+      />
+
+      <Mask id="path-6-inside-4_2523_1217" fill="white">
+        <Rect y="10.9102" width="8.18182" height="9.09091" rx="0.865849" />
+      </Mask>
+      <Rect
+        y="10.9102"
+        width="8.18182"
+        height="9.09091"
+        rx="0.865849"
+        stroke={color || "#12956B"}
+        strokeWidth={2.5}
+        mask="url(#path-6-inside-4_2523_1217)"
+      />
+
+      <Path d="M5.51367 14.2148L3.53225 16.9813" stroke={color || "#12956B"} />
+      <Path d="M3.88184 16.6992L2.2516 15.4309" stroke={color || "#12956B"} />
+    </Svg>
+  );
 };
 
 export default PollsIcon;

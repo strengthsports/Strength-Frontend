@@ -5,6 +5,8 @@ import { AntDesign, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
+import { useShare } from "~/hooks/useShare";
+import { Post } from "~/types/post";
 
 const interactionBtn = `flex flex-row justify-between items-center gap-2 bg-black px-4 py-[6px] rounded-3xl`;
 const shadowStyle = Platform.select({
@@ -22,29 +24,40 @@ const shadowStyle = Platform.select({
 });
 
 const InteractionBar = ({
-  postId,
+  post,
   onPressLike,
   onPressComment,
-  isLiked,
-  likesCount,
-  commentsCount,
-  assetsCount,
   activeSlideIndex,
   isPostContainer,
   isFeedPage,
 }: {
-  postId: string;
+  post: Post;
   onPressLike: () => void;
   onPressComment: () => void;
-  isLiked: boolean;
-  likesCount: number;
-  commentsCount: number;
-  assetsCount?: number;
   activeSlideIndex?: number;
   isPostContainer?: boolean;
   isFeedPage?: boolean;
 }) => {
   const router = useRouter();
+  const { sharePost } = useShare();
+  const {
+    caption,
+    commentsCount,
+    isLiked,
+    likesCount,
+    assets,
+    _id: postId,
+  } = post;
+
+  const handleShare = () => {
+    if (assets && caption) {
+      sharePost({
+        imageUrl: assets[0]?.url,
+        caption: caption,
+        link: "https://play.google.com/store/apps/details?id=com.strength.android",
+      });
+    }
+  };
 
   return (
     <View
@@ -72,10 +85,10 @@ const InteractionBar = ({
           </TextScallingFalse>
         </TouchableOpacity>
 
-        {isPostContainer && assetsCount && assetsCount > 1 ? (
+        {isPostContainer && assets && assets.length > 1 ? (
           <View className="flex-row justify-center">
             <AnimatedDotsCarousel
-              length={assetsCount}
+              length={assets.length}
               currentIndex={activeSlideIndex as number}
               maxIndicators={2}
               interpolateOpacityAndColor={true}
@@ -186,7 +199,10 @@ const InteractionBar = ({
           </View>
         </TouchableOpacity>
         {/* share */}
-        <TouchableOpacity className="mr-3 flex flex-row items-center gap-2 relative">
+        <TouchableOpacity
+          className="mr-3 flex flex-row items-center gap-2 relative"
+          onPress={handleShare}
+        >
           {/* The main button */}
           <View className={interactionBtn} style={shadowStyle}>
             <FontAwesome5 name="location-arrow" size={16} color="white" />

@@ -11,11 +11,7 @@ import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
-import { Post } from "~/types/post";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
-import { setCurrentPost } from "~/reduxStore/slices/user/profileSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "~/reduxStore";
 import { Image } from "expo-image";
 
 const blurhash =
@@ -46,7 +42,6 @@ const ImageSlide = memo(
     index,
     onRemove,
     isFirstSlide,
-    totalSlides,
     isFeedPage,
     isMyActivity,
     postId,

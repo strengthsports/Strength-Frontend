@@ -16,35 +16,38 @@ import { ProfileContext } from "./_layout";
 
 const Media = () => {
   const params = useLocalSearchParams();
-     
+    
   const fetchedUserId = useMemo(() => {
     return params.userId
       ? JSON.parse(decodeURIComponent(params?.userId as string))
       : null;
   }, [params.userId]);
- 
-  const [getUserSpecificPost, { data: posts }] = useLazyGetSpecificUserPostQuery();
-       
-  useEffect(() => {
-    getUserSpecificPost({
+
+  const [getUserSpecificPost, { data: posts }] =
+    useLazyGetSpecificUserPostQuery();
+      
+    useEffect(() => {
+      getUserSpecificPost({
       postedBy: fetchedUserId?.id,
       postedByType: fetchedUserId?.type,
       limit: 10,
       skip: 0,
-    });
-  }, []);
- 
-  const { profileData, isLoading, error } = useContext(ProfileContext);
+      });
+    }, []);
 
-  const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No images available</Text>
-  ));
+    const { profileData, isLoading, error } = useContext(ProfileContext);
 
   // Extract URLs from posts
+  // console.log("--------------->", posts)
   const imageUrls = posts
     ?.flatMap((post: any) => post.assets) // Flatten assets from all posts
     ?.map((asset: any) => asset.url) // Extract URLs
     ?.filter((url: any) => url); // Remove empty values
+
+
+  const memoizedEmptyComponent = memo(() => (
+    <TextScallingFalse className="text-white text-center p-4">No images available</TextScallingFalse>
+  ));
 
   if (isLoading)
     return (

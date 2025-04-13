@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import React from "react";
 import TextScallingFalse from "../CentralText";
 import { LinearGradient } from "expo-linear-gradient";
@@ -6,10 +6,18 @@ import { LinearGradient } from "expo-linear-gradient";
 interface AlertConfig {
   title: string;
   message: string;
-  discardAction: () => void;
   confirmAction: () => void;
+  discardAction: () => void;
   confirmMessage: string;
   cancelMessage: string;
+  discardButtonColor?: {
+    bg: string;
+    text: string;
+  };
+  cancelButtonColor?: {
+    bg: string;
+    text: string;
+  };
 }
 
 const AlertModal = ({
@@ -20,13 +28,14 @@ const AlertModal = ({
   isVisible: boolean;
 }) => {
   return (
-      <View style={styles.AlertModalView}>
-        <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[22%] w-[80%]">
-          <View className="flex-1">
+      <KeyboardAvoidingView style={styles.AlertModalView} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        {/* it was h-[22%] below */}
+        <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[200px] w-[80%]"> 
+          <View className="flex-1 items-center justify-center">
             <TextScallingFalse className="text-center text-6xl font-semibold text-[#FFFCFC] mb-4">
               {alertConfig.title}
             </TextScallingFalse>
-            <TextScallingFalse className="text-center text-2xl text-[#D0D0D0] mb-2">
+            <TextScallingFalse className="text-center text-2xl px-[20px] text-[#D0D0D0] mb-2">
               {alertConfig.message}
             </TextScallingFalse>
           </View>
@@ -72,18 +81,19 @@ const AlertModal = ({
                   paddingVertical: 8,
                   borderWidth: 1,
                   borderColor: "#646464",
+                  backgroundColor: alertConfig.discardButtonColor?.bg || "transparent",
                   borderRadius: 10,
                   alignItems: "center",
                 }}
               >
-                <Text className="text-white text-2xl">
+                <Text className="text-white font-semibold text-2xl">
                   {alertConfig.confirmMessage}
                 </Text>
               </TouchableOpacity>
             </LinearGradient>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
   );
 };
 

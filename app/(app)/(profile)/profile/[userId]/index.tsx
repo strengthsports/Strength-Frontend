@@ -6,7 +6,6 @@ import {
   ScrollView,
   Dimensions,
   Text,
-  useWindowDimensions,
 } from "react-native";
 import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import TextScallingFalse from "~/components/CentralText";
@@ -20,12 +19,16 @@ import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { TeamEntry } from "~/app/(app)/(tabs)/profile";
+import TeamEntry from "~/components/profilePage/TeamEntry";
 import { AppDispatch, RootState } from "~/reduxStore";
 import {
   fetchUserPosts,
   selectPostsByUserId,
 } from "~/reduxStore/slices/feed/feedSlice";
+import MembersSection from "~/components/profilePage/MembersSection";
+import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
+import { Member } from "~/types/user";
+import { useGetPageMembersQuery } from "~/reduxStore/api/profile/profileApi.profile";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -38,6 +41,32 @@ const Overview = () => {
       : null;
   }, [params.userId]);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const { profileData, isLoading, error } = useContext(ProfileContext);
+  console.log("User data on Overview page : ", profileData);
+
+  const maxAboutLength = 140;
+  const aboutText = profileData?.about || "";
+  const needsTruncation = aboutText.length > maxAboutLength;
+  const truncatedText = needsTruncation
+    ? `${aboutText.substring(0, maxAboutLength).trim()}...`
+    : aboutText;
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // const { profileData, isLoading, error } = useContext(ProfileContext);
+  // console.log("User data on Overview page : ", profileData);
+
+  const validSports =
+    profileData?.selectedSports?.filter((s: any) => s.sport) || [];
+  const [activeSubSection, setActiveSubSection] = useState(
+    validSports[0]?.sport.name || null
+  );
+
+
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
@@ -46,6 +75,11 @@ const Overview = () => {
     () => userPosts?.filter((post) => post.assets.length > 0) || [],
     [userPosts]
   );
+
+  // Get associates list
+  // const associates = useSelector(
+  //   (state: RootState) => (state.profile.user?.associates as Member[]) || []
+  // );
 
   // Fetch initial posts
   useEffect(() => {
@@ -59,27 +93,20 @@ const Overview = () => {
     );
   }, [fetchedUserId, dispatch]);
 
-  const { width: screenWidth2 } = useWindowDimensions();
-  const scaleFactor = screenWidth2 / 410;
+  // Fetch page associates
+  const { data: associates } = useGetPageMembersQuery({
+    pageId: fetchedUserId.id,
+  });
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Memoized athlete and coach data
+  const athletes = useMemo(
+    () => associates?.filter((member: Member) => member.role === "Athlete"),
+    [associates]
+  );
 
-  const { profileData, isLoading, error } = useContext(ProfileContext);
-  console.log("User data on Overview page : ", profileData);
-
-  const maxAboutLength = 140;
-  const aboutText = profileData?.about || '';
-  const needsTruncation = aboutText.length > maxAboutLength;
-  const truncatedText = needsTruncation ? `${aboutText.substring(0, maxAboutLength).trim()}...` : aboutText;
- 
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const validSports =
-    profileData?.selectedSports?.filter((s: any) => s.sport) || [];
-  const [activeSubSection, setActiveSubSection] = useState(
-    validSports[0]?.sport.name || null
+  const coaches = useMemo(
+    () => associates?.filter((member: Member) => member.role === "Coach"),
+    [associates]
   );
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -120,11 +147,11 @@ const Overview = () => {
       {fetchedUserId?.type !== "Page" && validSports.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
+            ref={scrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
             className="mt-2"
-            ref={scrollViewRef}
           >
             <TabsList className="flex-row gap-x-2 w-[100%]">
               {validSports.map((sport: any) => (
@@ -309,11 +336,27 @@ const Overview = () => {
       )}
 
       {/* recent posts */}
-      {postsWithImages.length > 0 && (
+      {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
           onSeeAllPress={() => {}}
           scaleFactor={scaleFactor}
+        />
+      )}
+
+      {/* members */}
+      {profileData?.type === "Page" && coaches?.length > 0 && (
+        <MembersSection
+          members={coaches}
+          sectionHeader="Coaches"
+          moreText="Show all coaches"
+        />
+      )}
+      {profileData?.type === "Page" && athletes?.length > 0 && (
+        <MembersSection
+          members={athletes}
+          sectionHeader="Athletes"
+          moreText="Show all athletes"
         />
       )}
 

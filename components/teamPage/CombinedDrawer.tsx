@@ -22,7 +22,7 @@ interface DrawerProps {
   teamId: string; // Accepting menu items as an array of objects
 }
 
-const HEADER_HEIGHT = 60; // Adjust this height based on your drawer's height
+const HEADER_HEIGHT = 40; // Adjust this height based on your drawer's height
 
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
@@ -70,11 +70,11 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
     <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
-        className="flex-row justify-between items-center px-4 py-4 bg-black fixed top-0 left-0 right-0 z-30"
+        className="flex-row justify-between items-center px-4 py-1 bg-black fixed top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
         <TouchableOpacity onPress={() => router.back()}>
-          <Icon name="arrowleft" size={30} color="white" />
+          <Icon name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
         <View className="flex-row items-center gap-x-5">
           <TouchableOpacity
@@ -86,13 +86,13 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
           >
             <MaterialCommunityIcons
               name="message-reply-text-outline"
-              size={27.5}
+              size={24}
               color="white"
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={toggleSidebar}>
             <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>
-              <Icon name="bars" size={30} color="white" />
+              <Icon name="bars" size={24} color="white" />
             </Animated.View>
           </TouchableOpacity>
         </View>
@@ -100,12 +100,12 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
 
       {/* Sidebar Modal */}
       {isSidebarOpen && (
-        <View className="absolute top-0 right-0 bottom-0 w-[250px] bg-black bg-opacity-80 z-20">
+        <View className="absolute top-0 right-0  bottom-0 w-[200px] bg-black bg-opacity-80 z-20">
           <TouchableOpacity
             onPress={closeSidebar}
             className="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-5"
           ></TouchableOpacity>
-          <View className="flex-1 bg-black pt-[72px]">
+          <View className="flex-1 mt-10 bg-black pt-[72px]">
             {menuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
@@ -114,9 +114,14 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                   closeSidebar();
                   toggleSidebar();
                 }}
-                className="py-4 pl-5 border-b border-gray-600"
+                className="py-4 pl-5  border-b  border-gray-600"
               >
-                <Text className="text-white text-4xl">{item.label}</Text>
+              <View className="flex flex-row justify-between mr-4">
+              <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
+              {item?.logo && <item.logo width={32} height={32} fill="white" className="mr-2" />}
+             
+
+              </View>
               </TouchableOpacity>
             ))}
           </View>

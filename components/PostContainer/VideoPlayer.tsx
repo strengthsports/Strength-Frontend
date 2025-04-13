@@ -62,6 +62,7 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
       if (videoRef.current) {
         if (autoPlay) {
           videoRef.current.playAsync();
+          videoRef.current.setIsMutedAsync(true);
         } else {
           videoRef.current.pauseAsync();
         }

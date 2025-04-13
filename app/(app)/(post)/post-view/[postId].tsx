@@ -9,7 +9,7 @@ import {
   UIManager,
   LayoutAnimation,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import {
   RelativePathString,
@@ -33,6 +33,11 @@ import { Image } from "expo-image";
 import InteractionBar from "~/components/PostContainer/InteractionBar";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { selectPostById, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import CustomVideoPlayer, {
+  VideoPlayerHandle,
+} from "~/components/PostContainer/VideoPlayer";
+import { AVPlaybackStatusSuccess } from "expo-av";
+import VideoControls from "~/components/PostContainer/VideoControls";
 
 const post = () => {
   const router = useRouter();
@@ -42,10 +47,17 @@ const post = () => {
   const post = useSelector((state: RootState) => selectPostById(state, postId));
   const dispatch = useDispatch<AppDispatch>();
 
+  const serializedUser = encodeURIComponent(
+    JSON.stringify({ id: post?.postedBy?._id, type: post?.postedBy?.type })
+  );
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
-  const [ispostModalOpen, setpostModalOpen] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
+
+  const videoPlayerRef = useRef<VideoPlayerHandle>(null);
+  const [videoStatus, setVideoStatus] =
+    useState<AVPlaybackStatusSuccess | null>(null);
 
   // Enable LayoutAnimation on Android
   useEffect(() => {
@@ -100,6 +112,26 @@ const post = () => {
     dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
   };
 
+  const handlePlayPause = async () => {
+    if (videoStatus?.isPlaying) {
+      await videoPlayerRef.current?.pause();
+    } else {
+      await videoPlayerRef.current?.play();
+    }
+  };
+
+  const handleSeek = (position: number) => {
+    videoPlayerRef.current?.seek(position);
+  };
+
+  const handleToggleMute = () => {
+    videoPlayerRef.current?.toggleMute();
+  };
+
+  const updateVideoStatus = (status: AVPlaybackStatusSuccess) => {
+    setVideoStatus(status);
+  };
+
   return (
     <Pressable
       className="h-screen flex justify-center items-center bg-black"
@@ -117,7 +149,13 @@ const post = () => {
           <TouchableOpacity onPress={() => router.back()}>
             <AntDesign name="arrowleft" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity className="flex-row justify-center items-center gap-x-4">
+          <TouchableOpacity
+            className="flex-row justify-center items-center gap-x-4"
+            activeOpacity={0.8}
+            onPress={() =>
+              router.push(`/(app)/(profile)/profile/${serializedUser}`)
+            }
+          >
             <View className="w-10 h-10 rounded-full overflow-hidden">
               <Image
                 source={
@@ -156,7 +194,17 @@ const post = () => {
                 : 3 / 2,
             }}
           >
-            {post?.assets && post.assets.length > 0 && (
+            {post?.isVideo ? (
+              // When this is a video post, render the CustomVideoPlayer.
+              <CustomVideoPlayer
+                ref={videoPlayerRef}
+                videoUri={post.assets[0].url}
+                autoPlay={true}
+                isFeedPage={false}
+                onPlaybackStatusUpdate={updateVideoStatus}
+              />
+            ) : (
+              // Otherwise, render your image container (e.g., a Swiper)
               <Swiper {...swiperConfig} className="w-full h-auto">
                 {post.assets.map((asset: { url: string }) => (
                   <Image
@@ -173,6 +221,25 @@ const post = () => {
             )}
           </View>
         </ScrollView>
+
+        {videoStatus && (
+          <View
+            className={`transition-opacity ease-in-out ${
+              !isHeaderFooterVisible ? "opacity-0" : ""
+            }`}
+          >
+            <VideoControls
+              isPlaying={videoStatus.isPlaying}
+              isBuffering={videoStatus.isBuffering}
+              positionMillis={videoStatus.positionMillis}
+              durationMillis={videoStatus.durationMillis as number}
+              isMuted={videoStatus.isMuted}
+              onPlayPause={handlePlayPause}
+              onSeek={handleSeek}
+              onToggleMute={handleToggleMute}
+            />
+          </View>
+        )}
 
         {/* Interaction Bar */}
         <View

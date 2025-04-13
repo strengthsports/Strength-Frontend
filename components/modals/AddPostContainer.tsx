@@ -133,7 +133,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
 
   const videoRef = useRef<Video | null>(null);
   const scrollViewRef = useRef(null);
-  const trimAreaWidth = Dimensions.get("window").width; // Total width minus padding
+  const trimAreaWidth = Dimensions.get("window").width - 48; // Total width minus padding
   const thumbnailWidth = 60; // Width of each thumbnail
   const maxTrimDuration = 60; // Maximum trim duration in seconds (adjust as needed)
 
@@ -262,8 +262,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
       // Simulate processing delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // For demo purposes we return the original URI.
-      // You can replace this with a call to a video trimming library
+      // We have to implement video trimming library here
       onTrimComplete(videoUri);
     } catch (error) {
       console.error("Video trimming failed:", error);
@@ -312,15 +311,15 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
           </View>
 
           {/* Video preview */}
-          <View className="relative flex-1 justify-center">
+          <View className="relative justify-center flex-1">
             <Video
               ref={videoRef}
               source={{ uri: videoUri }}
               className="w-full"
-              style={{ flex: 1 }}
-              resizeMode={ResizeMode.CONTAIN}
+              style={{ height: 240, backgroundColor: "#000" }}
+              resizeMode={ResizeMode.COVER}
               shouldPlay={false}
-              onLoad={({ naturalSize, durationMillis }) =>
+              onLoad={({ durationMillis }) =>
                 handleVideoLoad({ durationMillis })
               }
               onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
@@ -341,7 +340,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             </TouchableOpacity>
 
             {/* Time indicator */}
-            <View className="absolute top-0 left-0 bg-black/50 px-2 py-1 rounded">
+            <View className="absolute top-[25%] right-0 bg-black/50 px-2 py-1 rounded">
               <TextScallingFalse className="text-white text-xs">
                 {formatTime(currentTime)} / {formatTime(duration)}
               </TextScallingFalse>
@@ -423,9 +422,9 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   className="absolute top-0 bottom-0 w-5 flex justify-center items-center"
                 >
                   <View className="w-1 h-full bg-white" />
-                  <View className="absolute w-5 h-16 bg-blue-500 rounded-full opacity-30" />
+                  <View className="absolute w-5 h-16 bg-theme rounded-full opacity-30" />
                   <View className="absolute w-1 h-16 bg-white" />
-                  <View className="absolute -left-1 top-6 w-3 h-4 bg-white rounded" />
+                  {/* <View className="absolute  top-6 w-3 h-4 bg-white rounded" /> */}
                 </Animated.View>
               </PanGestureHandler>
 
@@ -442,7 +441,7 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   <View className="w-1 h-full bg-white" />
                   <View className="absolute w-5 h-16 bg-theme rounded-full opacity-30" />
                   <View className="absolute w-1 h-16 bg-white" />
-                  <View className="absolute -left-1 top-6 w-3 h-4 bg-white rounded" />
+                  {/* <View className="absolute -left-1 top-6 w-3 h-4 bg-white rounded" /> */}
                 </Animated.View>
               </PanGestureHandler>
             </View>
@@ -754,6 +753,13 @@ export default function AddPostContainer({
     setNewPollOptions(["", ""]);
   };
 
+  // Handle close trimmer
+  const handleCloseTrimmer = () => {
+    setIsVideoTrimmerVisible(false);
+    setPickedVideoUri(null);
+    setTypeVideo(false);
+  };
+
   const handleCloseAddPostContainer = () => {
     if ((isPostButtonEnabled || showPollInput) && !isAlertModalOpen) {
       setAlertModalOpen(true);
@@ -1038,12 +1044,7 @@ export default function AddPostContainer({
         <VideoTrimmerModal
           videoUri={pickedVideoUri}
           onTrimComplete={handleTrimComplete}
-          onCancel={() => {
-            // If cancel is pressed in the trimmer, reset video selection and video mode.
-            setIsVideoTrimmerVisible(false);
-            setPickedVideoUri(null);
-            setTypeVideo(false);
-          }}
+          onCancel={handleCloseTrimmer}
         />
       )}
     </Modal>

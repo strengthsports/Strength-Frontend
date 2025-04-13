@@ -8,7 +8,7 @@ import {
   Text,
   useWindowDimensions,
 } from "react-native";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
@@ -64,18 +64,32 @@ const Overview = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const { profileData, isLoading, error } = useContext(ProfileContext);
+  console.log("User data on Overview page : ", profileData);
+
+  const maxAboutLength = 140;
+  const aboutText = profileData?.about || '';
+  const needsTruncation = aboutText.length > maxAboutLength;
+  const truncatedText = needsTruncation ? `${aboutText.substring(0, maxAboutLength).trim()}...` : aboutText;
+ 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
-
-  const { profileData, isLoading, error } = useContext(ProfileContext);
-  console.log("User data on Overview page : ", profileData);
 
   const validSports =
     profileData?.selectedSports?.filter((s: any) => s.sport) || [];
   const [activeSubSection, setActiveSubSection] = useState(
     validSports[0]?.sport.name || null
   );
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const handleScrollToStart = () => {
+    scrollViewRef.current?.scrollTo({
+      x: 0,
+      y: 0,
+      animated: true,
+    });
+  }
 
   if (error) {
     return (
@@ -110,6 +124,7 @@ const Overview = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
             className="mt-2"
+            ref={scrollViewRef}
           >
             <TabsList className="flex-row gap-x-2 w-[100%]">
               {validSports.map((sport: any) => (
@@ -148,9 +163,9 @@ const Overview = () => {
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
-                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center"
+                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center mr-40"
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
-                onPress={() => router.push("/(app)/(profile)/edit-overview")}
+                onPress={handleScrollToStart}
               >
                 <Feather
                   name="chevron-right"
@@ -168,12 +183,12 @@ const Overview = () => {
               <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
                   <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-[15px]">
-                    <View className="flex-row justify-start flex-wrap gap-y-4">
+                    <View className="flex-row justify-start flex-wrap gap-8 gap-y-4">
                       {Object.entries(sport.details).map(
                         ([key, value], idx) => (
                           <View
                             key={idx}
-                            className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
+                            // className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
                           >
                             <Text
                               className="text-white font-bold"
@@ -277,16 +292,17 @@ const Overview = () => {
                 style={{
                   fontSize: responsiveFontSize(1.6),
                 }}
-                numberOfLines={isExpanded ? undefined : 2}
               >
-                {profileData?.about}
+                {isExpanded ? aboutText : truncatedText}
+                 {needsTruncation && (
+                  <TextScallingFalse
+                    onPress={handleToggle}
+                    className="text-[#808080] font-light text-lg"
+                  >
+                    {isExpanded ? '  see less' : ' see more'}
+                  </TextScallingFalse>
+                )}
               </TextScallingFalse>
-              <TouchableOpacity onPress={handleToggle}>
-                <TextScallingFalse style={styles.seeMore}>
-                  {profileData?.about.length > 140 &&
-                    (isExpanded ? "see less" : "see more")}
-                </TextScallingFalse>
-              </TouchableOpacity>
             </View>
           </View>
         </View>

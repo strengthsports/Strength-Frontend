@@ -21,6 +21,7 @@ import { TargetUser } from "~/types/user";
 import nopic from "@/assets/images/nopic.jpg";
 import { useSelector } from "react-redux";
 import { showFeedback } from "~/utils/feedbackToast";
+import FollowButton from "~/components/FollowButton";
 
 const FollowersPage = () => {
   const router = useRouter();
@@ -84,44 +85,52 @@ const FollowersPage = () => {
     console.log(item);
     return (
       <TouchableOpacity
-        className="flex-row mt-5 items-center"
+        className="flex-row mt-5 items-center justify-between"
         onPress={() =>
           item._id === user._id
             ? router.push("/(app)/(tabs)/profile")
             : router.push(`/(app)/(profile)/profile/${serializedUser}`)
         }
       >
-        <View className="w-12 h-12 rounded-full overflow-hidden">
-          {item.profilePic ? (
-            <Image
-              source={{ uri: item.profilePic }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <Image
-              source={nopic}
-              className="w-full h-full rounded-full"
-              resizeMode="cover"
-            />
-          )}
+        <View className="flex-row items-center">
+          <View className="w-12 h-12 rounded-full overflow-hidden">
+            {item.profilePic ? (
+              <Image
+                source={{ uri: item.profilePic }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <Image
+                source={nopic}
+                className="w-full h-full rounded-full"
+                resizeMode="cover"
+              />
+            )}
+          </View>
+          <View className="ml-3">
+            <Text
+              className="text-white text-2xl font-medium"
+              numberOfLines={1}
+              allowFontScaling={false}
+            >
+              {item.firstName} {item.lastName}
+            </Text>
+            <Text
+              className="text-white text-sm font-light"
+              numberOfLines={1}
+              allowFontScaling={false}
+            >
+              {item.headline}
+            </Text>
+          </View>
         </View>
-        <View className="ml-3">
-          <Text
-            className="text-white text-2xl font-medium"
-            numberOfLines={1}
-            allowFontScaling={false}
-          >
-            {item.firstName} {item.lastName}
-          </Text>
-          <Text
-            className="text-white text-sm font-light"
-            numberOfLines={1}
-            allowFontScaling={false}
-          >
-            {item.headline}
-          </Text>
-        </View>
+        <FollowButton
+          size="small"
+          followingStatus={true}
+          handleFollow={() => {}}
+          handleUnfollow={() => {}}
+        />
       </TouchableOpacity>
     );
   };

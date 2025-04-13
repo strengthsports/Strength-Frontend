@@ -94,6 +94,12 @@ const Overview = () => {
   );
 
   //toggle see more
+  const maxAboutLength = 140;
+  const aboutText = user?.about || "";
+  const needsTruncation = aboutText.length > maxAboutLength;
+  const truncatedText = needsTruncation
+    ? `${aboutText.substring(0, maxAboutLength).trim()}...`
+    : aboutText;
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
@@ -145,7 +151,7 @@ const Overview = () => {
               ))}
               {/* Add Tab Button */}
               <TouchableOpacity
-                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center"
+                className="border-[0.5px] border-[#686868] rounded-lg flex items-center justify-center mr-40"
                 style={{ width: 36 * scaleFactor, height: 36 * scaleFactor }}
                 onPress={() => router.push("/(app)/(profile)/edit-overview")}
               >
@@ -160,12 +166,9 @@ const Overview = () => {
               {/* Sports Overview */}
               <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
-                  <View className="relative bg-[#161616] w-[96%] px-5 py-4 rounded-[15px] flex-row justify-start flex-wrap gap-y-4">
+                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-[15px] flex-row justify-start flex-wrap gap-8 gap-y-4">
                     {Object.entries(sport.details).map(([key, value], idx) => (
-                      <View
-                        key={idx}
-                        className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
-                      >
+                      <View key={idx} className="">
                         <Text
                           className="text-white font-bold"
                           style={styles.HeadingText}
@@ -281,21 +284,33 @@ const Overview = () => {
 
             {/* About Content */}
             <TextScallingFalse
-              className="text-white font-light pt-4 leading-5"
+              className="text-white font-light pt-4 pr-[25px] leading-5"
               style={{
                 fontSize: responsiveFontSize(1.6),
               }}
-              numberOfLines={isExpanded ? undefined : 2}
             >
-              {user?.about}
+              {isExpanded ? aboutText : truncatedText}
+              {needsTruncation && (
+                <TextScallingFalse
+                  onPress={handleToggle}
+                  className="text-[#808080] font-light text-lg"
+                >
+                  {isExpanded ? "  see less" : " see more"}
+                </TextScallingFalse>
+              )}
             </TextScallingFalse>
 
             {/* See More / See Less */}
-            <TouchableOpacity onPress={handleToggle}>
+            {/* <TouchableOpacity onPress={handleToggle}>
+                <Text className="text-[#808080] font-light text-base absolute right-[0.5px] bottom-[1px]">
+                  {isExpanded ? " ...see less" : " ...see more"}
+                </Text>
+              </TouchableOpacity> */}
+            {/* <TouchableOpacity onPress={handleToggle}>
               <Text className="text-[#808080] font-light text-sm mt-1">
                 {isExpanded ? "see less" : "see more"}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* edit button */}
             <TouchableOpacity

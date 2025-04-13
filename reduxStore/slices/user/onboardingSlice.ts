@@ -13,8 +13,8 @@ interface OnboardingState {
   headline: string;
   username: string;
   address: object | null;
-  loading: boolean;
-  error: string | null;
+  isLoading: boolean;
+  isError: string | null;
 }
 
 //initial state
@@ -26,8 +26,8 @@ const initialState: OnboardingState = {
   headline: "",
   username: "",
   address: null,
-  loading: false,
-  error: null,
+  isLoading: false,
+  isError: null,
 };
 
 // Async thunk for fetching sports data
@@ -72,7 +72,7 @@ export const fetchUserSuggestions = createAsyncThunk<
     try {
       const token = await getToken("accessToken");
       if (!token) throw new Error("Token not found");
-      console.log("sports : ", sportsData);
+      // console.log("sports : ", sportsData);
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/user-suggestions?limit=${limit}&page=${page}`,
         {
@@ -101,7 +101,7 @@ export const fetchUserSuggestions = createAsyncThunk<
           data.message || "Error fetching user suggestions"
         );
       }
-      console.log("Data fetched : ", data.data.users);
+      // console.log("Data fetched : ", data.data.users);
       return data.data.users;
     } catch (error: unknown) {
       // Type assertion to Error
@@ -122,7 +122,7 @@ export const onboardingUser = createAsyncThunk<
   try {
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
-    console.log("Onboard data : ", data);
+    // console.log("Onboard data : ", data);
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`,
@@ -211,28 +211,28 @@ const onboardingSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchSportsData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.isLoading = true;
+        state.isError = null;
       })
       .addCase(fetchSportsData.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.sportsData = action.payload;
       })
       .addCase(fetchSportsData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.isLoading = false;
+        state.isError = action.payload as string;
       })
       .addCase(fetchUserSuggestions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.isLoading = true;
+        state.isError = null;
       })
       .addCase(fetchUserSuggestions.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.fetchedUsers = action.payload;
       })
       .addCase(fetchUserSuggestions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.isLoading = false;
+        state.isError = action.payload as string;
       });
   },
 });

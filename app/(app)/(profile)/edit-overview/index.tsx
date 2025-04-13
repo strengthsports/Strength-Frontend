@@ -18,7 +18,6 @@ import {
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
 import RightArrow from "~/components/Arrows/RightArrow";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
@@ -36,6 +35,7 @@ import KeyDetailsMenu from "~/components/modals/KeyDetailsMenu";
 import DownArrow from "~/components/SvgIcons/Edit-Overview/DownArrow";
 import isEqual from "lodash.isequal";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import { useDispatch, useSelector } from "react-redux";
 
 interface SelectedSport {
   sportsId: string;
@@ -63,7 +63,10 @@ function EditOverview() {
   const associatesLength = useSelector(
     (state: RootState) => state.profile.user?.associates?.length
   );
-  const { isError, isLoading, data: sports } = useGetSportsQuery(null);
+  // const { isError, isLoading, data: sports } = useGetSportsQuery(null);
+    const { sportsData, isLoading, isError } = useSelector(
+      (state: RootState) => state.onboarding
+    );
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const query = useLocalSearchParams();
@@ -71,10 +74,10 @@ function EditOverview() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter sports based on the search query
-  const filteredSports = sports?.filter((sport) =>
+  const filteredSports = sportsData?.filter((sport) =>
     sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("sports-", sports)
+  console.log("sports-", sportsData)
 
   const [isLocalLoading, setLocalLoading] = useState<boolean>(false);
   const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -788,7 +791,7 @@ function EditOverview() {
             )}
 
             <View style={{ width: "100%", paddingHorizontal: 20, gap: 1 }}>
-              {sports
+              {sportsData
                 ?.filter(
                   (sport) =>
                     sport._id === selectedSport?.sportsId &&

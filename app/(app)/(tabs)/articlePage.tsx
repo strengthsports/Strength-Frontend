@@ -1,9 +1,17 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
-import React, { useMemo } from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  ScrollView,
+} from "react-native";
+import React, { useMemo, useState, useEffect } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useGetSportArticleByIdQuery } from "~/reduxStore/api/explore/article/sportArticleByIdApi";
+import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -35,22 +43,47 @@ const getHoursAgo = (isoString: string): number => {
 
 //artile page for the articles when clicked on them
 const ArticlePage = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id, sportsName } = useLocalSearchParams();
   const validId = typeof id === "string" ? id : id?.[0] ?? "";
+  const validSportsName =
+    typeof sportsName === "string" ? sportsName : sportsName?.[0] ?? "";
+
   const {
-    data: article,
+    data: articles,
     error,
     isLoading,
-  } = useGetSportArticleByIdQuery(validId);
+  } = useGetSportArticleQuery(validSportsName);
+  // console.log("Fetched Articles:", articles);
+  // console.log("Article ID:", id);
+
+  useEffect(() => {
+    if (articles && articles.length > 0 && id) {
+      const index = articles.findIndex((item) => item._id === String(id));
+      setCurrentIndex(index !== -1 ? index : 0);
+    }
+  }, [articles, id]);
+
+  const currentArticle = articles?.[currentIndex];
 
   const formattedArticle = useMemo(() => {
-    if (!article || !id) return null;
+    if (!currentArticle) return null;
+    const { date, time } = formatDateTime(currentArticle.updatedAt);
+    return { ...currentArticle, date, time };
+  }, [currentArticle]);
 
-    const { date, time } = formatDateTime(article.updatedAt);
-    const hoursAgo = getHoursAgo(article.updatedAt);
-    return { ...article, date, time, hoursAgo };
-  }, [article, id]);
+  // const formattedArticle = useMemo(() => {
+  //   if (!articles || !id) return null;
+
+  //   const found = articles.find((item) => item._id === String(id));
+
+  //   if (!found) return null;
+
+  //   const { date, time } = formatDateTime(found.updatedAt);
+  //   const hoursAgo = getHoursAgo(found.updatedAt);
+  //   return { ...found, date, time, hoursAgo };
+  // }, [articles, id]);
 
   // console.log("Clicked Article:", article);
 
@@ -75,8 +108,12 @@ const ArticlePage = () => {
   }
 
   return (
-    <View className="mt-4">
-      <View className="flex-row items-center">
+    <ScrollView
+      className="mt-4"
+      contentContainerStyle={{ paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="flex-row items-center justify-between px-4">
         <TouchableOpacity
           onPress={() => {
             router.back();
@@ -85,11 +122,25 @@ const ArticlePage = () => {
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
-        <View className="flex-1 items-center">
+        <View className="">
           <TextScallingFalse className="text-white text-4xl font-bold">
             Today's top news
           </TextScallingFalse>
         </View>
+        <TouchableOpacity
+          onPress={() => {
+            if (articles && currentIndex < articles.length - 1) {
+              setCurrentIndex(currentIndex + 1);
+            } else setCurrentIndex(0);
+          }}
+          className="ml-2"
+        >
+          <MaterialCommunityIcons
+            name="arrow-right-top"
+            size={24}
+            color="white"
+          />
+        </TouchableOpacity>
       </View>
 
       <View className="w-full h-60 mt-4 overflow-hidden rounded-xl border border-[#181818]">
@@ -118,7 +169,7 @@ const ArticlePage = () => {
           {formattedArticle?.content}
         </TextScallingFalse>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

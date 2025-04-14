@@ -5,6 +5,7 @@ interface Article {
   title: string;
   isTrending: boolean;
   sportsName: string;
+  content: string;
   imageUrl: string;
   createdAt: string;
   updatedAt: string;

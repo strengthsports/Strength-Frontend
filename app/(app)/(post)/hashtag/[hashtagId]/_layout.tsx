@@ -15,6 +15,7 @@ import {
   Animated,
   ActivityIndicator,
 } from "react-native";
+import PageThemeView from "~/components/PageThemeView";
 import SearchBar from "~/components/search/searchbar";
 import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 import { Colors } from "~/constants/Colors";
@@ -129,7 +130,7 @@ const CustomNavigation: React.FC<CustomNavigationProps> = () => {
   const SelectedComponent = tabs[selectedIndex].component;
 
   return (
-    <View className="flex-1 bg-black">
+    <PageThemeView >
       <SearchBar searchText={`#${hashtag}`} />
 
       <View className="h-12 bg-black border-b-[0.5px] border-[#808080]">
@@ -172,7 +173,7 @@ const CustomNavigation: React.FC<CustomNavigationProps> = () => {
           <SelectedComponent />
         </Suspense>
       </View>
-    </View>
+    </PageThemeView>
   );
 };
 

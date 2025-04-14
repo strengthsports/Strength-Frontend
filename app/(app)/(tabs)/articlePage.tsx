@@ -12,6 +12,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useGetSportArticleByIdQuery } from "~/reduxStore/api/explore/article/sportArticleByIdApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PageThemeView from "~/components/PageThemeView";
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -108,6 +110,7 @@ const ArticlePage = () => {
   }
 
   return (
+    <PageThemeView>
     <ScrollView
       className="mt-4"
       contentContainerStyle={{ paddingBottom: 40 }}
@@ -170,6 +173,7 @@ const ArticlePage = () => {
         </TextScallingFalse>
       </View>
     </ScrollView>
+    </PageThemeView>
   );
 };
 

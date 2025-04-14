@@ -108,7 +108,7 @@ const SignupEmail1 = () => {
           : undefined,
       };
 
-      const response = await dispatch(signupUser(SignupPayload)).unwrap();
+      const response = await dispatch(signupUser(payloadForBackend)).unwrap();
       // console.log('frontend response',response)
       feedback(response.message || "OTP sent to email", "success");
 

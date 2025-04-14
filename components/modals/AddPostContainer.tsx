@@ -580,7 +580,7 @@ export default function AddPostContainer({
       const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
       console.log("Valid Options : ", validOptions);
       validOptions.forEach((option) => {
-        formData.append("options", JSON.stringify(option));
+        formData.append("options", option);
       });
 
       setPostText("");

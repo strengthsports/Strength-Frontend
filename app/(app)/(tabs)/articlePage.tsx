@@ -11,22 +11,10 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
+import PageThemeView from "~/components/PageThemeView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useGetSportArticleByIdQuery } from "~/reduxStore/api/explore/article/sportArticleByIdApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
-
-interface ArticleData {
-  _id: string;
-  imageUrl: string;
-  title: string;
-  sportsName: string;
-  isTrending: boolean;
-  content: string;
-  createdAt: string;
-  date?: string; // Add date & time fields
-  time?: string;
-}
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -77,13 +65,14 @@ const ArticlePage = () => {
 
   const renderItem = ({ item }: any) => {
     const { date, time } = formatDateTime(item.updatedAt);
+    // const {hoursAgo} = getHoursAgo(item.updatedAt);
     return (
       <ScrollView
         style={{ width }}
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full h-60 mt-4 overflow-hidden border-[#181818]">
+        <View className="w-full h-72 mt-4 overflow-hidden border-[#181818]">
           <Image
             source={{ uri: item.imageUrl }}
             className="w-full h-full"
@@ -134,56 +123,59 @@ const ArticlePage = () => {
   }
 
   return (
-    <View className="flex-1 bg-black">
-      <View className="flex-row items-center justify-between px-4 pt-4">
-        <TouchableOpacity onPress={() => router.back()} className="ml-1">
-          <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-        </TouchableOpacity>
-        <TextScallingFalse className="text-white text-4xl font-bold">
-          {validSportsName} articles
-        </TextScallingFalse>
-        <View style={{ width: 24 }} /> {/* Spacer to match layout */}
-      </View>
-      {/* 👇 Dot Indicators */}
-      <View className="flex-row justify-center items-center mt-3">
-        {articles?.map((_, index) => (
-          <View
-            key={index}
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 5,
-              backgroundColor: currentIndex === index ? "#fff" : "#ababab",
-              marginHorizontal: 4,
-              opacity: currentIndex === index ? 1 : 0.7,
-            }}
-          />
-        ))}
-      </View>
+    <PageThemeView>
+      <View className="flex-1 bg-black">
+        <View className="flex-row items-center px-4 pt-4">
+          <TouchableOpacity onPress={() => router.back()} className="ml-1">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+          </TouchableOpacity>
+          <View className="flex-1 items-center">
+            <TextScallingFalse className="text-white text-4xl font-bold">
+              {validSportsName} articles
+            </TextScallingFalse>
+          </View>
+        </View>
+        {/* 👇 Dot Indicators */}
+        <View className="flex-row justify-center items-center mt-1.5">
+          {articles?.map((_, index) => (
+            <View
+              key={index}
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 5,
+                backgroundColor: currentIndex === index ? "#fff" : "#ababab",
+                marginHorizontal: 4,
+                opacity: currentIndex === index ? 1 : 0.7,
+              }}
+            />
+          ))}
+        </View>
 
-      <FlatList
-        data={articles}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        horizontal
-        pagingEnabled
-        initialScrollIndex={
-          articles?.findIndex((item) => item._id === String(id)) ?? 0
-        }
-        getItemLayout={(data, index) => ({
-          length: screenWidth, // width of each item
-          offset: screenWidth * index, // offset from the start
-          index,
-        })}
-        onMomentumScrollEnd={(event) => {
-          const index = Math.round(
-            event.nativeEvent.contentOffset.x / screenWidth
-          );
-          setCurrentIndex(index);
-        }}
-        showsHorizontalScrollIndicator={false}
-      />
-    </View>
+        <FlatList
+          data={articles}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+          horizontal
+          pagingEnabled
+          initialScrollIndex={
+            articles?.findIndex((item) => item._id === String(id)) ?? 0
+          }
+          getItemLayout={(data, index) => ({
+            length: screenWidth, // width of each item
+            offset: screenWidth * index, // offset from the start
+            index,
+          })}
+          onMomentumScrollEnd={(event) => {
+            const index = Math.round(
+              event.nativeEvent.contentOffset.x / screenWidth
+            );
+            setCurrentIndex(index);
+          }}
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
+    </PageThemeView>
   );
 };
 

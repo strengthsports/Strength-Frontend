@@ -8,7 +8,7 @@ import {
   NativeSyntheticEvent,
   TextLayoutEventData,
 } from "react-native";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import TextScallingFalse from "../CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import {
@@ -42,11 +42,9 @@ const PostSmallCard = ({
   };
 
   const maxCaptionLength = 40;
-  const captionText = post.caption || "";
+  const captionText = post.caption || '';
   const needsTruncation = captionText.length > maxCaptionLength;
-  const truncatedText = needsTruncation
-    ? `${captionText.substring(0, maxCaptionLength).trim()}... `
-    : captionText;
+  const truncatedText = needsTruncation ? `${captionText.substring(0, maxCaptionLength).trim()}... ` : captionText;
 
   const imageUrls = post.assets
     .filter((asset) => asset.url)
@@ -185,15 +183,17 @@ const PostSmallCard = ({
           size={18}
           color="#a3a3a3"
         />
-        <TextScallingFalse className=" pl-8 pt-10 pb-2 text-sm text-white">
+        <TextScallingFalse
+          className=" pl-10 pr-6 pt-10 text-sm text-white"
+        >
           {renderCaptionWithHashtags(isExpanded ? captionText : truncatedText)}
-          {needsTruncation && (
-            <TextScallingFalse
-              onPress={handleToggle}
-              className="text-[#808080] font-light text-base"
-            >
-              {isExpanded ? " see less" : " see more"}
-            </TextScallingFalse>
+            {needsTruncation && (
+              <TextScallingFalse
+                onPress={handleToggle}
+                className="text-[#808080] font-light text-base"
+              >
+                {isExpanded ? ' see less' : ' see more'}
+              </TextScallingFalse>
           )}
         </TextScallingFalse>
       </View>

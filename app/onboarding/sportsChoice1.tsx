@@ -49,7 +49,7 @@ const SportsChoice: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const { sportsData, loading, error } = useSelector(
+  const { sportsData, isLoading, isError } = useSelector(
     (state: RootState) => state.onboarding
   );
   const userType = useSelector((state: RootState) => state.profile.user?.type);
@@ -221,10 +221,10 @@ const SportsChoice: React.FC = () => {
             Ready to dive in?{"\n"}Fantastic!
           </TextScallingFalse> */}
 
-          {loading ? (
+          {isLoading ? (
             <Text className="text-white">Loading...</Text>
-          ) : error ? (
-            <Text className="text-red-500">{error}</Text>
+          ) : isError ? (
+            <Text className="text-red-500">{isError}</Text>
           ) : (
             <View
               style={{

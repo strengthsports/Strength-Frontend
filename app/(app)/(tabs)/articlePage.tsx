@@ -5,13 +5,28 @@ import {
   View,
   Image,
   ScrollView,
+  FlatList,
+  Dimensions,
+  useWindowDimensions,
 } from "react-native";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useGetSportArticleByIdQuery } from "~/reduxStore/api/explore/article/sportArticleByIdApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
+
+interface ArticleData {
+  _id: string;
+  imageUrl: string;
+  title: string;
+  sportsName: string;
+  isTrending: boolean;
+  content: string;
+  createdAt: string;
+  date?: string; // Add date & time fields
+  time?: string;
+}
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -43,6 +58,8 @@ const getHoursAgo = (isoString: string): number => {
 
 //artile page for the articles when clicked on them
 const ArticlePage = () => {
+  const screenWidth = Dimensions.get("window").width;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
   const { id, sportsName } = useLocalSearchParams();
@@ -55,37 +72,46 @@ const ArticlePage = () => {
     error,
     isLoading,
   } = useGetSportArticleQuery(validSportsName);
-  // console.log("Fetched Articles:", articles);
-  // console.log("Article ID:", id);
 
-  useEffect(() => {
-    if (articles && articles.length > 0 && id) {
-      const index = articles.findIndex((item) => item._id === String(id));
-      setCurrentIndex(index !== -1 ? index : 0);
-    }
-  }, [articles, id]);
+  const { width } = useWindowDimensions();
 
-  const currentArticle = articles?.[currentIndex];
-
-  const formattedArticle = useMemo(() => {
-    if (!currentArticle) return null;
-    const { date, time } = formatDateTime(currentArticle.updatedAt);
-    return { ...currentArticle, date, time };
-  }, [currentArticle]);
-
-  // const formattedArticle = useMemo(() => {
-  //   if (!articles || !id) return null;
-
-  //   const found = articles.find((item) => item._id === String(id));
-
-  //   if (!found) return null;
-
-  //   const { date, time } = formatDateTime(found.updatedAt);
-  //   const hoursAgo = getHoursAgo(found.updatedAt);
-  //   return { ...found, date, time, hoursAgo };
-  // }, [articles, id]);
-
-  // console.log("Clicked Article:", article);
+  const renderItem = ({ item }: any) => {
+    const { date, time } = formatDateTime(item.updatedAt);
+    return (
+      <ScrollView
+        style={{ width }}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="w-full h-60 mt-4 overflow-hidden border-[#181818]">
+          <Image
+            source={{ uri: item.imageUrl }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        </View>
+        <View className="mt-6 mx-4">
+          <View className="flex-row">
+            <TextScallingFalse className="text-white text-base">
+              Posted at {date} •{" "}
+            </TextScallingFalse>
+            <TextScallingFalse className="text-[#12956B] font-bold text-base">
+              {item.sportsName}
+            </TextScallingFalse>
+          </View>
+          <TextScallingFalse className="text-white text-6xl mt-3">
+            {item.title}
+          </TextScallingFalse>
+          <TextScallingFalse className="text-white mt-2 text-base">
+            by Editor at Strength
+          </TextScallingFalse>
+          <TextScallingFalse className="text-white mt-4">
+            {item.content}
+          </TextScallingFalse>
+        </View>
+      </ScrollView>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -97,7 +123,7 @@ const ArticlePage = () => {
     );
   }
 
-  if (error) {
+  if (error || !articles) {
     return (
       <View className="my-6 items-center">
         <TextScallingFalse className="text-white">
@@ -108,68 +134,56 @@ const ArticlePage = () => {
   }
 
   return (
-    <ScrollView
-      className="mt-4"
-      contentContainerStyle={{ paddingBottom: 40 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View className="flex-row items-center justify-between px-4">
-        <TouchableOpacity
-          onPress={() => {
-            router.back();
-          }}
-          className="ml-1"
-        >
+    <View className="flex-1 bg-black">
+      <View className="flex-row items-center justify-between px-4 pt-4">
+        <TouchableOpacity onPress={() => router.back()} className="ml-1">
           <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
-        <View className="">
-          <TextScallingFalse className="text-white text-4xl font-bold">
-            Today's top news
-          </TextScallingFalse>
-        </View>
-        <TouchableOpacity
-          onPress={() => {
-            if (articles && currentIndex < articles.length - 1) {
-              setCurrentIndex(currentIndex + 1);
-            } else setCurrentIndex(0);
-          }}
-          className="ml-2"
-        >
-          <MaterialCommunityIcons
-            name="arrow-right-top"
-            size={24}
-            color="white"
+        <TextScallingFalse className="text-white text-4xl font-bold">
+          {validSportsName} articles
+        </TextScallingFalse>
+        <View style={{ width: 24 }} /> {/* Spacer to match layout */}
+      </View>
+      {/* 👇 Dot Indicators */}
+      <View className="flex-row justify-center items-center mt-3">
+        {articles?.map((_, index) => (
+          <View
+            key={index}
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 5,
+              backgroundColor: currentIndex === index ? "#fff" : "#ababab",
+              marginHorizontal: 4,
+              opacity: currentIndex === index ? 1 : 0.7,
+            }}
           />
-        </TouchableOpacity>
+        ))}
       </View>
 
-      <View className="w-full h-60 mt-4 overflow-hidden rounded-xl border border-[#181818]">
-        <Image
-          source={{ uri: formattedArticle?.imageUrl }}
-          className="w-full h-full"
-          resizeMode="cover"
-        />
-      </View>
-      <View className="mt-6 mx-4">
-        <View className="flex-row">
-          <TextScallingFalse className="text-white text-base">
-            Posted at {formattedArticle?.date} •{" "}
-          </TextScallingFalse>
-          <TextScallingFalse className="text-[#12956B] font-bold text-base">
-            {formattedArticle?.sportsName}
-          </TextScallingFalse>
-        </View>
-        <TextScallingFalse className="text-white text-6xl mt-3">
-          {formattedArticle?.title}
-        </TextScallingFalse>
-        <TextScallingFalse className="text-white mt-2 text-base">
-          by Editor at Strength
-        </TextScallingFalse>
-        <TextScallingFalse className="text-white mt-4">
-          {formattedArticle?.content}
-        </TextScallingFalse>
-      </View>
-    </ScrollView>
+      <FlatList
+        data={articles}
+        keyExtractor={(item) => item._id}
+        renderItem={renderItem}
+        horizontal
+        pagingEnabled
+        initialScrollIndex={
+          articles?.findIndex((item) => item._id === String(id)) ?? 0
+        }
+        getItemLayout={(data, index) => ({
+          length: screenWidth, // width of each item
+          offset: screenWidth * index, // offset from the start
+          index,
+        })}
+        onMomentumScrollEnd={(event) => {
+          const index = Math.round(
+            event.nativeEvent.contentOffset.x / screenWidth
+          );
+          setCurrentIndex(index);
+        }}
+        showsHorizontalScrollIndicator={false}
+      />
+    </View>
   );
 };
 

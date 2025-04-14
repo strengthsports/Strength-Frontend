@@ -106,7 +106,7 @@ const FootballMatchCard = ({ match, isLive }: MatchCardProps) => {
       )}
 
       {/* Border */}
-      <View className="h-[0.8] bg-[#454545]" />
+      <View className="h-[0.8] bg-[#252525]" />
 
       <View className=" h-28 flex-row justify-center items-center pb-4">
         {/* view 1 */}

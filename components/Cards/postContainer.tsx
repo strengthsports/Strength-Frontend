@@ -305,7 +305,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onPress={() =>
                   router.push(`/(app)/(post)/hashtag/${part.slice(1)}`)
                 }
-                className="text-2xl text-[#12956B]"
+                className={`text-2xl text-[#12956B] ${
+                  highlightedHashtag === part && "font-semibold"
+                } active:bg-gray-600`}
               >
                 {part}
               </TextScallingFalse>
@@ -328,7 +330,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   serializedUser &&
                   router.push(`/(app)/(profile)/profile/${serializedUser}`)
                 }
-                className="text-2xl text-[#12956B]"
+                className="text-2xl text-[#12956B] active:bg-gray-600"
               >
                 {part}
               </TextScallingFalse>
@@ -472,7 +474,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-24] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
+          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
             <TouchableOpacity
               className="absolute right-8 p-2 pt-2 z-30"
               onPress={() => handleOpenBottomSheet({ type: "settings" })}
@@ -502,7 +504,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           {item.isVideo ? (
             <CustomVideoPlayer
               videoUri={item.assets[0].url}
-              autoPlay={isVisible}
+              autoPlay={isVisible as boolean}
+              isFeedPage={true}
+              postId={item._id}
             />
           ) : (
             item.assets &&

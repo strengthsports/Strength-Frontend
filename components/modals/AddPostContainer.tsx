@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -8,11 +14,16 @@ import {
   ScrollView,
   Platform,
   Alert,
+  Dimensions,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
 import AddPostHeader from "~/components/feedPage/AddPostHeader";
-import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  FontAwesome6,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
@@ -34,6 +45,11 @@ import FeatureUnderDev from "./FeatureUnderDev";
 import ClipsIcon from "../SvgIcons/addpost/ClipsIcon";
 import { ResizeMode, Video } from "expo-av";
 import Slider from "@react-native-community/slider";
+import { Image } from "react-native";
+import { PanGestureHandler } from "react-native-gesture-handler";
+import { Animated } from "react-native";
+import * as VideoThumbnails from "expo-video-thumbnails";
+import CustomVideoPlayer from "../PostContainer/VideoPlayer";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -108,27 +124,145 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
   onCancel,
 }) => {
   const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
   const [isTrimming, setIsTrimming] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
 
-  // When video loads, set duration and default endTime
+  const videoRef = useRef<Video | null>(null);
+  const scrollViewRef = useRef(null);
+  const trimAreaWidth = Dimensions.get("window").width - 48; // Total width minus padding
+  const thumbnailWidth = 60; // Width of each thumbnail
+  const maxTrimDuration = 60; // Maximum trim duration in seconds (adjust as needed)
+
+  useEffect(() => {
+    const generateThumbnails = async () => {
+      try {
+        // Calculate number of thumbnails needed to fill the screen width
+        const numThumbnails = Math.min(
+          Math.ceil(trimAreaWidth / thumbnailWidth),
+          Math.ceil(duration) // Don't generate more thumbnails than seconds
+        );
+
+        // Generate thumbnails at regular intervals
+        const thumbnailPromises = Array(numThumbnails)
+          .fill(0)
+          .map(async (_, i) => {
+            const time = (duration * i) / numThumbnails;
+            try {
+              const { uri } = await VideoThumbnails.getThumbnailAsync(
+                videoUri,
+                {
+                  time: time * 1000, // Convert to milliseconds
+                  quality: 0.8, // Medium quality for better performance
+                }
+              );
+              return uri;
+            } catch (error) {
+              console.warn(`Failed to generate thumbnail at ${time}s:`, error);
+              return null; // Return null for failed thumbnails
+            }
+          });
+
+        const thumbnails = (await Promise.all(thumbnailPromises)).filter(
+          Boolean
+        );
+        setThumbnails(thumbnails as string[]);
+      } catch (error) {
+        console.error("Error generating thumbnails:", error);
+      }
+    };
+
+    if (duration > 0) {
+      generateThumbnails();
+      // Set default end time
+      setEndTime((prevEndTime) =>
+        prevEndTime === 0 ? Math.min(duration, maxTrimDuration) : prevEndTime
+      );
+    }
+  }, [duration, videoUri]);
+
+  // When video loads, set duration
   const handleVideoLoad = (status: any) => {
     if (status.durationMillis) {
       const dur = status.durationMillis / 1000;
       setDuration(dur);
-      if (endTime === 0) setEndTime(dur);
     }
   };
 
-  // Simulated trim function. In a real app you might use an FFmpeg library or a dedicated package.
+  // Handle video playback updates
+  const handlePlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded) {
+      setCurrentTime(status.positionMillis / 1000);
+
+      // Loop playback within the trim area
+      if (status.positionMillis / 1000 >= endTime) {
+        if (videoRef.current) {
+          videoRef.current.setPositionAsync(startTime * 1000);
+        }
+      }
+    }
+  };
+
+  // Toggle play/pause
+  const togglePlayback = () => {
+    if (isPlaying) {
+      videoRef.current?.pauseAsync();
+    } else {
+      videoRef.current?.playFromPositionAsync(startTime * 1000);
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  // Calculate position for UI elements based on time
+  const timeToPosition = (time: number) => {
+    const scaleFactor = trimAreaWidth / Math.min(duration, maxTrimDuration);
+    return time * scaleFactor;
+  };
+
+  // Update trim handles on dragging
+  const updateStartTime = (newPosition: number) => {
+    const newTime =
+      (newPosition / trimAreaWidth) * Math.min(duration, maxTrimDuration);
+    if (newTime >= 0 && newTime < endTime - 1) {
+      // Ensure minimum 1 second trim
+      setStartTime(newTime);
+      if (currentTime < newTime || currentTime > endTime) {
+        videoRef.current?.setPositionAsync(newTime * 1000);
+        setCurrentTime(newTime);
+      }
+    }
+  };
+
+  const updateEndTime = (newPosition: number) => {
+    const newTime =
+      (newPosition / trimAreaWidth) * Math.min(duration, maxTrimDuration);
+    if (newTime <= duration && newTime > startTime + 1) {
+      // Ensure minimum 1 second trim
+      setEndTime(newTime);
+      if (currentTime > newTime || currentTime < startTime) {
+        videoRef.current?.setPositionAsync(startTime * 1000);
+        setCurrentTime(startTime);
+      }
+    }
+  };
+
+  // Simulated trim function
   const trimVideo = async () => {
     setIsTrimming(true);
     try {
+      // Pause video playback
+      if (isPlaying) {
+        videoRef.current?.pauseAsync();
+        setIsPlaying(false);
+      }
+
       // Simulate processing delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      // For demo purposes we return the original URI.
-      // You can replace this with a call to a video trimming library that returns a new video file URI.
+
+      // We have to implement video trimming library here
       onTrimComplete(videoUri);
     } catch (error) {
       console.error("Video trimming failed:", error);
@@ -138,81 +272,186 @@ const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
     }
   };
 
+  // Format seconds to MM:SS format
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" + secs : secs}`;
+  };
+
   return (
     <Modal visible={true} transparent animationType="slide">
-      <View className="flex-1 justify-end bg-black/50">
-        <View className="bg-neutral-900 rounded-t-[20px] p-4">
-          <TextScallingFalse className="text-white text-4xl text-center mb-4">
-            Trim Video
-          </TextScallingFalse>
-          <Video
-            source={{ uri: videoUri }}
-            style={{ width: "100%", height: 200, backgroundColor: "#000" }}
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay={false}
-            onLoad={({ naturalSize, durationMillis }) =>
-              handleVideoLoad({ durationMillis })
-            }
-            useNativeControls
-          />
-          <View className="mt-4">
-            <TextScallingFalse className="text-white mb-2">
-              Start Time: {startTime.toFixed(1)} sec
-            </TextScallingFalse>
-            <Slider
-              minimumValue={0}
-              maximumValue={duration}
-              value={startTime}
-              onValueChange={(val) => {
-                // Prevent startTime from exceeding endTime
-                if (val < endTime) {
-                  setStartTime(val);
-                }
-              }}
-              minimumTrackTintColor={Colors.themeColor}
-              maximumTrackTintColor="#FFFFFF"
-            />
-          </View>
-          <View className="mt-4">
-            <TextScallingFalse className="text-white mb-2">
-              End Time: {endTime.toFixed(1)} sec
-            </TextScallingFalse>
-            <Slider
-              minimumValue={startTime}
-              maximumValue={duration}
-              value={endTime}
-              onValueChange={(val) => {
-                // Prevent endTime from being less than startTime
-                if (val > startTime) {
-                  setEndTime(val);
-                }
-              }}
-              minimumTrackTintColor={Colors.themeColor}
-              maximumTrackTintColor="#FFFFFF"
-            />
-          </View>
-          <View className="flex-row justify-around mt-6">
+      <View className="flex-1">
+        <View className="flex-1 flex-col justify-between bg-neutral-900 rounded-t-lg p-4">
+          <View className="flex-row justify-between items-center mb-4">
             <TouchableOpacity
               onPress={onCancel}
-              className="px-4 py-2 border border-white rounded"
+              className="px-3 py-1 border border-white rounded-full"
             >
-              <TextScallingFalse className="text-white text-3xl">
+              <TextScallingFalse className="text-white font-medium">
                 Cancel
               </TextScallingFalse>
             </TouchableOpacity>
+            <TextScallingFalse className="text-white text-xl font-semibold">
+              Trim Video
+            </TextScallingFalse>
             <TouchableOpacity
               onPress={trimVideo}
-              className="px-4 py-2 bg-theme rounded"
               disabled={isTrimming}
+              className="px-3 py-1 bg-theme border border-theme rounded-full"
             >
               {isTrimming ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color="white" size="small" />
               ) : (
-                <TextScallingFalse className="text-white text-3xl">
-                  Trim Video
+                <TextScallingFalse className="text-white font-medium">
+                  Done
                 </TextScallingFalse>
               )}
             </TouchableOpacity>
+          </View>
+
+          {/* Video preview */}
+          <View className="relative justify-center flex-1">
+            <Video
+              ref={videoRef}
+              source={{ uri: videoUri }}
+              className="w-full"
+              style={{ height: 240, backgroundColor: "#000" }}
+              resizeMode={ResizeMode.COVER}
+              shouldPlay={false}
+              onLoad={({ durationMillis }) =>
+                handleVideoLoad({ durationMillis })
+              }
+              onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+            />
+
+            {/* Play/Pause button overlay */}
+            <TouchableOpacity
+              onPress={togglePlayback}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <View className="w-16 h-16 rounded-full bg-black/30 flex items-center justify-center">
+                <Ionicons
+                  name={!isPlaying ? "play" : "pause"}
+                  size={16}
+                  color="#fff"
+                />
+              </View>
+            </TouchableOpacity>
+
+            {/* Time indicator */}
+            <View className="absolute top-[25%] right-0 bg-black/50 px-2 py-1 rounded">
+              <TextScallingFalse className="text-white text-xs">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </TextScallingFalse>
+            </View>
+          </View>
+
+          {/* Trim controls */}
+          <View className="relative h-20 mb-6">
+            {/* Time labels */}
+            <View className="flex-row justify-between">
+              <TextScallingFalse className="text-white">
+                {formatTime(startTime)}
+              </TextScallingFalse>
+              <TextScallingFalse className="text-white">
+                {formatTime(endTime)}
+              </TextScallingFalse>
+            </View>
+
+            {/* Filmstrip scrollview */}
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="h-16 bg-neutral-800 rounded"
+            >
+              <View className="flex-row h-16">
+                {thumbnails.map((thumbnail, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: thumbnail }}
+                    className="w-16 h-16 opacity-60"
+                  />
+                ))}
+              </View>
+            </ScrollView>
+
+            {/* Trim area indicator */}
+            <View
+              className="absolute top-5 left-0 right-0 h-16 flex-row"
+              pointerEvents="box-none"
+            >
+              {/* Left dimmed area */}
+              <View
+                style={{ width: timeToPosition(startTime) }}
+                className="h-full bg-black/70"
+              />
+
+              {/* Selected area */}
+              <View
+                style={{
+                  width: timeToPosition(endTime) - timeToPosition(startTime),
+                }}
+                className="h-full border-2 border-theme"
+              >
+                {/* Current position indicator */}
+                <View
+                  style={{
+                    left: Math.max(0, timeToPosition(currentTime - startTime)),
+                    display:
+                      currentTime >= startTime && currentTime <= endTime
+                        ? "flex"
+                        : "none",
+                  }}
+                  className="absolute top-0 bottom-0 w-1 bg-theme"
+                />
+              </View>
+
+              {/* Right dimmed area */}
+              <View style={{ flex: 1 }} className="h-full bg-black/70" />
+
+              {/* Left trim handle */}
+              <PanGestureHandler
+                onGestureEvent={({ nativeEvent }) => {
+                  updateStartTime(nativeEvent.absoluteX - 24); // Adjust for padding
+                }}
+              >
+                <Animated.View
+                  style={{ left: timeToPosition(startTime) - 10 }}
+                  className="absolute top-0 bottom-0 w-5 flex justify-center items-center"
+                >
+                  <View className="w-1 h-full bg-white" />
+                  <View className="absolute w-5 h-16 bg-theme rounded-full opacity-30" />
+                  <View className="absolute w-1 h-16 bg-white" />
+                  {/* <View className="absolute  top-6 w-3 h-4 bg-white rounded" /> */}
+                </Animated.View>
+              </PanGestureHandler>
+
+              {/* Right trim handle */}
+              <PanGestureHandler
+                onGestureEvent={({ nativeEvent }) => {
+                  updateEndTime(nativeEvent.absoluteX - 24); // Adjust for padding
+                }}
+              >
+                <Animated.View
+                  style={{ left: timeToPosition(endTime) - 10 }}
+                  className="absolute top-0 bottom-0 w-5 flex justify-center items-center"
+                >
+                  <View className="w-1 h-full bg-white" />
+                  <View className="absolute w-5 h-16 bg-theme rounded-full opacity-30" />
+                  <View className="absolute w-1 h-16 bg-white" />
+                  {/* <View className="absolute -left-1 top-6 w-3 h-4 bg-white rounded" /> */}
+                </Animated.View>
+              </PanGestureHandler>
+            </View>
+          </View>
+
+          {/* Duration indicator */}
+          <View className="bg-neutral-800 p-3 rounded mb-2">
+            <TextScallingFalse className="text-white text-center">
+              Selected: {formatTime(endTime - startTime)}
+            </TextScallingFalse>
           </View>
         </View>
       </View>
@@ -230,8 +469,8 @@ export default function AddPostContainer({
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   // const { text } = useLocalSearchParams();
-  const placeholderText = text.toString();
   const [postText, setPostText] = useState("");
+  const [placeholderText, setPlaceholderText] = useState(text.toString());
   const [isImageRatioModalVisible, setIsImageRatioModalVisible] =
     useState(false);
   const [pickedImageUris, setPickedImageUris] = useState<string[]>([]);
@@ -308,7 +547,7 @@ export default function AddPostContainer({
   const handlePostSubmit = useCallback(() => {
     if (!isPostButtonEnabled) return;
     dispatch(setAddPostContainerOpen(false));
-    router.push("/(app)/(tabs)/home");
+    // router.push("/(app)/(tabs)/home");
     dispatch(setPostProgressOn(true));
 
     try {
@@ -341,7 +580,7 @@ export default function AddPostContainer({
       const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
       console.log("Valid Options : ", validOptions);
       validOptions.forEach((option) => {
-        formData.append("options", JSON.stringify(option));
+        formData.append("options", option);
       });
 
       setPostText("");
@@ -501,10 +740,24 @@ export default function AddPostContainer({
     setNewPollOptions(updatedOptions);
   };
 
+  // Handle open poll
+  const handleOpenPoll = () => {
+    setPlaceholderText("Add your question...");
+    setShowPollInput(true);
+  };
+
   // Handle close poll
   const handleClosePoll = () => {
     setShowPollInput(false);
+    setPlaceholderText(text.toString());
     setNewPollOptions(["", ""]);
+  };
+
+  // Handle close trimmer
+  const handleCloseTrimmer = () => {
+    setIsVideoTrimmerVisible(false);
+    setPickedVideoUri(null);
+    setTypeVideo(false);
   };
 
   const handleCloseAddPostContainer = () => {
@@ -614,6 +867,7 @@ export default function AddPostContainer({
                   lineHeight: 24,
                   textAlignVertical: "top",
                 }}
+                cursorColor={Colors.themeColor}
                 textBreakStrategy="highQuality"
                 keyboardAppearance="dark"
               />
@@ -638,6 +892,11 @@ export default function AddPostContainer({
                 setIndex={handleSetActiveIndex}
               />
             )}
+
+            {/* Only render VideoPlayer when there is a video */}
+            {/* {isTypeVideo && pickedVideoUri !== null && (
+              <CustomVideoPlayer autoPlay={true} videoUri={pickedVideoUri} />
+            )} */}
 
             {/* Pagination */}
             {pickedImageUris.length > 1 && (
@@ -742,7 +1001,7 @@ export default function AddPostContainer({
                 </TouchableOpacity>
               </Modal>
               <TouchableOpacity
-                onPress={() => setShowPollInput(true)}
+                onPress={handleOpenPoll}
                 className="p-[5px]"
                 activeOpacity={0.7}
                 disabled={
@@ -785,12 +1044,7 @@ export default function AddPostContainer({
         <VideoTrimmerModal
           videoUri={pickedVideoUri}
           onTrimComplete={handleTrimComplete}
-          onCancel={() => {
-            // If cancel is pressed in the trimmer, reset video selection and video mode.
-            setIsVideoTrimmerVisible(false);
-            setPickedVideoUri(null);
-            setTypeVideo(false);
-          }}
+          onCancel={handleCloseTrimmer}
         />
       )}
     </Modal>

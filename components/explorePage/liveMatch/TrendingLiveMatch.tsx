@@ -35,7 +35,7 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
 
   const renderItem = ({ item }: { item: { type: string; match: any } }) => {
     return (
-      <View className="h-52 w-80 bg-transparent rounded-2xl mr-5 border border-[#454545]">
+      <View className="h-[164px] w-[280px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
         {item.type === "cricket" ? (
           <CricketMatchCard match={item.match} isLive={true} />
         ) : (

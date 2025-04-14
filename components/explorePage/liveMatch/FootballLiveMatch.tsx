@@ -32,7 +32,7 @@ const FootballLiveMatch: React.FC<LiveFootballMatchProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="h-52 w-80 bg-transparent rounded-2xl mr-5 border border-[#454545]">
+          <View className="h-[164px] w-[280px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ActivityIndicator size="large" color={Colors.themeColor} />

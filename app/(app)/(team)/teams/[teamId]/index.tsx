@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef,useCallback } from "react";
 import {
   Alert,
   View,
@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Dimensions
+  Dimensions,
+  RefreshControl,
 } from "react-native";
 import {
   useRouter,
@@ -39,6 +40,7 @@ const TeamPage: React.FC = () => {
   const teamId = params.teamId ? String(params.teamId) : "";
   const teamDetails = useSelector((state: RootState) => state.team.team);
   const modalRef = useRef<Modalize>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (teamId) handleFetchTeam();
@@ -68,6 +70,12 @@ const TeamPage: React.FC = () => {
       `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
     );
   };
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await handleFetchTeam();
+    setRefreshing(false);
+  }, [teamId]);
+
 
   const menuItems = [
     {
@@ -104,28 +112,41 @@ const TeamPage: React.FC = () => {
 
   return (
     <>
-      <CombinedDrawer menuItems={menuItems} teamId={teamId}>
-        <TeamCard
-          teamName={teamDetails?.name || "Loading..."}
-          sportCategory={teamDetails?.sport?.name || "Loading..."}
-          captain={teamDetails?.captain || "Not Assigned"}
-          viceCapt={teamDetails?.viceCaptain || "Not Assigned"}
-          location={
-            teamDetails?.address
-              ? `${teamDetails.address.city}, ${teamDetails.address.country}`
-              : "Unknown"
-          }
-          teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
-          sportLogo={
-            teamDetails?.sport?.logo || "https://picsum.photos/200/200"
-          }
-        />
-        <SubCategories teamDetails={teamDetails} />
-      </CombinedDrawer>
+      <ScrollView
+      showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#fff"
+            colors={["#00bfff"]}
+            style={{top:20}}
+          />
+        
+        }
+      >
+        <CombinedDrawer menuItems={menuItems} teamId={teamId}>
+          <TeamCard
+            teamName={teamDetails?.name || "Loading..."}
+            sportCategory={teamDetails?.sport?.name || "Loading..."}
+            captain={teamDetails?.captain || "Not Assigned"}
+            viceCapt={teamDetails?.viceCaptain || "Not Assigned"}
+            location={
+              teamDetails?.address
+                ? `${teamDetails.address.city}, ${teamDetails.address.country}`
+                : "Unknown"
+            }
+            teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
+            sportLogo={
+              teamDetails?.sport?.logo || "https://picsum.photos/200/200"
+            }
+          />
+          <SubCategories teamDetails={teamDetails} />
+        </CombinedDrawer>
+      </ScrollView>
 
-      {/* Swipeable Invite Role Drawer */}
+      {/* Invite Modal */}
       <Modalize
-     
         ref={modalRef}
         adjustToContentHeight
         modalStyle={styles.modal}

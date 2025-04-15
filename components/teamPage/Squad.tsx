@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { TouchableWithoutFeedback } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import TeamMember from "./TeamMember";
 import { useFonts } from "expo-font";
@@ -61,11 +62,16 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
 
   const categorizeMembers = (playerType: string) => {
     return (
-      teamDetails.members?.filter((member: any) =>
-        member.role.toLowerCase().includes(playerType.toLowerCase())
-      ) || []
+      teamDetails.members?.filter((member: any) => {
+        const role = member.role?.toLowerCase();
+        if (playerType.toLowerCase() === "all-rounder") {
+          return role === "all-rounder" || role === "member";
+        }
+        return role.includes(playerType.toLowerCase());
+      }) || []
     );
   };
+  
 
   const renderMemberSection = (title: string, members: any[]) => (
     <View className="mb-0">
@@ -137,21 +143,39 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       style={{
         flex: 1,
         maxWidth: "100%",
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
+        // paddingVertical:12,
         backgroundColor: "#0B0B0B",
       }}
+      
     >
+      
       <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          alignItems: "flex-end",
-          paddingHorizontal: 16,
-          top: 36,
-        }}
-      >
-        <ThreeDot />
-      </View>
+  style={{
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    top: 36,
+  }}
+>
+<TouchableOpacity
+  onPress={() => {
+    console.log("ThreeDot Pressed");
+    router.push(`/(app)/(team)/teams/${teamId}/members`);
+  }}
+  activeOpacity={0.7}
+  style={{
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  <ThreeDot />
+</TouchableOpacity>
+
+</View>
+
 
       {teamDetails?.sport?.playerTypes?.map((playerType: any) =>
         renderMemberSection(playerType.name, categorizeMembers(playerType.name))
@@ -169,5 +193,5 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
 export default Squad;
 
 const styles = StyleSheet.create({
-  // Keep any additional styles you need
+  
 });

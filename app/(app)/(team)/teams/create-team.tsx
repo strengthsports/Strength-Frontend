@@ -134,6 +134,17 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     }
   }, [dispatch, formData?.sport]);
   
+  const isFormComplete = () => {
+    return (
+      formData.name &&
+      formData.sport &&
+      formData.sport !== "123" && // Not the default "Select Sports" ID
+      formData.establishedOn &&
+      formData.address.city &&
+      formData.description
+    );
+  };
+  
   
 
 
@@ -333,67 +344,107 @@ const handleInviteMembers = async (selectedUsers: any[]) => {
 
 // Update the handleCreateTeam function to send invitations after team creation
 const handleCreateTeam = async () => {
-  if (!formData.name || !formData.sport || !formData.establishedOn) {
-    alert("Please fill all required fields.");
+  // Validate required fields
+  const validationErrors = [];
+  if (!formData.name) validationErrors.push('Team name is required');
+  if (!formData.sport || formData.sport === "123") validationErrors.push('Please select a sport');
+  if (!formData.establishedOn) validationErrors.push('Establishment date is required');
+  if (!formData.address.city) validationErrors.push('Location is required');
+  
+  if (validationErrors.length > 0) {
+    Toast.show({
+      type: 'error',
+      text1: 'Missing Information',
+      text2: validationErrors.join('\n'),
+      visibilityTime: 4000
+    });
     return;
   }
 
   try {
-    // First create the team
+    // Show loading indicator
+    Toast.show({
+      type: 'info',
+      text1: 'Creating Team...',
+      autoHide: false
+    });
+
+    // Create the team
     const result = await dispatch(createTeam(formData)).unwrap();
     
-    if (result.success && result.data?._id) {
-      const teamId = result.data._id;
-      
-      // Send invitations to all members if any
-      if (formData.members.length > 0) {
+    if (!result.success || !result.data?._id) {
+      throw new Error('Team creation failed - no ID returned');
+    }
+
+    const teamId = result.data._id;
+    
+    // Send invitations if there are members
+    if (formData.members.length > 0) {
+      try {
         const memberIds = formData.members.map(m => m._id);
-        
         const invitationResult = await dispatch(
           sendInvitations({
             teamId,
             receiverIds: memberIds,
-            role: "member", // or whatever default role you want
+            role: "member",
             createdBy: user?.id
           })
         ).unwrap();
 
-        // Handle invitation results
+        // Handle partial failures
         if (invitationResult.failedInvitations?.length > 0) {
+          const successCount = formData.members.length - invitationResult.failedInvitations.length;
           Toast.show({
-            type: "error",
-            text1: "Some invitations failed",
-            text2: `${invitationResult.failedInvitations.length} invitations couldn't be sent`,
+            type: 'info',
+            text1: 'Partial Success',
+            text2: `Sent ${successCount} invites (${invitationResult.failedInvitations.length} failed)`,
           });
         }
+      } catch (inviteError) {
+        console.warn("Invitations failed but team was created:", inviteError);
+        // Continue to success page even if invites failed
       }
-
-      // Navigate to success page
-      router.push({
-        pathname: "./team-creation-success",
-        params: { 
-          teamData: JSON.stringify({
-            logo: formData.logo,
-            name: formData.name,
-            sport: sports.find((s) => s._id === formData.sport)?.name || formData.sport,
-            establishedOn: formData.establishedOn,
-            address: formData.address,
-            gender: formData.gender,
-            description: formData.description,
-            members: formData.members,
-          }) 
-        }
-      });
     }
+
+    // Hide loading indicator
+    Toast.hide();
+
+    // Navigate to success page with ALL data as before
+    router.push({
+      pathname: "./team-creation-success",
+      params: { 
+        teamId: teamId,
+        teamName: formData.name,
+        teamData: JSON.stringify({
+          logo: formData.logo,
+          name: formData.name,
+          sport: sports.find((s) => s._id === formData.sport)?.name || formData.sport,
+          establishedOn: formData.establishedOn,
+          address: formData.address,
+          gender: formData.gender,
+          description: formData.description,
+          members: formData.members,
+          id: teamId 
+        })
+      }
+    });
+
   } catch (error) {
-    console.error("Error creating team:", error);
+    console.error("Team creation error:", error);
+    Toast.hide();
     Toast.show({
-      type: "error",
-      text1: "Team Creation Failed",
-      text2: "Could not create team. Please try again.",
+      type: 'error',
+      text1: 'Creation Failed',
+      text2: error.message || 'Could not create team. Please try again.',
+      visibilityTime: 5000
     });
   }
 };
+
+
+
+
+
   return (
     <SafeAreaView className="flex-1 bg-black px-2">
       <KeyboardAvoidingView
@@ -633,50 +684,52 @@ const handleCreateTeam = async () => {
               </View>
 
               {/* Members Section */}
-              <View className="mt-4">
-                <Text className="text-white text-2xl mt-4 mb-4">
-                  Add members
-                </Text>
+              {selectedGame._id !== "123" && (
+  <View className="mt-4">
+    <Text className="text-white text-2xl mt-4 mb-4">
+      Add members
+    </Text>
+    
+    <View className="flex-row flex-wrap -mx-2 mb-4">
+      {/* Existing Members */}
+      {formData.members.map((member) => (
+        <View key={member._id} className="w-1/2 px-2 mb-4">
+          <MemberCard
+            imageUrl={member.profilePic}
+            name={`${member.firstName} ${member.lastName || ""}`}
+            description={member.headline || "No description"}
+            isAdmin={true}
+            status={member.status}
+            onRemove={() => removeMember(member._id)}
+          />
+        </View>
+      ))}
 
-                <View className="flex-row flex-wrap -mx-2 mb-4">
-                  {/* Existing Members */}
-                  {formData.members.map((member) => (
-                    <View key={member._id} className="w-1/2 px-2 mb-4">
-                      <MemberCard
-                        imageUrl={member.profilePic}
-                        name={`${member.firstName} ${member.lastName || ""}`}
-                        description={member.headline || "No description"}
-                        isAdmin={true}
-                        status={member.status} // Show invitation status
-                        onRemove={() => removeMember(member._id)}
-                      />
-                    </View>
-                  ))}
+      <View className="w-1/2 px-2 mb-4">
+        <TouchableOpacity
+          className="border border-[#515151] rounded-lg p-4 items-center justify-center h-44"
+          onPress={() => setShowMembersModal(true)}
+        >
+          <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
+            <Text className="text-gray-400 text-2xl">+</Text>
+          </View>
+          <Text className="text-gray-400">Add Member</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+    
+    <AddMembersModal
+      visible={showMembersModal}
+      onClose={() => setShowMembersModal(false)}
+      onInvite={handleInviteMembers}
+      buttonName="Invite Members"
+      multiselect={true}
+      player={fetchedUsers}
+      loading={loading}
+    />
+  </View>
+)}
 
-                  {/* Add Member Button */}
-                  <View className="w-1/2 px-2 mb-4">
-                    <TouchableOpacity
-                      className="border border-[#515151] rounded-lg p-4 items-center justify-center h-44"
-                      onPress={() => setShowMembersModal(true)}
-                    >
-                      <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
-                        <Text className="text-gray-400 text-2xl">+</Text>
-                      </View>
-                      <Text className="text-gray-400">Add Member</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <AddMembersModal
-  visible={showMembersModal}
-  onClose={() => setShowMembersModal(false)}
-  onInvite={handleInviteMembers}
-  buttonName="Invite Members"
-  multiselect={true}
-  player={fetchedUsers}
-  loading={loading} // Pass loading state if available
-/>
-              </View>
             </View>
           </ScrollView>
 
@@ -686,16 +739,24 @@ const handleCreateTeam = async () => {
               <ActivityIndicator size="large" color="#fff" />
             ) : (
               <TouchableOpacity
-                className="bg-[#12956B] rounded-lg p-3 mx-6 my-2"
-                onPress={handleCreateTeam}
-              >
-                <Text className="text-white text-center text-2xl">
-                  Create team
-                </Text>
-              </TouchableOpacity>
+              className={`rounded-lg p-3 mx-6 my-2 ${
+                isFormComplete() ? "bg-[#12956B]" : "bg-gray-500"
+              }`}
+              onPress={isFormComplete() ? handleCreateTeam : null}
+              disabled={!isFormComplete()}
+            >
+              <Text className={`text-center text-2xl ${
+                isFormComplete() ? "text-white" : "text-gray-300"
+              }`}>
+                Create team
+              </Text>
+            </TouchableOpacity>
             )}
           </View>
         </View>
+
+
+        
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

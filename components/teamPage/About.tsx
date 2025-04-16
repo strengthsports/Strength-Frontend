@@ -17,9 +17,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   const [supportersCount, setSupportersCount] = useState(4123);
   const [isSupporting, setIsSupporting] = useState(false);
   
-  // const [fontsLoaded] = useFonts({
-  //   "Sansation-Regular": require("../../../../../assets/fonts/Sansation_Bold_Italic.ttf"),
-  // });
+
 
   const handleButtonPress = () => {
     setIsSupporting((prevIsSupporting) => {

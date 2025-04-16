@@ -2,7 +2,7 @@ import React from "react"
 import { View, Text, TouchableOpacity } from "react-native";
 import Svg, { Rect } from "react-native-svg";
 
-const Supporters = () => {
+const ThreeDot = () => {
   return (
     <View className="">
     <Svg width="23" height="5" viewBox="0 0 23 5" fill="none">
@@ -14,4 +14,4 @@ const Supporters = () => {
   );
 };
 
-export default Supporters;
+export default ThreeDot;

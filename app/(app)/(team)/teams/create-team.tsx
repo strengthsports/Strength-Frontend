@@ -620,6 +620,7 @@ const handleCreateTeam = async () => {
                       display="spinner"
                       onChange={onChange}
                       themeVariant="dark"
+                      maximumDate={new Date()}
                     />
                   )}
                 </View>
@@ -667,7 +668,7 @@ const handleCreateTeam = async () => {
                 {/* Description */}
                 <View className="mt-4">
                   <Text className="text-white text-2xl mt-2 mb-1">
-                    Description*
+                    Description
                   </Text>
                   <TextInput
                     value={formData.description}
@@ -739,11 +740,9 @@ const handleCreateTeam = async () => {
               <ActivityIndicator size="large" color="#fff" />
             ) : (
               <TouchableOpacity
-              className={`rounded-lg p-3 mx-6 my-2 ${
-                isFormComplete() ? "bg-[#12956B]" : "bg-gray-500"
-              }`}
-              onPress={isFormComplete() ? handleCreateTeam : null}
-              disabled={!isFormComplete()}
+              className={`rounded-lg p-3 mx-6 my-2 bg-[#12956B]`}
+              onPress={handleCreateTeam}
+            
             >
               <Text className={`text-center text-2xl ${
                 isFormComplete() ? "text-white" : "text-gray-300"

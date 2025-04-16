@@ -54,6 +54,19 @@ const TeamPage: React.FC = () => {
     }
   };
 
+  // Find the captain and vice captain
+const captainMember = teamDetails?.members?.find(
+  (member) => member?.position?.toLowerCase() === "captain"
+);
+const viceCaptainMember = teamDetails?.members?.find(
+  (member) => member?.position?.toLowerCase() === "vicecaptain"
+);
+
+const captain = captainMember?.user?.firstName 
+    || (teamDetails?.admin?.[0]?.firstName ?? "Loading...");
+
+
+    
   const handleDeleteTeam = async () => {
     try {
       const message = await dispatch(deleteTeam(teamId)).unwrap();
@@ -76,7 +89,7 @@ const TeamPage: React.FC = () => {
     setRefreshing(false);
   }, [teamId]);
 
-
+ console.log(teamDetails);
   const menuItems = [
     {
       label: "Settings",
@@ -126,22 +139,23 @@ const TeamPage: React.FC = () => {
         }
       >
         <CombinedDrawer menuItems={menuItems} teamId={teamId}>
-          <TeamCard
-            teamName={teamDetails?.name || "Loading..."}
-            sportCategory={teamDetails?.sport?.name || "Loading..."}
-            captain={teamDetails?.captain || "Not Assigned"}
-            viceCapt={teamDetails?.viceCaptain || "Not Assigned"}
-            location={
-              teamDetails?.address
-                ? `${teamDetails.address.city}, ${teamDetails.address.country}`
-                : "Unknown"
-            }
-            teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
-            sportLogo={
-              teamDetails?.sport?.logo || "https://picsum.photos/200/200"
-            }
-          />
-          <SubCategories teamDetails={teamDetails} />
+        <TeamCard
+         teamName={teamDetails?.name || "Loading..."}
+  sportCategory={teamDetails?.sport?.name || "Loading..."}
+  captain={captain }
+  viceCapt={viceCaptainMember?.user?.firstName || "Not Assigned"}
+  location={
+    teamDetails?.address
+      ? `${teamDetails.address.city}, ${teamDetails.address.country}`
+      : "Unknown"
+  }
+  teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
+  sportLogo={
+    teamDetails?.sport?.logo || "https://picsum.photos/200/200"
+        }
+/>
+
+        <SubCategories teamDetails={teamDetails} />
         </CombinedDrawer>
       </ScrollView>
 
@@ -175,7 +189,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: height * 1.2, // 90% of screen height (ideal for a large modal)
+    height: height * 1.2, 
   },
   title: {
     fontSize: 18,

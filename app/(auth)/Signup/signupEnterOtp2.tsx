@@ -101,6 +101,8 @@ const SignupEnterOtp2 = () => {
     }
   };
 
+  console.log("otp-",OTP)
+
   return (
     <PageThemeView>
       <View style={{ marginTop: 80 }}>

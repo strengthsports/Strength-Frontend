@@ -24,6 +24,7 @@ import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMa
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
 import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
+import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
@@ -33,9 +34,7 @@ const TrendingAll = () => {
     const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
       return (
-        <TextScallingFalse className="text-white self-center text-center pr-7">
-          No swipper slides available
-        </TextScallingFalse>
+        <SwipperSkeletonLoader />
       );
     }
 

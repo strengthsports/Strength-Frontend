@@ -64,9 +64,7 @@ function EditOverview() {
     (state: RootState) => state.profile.user?.associates?.length
   );
   // const { isError, isLoading, data: sports } = useGetSportsQuery(null);
-    const { sportsData, isLoading, isError } = useSelector(
-      (state: RootState) => state.onboarding
-    );
+  const { isError, isLoading, data: sports } = useGetSportsQuery(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const query = useLocalSearchParams();
@@ -74,10 +72,10 @@ function EditOverview() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter sports based on the search query
-  const filteredSports = sportsData?.filter((sport) =>
+  const filteredSports = sports?.filter((sport) =>
     sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("sports-", sportsData)
+  console.log("sports-", sports)
 
   const [isLocalLoading, setLocalLoading] = useState<boolean>(false);
   const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -791,7 +789,7 @@ function EditOverview() {
             )}
 
             <View style={{ width: "100%", paddingHorizontal: 20, gap: 1 }}>
-              {sportsData
+              {sports
                 ?.filter(
                   (sport) =>
                     sport._id === selectedSport?.sportsId &&

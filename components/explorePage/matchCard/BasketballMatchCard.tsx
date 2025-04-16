@@ -4,7 +4,7 @@ import TextScallingFalse from "~/components/CentralText";
 import NameFlagSubCard from "../nameFlagSubCard";
 import { countryCodes } from "~/constants/countryCodes";
 
-interface BadmintonMatchCardProps {
+interface BasketballMatchCardProps {
   match: {
     id: string;
     series: string;
@@ -24,7 +24,7 @@ const extractShortName = (teamName: string) => {
   return match ? match[1] : teamName;
 };
 
-const BadmintonMatchCard = ({ match, isLive }: any) => {
+const BasketballMatchCard = ({ match, isLive }: any) => {
   const opacityValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const BadmintonMatchCard = ({ match, isLive }: any) => {
         {/* Sport Name and Round */}
         <View className="flex-row items-center py-1">
           <TextScallingFalse className="text-theme text-base font-bold">
-            {"\u25B6"} Badminton
+            {"\u25B6"} Basketball
           </TextScallingFalse>
           <TextScallingFalse className="text-[#919191] text-base uppercase">
             {" \u2022 "} Round 4
@@ -158,4 +158,4 @@ const BadmintonMatchCard = ({ match, isLive }: any) => {
   );
 };
 
-export default BadmintonMatchCard;
+export default BasketballMatchCard;

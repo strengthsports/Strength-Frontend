@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { View, ActivityIndicator, Image, Pressable } from "react-native";
 // import { Image } from "expo-image";
 import Swiper from "react-native-swiper";
@@ -79,6 +79,8 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
     [swiperData]
   );
 
+  const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(2);
+
   return (
     <Swiper
       autoplay={true}
@@ -99,7 +101,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
         height: 7,
         marginHorizontal: 20,
       }}
-      style={{ height: 250, marginTop: 0.5 }}
+      style={{ height: 220, marginTop: 0.5 }}
     >
       {formattedData.length > 0 ? (
         formattedData.map((slide) => (
@@ -118,15 +120,20 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
           >
             <Image
               source={{ uri: slide.imageUrl }}
-              className="w-full h-72"
+              className="w-full h-full"
               resizeMode="cover"
             />
             <LinearGradient
-              colors={["transparent", "rgba(0, 0, 0, 0.8)"]}
-              className="absolute bottom-0 left-0 right-0 h-40"
+              colors={["rgba(0,0,0,0.95)", "rgba(0,0,0,0.98)", "rgba(0,0,0,1)"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              className="absolute bottom-0 left-0 right-0 h-64"
             />
             <View className="absolute bottom-9 pl-5">
-              <TextScallingFalse className="text-white text-6xl font-bold">
+              <TextScallingFalse
+                className="text-white text-6xl font-bold"
+                numberOfLines={numberOfLinesTitle}
+              >
                 {slide.title}
               </TextScallingFalse>
               <View className="flex-row items-center">

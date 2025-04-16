@@ -50,7 +50,7 @@ const TrendingAll = () => {
   };
 
   const renderHashtags = () => (
-    <View className="mt-10">
+    <View className="mt-8">
       <Hashtag data={hashtagData.slice(0, 3)} />
       <TouchableOpacity
         className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"

@@ -30,7 +30,7 @@ const Hashtag: React.FC<HashtagProps> = ({ data }) => {
               <TextScallingFalse className="text-[#CECECE] text-3xl font-semibold ">
                 {hashData.hashtag}
               </TextScallingFalse>
-              <TextScallingFalse className="text-[#6E6E6E] text-2xl mt-2.5">
+              <TextScallingFalse className="text-[#6E6E6E] text-2xl mt-1.5">
                 {hashData.postsCount} posts
               </TextScallingFalse>
             </View>

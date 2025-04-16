@@ -73,7 +73,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         className="flex-row justify-between items-center px-4 py-1 bg-black fixed top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/(app)/(tabs)/home")}>
           <Icon name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
         <View className="flex-row items-center gap-x-5">

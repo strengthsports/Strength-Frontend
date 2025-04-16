@@ -18,6 +18,7 @@ interface SwipperSlide {
   title: string;
   sportsName: string;
   isTrending: boolean;
+  content: string;
   createdAt: string;
   date?: string; // Add date & time fields
   time?: string;
@@ -108,6 +109,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 pathname: `/(app)/(tabs)/articlePage`,
                 params: {
                   id: slide._id,
+                  sportsName: slide.sportsName,
                 },
               });
             }}

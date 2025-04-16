@@ -474,7 +474,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-24] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
+          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
             <TouchableOpacity
               className="absolute right-8 p-2 pt-2 z-30"
               onPress={() => handleOpenBottomSheet({ type: "settings" })}

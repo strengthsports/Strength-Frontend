@@ -193,6 +193,36 @@ export const getTeams = createAsyncThunk<
   }
 );
 
+
+export const updateTeam = createAsyncThunk<
+  Team,
+  { teamId: string; formData: FormData },
+  { rejectValue: string }
+>(
+  "team/updateTeam",
+  async ({ teamId, formData }, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      
+      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
+        method: "PATCH",
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.message);
+      return data.data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+
+
 export const fetchMemberSuggestions = createAsyncThunk<
   MemberSuggestionsState,
   { teamId: string; userId: string; page?: number; limit?: number },

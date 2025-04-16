@@ -27,6 +27,7 @@ interface TeamData {
   gender: "male" | "female";
   description: string;
   members: TeamMember[];
+  
 }
 
 const TeamCreatedPage: React.FC = () => {
@@ -34,7 +35,9 @@ const TeamCreatedPage: React.FC = () => {
   const params = useLocalSearchParams();
   const teamData: TeamData = params.teamData ? JSON.parse(params.teamData as string) : null;
   const team = useSelector((state:RootState)=>state.team.team);
-  
+  const teamId = params.teamId as string || team?._id;
+  // const teamData = params.teamData ? JSON.parse(params.teamData as string) : null;
+  console.log(teamId);
   const translateY = new Animated.Value(30);
 
   useEffect(() => {
@@ -46,9 +49,17 @@ const TeamCreatedPage: React.FC = () => {
   }, []);
 
   const handleSubmit = () => {
-    console.log(team?._id);
+    if (!teamId) {
+      console.error("No teamId available for navigation");
+      return;
+    }
+    
     router.push({
-      pathname: `/(team)/teams/${team?._id}`,
+      pathname: `/(team)/teams/${teamId}`,
+      params: {
+        teamId, // Pass the teamId as param
+        teamName: teamData?.name || "Team" // Optional: pass team name
+      }
     });
   };
 

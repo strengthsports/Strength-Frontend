@@ -7,7 +7,8 @@ import {
   Alert,
   Modal,
   TouchableWithoutFeedback,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -88,23 +89,28 @@ const ActionButton: React.FC<{
   textColor: string;
   iconName?: string;
   disabled?: boolean;
-}> = ({ label, onPress, backgroundColor, textColor, iconName, disabled = false }) => (
+  isLoading?: boolean;
+}> = ({ label, onPress, backgroundColor, textColor, iconName, disabled = false, isLoading = false }) => (
   <Button
     mode="contained"
     onPress={onPress}
-    disabled={disabled}
-    style={[styles.actionButton, { backgroundColor, opacity: disabled ? 0.5 : 1 }]}
+    disabled={disabled || isLoading}
+    style={[styles.actionButton, { backgroundColor, opacity: (disabled || isLoading) ? 0.5 : 1 }]}
     contentStyle={styles.buttonContent}
     labelStyle={[styles.actionButtonText, { color: textColor }]}
   >
-    <View style={styles.textWithIcon}>
-      <Text style={[styles.actionButtonText, { color: textColor, flex: 1 }]}>
-        {label}
-      </Text>
-      {iconName && (
-        <MaterialCommunityIcons name={iconName} size={20} color={textColor} />
-      )}
-    </View>
+    {isLoading ? (
+      <ActivityIndicator size="small" color={textColor} />
+    ) : (
+      <View style={styles.textWithIcon}>
+        <Text style={[styles.actionButtonText, { color: textColor, flex: 1 }]}>
+          {label}
+        </Text>
+        {iconName && (
+          <MaterialCommunityIcons name={iconName} size={20} color={textColor} />
+        )}
+      </View>
+    )}
   </Button>
 );
 
@@ -112,14 +118,18 @@ const ActionButton: React.FC<{
 const FollowButton: React.FC<{
   isFollowing: boolean;
   onPress: () => void;
-}> = ({ isFollowing, onPress }) => (
+  isLoading?: boolean;
+}> = ({ isFollowing, onPress, isLoading = false }) => (
   <Button
     mode="contained"
     style={[styles.buttonGray, styles.smallButton]}
     labelStyle={styles.whiteText}
     onPress={onPress}
+    disabled={isLoading}
   >
-    {isFollowing ? (
+    {isLoading ? (
+      <ActivityIndicator size="small" color="white" />
+    ) : isFollowing ? (
       <>
         <AntIcon name="check" size={16} color="white" style={styles.icon} /> Following
       </>
@@ -197,6 +207,8 @@ const MemberDetails = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
   const [memberPosition, setMemberPosition] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isFollowingLoading, setIsFollowingLoading] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<ConfirmationDialogProps>({
     visible: false,
     title: '',
@@ -210,7 +222,7 @@ const MemberDetails = () => {
   // User permissions
   const isTeamOwner = () => {
     if (!team || !user) return false;
-    return team.owner === user._id;
+    return team.admin[0]._id === user._id;
   };
   
   const isCurrentUserAdmin = () => {
@@ -262,25 +274,79 @@ const MemberDetails = () => {
 
   useEffect(() => {
     setHasChanges(role !== originalRole || memberPosition !== (parsedMember?.position || ""));
-  }, [role, memberPosition]);
+  }, [role, memberPosition, originalRole, parsedMember]);
 
-  const handleSave = () => {
-    Alert.alert("Changes Saved", `Role updated to "${role}"`);
-    setHasChanges(false);
+  const handleSave = async () => {
+    setIsUpdating(true);
+    try {
+      // In a real app, you would dispatch an action to save changes here
+      // For now, we'll simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      Alert.alert("Changes Saved", `Role updated to "${role}"`);
+      setHasChanges(false);
+    } catch (error) {
+      console.error("Failed to save changes:", error);
+      Alert.alert("Error", "Could not save changes. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
   };
+   // Handle role selection
+   const handleRoleSelect = (selectedRole: string) => {
+    if (selectedRole === role) return;
+    
+    showConfirmation(
+      "Change Role",
+      `Are you sure you want to change this member's role to "${selectedRole}"?`,
+      async () => {
+        setIsUpdating(true);
+        try {
+          await dispatch(changeUserRole({
+            teamId: teamId,
+            userId: parsedMember?._id,
+            newRole: selectedRole,
+          })).unwrap();
+          
+          setRole(selectedRole);
+          Alert.alert("Role Updated", `Changed to ${selectedRole}`);
+          setHasChanges(false);
+        } catch (error) {
+          console.error("Failed to change role:", error);
+          Alert.alert("Error", "Could not update role. Please try again.");
+        } finally {
+          setIsUpdating(false);
+        }
+      }
+    );
+  };
+
   // Fetch team details when component mounts
   useEffect(() => {
     if (teamId) {
       dispatch(fetchTeamDetails(teamId));
     }
-  }, [teamId, dispatch,handleSave]);
-
+  }, [teamId, dispatch, handleRoleSelect]);
   
+  // Handle follow/unfollow
+  const handleFollowToggle = async () => {
+    setIsFollowingLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setIsFollowing(prev => !prev);
+    } catch (error) {
+      console.error("Follow toggle failed:", error);
+      Alert.alert("Error", "Could not update follow status");
+    } finally {
+      setIsFollowingLoading(false);
+    }
+  };
 
   // Position change handler
   const executePositionChange = async (newPosition: string) => {
     if (!team || !parsedMember) return;
   
+    setIsUpdating(true);
     try {
       // Check if this is removing a position
       if (memberPosition.toLowerCase() === newPosition.toLowerCase()) {
@@ -315,6 +381,8 @@ const MemberDetails = () => {
     } catch (error) {
       console.error("Failed to change position:", error);
       Alert.alert("Error", "Could not update position. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -347,6 +415,7 @@ const MemberDetails = () => {
   const handleRemovePosition = async () => {
     if (!team || !parsedMember) return;
     
+    setIsUpdating(true);
     try {
       await dispatch(changeUserPosition({
         teamId: team._id,
@@ -359,43 +428,30 @@ const MemberDetails = () => {
     } catch (error) {
       console.error("Failed to remove position:", error);
       Alert.alert("Error", "Could not update position. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  // Handle role selection
-  const handleRoleSelect = (selectedRole: string) => {
-    if (selectedRole === role) return;
-    
-    showConfirmation(
-      "Change Role",
-      `Are you sure you want to change this member's role to "${selectedRole}"?`,
-      async () => {
-        try {
-          await dispatch(changeUserRole({
-            teamId: teamId,
-            userId: parsedMember?._id,
-            newRole: selectedRole,
-          })).unwrap();
-          
-          setRole(selectedRole);
-          Alert.alert("Role Updated", `Changed to ${selectedRole}`);
-          setHasChanges(false);
-        } catch (error) {
-          console.error("Failed to change role:", error);
-          Alert.alert("Error", "Could not update role. Please try again.");
-        }
-      }
-    );
-  };
+ 
 
   // Handle removing member from team
   const handleRemoveFromTeam = () => {
     showConfirmation(
       "Remove Member",
       "Are you sure you want to remove this member from the team?",
-      () => {
-        Alert.alert("Member Removed", "Member has been removed from the team");
-        router.back();
+      async () => {
+        setIsUpdating(true);
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          Alert.alert("Member Removed", "Member has been removed from the team");
+          router.back();
+        } catch (error) {
+          console.error("Failed to remove member:", error);
+          Alert.alert("Error", "Could not remove member. Please try again.");
+          setIsUpdating(false);
+        }
       },
       "Remove",
       true
@@ -407,9 +463,14 @@ const MemberDetails = () => {
     showConfirmation(
       "Transfer Admin",
       "Are you sure you want to transfer admin rights to this member?",
-      () => {
-        executePositionChange("Admin");
-        Alert.alert("Admin Transferred", "Admin rights have been transferred");
+      async () => {
+        try {
+          await executePositionChange("Admin");
+          Alert.alert("Admin Transferred", "Admin rights have been transferred");
+        } catch (error) {
+          console.error("Failed to transfer admin:", error);
+          Alert.alert("Error", "Could not transfer admin rights. Please try again.");
+        }
       }
     );
   };
@@ -425,6 +486,7 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#CFCFCF"
             iconName="crown-outline"
+            isLoading={isUpdating}
           />
           <ActionButton
             label="Remove from Captain"
@@ -437,10 +499,11 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#D44044"
             iconName="account-remove"
+            isLoading={isUpdating}
           />
         </>
       );
-    } else if (memberPosition === "Vice Captain" || memberPosition === "vicecaptain") {
+    } else if (memberPosition === "Vice Captain" || memberPosition === "ViceCaptain") {
       return (
         <>
           <ActionButton
@@ -449,6 +512,7 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#CFCFCF"
             iconName="crown"
+            isLoading={isUpdating}
           />
           <ActionButton
             label="Remove from Vice Captain"
@@ -461,6 +525,7 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#D44044"
             iconName="account-remove"
+            isLoading={isUpdating}
           />
         </>
       );
@@ -478,6 +543,7 @@ const MemberDetails = () => {
           backgroundColor="#141414"
           textColor="#D44044"
           iconName="account-remove"
+          isLoading={isUpdating}
         />
       );
     } else {
@@ -489,6 +555,7 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#CFCFCF"
             iconName="crown"
+            isLoading={isUpdating}
           />
           <ActionButton
             label="Promote to Vice Captain"
@@ -496,11 +563,24 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#CFCFCF"
             iconName="crown-outline"
+            isLoading={isUpdating}
           />
         </>
       );
     }
   };
+
+  // Show loading state during initial fetch
+  if (loading && !team) {
+    return (
+      <PageThemeView>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#12956B" />
+          <Text style={styles.loadingText}>Loading member details...</Text>  
+        </View>
+      </PageThemeView>
+    );
+  }
 
   return (
     <PageThemeView>
@@ -514,10 +594,17 @@ const MemberDetails = () => {
           {parsedMember?.firstName} {parsedMember?.lastName}
         </TextScallingFalse>
 
-        <TouchableOpacity disabled={!hasChanges} onPress={handleSave}>
-          <Text style={[styles.whiteText, { opacity: hasChanges ? 1 : 0.3 }]}>
-            Save
-          </Text>
+        <TouchableOpacity 
+          disabled={!hasChanges || isUpdating} 
+          onPress={handleSave}
+        >
+          {isUpdating ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={[styles.whiteText, { opacity: hasChanges ? 1 : 0.3 }]}>
+              Save
+            </Text>
+          )}
         </TouchableOpacity>
 
         <View style={{ width: 28 }} />
@@ -532,13 +619,16 @@ const MemberDetails = () => {
       <View style={styles.buttonRow}>
         <FollowButton
           isFollowing={isFollowing}
-          onPress={() => setIsFollowing(prev => !prev)}
+          onPress={handleFollowToggle}
+          isLoading={isFollowingLoading}
         />
         <Button
           mode="contained"
           style={[styles.buttonGray, styles.smallButtonRight]}
           labelStyle={styles.whiteText}
-          onPress={() => {}}
+          onPress={() => {
+            // Navigate to user profile
+          }}
         >
           View Profile
         </Button>
@@ -553,6 +643,7 @@ const MemberDetails = () => {
           backgroundColor="#141414"
           textColor="#CFCFCF"
           iconName="chevron-down"
+          disabled={isUpdating}
         />
 
         {/* Position-specific buttons */}
@@ -564,14 +655,20 @@ const MemberDetails = () => {
           backgroundColor="#141414"
           textColor="#D44044"
           iconName="account-remove"
+          isLoading={isUpdating}
         />
-        <ActionButton
-          label="Transfer Admin"
-          onPress={handleTransferAdmin}
-          backgroundColor="#141414"
-          textColor="#CFCFCF"
-          iconName="swap-horizontal"
-        />
+        
+        {isCurrentUserAdmin() && (
+          <ActionButton
+            label="Transfer Admin"
+            onPress={handleTransferAdmin}
+            backgroundColor="#141414"
+            textColor="#CFCFCF"
+            iconName="swap-horizontal"
+            isLoading={isUpdating}
+          />
+          
+        )}
       </View>
 
       {/* Role Dropdown */}
@@ -767,6 +864,17 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 8,
     marginLeft: 2
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000'
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 12,
+    fontSize: 16
   }
 });
 

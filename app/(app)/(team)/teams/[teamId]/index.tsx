@@ -36,16 +36,19 @@ const TeamPage: React.FC = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const teamId = params.teamId ? String(params.teamId) : "";
+   const { user } = useSelector((state: RootState) => state.profile);
   const teamDetails = useSelector((state: RootState) => state.team.team);
   const loading = useSelector((state: RootState) => state.team.loading);
   const userId = useSelector((state: RootState) => state.auth.user?._id);
+  
   const modalRef = useRef<Modalize>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
-    console.log("Admin Info -------> ",teamDetails?.admin);
+    console.log("Admin Info -------> ",teamDetails?.admin[0]);
+    console.log("Current User ---->",user?._id)
   }, [teamId]);
 
   const captainMember = teamDetails?.members?.find(
@@ -87,7 +90,7 @@ const TeamPage: React.FC = () => {
     }
   }, [teamId, dispatch]);
 
-  const isAdmin = userId !== teamDetails?.admin?.[0]?._id;
+  const isAdmin = user?._id === teamDetails?.admin?.[0]?._id;
 
   const baseMenuItems = [
     {
@@ -183,7 +186,7 @@ const TeamPage: React.FC = () => {
           <TextScallingFalse style={styles.title}>Invite</TextScallingFalse>
           {roles.map((role) => (
             <TouchableOpacity
-              key={role} // This key is properly set already
+              key={role}
               style={styles.roleButton}
               onPress={() => handleInvitePress(role)}
             >

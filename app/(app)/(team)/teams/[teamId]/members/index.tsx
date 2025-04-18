@@ -1,12 +1,15 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, FlatList,Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import Icon from "react-native-vector-icons/AntDesign";
-import { useRouter } from "expo-router";
+import { RelativePathString, useRouter } from "expo-router";
 import { Divider, Avatar, ActivityIndicator } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
 import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
+import nopic from "../../../../../../assets/images/nopic.jpg"
+// import Edit from "~/components/SvgIcons/teams/Edit";
+import Edit from "../../../../../../assets/images/edit.png"
 
 // Define TypeScript Interfaces
 interface User {
@@ -89,7 +92,14 @@ const Members: React.FC = () => {
         <Text className="text-white text-2xl font-bold">Members</Text>
         <TouchableOpacity onPress={() => router.push("/teams/settings/edit-members")}>
           <View className="flex-row items-center space-x-2">
-            <Icon name="edit" size={24} color="white" />
+          <Image 
+          src={require("../../../../../../assets/images/edit.png") || ""} 
+          alt="Edit Icon" 
+          width={20}
+         height={20}
+
+          />
+    
             <Text className="text-white text-lg">Edit</Text>
           </View>
         </TouchableOpacity>
@@ -115,23 +125,25 @@ const Members: React.FC = () => {
         data={Object.keys(groupedMembers)}
         keyExtractor={(role) => role}
         renderItem={({ item: role }) => (
-          <View className="py-3 rounded-lg mb-4 mx-2">
+          <View className="py-1 rounded-sm mb-0 mx-1">
             {/* Role Header */}
             <Text className="text-gray-500 text-4xl font-bold mb-2">{role}</Text>
-            <View className="bg-[#121212] rounded-2xl  py-2">
+            <View className="bg-[#121212]  rounded-2xl  py-2">
               {/* Members List */}
               {groupedMembers[role].map((member) => (
                 <TouchableOpacity
                   key={member.user._id}
                   className="flex-row items-center py-3 px-3 border-gray-800 rounded-lg"
                   onPress={() => {
+
                     if (team?._id && member?.user?._id) {
                       router.push({
-                        pathname: `/teams/${team._id}/members/${member.user._id}`,
+                        pathname: `/teams/${team._id}/members/${member.user._id}` as RelativePathString, 
                         params: {
                           memberId: member.user._id,
                           member: JSON.stringify(member.user),
                           role: JSON.stringify(member.role),
+                    
                           
                         },
                       });
@@ -141,16 +153,16 @@ const Members: React.FC = () => {
                   }}
 
                 >
-                  <Avatar.Image
-                    size={50}
-                    source={{ uri: member.user.profilePic || "https://via.placeholder.com/50" }}
+                 <Avatar.Image 
+                 size={50} 
+                  source={member?.user?.profilePic ? { uri: member.user.profilePic } : nopic} 
                   />
-                  <View className="ml-4 mt-2 flex-1 border-b border-gray-700">
+                  <View className="ml-4 mt-2 flex-1 border-b pb-3 bottom-2 border-[#3B3B3B]">
                     <Text className="text-white text-2xl font-medium">
                       {member.user.firstName} {member.user.lastName}
                     </Text>
                     <Text className="text-gray-400 text-sm">{member.user.headline}</Text>
-                    <Text className="text-gray-400 text-sm">{member.role}</Text>
+                    
                   </View>
                   <Icon name="right" size={12} color="gray" />
                 </TouchableOpacity>

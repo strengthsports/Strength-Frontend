@@ -67,10 +67,11 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
   });
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1" 
+    >
       {/* Fixed Header Drawer */}
       <View
-        className="flex-row justify-between items-center px-4 py-1 bg-black fixed top-0 left-0 right-0 z-30"
+        className="flex-row justify-between fixed items-center px-4 py-1 bg-black  top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
         <TouchableOpacity onPress={() => router.push("/(app)/(tabs)/home")}>
@@ -129,7 +130,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
       )}
 
       {/* Scrollable Content Area */}
-      <ScrollView
+      <ScrollView  showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
         }}

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef,useCallback } from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import {
-  Alert,
   View,
-  Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   Dimensions,
   RefreshControl,
+  ActivityIndicator,
+  TouchableOpacity
 } from "react-native";
 import {
   useRouter,
@@ -20,7 +19,6 @@ import {
   fetchTeamDetails,
 } from "~/reduxStore/slices/team/teamSlice";
 import { AppDispatch, RootState } from "~/reduxStore";
-
 import TeamCard from "~/components/teamPage/TeamCard";
 import SubCategories from "~/components/teamPage/SubCategories";
 import CombinedDrawer from "~/components/teamPage/CombinedDrawer";
@@ -39,41 +37,35 @@ const TeamPage: React.FC = () => {
   const params = useLocalSearchParams();
   const teamId = params.teamId ? String(params.teamId) : "";
   const teamDetails = useSelector((state: RootState) => state.team.team);
+  const loading = useSelector((state: RootState) => state.team.loading);
+  const userId = useSelector((state: RootState) => state.auth.user?._id);
   const modalRef = useRef<Modalize>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (teamId) handleFetchTeam();
+    if (teamId) dispatch(fetchTeamDetails(teamId));
   }, [teamId]);
 
-  const handleFetchTeam = async () => {
-    try {
-      await dispatch(fetchTeamDetails(teamId)).unwrap();
-    } catch (error) {
-      console.error("Error fetching team:", error);
-    }
-  };
+  const captainMember = teamDetails?.members?.find(
+    (member) => member?.position?.toLowerCase() === "captain"
+  );
+  const viceCaptainMember = teamDetails?.members?.find(
+    (member) => member?.position?.toLowerCase() === "vicecaptain"
+  );
 
-  // Find the captain and vice captain
-const captainMember = teamDetails?.members?.find(
-  (member) => member?.position?.toLowerCase() === "captain"
-);
-const viceCaptainMember = teamDetails?.members?.find(
-  (member) => member?.position?.toLowerCase() === "vicecaptain"
-);
+  const captain =
+    captainMember?.user?.firstName ||
+    teamDetails?.admin?.[0]?.firstName ||
+    "Loading...";
 
-const captain = captainMember?.user?.firstName 
-    || (teamDetails?.admin?.[0]?.firstName ?? "Loading...");
-
-
-    
   const handleDeleteTeam = async () => {
     try {
       const message = await dispatch(deleteTeam(teamId)).unwrap();
-      Alert.alert("Success", message);
+      alert("Success: " + message);
       router.push("/(app)/(tabs)/home");
     } catch (error) {
-      Alert.alert("Error", "Failed to delete team");
+      alert("Error deleting team");
     }
   };
 
@@ -83,23 +75,24 @@ const captain = captainMember?.user?.firstName
       `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
     );
   };
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await handleFetchTeam();
-    setRefreshing(false);
-  }, [teamId]);
 
- console.log(teamDetails);
-  const menuItems = [
-    {
-      label: "Settings",
-      logo: SettingsIcon,
-      color: "white",
-      onPress: () =>
-        router.push(
-          `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
-        ),
-    },
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    if (teamId) {
+      dispatch(fetchTeamDetails(teamId))
+        .unwrap()
+        .then(() => setRefreshing(false))
+        .catch(() => setRefreshing(false));
+    }
+  }, [teamId, dispatch]);
+
+
+  // console.log("My user Id---->",userId)
+  // console.log("Admin Team user Id ----->",teamDetails?.admin?.[0]?._id);
+  // Check if current user is the team admin
+  const isAdmin = userId === teamDetails?.admin?.[0]?._id;
+
+  const baseMenuItems = [
     {
       label: `Members                  [${teamDetails?.members?.length || 0}]`,
       logo: () => null,
@@ -110,12 +103,6 @@ const captain = captainMember?.user?.firstName
         ),
     },
     {
-      label: "Invite Members",
-      logo: InviteMembers,
-      color: "white",
-      onPress: () => modalRef.current?.open(),
-    },
-    {
       label: "Leave Team",
       logo: LeaveTeam,
       color: "red",
@@ -123,73 +110,111 @@ const captain = captainMember?.user?.firstName
     },
   ];
 
+  const adminMenuItems = [
+    {
+      label: "Settings",
+      logo: SettingsIcon,
+      color: "white",
+      onPress: () =>
+        router.push(
+          `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
+        ),
+    },
+    {
+      label: "Invite Members",
+      logo: InviteMembers,
+      color: "white",
+      onPress: () => modalRef.current?.open(),
+    },
+  ];
+
+  const menuItems = isAdmin ? [...adminMenuItems, ...baseMenuItems] : baseMenuItems;
+
   return (
-    <>
-      <ScrollView
-      showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#fff"
-            colors={["#00bfff"]}
-            style={{top:20}}
-          />
-        
-        }
-      >
-        <CombinedDrawer menuItems={menuItems} teamId={teamId}>
+    <View style={styles.container}>
+      <CombinedDrawer menuItems={menuItems} teamId={teamId}>
         <TeamCard
-         teamName={teamDetails?.name || "Loading..."}
-  sportCategory={teamDetails?.sport?.name || "Loading..."}
-  captain={captain }
-  viceCapt={viceCaptainMember?.user?.firstName || "Not Assigned"}
-  location={
-    teamDetails?.address
-      ? `${teamDetails.address.city}, ${teamDetails.address.country}`
-      : "Unknown"
-  }
-  teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
-  sportLogo={
-    teamDetails?.sport?.logo || "https://picsum.photos/200/200"
-        }
-/>
+          teamName={teamDetails?.name || "Loading..."}
+          sportCategory={teamDetails?.sport?.name || "Loading..."}
+          captain={captain}
+          viceCapt={viceCaptainMember?.user?.firstName || "Not Assigned"}
+          location={
+            teamDetails?.address
+              ? `${teamDetails.address.city}, ${teamDetails.address.country}`
+              : "Unknown"
+          }
+          teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
+          sportLogo={
+            teamDetails?.sport?.logo || "https://picsum.photos/200/200"
+          }
+        />
 
-        <SubCategories teamDetails={teamDetails} />
-        </CombinedDrawer>
-      </ScrollView>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.squadContainer}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#fff"
+              colors={["#fff"]}
+              progressViewOffset={40}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+          >
+            {loading && !refreshing ? (
+              <ActivityIndicator size="large" color="white" style={styles.loader} />
+            ) : (
+              <SubCategories teamDetails={teamDetails} />
+            )}
+          </ScrollView>
+      </CombinedDrawer>
 
-      {/* Invite Modal */}
-      <Modalize
-        ref={modalRef}
-        adjustToContentHeight
-        modalStyle={styles.modal}
-        handleStyle={{ backgroundColor: "#888" }}
-      >
-        <TextScallingFalse style={styles.title}>Invite</TextScallingFalse>
-        <ScrollView>
+      {isAdmin && (
+        <Modalize
+          ref={modalRef}
+          adjustToContentHeight
+          modalStyle={styles.modal}
+          handleStyle={{ backgroundColor: "#888" }}
+        >
+          <TextScallingFalse style={styles.title}>Invite</TextScallingFalse>
           {roles.map((role) => (
             <TouchableOpacity
               key={role}
               style={styles.roleButton}
               onPress={() => handleInvitePress(role)}
             >
-              <Text style={styles.roleText}>{role}</Text>
+              <TextScallingFalse style={styles.roleText}>{role}</TextScallingFalse>
             </TouchableOpacity>
           ))}
-        </ScrollView>
-      </Modalize>
-    </>
+        </Modalize>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  squadContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  loader: {
+    marginTop: 20,
+    alignSelf: "center",
+  },
   modal: {
     backgroundColor: "#1C1D23",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: height * 1.2, 
   },
   title: {
     fontSize: 18,
@@ -210,6 +235,5 @@ const styles = StyleSheet.create({
     color: "#CFCFCF",
   },
 });
-
 
 export default TeamPage;

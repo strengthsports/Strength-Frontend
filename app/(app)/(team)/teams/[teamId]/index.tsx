@@ -45,13 +45,14 @@ const TeamPage: React.FC = () => {
 
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
+    console.log("Admin Info -------> ",teamDetails?.admin);
   }, [teamId]);
 
   const captainMember = teamDetails?.members?.find(
-    (member) => member?.position?.toLowerCase() === "captain"
+    (member:any) => member?.position?.toLowerCase() === "captain"
   );
   const viceCaptainMember = teamDetails?.members?.find(
-    (member) => member?.position?.toLowerCase() === "vicecaptain"
+    (member:any) => member?.position?.toLowerCase() === "vicecaptain"
   );
 
   const captain =
@@ -86,14 +87,11 @@ const TeamPage: React.FC = () => {
     }
   }, [teamId, dispatch]);
 
-
-  // console.log("My user Id---->",userId)
-  // console.log("Admin Team user Id ----->",teamDetails?.admin?.[0]?._id);
-  // Check if current user is the team admin
-  const isAdmin = userId === teamDetails?.admin?.[0]?._id;
+  const isAdmin = userId !== teamDetails?.admin?.[0]?._id;
 
   const baseMenuItems = [
     {
+      id: "members", 
       label: `Members                  [${teamDetails?.members?.length || 0}]`,
       logo: () => null,
       color: "white",
@@ -103,6 +101,7 @@ const TeamPage: React.FC = () => {
         ),
     },
     {
+      id: "leave",
       label: "Leave Team",
       logo: LeaveTeam,
       color: "red",
@@ -112,6 +111,7 @@ const TeamPage: React.FC = () => {
 
   const adminMenuItems = [
     {
+      id: "settings",
       label: "Settings",
       logo: SettingsIcon,
       color: "white",
@@ -121,6 +121,7 @@ const TeamPage: React.FC = () => {
         ),
     },
     {
+      id: "invite",
       label: "Invite Members",
       logo: InviteMembers,
       color: "white",
@@ -182,7 +183,7 @@ const TeamPage: React.FC = () => {
           <TextScallingFalse style={styles.title}>Invite</TextScallingFalse>
           {roles.map((role) => (
             <TouchableOpacity
-              key={role}
+              key={role} // This key is properly set already
               style={styles.roleButton}
               onPress={() => handleInvitePress(role)}
             >

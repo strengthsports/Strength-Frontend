@@ -70,6 +70,8 @@ const Settings = () => {
   const params = useLocalSearchParams();
   const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
   const updatedDescription = params?.updatedDescription as string;
+
+  
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
@@ -83,6 +85,8 @@ const Settings = () => {
       setFormData((prev) => ({ ...prev, description: updatedDescription }));
     }
   }, [updatedDescription]);
+
+
   useEffect(() => {
     if (updatedDescription) {
       setFormData((prev) => ({ ...prev, description: updatedDescription }));
@@ -458,6 +462,7 @@ const Settings = () => {
               
               {members.length > 0 ? (
                 <FlatList
+                  key={members._id}
                   data={members}
                   renderItem={renderMember}
                   keyExtractor={(item) => item._id}

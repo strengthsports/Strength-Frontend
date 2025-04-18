@@ -202,6 +202,7 @@ const MemberDetails = () => {
     title: '',
     message: '',
     onConfirm: () => {},
+    onCancel: () => {},
     confirmText: 'Confirm',
     destructive: false
   });
@@ -230,6 +231,7 @@ const MemberDetails = () => {
       title,
       message,
       onConfirm,
+      onCancel: hideConfirmation,
       confirmText,
       destructive
     });
@@ -262,17 +264,18 @@ const MemberDetails = () => {
     setHasChanges(role !== originalRole || memberPosition !== (parsedMember?.position || ""));
   }, [role, memberPosition]);
 
+  const handleSave = () => {
+    Alert.alert("Changes Saved", `Role updated to "${role}"`);
+    setHasChanges(false);
+  };
   // Fetch team details when component mounts
   useEffect(() => {
     if (teamId) {
       dispatch(fetchTeamDetails(teamId));
     }
-  }, [teamId, dispatch]);
+  }, [teamId, dispatch,handleSave]);
 
-  const handleSave = () => {
-    Alert.alert("Changes Saved", `Role updated to "${role}"`);
-    setHasChanges(false);
-  };
+  
 
   // Position change handler
   const executePositionChange = async (newPosition: string) => {
@@ -693,13 +696,15 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: 'absolute',
-    top: '30%',
     left: '5%',
     right: '5%',
     backgroundColor: '#1E1E1E',
     borderRadius: 8,
     padding: 10,
-    maxHeight: '40%'
+    maxHeight: '40%',
+    // Position the dropdown to appear after the first action button
+    top: '40%', 
+    zIndex: 1000,
   },
   roleItem: {
     padding: 15,

@@ -20,7 +20,10 @@ import AntIcon from "react-native-vector-icons/AntDesign";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Button, Divider } from "react-native-paper";
 import Nopic from "../../../../../../assets/images/nopic.jpg";
+import RoleEdit from "~/components/SvgIcons/teams/RoleEdit";
 import TextScallingFalse from "~/components/CentralText";
+import ViceCaptain from "~/components/SvgIcons/teams/ViceCaptain";
+import Captain from "~/components/SvgIcons/teams/Captain";
 
 // Types
 interface Role {
@@ -36,6 +39,14 @@ interface ConfirmationDialogProps {
   onConfirm: () => void;
   confirmText?: string;
   destructive?: boolean;
+}
+interface ActionButtonProps {
+  onPress: () => void;
+  label: string;
+  backgroundColor?: string;
+  textColor?: string;
+  icon?: React.ReactNode;
+  disabled?: boolean;
 }
 
 // Component for role selection dropdown
@@ -84,6 +95,7 @@ const RoleDropdown: React.FC<{
 // Reusable action button component
 const ActionButton: React.FC<{
   label: string;
+  icon?: React.ReactNode;
   onPress: () => void;
   backgroundColor: string;
   textColor: string;
@@ -187,6 +199,44 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   </Modal>
 );
 
+
+
+const ActionButtonRole: React.FC<ActionButtonProps> = ({
+  onPress,
+  label,
+  backgroundColor = "#141414",
+  textColor = "#CFCFCF",
+  icon,
+  disabled = false,
+}) => {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      className="flex-row  w-full justify-between  pl-8 pr-3 py-4 mb-4 rounded-lg"
+      style={{ backgroundColor }}
+    >
+      {/* Icon and Label */}
+      
+      <Text
+        className="text-3xl font-bold"
+        style={{ color: textColor }}
+      >
+        {label}
+      </Text>
+      {icon && <View className="mr-2">{icon}</View>}
+    </TouchableOpacity>
+  );
+};
+
+
+
+
+
+
+
+
+
 // Main component
 const MemberDetails = () => {
   const { member, role: roleParam, teamId: teamIdParam } = useLocalSearchParams();
@@ -209,6 +259,7 @@ const MemberDetails = () => {
   const [memberPosition, setMemberPosition] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isFollowingLoading, setIsFollowingLoading] = useState(false);
+
   const [confirmDialog, setConfirmDialog] = useState<ConfirmationDialogProps>({
     visible: false,
     title: '',
@@ -274,7 +325,7 @@ const MemberDetails = () => {
 
   useEffect(() => {
     setHasChanges(role !== originalRole || memberPosition !== (parsedMember?.position || ""));
-  }, [memberPosition, , parsedMember]);
+  }, [memberPosition,  parsedMember]);
 
   const handleSave = async () => {
     setIsUpdating(true);
@@ -479,15 +530,15 @@ const MemberDetails = () => {
     if (memberPosition === "Captain") {
       return (
         <>
-          <ActionButton
+          <ActionButtonRole
             label="Demote to Vice Captain"
             onPress={() => handlePositionChange("ViceCaptain")}
             backgroundColor="#141414"
             textColor="#CFCFCF"
-            iconName="crown-outline"
-            isLoading={isUpdating}
+            icon={<ViceCaptain/>}
+            // isLoading={isUpdating}
           />
-          <ActionButton
+          <ActionButtonRole
             label="Remove from Captain"
             onPress={() => showConfirmation(
               "Remove Position",
@@ -497,23 +548,23 @@ const MemberDetails = () => {
             )}
             backgroundColor="#141414"
             textColor="#D44044"
-            iconName="account-remove"
-            isLoading={isUpdating}
+            icon={<Captain/>}
+            // isLoading={isUpdating}
           />
         </>
       );
     } else if (memberPosition === "Vice Captain" || memberPosition === "ViceCaptain") {
       return (
         <>
-          <ActionButton
+          <ActionButtonRole
             label="Promote to Captain"
             onPress={() => handlePositionChange("Captain")}
             backgroundColor="#141414"
             textColor="#CFCFCF"
-            iconName="crown"
-            isLoading={isUpdating}
+            icon={<Captain/>}
+            // isLoading={isUpdating}
           />
-          <ActionButton
+          <ActionButtonRole
             label="Remove from Vice Captain"
             onPress={() => showConfirmation(
               "Remove Position",
@@ -523,8 +574,8 @@ const MemberDetails = () => {
             )}
             backgroundColor="#141414"
             textColor="#D44044"
-            iconName="account-remove"
-            isLoading={isUpdating}
+            icon={<ViceCaptain/>}
+            // isLoading={isUpdating}
           />
         </>
       );
@@ -637,20 +688,29 @@ const MemberDetails = () => {
       <View style={styles.actionsContainer}>
         <Text style={styles.sectionLabel}>Role</Text>
         <View>
+        <View className="flex-row">
+  
+        <View className="flex-row">
 
-        <ActionButton
-          onPress={() => {
-        if (isAdmin) setDropdownVisible(true);
-        else{ 
+
+      <ActionButtonRole
+        onPress={() => {
+          if (isAdmin) setDropdownVisible(true);
+         else {
           console.log("You are not an Admin");
-        }
-        }}
-          label={role || "Select Role"}
-          backgroundColor="#141414"
-          textColor="#CFCFCF"
-          iconName="chevron-down"
-          disabled={isUpdating}
-        />
+         }
+         }}
+       label={role || "Select Role"}
+       backgroundColor="#141414"
+       textColor="#CFCFCF"
+       icon={<RoleEdit />} // Icon inside the button
+       disabled={isUpdating}
+  />
+</View>
+
+
+</View>
+
       </View>
 
         {/* Position-specific buttons */}

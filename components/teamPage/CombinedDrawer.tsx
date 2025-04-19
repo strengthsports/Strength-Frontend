@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
   ScrollView,
   Text,
   Animated,
+  Dimensions,
+  TouchableWithoutFeedback,
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import { RelativePathString, useRouter } from "expo-router";
@@ -13,52 +15,83 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface MenuItem {
   label: string;
-  onPress: () => void; // Function to be called when this item is clicked
+  onPress: () => void;
+  color?: string;
+  logo?: React.ComponentType<any>;
 }
 
 interface DrawerProps {
   children: React.ReactNode;
   menuItems: MenuItem[];
-  teamId: string; // Accepting menu items as an array of objects
+  teamId: string;
 }
 
-const HEADER_HEIGHT = 40; // Adjust this height based on your drawer's height
+const HEADER_HEIGHT = 40;
 
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
   menuItems,
   teamId,
 }) => {
-  const SIDEBAR_WIDTH = 250;
+  const SIDEBAR_WIDTH = 200;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(SIDEBAR_WIDTH)).current;
-  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(SIDEBAR_WIDTH)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
+  // const { width } = Dimensions.get('window');
 
   // Toggle Sidebar visibility
   const toggleSidebar = () => {
-    const toValue = isSidebarOpen ? SIDEBAR_WIDTH : 0;
-    const rotateToValue = isSidebarOpen ? 0 : 1;
-
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(rotateAnim, {
-        toValue: rotateToValue,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    setIsSidebarOpen(!isSidebarOpen);
+    if (isSidebarOpen) {
+      // Close sidebar
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: SIDEBAR_WIDTH,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setIsSidebarOpen(false);
+      });
+    } else {
+      // Open sidebar
+      setIsSidebarOpen(true);
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: SIDEBAR_WIDTH - 200, 
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0.5,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
   };
 
-  // Close Sidebar
+  // Function to close sidebar
   const closeSidebar = () => {
-    setIsSidebarOpen(false);
+    if (isSidebarOpen) {
+      toggleSidebar();
+    }
   };
 
   const barIconRotate = rotateAnim.interpolate({
@@ -70,10 +103,10 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
     <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
       <View
-        className="flex-row justify-between items-center px-4 py-1 bg-black fixed top-0 left-0 right-0 z-30"
+        className="flex-row justify-between items-center px-4 py-1 bg-black top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/(app)/(tabs)/home")}>
           <Icon name="arrowleft" size={24} color="white" />
         </TouchableOpacity>
         <View className="flex-row items-center gap-x-5">
@@ -98,44 +131,75 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         </View>
       </View>
 
-      {/* Sidebar Modal */}
-      {isSidebarOpen && (
-        <View className="absolute top-0 right-0  bottom-0 w-[200px] bg-black bg-opacity-80 z-20">
-          <TouchableOpacity
-            onPress={closeSidebar}
-            className="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-5"
-          ></TouchableOpacity>
-          <View className="flex-1 mt-10 bg-black pt-[72px]">
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  item.onPress();
-                  closeSidebar();
-                  toggleSidebar();
-                }}
-                className="py-4 pl-5  border-b  border-gray-600"
-              >
-              <View className="flex flex-row justify-between mr-4">
-              <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
-              {item?.logo && <item.logo width={32} height={32} fill="white" className="mr-2" />}
-             
-
-              </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Scrollable Content Area */}
+      {/* Main Content */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
         }}
+        scrollEnabled={!isSidebarOpen} // Disable scrolling when drawer is open
       >
         {children}
       </ScrollView>
+
+      {/* Drawer System - Only rendered when needed */}
+      {isSidebarOpen && (
+        <>
+          {/* Overlay */}
+          <Animated.View 
+            style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'black',
+              opacity: opacityAnim,
+              zIndex: 15 
+            }}
+          >
+            <TouchableWithoutFeedback onPress={closeSidebar}>
+              <View style={{ width: '100%', height: '100%' }} />
+            </TouchableWithoutFeedback>
+          </Animated.View>
+
+          {/* Sidebar */}
+          <Animated.View 
+            style={{
+              position: 'absolute',
+              top: 0,
+              width: 200,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'black',
+              zIndex: 20,
+              transform: [{ translateX: slideAnim }]
+            }}
+          >
+            <View className="flex-1 mt-10 pt-[72px]">
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    item.onPress();
+                    closeSidebar();
+                  }}
+                  className="py-4 pl-5 border-b border-gray-600"
+                >
+                  <View className="flex flex-row justify-between mr-4">
+                    <Text style={{ color: item.color || 'white', fontSize: 16 }}>
+                      {item.label}
+                    </Text>
+                    {item?.logo && (
+                      <item.logo width={32} height={32} fill="white" className="mr-2" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Animated.View>
+        </>
+      )}
     </SafeAreaView>
   );
 };

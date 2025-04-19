@@ -7,7 +7,7 @@ import {
   Dimensions,
   Text,
 } from "react-native";
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
@@ -66,15 +66,6 @@ const Overview = () => {
     validSports[0]?.sport.name || null
   );
 
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  const handleScrollToStart = () => {
-    scrollViewRef.current?.scrollTo({
-      x: 0,
-      y: 0,
-      animated: true,
-    });
-  };
 
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
@@ -102,7 +93,7 @@ const Overview = () => {
     );
   }, [fetchedUserId, dispatch]);
 
-  // // Fetch page associates
+  // Fetch page associates
   const { data: associates } = useGetPageMembersQuery({
     pageId: fetchedUserId.id,
   });
@@ -117,6 +108,15 @@ const Overview = () => {
     () => associates?.filter((member: Member) => member.role === "Coach"),
     [associates]
   );
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const handleScrollToStart = () => {
+    scrollViewRef.current?.scrollTo({
+      x: 0,
+      y: 0,
+      animated: true,
+    });
+  }
 
   if (error) {
     return (
@@ -321,12 +321,12 @@ const Overview = () => {
                 }}
               >
                 {isExpanded ? aboutText : truncatedText}
-                {needsTruncation && (
+                 {needsTruncation && (
                   <TextScallingFalse
                     onPress={handleToggle}
                     className="text-[#808080] font-light text-lg"
                   >
-                    {isExpanded ? "  see less" : " see more"}
+                    {isExpanded ? '  see less' : ' see more'}
                   </TextScallingFalse>
                 )}
               </TextScallingFalse>

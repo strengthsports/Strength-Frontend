@@ -24,6 +24,7 @@ import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMa
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
 import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
+import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
@@ -33,9 +34,7 @@ const TrendingAll = () => {
     const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
       return (
-        <TextScallingFalse className="text-white self-center text-center pr-7">
-          No swipper slides available
-        </TextScallingFalse>
+        <SwipperSkeletonLoader />
       );
     }
 
@@ -50,7 +49,7 @@ const TrendingAll = () => {
   };
 
   const renderHashtags = () => (
-    <View className="mt-10">
+    <View className="mt-8">
       <Hashtag data={hashtagData.slice(0, 3)} />
       <TouchableOpacity
         className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"

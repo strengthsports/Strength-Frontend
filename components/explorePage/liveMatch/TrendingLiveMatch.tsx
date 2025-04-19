@@ -10,6 +10,8 @@ import TextScallingFalse from "../../CentralText";
 import { Colors } from "~/constants/Colors";
 import CricketMatchCard from "../matchCard/CricketMatchCard";
 import FootballMatchCard from "../matchCard/FootballMatchCard";
+import BadmintonMatchCard from "../matchCard/BadmintonMatchCard";
+import BasketballMatchCard from "../matchCard/BasketballMatchCard";
 import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
 
 interface LiveTrendingMatchProps {
@@ -31,16 +33,35 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
   const combinedMatches = [
     ...liveCricketMatches.map((match) => ({ type: "cricket", match })),
     ...liveFootballMatches.map((match) => ({ type: "football", match })),
+    ...liveFootballMatches.map((match) => ({ type: "badminton", match })),
+    ...liveFootballMatches.map((match) => ({ type: "basketball", match })),
   ];
 
   const renderItem = ({ item }: { item: { type: string; match: any } }) => {
+    let CardComponent;
+
+    switch (item.type) {
+      case "cricket":
+        CardComponent = <CricketMatchCard match={item.match} isLive={true} />;
+        break;
+      case "football":
+        CardComponent = <FootballMatchCard match={item.match} isLive={true} />;
+        break;
+      case "badminton":
+        CardComponent = <BadmintonMatchCard match={item.match} isLive={true} />;
+        break;
+      case "basketball":
+        CardComponent = (
+          <BasketballMatchCard match={item.match} isLive={true} />
+        );
+        break;
+      default:
+        return null; // Skip unknown types
+    }
+
     return (
       <View className="h-[164px] w-[280px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
-        {item.type === "cricket" ? (
-          <CricketMatchCard match={item.match} isLive={true} />
-        ) : (
-          <FootballMatchCard match={item.match} isLive={true} />
-        )}
+        {CardComponent}
       </View>
     );
   };

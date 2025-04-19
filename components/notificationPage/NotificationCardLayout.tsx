@@ -7,11 +7,13 @@ import { getToken } from "~/utils/secureStore";
 import nopic from "@/assets/images/nopic.jpg";
 import { formatTimeAgo } from "~/utils/formatTime";
 import { RelativePathString, useRouter } from "expo-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "../CentralText";
 import { NotificationType } from "~/types/others";
+import { AppDispatch } from "~/reduxStore";
 
 type NotificationCardProps = {
+  _id?:string;
   type: NotificationType;
   date?: Date;
   sender: any;
@@ -39,9 +41,11 @@ const POST_PREVIEW_TYPES = new Set([
 ]);
 
 const NotificationCardLayout = React.memo(
-  ({ type, date, sender, target, isNew, count }: NotificationCardProps) => {
+  ({ _id,type, date, sender, target, isNew, count }: NotificationCardProps) => {
     const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: any) => state.profile.user._id);
+    const [isLoading,setLoading] = useState<boolean>(false);
 
     // Memoized values
     const serializedUser = useMemo(
@@ -74,6 +78,93 @@ const NotificationCardLayout = React.memo(
       router.push(`/(app)/(post)/(modal)/post-details/${target._id}`);
     }, [target?._id]);
 
+    const handleAcceptTeamInvitaion = useCallback(()=>{
+      const handleAccept = async () => {
+        setLoading(true);
+        try {
+          const token = await getToken("accessToken");
+          if (!token) throw new Error("Authentication token missing");
+      
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/accept-teamInvitation`,
+            {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                teamId: target._id,
+                notificationId: _id,
+                senderId: sender._id,
+                userId: userId,
+              }),
+            }
+          );
+      
+          if (!response.ok) {
+            throw new Error("Failed to accept invitation");
+          }
+      
+          // Handle success response
+          const data = await response.json();
+          console.log("Invitation accepted successfully", data);
+        } catch (error) {
+          console.error("Error accepting invitation:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      handleAccept();
+    },[])
+
+    const handleRejectTeamInvitaion = useCallback(()=>{
+      const handleReject = async () => {
+        if (!_id) {
+          Alert.alert("Error", "Missing notification ID");
+          return;
+        }
+        
+        setLoading(true);
+        try {
+          const token = await getToken("accessToken");
+          if (!token) {
+            throw new Error("Authentication token missing");
+          }
+    
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/reject-invitation`,
+            {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                notificationId: _id,
+                userId: userId,
+              }),
+            }
+          );
+    
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.message || "Failed to reject invitation");
+          }
+    
+          Alert.alert("Success", "Team invitation rejected");
+          // setModalVisible(false);
+        } catch (error: any) {
+          console.error("Reject invitation error:", error);
+          Alert.alert("Error", error.message || "An error occurred while rejecting the invitation");
+        } finally {
+          setLoading(false);
+        }
+      };
+      handleReject();
+    },[])
+
     // Rendered components
     const OptionsButton = useMemo(
       () =>
@@ -86,7 +177,27 @@ const NotificationCardLayout = React.memo(
               Follow
             </TextScallingFalse>
           </TouchableOpacity>
-        ) : (
+        ) : type === "TeamInvitation" ? (<>
+          <TouchableOpacity
+            className="px-3 py-1 rounded-md bg-[#12956B]"
+            activeOpacity={0.7}
+            onPress={handleAcceptTeamInvitaion}
+            disabled={isLoading}
+          >
+            <TextScallingFalse className="text-white text-base">
+              {isLoading ? "Accepting....":"Accept"}
+            </TextScallingFalse>
+          </TouchableOpacity>
+                    <TouchableOpacity
+                    className="px-3 py-1 rounded-md bg-[#000] border-[0.5px] border-white"
+                    activeOpacity={0.7}
+                    onPress={handleRejectTeamInvitaion}
+                    disabled={isLoading}
+                  >
+                    <TextScallingFalse className="text-white text-base">
+                      {isLoading ? "Rejecting....":"Reject"}
+                    </TextScallingFalse>
+                  </TouchableOpacity></>): (
           <MaterialCommunityIcons
             name="dots-horizontal"
             size={18}

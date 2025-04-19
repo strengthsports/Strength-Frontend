@@ -184,7 +184,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   onPress={() => setShowAllTeams(!showAllTeams)}
                   className="mt-2"
                 >
-                  <Text className="text-cyan-400 text-2xl font-semibold">
+                  <Text className="text-white text-2xl font-semibold">
                     {showAllTeams ? "See Less" : "See More"}
                   </Text>
                 </TouchableOpacity>

@@ -8,7 +8,7 @@ import {
   NativeSyntheticEvent,
   TextLayoutEventData,
 } from "react-native";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import TextScallingFalse from "../CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import {
@@ -185,7 +185,7 @@ const PostSmallCard = ({
           size={18}
           color="#a3a3a3"
         />
-        <TextScallingFalse className=" pl-8 pt-10 pb-2 text-sm text-white">
+        <TextScallingFalse className=" pl-10 pr-6 pt-10 text-sm text-white">
           {renderCaptionWithHashtags(isExpanded ? captionText : truncatedText)}
           {needsTruncation && (
             <TextScallingFalse
@@ -203,7 +203,7 @@ const PostSmallCard = ({
           <View style={{ position: "absolute" }}>
             <Swiper
               ref={swiperRef}
-              loop={true}
+              loop={false}
               onIndexChanged={setCurrentSlide}
               showsPagination={false}
               style={{ height: 240 * scaleFactor }}

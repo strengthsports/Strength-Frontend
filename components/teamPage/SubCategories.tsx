@@ -31,7 +31,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
 
   return (
     <View className="flex-1">
-      {/* Tab Buttons */}
+  <View className="pb-[3px] bg-black ">
       <View className="flex-row p-2 px-4 bg-[#191919]">
         <TouchableOpacity
           className={`px-4  rounded-[4px] ${
@@ -61,7 +61,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
           </Text>
         </TouchableOpacity>
       </View>
-
+      </View>
       {/* Render Content */}
       {renderContent()}
     </View>

@@ -19,6 +19,7 @@ interface ArticleData {
   title: string;
   sportsName: string;
   isTrending: boolean;
+  content: string;
   createdAt: string;
   date?: string; // Add date & time fields
   time?: string;
@@ -69,6 +70,7 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
               pathname: `/(app)/(tabs)/articlePage`,
               params: {
                 id: item._id,
+                sportsName: item.sportsName,
               },
             });
           }}

@@ -95,11 +95,10 @@ const Overview = () => {
 
   //toggle see more
   const maxAboutLength = 140;
-  const aboutText = user?.about || "";
+  const aboutText = user?.about || '';
   const needsTruncation = aboutText.length > maxAboutLength;
-  const truncatedText = needsTruncation
-    ? `${aboutText.substring(0, maxAboutLength).trim()}...`
-    : aboutText;
+  const truncatedText = needsTruncation ? `${aboutText.substring(0, maxAboutLength).trim()}...` : aboutText;
+
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
@@ -166,9 +165,12 @@ const Overview = () => {
               {/* Sports Overview */}
               <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
-                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-[15px] flex-row justify-start flex-wrap gap-8 gap-y-4">
+                  <View className="relative bg-[#161616] w-[96%] px-5 py-4 rounded-[15px] flex-row justify-start flex-wrap gap-8 gap-y-4">
                     {Object.entries(sport.details).map(([key, value], idx) => (
-                      <View key={idx} className="">
+                      <View
+                        key={idx}
+                        // className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
+                      >
                         <Text
                           className="text-white font-bold"
                           style={styles.HeadingText}
@@ -183,7 +185,13 @@ const Overview = () => {
                         </Text>
                       </View>
                     ))}
-                    <TouchableOpacity className="absolute bottom-8 right-5">
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      className="absolute bottom-8 right-5"
+                      onPress={() =>
+                        router.push("/(app)/(profile)/edit-overview")
+                      }
+                    >
                       <EditIcon />
                     </TouchableOpacity>
                   </View>
@@ -228,7 +236,7 @@ const Overview = () => {
                       </View>
                     ))}
                     <TouchableOpacity
-                      activeOpacity={0.3}
+                      activeOpacity={0.7}
                       onPress={() => console.log("Navigate to Full Insights")}
                       style={{
                         flex: 1,
@@ -290,23 +298,18 @@ const Overview = () => {
               }}
             >
               {isExpanded ? aboutText : truncatedText}
-              {needsTruncation && (
+               {needsTruncation && (
                 <TextScallingFalse
                   onPress={handleToggle}
                   className="text-[#808080] font-light text-lg"
-                >
-                  {isExpanded ? "  see less" : " see more"}
+                 >
+                  {isExpanded ? '  see less' : ' see more'}
                 </TextScallingFalse>
               )}
             </TextScallingFalse>
 
-            {/* See More / See Less */}
-            {/* <TouchableOpacity onPress={handleToggle}>
-                <Text className="text-[#808080] font-light text-base absolute right-[0.5px] bottom-[1px]">
-                  {isExpanded ? " ...see less" : " ...see more"}
-                </Text>
-              </TouchableOpacity> */}
-            {/* <TouchableOpacity onPress={handleToggle}>
+            {/* See More / See Less
+            <TouchableOpacity onPress={handleToggle}>
               <Text className="text-[#808080] font-light text-sm mt-1">
                 {isExpanded ? "see less" : "see more"}
               </Text>

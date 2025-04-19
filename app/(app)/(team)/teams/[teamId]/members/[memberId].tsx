@@ -218,7 +218,7 @@ const MemberDetails = () => {
     confirmText: 'Confirm',
     destructive: false
   });
-  
+  const isAdmin = user?._id === team?.admin?.[0]?._id;
   // User permissions
   const isTeamOwner = () => {
     if (!team || !user) return false;
@@ -268,19 +268,18 @@ const MemberDetails = () => {
 
   useEffect(() => {
     if (team?.sport?.playerTypes) {
-      setAvailableRoles(team.sport.playerTypes);
+      setAvailableRoles(team?.sport?.playerTypes);
     }
   }, [team]);
 
   useEffect(() => {
     setHasChanges(role !== originalRole || memberPosition !== (parsedMember?.position || ""));
-  }, [role, memberPosition, originalRole, parsedMember]);
+  }, [memberPosition, , parsedMember]);
 
   const handleSave = async () => {
     setIsUpdating(true);
     try {
-      // In a real app, you would dispatch an action to save changes here
-      // For now, we'll simulate a delay
+  
       await new Promise(resolve => setTimeout(resolve, 1000));
       Alert.alert("Changes Saved", `Role updated to "${role}"`);
       setHasChanges(false);
@@ -291,7 +290,7 @@ const MemberDetails = () => {
       setIsUpdating(false);
     }
   };
-   // Handle role selection
+
    const handleRoleSelect = (selectedRole: string) => {
     if (selectedRole === role) return;
     
@@ -320,18 +319,18 @@ const MemberDetails = () => {
     );
   };
 
-  // Fetch team details when component mounts
+ 
   useEffect(() => {
     if (teamId) {
       dispatch(fetchTeamDetails(teamId));
     }
   }, [teamId, dispatch, handleRoleSelect]);
   
-  // Handle follow/unfollow
+  
   const handleFollowToggle = async () => {
     setIsFollowingLoading(true);
     try {
-      // Simulate API call
+    
       await new Promise(resolve => setTimeout(resolve, 800));
       setIsFollowing(prev => !prev);
     } catch (error) {
@@ -637,26 +636,39 @@ const MemberDetails = () => {
       {/* Role Actions */}
       <View style={styles.actionsContainer}>
         <Text style={styles.sectionLabel}>Role</Text>
+        <View>
+
         <ActionButton
-          onPress={() => setDropdownVisible(true)}
+          onPress={() => {
+        if (isAdmin) setDropdownVisible(true);
+        else{ 
+          console.log("You are not an Admin");
+        }
+        }}
           label={role || "Select Role"}
           backgroundColor="#141414"
           textColor="#CFCFCF"
           iconName="chevron-down"
           disabled={isUpdating}
         />
+      </View>
 
         {/* Position-specific buttons */}
-        {renderPositionButtons()}
+        {
+          isAdmin && renderPositionButtons()
+        }
        
-        <ActionButton
-          label="Remove from Team"
-          onPress={handleRemoveFromTeam}
-          backgroundColor="#141414"
-          textColor="#D44044"
-          iconName="account-remove"
-          isLoading={isUpdating}
-        />
+       {
+        isAdmin && <ActionButton
+        label="Remove from Team"
+        onPress={handleRemoveFromTeam}
+        backgroundColor="#141414"
+        textColor="#D44044"
+        iconName="account-remove"
+        isLoading={isUpdating}
+      />
+       }
+        
         
         {isCurrentUserAdmin() && (
           <ActionButton

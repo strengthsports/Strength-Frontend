@@ -47,8 +47,8 @@ const TeamPage: React.FC = () => {
 
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
-    console.log("Admin Info -------> ",teamDetails?.admin[0]);
-    console.log("Current User ---->",user?._id)
+    // console.log("Admin Info -------> ",teamDetails?.admin[0]);
+    // console.log("Current User ---->",user?._id)
   }, [teamId]);
 
   const captainMember = teamDetails?.members?.find(

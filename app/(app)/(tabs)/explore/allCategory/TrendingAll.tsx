@@ -25,6 +25,7 @@ import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMa
 import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
+import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoader";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
@@ -40,9 +41,11 @@ const TrendingAll = () => {
 
     if (error) {
       return (
+        <View style={{height: 240, width:'100%', justifyContent:'center', alignItems:'center'}}>
         <TextScallingFalse className="text-white">
           Error loading swipper slides.
         </TextScallingFalse>
+        </View>
       );
     }
     return <SwiperTop swiperData={articles ?? []} />;
@@ -50,8 +53,11 @@ const TrendingAll = () => {
 
   const renderHashtags = () => (
     <View className="mt-10">
-      <Hashtag data={hashtagData.slice(0, 3)} />
-      <TouchableOpacity
+      {
+        hashtagData ? 
+        <>
+        <Hashtag data={hashtagData.slice(0, 3)} />
+        <TouchableOpacity
         className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
         activeOpacity={0.6}
         onPress={() => setModalVisible(true)}
@@ -73,6 +79,10 @@ const TrendingAll = () => {
         setModalVisible={setModalVisible}
         hashtagData={hashtagData}
       />
+      </>
+        :
+        <HastagSkeletonLoader />
+      }
     </View>
   );
 

@@ -45,12 +45,20 @@ export const communityApi = createApi({
         sports?: boolean;
         popularUser?: boolean;
         limit?: number;
+        start?: number;
         lastTimeStamp?: string | null;
       }
     >({
-      query: ({ city, sports, popularUser, limit = 10, lastTimeStamp }) => ({
+      query: ({
+        city,
+        sports,
+        popularUser,
+        start = 0,
+        limit = 10,
+        lastTimeStamp,
+      }) => ({
         url: "/suggest-users",
-        params: { city, sports, popularUser, limit, lastTimeStamp },
+        params: { city, sports, popularUser, start, limit, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),

@@ -62,7 +62,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
         </TouchableOpacity>
       </View>
       </View>
-     
+      {/* Render Content */}
       {renderContent()}
     </View>
   );

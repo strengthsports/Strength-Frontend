@@ -14,6 +14,7 @@ import { useFonts } from "expo-font";
 import { useSelector } from "react-redux";
 import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
+import Captain from "../SvgIcons/teams/Captain";
 
 interface SquadProps {
   teamDetails: any;
@@ -65,19 +66,22 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         const role = member.role?.toLowerCase();
         const playerTypeLower = playerType.toLowerCase();
         
-        // Special case for all-rounder
-        if (playerTypeLower === "all-rounder") {
-          return role === "all-rounder" || role === "member";
+        // Handle case-insensitive matching for all variations of "All-Rounders"
+        if (playerTypeLower.includes("rounder")) {
+          return role === "all-rounder" || 
+                 role === "allrounder" || 
+                 role === "member";
         }
         
-        // For other player types, match exactly
+        // For other player types, match exactly (case-insensitive)
         return role === playerTypeLower;
       }) || []
     );
   };
 
+
   const renderMemberSection = (title: string, members: any[]) => (
-    <View className="mb-0">
+    <View   >
       <Text
         style={{
           fontFamily: "Sansation-Regular",
@@ -103,15 +107,16 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                     setShowDownwardDrawer(true);
                   }}
                 >
-                  <TeamMember
-                    imageUrl={user?.profilePic}
-                    name={`${user?.firstName || "Unknown"} ${
-                      user?.lastName || ""
-                    }`}
-                    description={user?.headline || "No description available"}
-                    isAdmin={isAdmin}
-                    onRemove={() => console.log("Remove user:", user?._id)}
+                 <TeamMember
+                  imageUrl={user?.profilePic}
+                  name={`${user?.firstName || "Unknown"} ${user?.lastName || ""}`}
+                  isCaptain={member.position?.toLowerCase() === "captain"}
+                  isViceCaptain={member.position?.toLowerCase() === "vicecaptain"}
+                  description={user?.headline || "No description available"}
+                  isAdmin={isAdmin}
+                  onRemove={() => console.log("Remove user:", user?._id)}
                   />
+
                 </TouchableOpacity>
               </View>
             );
@@ -148,6 +153,8 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         maxWidth: "100%",
         paddingHorizontal: 12,
         backgroundColor: "#0B0B0B",
+        maxHeight:"100%",
+        paddingBottom:80,
       }}
     >
       <View

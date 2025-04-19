@@ -54,7 +54,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
 
   return (
-    <ScrollView>
+    <ScrollView className="pb-[500px]">
       <View className="p-4 bg-black rounded-lg">
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center justify-between">

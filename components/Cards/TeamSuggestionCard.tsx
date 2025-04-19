@@ -36,7 +36,7 @@ const TeamSuggestionCard = ({
     setFollowingStatus(isFollowing);
   }, [isFollowing]); // Sync when Redux state changes
 
-  console.log("Team details : ", team);
+  // console.log("Team details : ", team);
 
   return (
     <>

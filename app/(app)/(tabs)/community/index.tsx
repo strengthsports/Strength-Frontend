@@ -60,9 +60,10 @@ const Community = () => {
     error: teamsError,
   } = useGetTeamsToSupportQuery({ limit: 2 });
 
-  console.log("User based on activity : ", usersBasedOnActivity);
-  console.log("Pages : ", pagesToSupport);
-  console.log("Teams : ", popularTeams);
+  // console.log("User based on activity : ", usersBasedOnActivity);
+  // console.log("Pages : ", pagesToSupport);
+  // console.log("Teams : ", popularTeams);
+  console.log("Popular users : ", popularUsers);
 
   // Define sections grouped by suggestion type
   const sections = useMemo(

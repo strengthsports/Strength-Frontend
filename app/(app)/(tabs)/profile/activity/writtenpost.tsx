@@ -9,7 +9,8 @@ import {
 import React, { memo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feed/feedPostApi";
+// import { Post } from "~/reduxStore/api/feed/feedPostApi";
+import { Post } from "~/types/post";
 import TextScallingFalse from "~/components/CentralText";
 
 const WrittenPost = () => {
@@ -18,7 +19,7 @@ const WrittenPost = () => {
 
   // Filter posts where `assets` is missing or empty
   const textPosts = posts?.filter(
-    (post: any) => !post.assets || post.assets.length === 0
+    (post: Post) => (!post.assets || post.assets.length === 0) && !post.isPoll
   );
 
   const renderItem = useCallback(

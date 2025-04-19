@@ -12,7 +12,8 @@ import PostContainer from "~/components/Cards/postContainer";
 import { useLocalSearchParams } from "expo-router";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 import TextScallingFalse from "~/components/CentralText";
-import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+// import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+import { Post } from "~/types/post";
 
 const WrittenPostScreen = () => {
   const params = useLocalSearchParams();
@@ -37,7 +38,7 @@ const WrittenPostScreen = () => {
 
   // Filter posts where `assets` is missing or empty
   const textPosts = posts?.filter(
-    (post: any) => !post.assets || post.assets.length === 0
+    (post: Post) => (!post.assets || post.assets.length === 0) && !post.isPoll
   );
 
   const renderItem = useCallback(

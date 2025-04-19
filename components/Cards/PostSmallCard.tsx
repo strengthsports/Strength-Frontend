@@ -20,7 +20,11 @@ import {
 import { Post } from "~/types/post";
 import { formatTimeAgo } from "~/utils/formatTime";
 import Swiper from "react-native-swiper";
-import { router } from "expo-router";
+import { RelativePathString, router } from "expo-router";
+import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
+import CustomVideoPlayer from "../PostContainer/VideoPlayer";
 
 const PostSmallCard = ({
   post,
@@ -36,15 +40,18 @@ const PostSmallCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef<Swiper>(null);
+  const videoRef = useRef<any>(null);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const maxCaptionLength = 40;
-  const captionText = post.caption || '';
+  const maxCaptionLength = 30;
+  const captionText = post.caption || "";
   const needsTruncation = captionText.length > maxCaptionLength;
-  const truncatedText = needsTruncation ? `${captionText.substring(0, maxCaptionLength).trim()}... ` : captionText;
+  const truncatedText = needsTruncation
+    ? `${captionText.substring(0, maxCaptionLength).trim()}... `
+    : captionText;
 
   const imageUrls = post.assets
     .filter((asset) => asset.url)
@@ -58,6 +65,11 @@ const PostSmallCard = ({
   // const handlePrev = () => {
   //   swiperRef.current?.scrollBy(-1);
   // };
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleLike = () => {
+    dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
+  };
 
   const renderCaptionWithHashtags = (caption: string) => {
     return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
@@ -174,7 +186,13 @@ const PostSmallCard = ({
         </View>
         </View> */}
 
-      <View
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => {
+          router.push({
+            pathname: `/post-details/${post._id}` as RelativePathString,
+          });
+        }}
         className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515] flex flex-row`}
       >
         <MaterialIcons
@@ -183,27 +201,33 @@ const PostSmallCard = ({
           size={18}
           color="#a3a3a3"
         />
-        <TextScallingFalse
-          className=" pl-10 pr-6 pt-10 text-sm text-white"
-        >
+        <TextScallingFalse className=" pl-10 pr-6 pt-10 text-sm text-white">
           {renderCaptionWithHashtags(isExpanded ? captionText : truncatedText)}
-            {needsTruncation && (
-              <TextScallingFalse
-                onPress={handleToggle}
-                className="text-[#808080] font-light text-base"
-              >
-                {isExpanded ? ' see less' : ' see more'}
-              </TextScallingFalse>
+          {needsTruncation && (
+            <TextScallingFalse
+              onPress={handleToggle}
+              className="text-[#808080] font-light text-base"
+            >
+              {isExpanded ? " see less" : " see more"}
+            </TextScallingFalse>
           )}
         </TextScallingFalse>
-      </View>
+      </TouchableOpacity>
 
-      <View style={{ height: 240 * scaleFactor }}>
-        {imageUrls.length > 0 && (
-          <View style={{ position: "absolute" }}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => {
+          console.log(post._id);
+          router.push({
+            pathname: `/post-details/${post._id}` as RelativePathString,
+          });
+        }}
+      >
+        <View style={{ height: 240 * scaleFactor }}>
+          {imageUrls.length > 0 && (
             <Swiper
               ref={swiperRef}
-              loop={true}
+              loop={false}
               onIndexChanged={setCurrentSlide}
               showsPagination={false}
               style={{ height: 240 * scaleFactor }}
@@ -222,33 +246,9 @@ const PostSmallCard = ({
                 />
               ))}
             </Swiper>
-
-            {/* left right navigation button */}
-            {/* {imageUrls.length > 1 && (
-              <>
-                {currentSlide > 0 && (
-                  <TouchableOpacity
-                    style={[styles.navButton, { left: 10 }]}
-                    onPress={handlePrev}
-                  >
-                    <AntDesign name="left" size={20} color="white" />
-                  </TouchableOpacity>
-                )}
-
-
-                {currentSlide < imageUrls.length - 1 && (
-                  <TouchableOpacity
-                    style={[styles.navButton, { right: 10 }]}
-                    onPress={handleNext}
-                  >
-                    <AntDesign name="right" size={20} color="white" />
-                  </TouchableOpacity>
-                )}
-              </>
-            )} */}
-          </View>
-        )}
-      </View>
+          )}
+        </View>
+      </TouchableOpacity>
 
       <View style={{ width: "100%", alignItems: "flex-end" }}>
         <View
@@ -265,6 +265,11 @@ const PostSmallCard = ({
           <TouchableOpacity
             activeOpacity={0.7}
             style={{ flexDirection: "row" }}
+            onPress={() => {
+              router.push({
+                pathname: `/post-details/${post._id}` as RelativePathString,
+              });
+            }}
           >
             <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
             <TextScallingFalse
@@ -297,7 +302,14 @@ const PostSmallCard = ({
             )}
           </View>
 
-          <TouchableOpacity activeOpacity={0.7}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              router.push({
+                pathname: `/post-details/${post._id}` as RelativePathString,
+              });
+            }}
+          >
             <TextScallingFalse
               style={{
                 color: "white",
@@ -334,7 +346,11 @@ const PostSmallCard = ({
           }}
         >
           <View style={{ width: "0.8%" }} />
-          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.ButtonsContainer}
+            onPress={handleLike}
+          >
             <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
             <TextScallingFalse
               style={{ color: "white", fontSize: 10, fontWeight: "300" }}
@@ -342,7 +358,15 @@ const PostSmallCard = ({
               Like
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.ButtonsContainer}
+            onPress={() => {
+              router.push({
+                pathname: `/post-details/${post._id}` as RelativePathString,
+              });
+            }}
+          >
             <Feather
               name="message-square"
               size={12 * scaleFactor}
@@ -354,7 +378,15 @@ const PostSmallCard = ({
               Comment
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.ButtonsContainer}
+            onPress={() => {
+              router.push({
+                pathname: `/post-details/${post._id}` as RelativePathString,
+              });
+            }}
+          >
             <FontAwesome5
               name="location-arrow"
               size={10 * scaleFactor}

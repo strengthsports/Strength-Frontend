@@ -13,6 +13,7 @@ import { Post } from "~/types/post";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import PostContainerSmall from "../Cards/postContainerSmall";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
+import { router } from "expo-router";
 
 interface RecentPostsSectionProps {
   posts?: Post[];
@@ -178,7 +179,9 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
         <View className="h-[0.5px] w-[90%] bg-gray-500" />
         <TouchableOpacity
           activeOpacity={0.3}
-          onPress={() => console.log("Navigate to Full Insights")}
+          onPress={() =>
+            router.push({ pathname: "/(app)/(tabs)/profile/activity/posts" })
+          }
           style={{
             flex: 1,
             flexDirection: "row",

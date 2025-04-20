@@ -23,11 +23,11 @@ const MemberCard: React.FC<MemberCardProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-black p-4 mt-2 rounded-lg items-center shadow-md border border-[#515151] relative"
+      className="bg-black p-4 h-[200px] rounded-lg  items-center shadow-lg border border-[#515151] relative"
       style={{
-        width: 170, // Fixed width for each card
-        height: 182, // Adjusted height for the card
-        marginHorizontal: 6, // Add horizontal margin
+        width: 170, 
+        
+        marginHorizontal: 6,
         marginBottom: 6,
       }}
     >
@@ -35,7 +35,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
       {imageUrl && (
         <Image
           source={{ uri: imageUrl }}
-          className="h-20 w-20 rounded-full mb-3"
+          className="h-20 w-20 rounded-full mb-3 mt-6"
           resizeMode="cover"
         />
       )}

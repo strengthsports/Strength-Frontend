@@ -67,8 +67,10 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         if (playerTypeLower.includes("rounder")) {
           return role === "all-rounder" || 
                  role === "allrounder" || 
-                 role === "member";
+                 role === "member" ||
+                 role === "Captain";
         }
+        
         
         return role === playerTypeLower;
       }) || []

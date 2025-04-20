@@ -132,7 +132,7 @@ export const fetchTeams = createAsyncThunk<any, void, { rejectValue: string }>(
   async (_, { rejectWithValue }) => {
     try {
       const token = await getToken("accessToken");
-      console.log("Called")
+      // console.log("Called")
       const response = await fetch(`${BASE_URL}/api/v1/team`, {
         method: "GET",
         headers: {
@@ -401,17 +401,17 @@ export const changeUserRole = createAsyncThunk<
   }
 );
 
-export const updateTeamDescription = createAsyncThunk(
-  'team/updateDescription',
-  async ({ teamId, description }: { teamId: string; description: string }, { rejectWithValue }) => {
-    try {
-      const response = await updateTeamAPI(teamId, { description });
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.message);
-    }
-  }
-);
+// export const updateTeamDescription = createAsyncThunk(
+//   'team/updateDescription',
+//   async ({ teamId, description }: { teamId: string; description: string }, { rejectWithValue }) => {
+//     try {
+//       const response = await updateTeamAPI(teamId, { description });
+//       return response.data;
+//     } catch (error: any) {
+//       return rejectWithValue(error.response?.data?.message || error.message);
+//     }
+//   }
+// );
 
 export const removeTeamMember = createAsyncThunk<
   { success: boolean; message: string },
@@ -522,16 +522,31 @@ const teamSlice = createSlice({
   state.positionUpdateLoading = true;
   state.positionUpdateError = null;
 })
+
+
 .addCase(changeUserPosition.fulfilled, (state, action) => {
   state.positionUpdateLoading = false;
   const updatedMember = action.payload;
 
-  if (state.team && state.team.members) {
-    state.team.members = state.team.members.map((member) =>
-      member._id === updatedMember._id ? updatedMember : member
-    );
+  if (state.team && state.team.members && updatedMember) {
+    // Make sure we have a valid ID before attempting to update
+    if (updatedMember._id) {
+      state.team.members = state.team.members.map((member:any) => {
+        // Additional null checks
+        if (member && member._id === updatedMember._id) {
+          return updatedMember;
+        }
+        return member;
+      });
+    } else {
+      // If the updated member has no ID, simply refresh the team details
+      // This is a fallback in case the API returns unexpected data
+      console.warn("Updated member is missing an ID field");
+    }
   }
 })
+
+
 .addCase(changeUserPosition.rejected, (state, action) => {
   state.positionUpdateLoading = false;
   state.positionUpdateError = action.payload || "Could not update position";
@@ -595,7 +610,10 @@ const teamSlice = createSlice({
 .addCase(removeTeamMember.rejected, (state, action) => {
   state.loading = false;
   state.error = action.payload || "Failed to remove team member";
-});
+})
+
+
+
 
 
 

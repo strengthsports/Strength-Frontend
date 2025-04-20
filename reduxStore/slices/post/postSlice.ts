@@ -1,23 +1,73 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { showFeedback } from "~/utils/feedbackToast";
+import { getToken } from "~/utils/secureStore";
 
 // Initial State
 const initialState = {
-  isPosting: false,
   isAddPostContainerOpen: false,
+  progress: 0,
+  isLoading: false,
 };
+
+// Upload Post
+export const uploadPost = createAsyncThunk(
+  "posts/uploadPost",
+  async (formData: FormData, { dispatch }) => {
+    console.log(formData);
+    const token = await getToken("accessToken");
+    dispatch(setUploadLoading(true));
+    try {
+      const response = await axios.post(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1)
+            );
+            dispatch(setUploadProgress(percentCompleted));
+          },
+        }
+      );
+      showFeedback("Post uploaded successfully !", "success");
+      return response.data;
+    } catch (error) {
+      // Log detailed error
+      console.log(error);
+      throw error; // Re-throw for handling in the component
+    } finally {
+      dispatch(setUploadLoading(false)); // ← Critical!
+      dispatch(setUploadProgress(0)); // ← Reset to 0% (optional)
+    }
+  }
+);
 
 const postSlice = createSlice({
   name: "post",
   initialState,
   reducers: {
-    setPostProgressOn: (state, action) => {
-      state.isPosting = action.payload;
+    setUploadProgress: (state, action) => {
+      state.progress = action.payload;
     },
+    setUploadLoading: (state, action) => {
+      state.isLoading = action.payload;
+    },
+    resetUploadProgress: () => initialState,
     setAddPostContainerOpen: (state, action) => {
       state.isAddPostContainerOpen = action.payload;
     },
   },
 });
 
-export const { setPostProgressOn, setAddPostContainerOpen } = postSlice.actions;
+export const {
+  setUploadProgress,
+  setUploadLoading,
+  resetUploadProgress,
+  setAddPostContainerOpen,
+} = postSlice.actions;
 export default postSlice.reducer;

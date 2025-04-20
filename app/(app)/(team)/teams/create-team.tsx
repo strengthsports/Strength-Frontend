@@ -179,7 +179,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
       setDate(selected);
       setFormData((prev) => ({ ...prev, establishedOn: formattedDate }));
     }
-    setTimeout(() => setShow(false), 3000);
+    setTimeout(() => setShow(false), 2000);
   };
 
   const selectImage = async () => {
@@ -551,14 +551,14 @@ const handleCreateTeam = async () => {
                     <View className="mt-2 border border-[#515151] rounded-lg p-4">
                       {sports.map((sport) => (
                         <TouchableOpacity
-                          key={sport._id}
+                          key={sport?._id}
                           onPress={() => handleSelectGame(sport)}
                           className="py-2 border-b border-[#515151]"
                         >
                           <View className="flex-row items-center">
                             <Image
-                              source={{ uri: sport.logo }}
-                              className="w-8 h-8 mr-2"
+                              source={{ uri: sport?.logo }}
+                              className="w-8 h-8 mr-2 "
                             />
                             <Text className="text-white ml-2">{sport.name}</Text>
                           </View>
@@ -620,6 +620,7 @@ const handleCreateTeam = async () => {
                       display="spinner"
                       onChange={onChange}
                       themeVariant="dark"
+                      maximumDate={new Date()}
                     />
                   )}
                 </View>
@@ -667,7 +668,7 @@ const handleCreateTeam = async () => {
                 {/* Description */}
                 <View className="mt-4">
                   <Text className="text-white text-2xl mt-2 mb-1">
-                    Description*
+                    Description
                   </Text>
                   <TextInput
                     value={formData.description}
@@ -685,15 +686,15 @@ const handleCreateTeam = async () => {
 
               {/* Members Section */}
               {selectedGame._id !== "123" && (
-  <View className="mt-4">
-    <Text className="text-white text-2xl mt-4 mb-4">
-      Add members
-    </Text>
+            <View className="mt-4">
+           <Text className="text-white text-2xl mt-4 mb-4">
+            Add members
+           </Text>
     
-    <View className="flex-row flex-wrap -mx-2 mb-4">
-      {/* Existing Members */}
-      {formData.members.map((member) => (
-        <View key={member._id} className="w-1/2 px-2 mb-4">
+           <View className="flex-row flex-wrap -mx-2 mb-4">
+           {/* Existing Members */}
+           {formData.members.map((member) => (
+          <View key={member._id} className="w-1/2 h-[200px] px-2 mt-4 ">
           <MemberCard
             imageUrl={member.profilePic}
             name={`${member.firstName} ${member.lastName || ""}`}
@@ -702,12 +703,12 @@ const handleCreateTeam = async () => {
             status={member.status}
             onRemove={() => removeMember(member._id)}
           />
-        </View>
-      ))}
+           </View>
+          ))}
 
-      <View className="w-1/2 px-2 mb-4">
+      <View className="w-1/2 px-2 mb-4 mt-4 ml-1">
         <TouchableOpacity
-          className="border border-[#515151] rounded-lg p-4 items-center justify-center h-44"
+          className="border  border-[#515151] h-[200px] rounded-lg p-8 items-center justify-center "
           onPress={() => setShowMembersModal(true)}
         >
           <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
@@ -718,7 +719,7 @@ const handleCreateTeam = async () => {
       </View>
     </View>
     
-    <AddMembersModal
+     <AddMembersModal
       visible={showMembersModal}
       onClose={() => setShowMembersModal(false)}
       onInvite={handleInviteMembers}
@@ -727,8 +728,8 @@ const handleCreateTeam = async () => {
       player={fetchedUsers}
       loading={loading}
     />
-  </View>
-)}
+           </View>
+            )}
 
             </View>
           </ScrollView>
@@ -739,14 +740,12 @@ const handleCreateTeam = async () => {
               <ActivityIndicator size="large" color="#fff" />
             ) : (
               <TouchableOpacity
-              className={`rounded-lg p-3 mx-6 my-2 ${
-                isFormComplete() ? "bg-[#12956B]" : "bg-gray-500"
-              }`}
-              onPress={isFormComplete() ? handleCreateTeam : null}
-              disabled={!isFormComplete()}
+              className={`rounded-lg p-3 mx-6 my-2 bg-[#12956B]`}
+              onPress={handleCreateTeam}
+            
             >
-              <Text className={`text-center text-2xl ${
-                isFormComplete() ? "text-white" : "text-gray-300"
+              <Text className={`text-center text-3xl text-bold ${
+                isFormComplete() ? "text-white" : "text-white"
               }`}>
                 Create team
               </Text>

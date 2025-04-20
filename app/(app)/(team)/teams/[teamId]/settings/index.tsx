@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,11 +11,12 @@ import {
   Modal,
   ScrollView,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import Icon from "react-native-vector-icons/AntDesign";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
 import { Divider, Avatar } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,8 +26,9 @@ import {
   updateTeam,
 } from "~/reduxStore/slices/team/teamSlice";
 import TextScallingFalse from "~/components/CentralText";
-import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
+import { MaterialCommunityIcons, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import InviteMem from "~/assets/images/InviteMem.png"
 
 type TeamMember = {
   _id: string;
@@ -34,8 +37,10 @@ type TeamMember = {
     firstName: string;
     lastName: string;
     profilePic?: string;
+    headline?:string;
   };
   role: string;
+  position?: string;
 };
 
 const Settings = () => {
@@ -44,6 +49,7 @@ const Settings = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { team, loading } = useSelector((state: RootState) => state.team);
+  const { user } = useSelector((state: RootState) => state.profile);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -58,15 +64,42 @@ const Settings = () => {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isEdited, setIsEdited] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [activeField, setActiveField] = useState<keyof typeof formData | null>(null);
   const [picModalVisible, setPicModalVisible] = useState(false);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const params = useLocalSearchParams();
+  const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
+  const updatedDescription = params?.updatedDescription as string;
 
+  
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      description: currentDescription
+    }));
+  }, [currentDescription]);
+
+
+  useEffect(() => {
+    if (updatedDescription) {
+      setFormData((prev) => ({ ...prev, description: updatedDescription }));
+    }
+  }, [updatedDescription]);
+
+
+  useEffect(() => {
+    if (updatedDescription) {
+      setFormData((prev) => ({ ...prev, description: updatedDescription }));
+      router.setParams({ updatedDescription: undefined }); // clean URL
+    }
+  }, [updatedDescription]);
+    
   // Initialize form data
   useEffect(() => {
     if (!team) return;
     
     const addressString = team.address 
-      ? `${team.address.city}, ${team.address.state}, ${team.address.country}`
+      ? `${team.address.city}${team.address.state ? `, ${team.address.state}` : ""}${team.address.country ? `, ${team.address.country}` : ""}`
       : "";
       
     const establishedDate = team.establishedOn
@@ -79,15 +112,21 @@ const Settings = () => {
       location: addressString,
       established: establishedDate,
       description: team.description || "",
-      logo: team.logo?.url || "",
+      logo: team.logo?.url|| "",
     });
 
     setMembers(team.members || []);
-  }, [team]);
+
+    // Check if current user is an admin
+    const isAdmin = team.admin?.some((admin: any) => admin._id === user?._id);
+    setIsUserAdmin(isAdmin);
+  }, [team, user]);
 
   // Fetch team details
   useEffect(() => {
-    if (teamId) dispatch(fetchTeamDetails(teamId));
+    if (teamId) {
+      dispatch(fetchTeamDetails(teamId));
+    }
   }, [dispatch, teamId]);
 
   const handleChange = (field: keyof typeof formData, value: string) => {
@@ -97,54 +136,72 @@ const Settings = () => {
 
   // Image handling
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      handleChange("logo", result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        handleChange("logo", result.assets[0].uri);
+        setPicModalVisible(false);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to pick image");
     }
   };
 
   // Save team data
   const handleSave = async () => {
-    if (!teamId) return;
+    if (!teamId || !isUserAdmin) return;
     setIsSaving(true);
     
     try {
-      const [city = "", state = "", country = ""] = formData.location
-        .split(",")
-        .map(s => s.trim());
+      // Process location data
+      let city = "", state = "", country = "";
+      if (formData.location) {
+        const parts = formData.location.split(",").map(s => s.trim());
+        [city = "", state = "", country = ""] = parts.length >= 3 
+          ? parts 
+          : [...parts, ...Array(3 - parts.length).fill("")];
+      }
 
       const payload = new FormData();
       payload.append("name", formData.name);
-      payload.append("sport", formData.sport);
-      payload.append("description", formData.description);
-      payload.append("address[city]", city);
-      payload.append("address[state]", state);
-      payload.append("address[country]", country);
+      
+      // Only append other fields if they have values
+      if (formData.description) payload.append("description", formData.description);
+      if (city) payload.append("address[city]", city);
+      if (state) payload.append("address[state]", state);
+      if (country) payload.append("address[country]", country);
 
       if (formData.established) {
-        const date = new Date(formData.established);
-        if (!isNaN(date.getTime())) {
-          payload.append("establishedOn", date.toISOString());
+        try {
+          const date = new Date(formData.established);
+          if (!isNaN(date.getTime())) {
+            payload.append("establishedOn", date.toISOString());
+          }
+        } catch (error) {
+          console.log("Date parsing error:", error);
         }
       }
 
+      // Only append logo if it's changed
       if (formData.logo && formData.logo !== team?.logo?.url) {
-        const localUri = formData.logo;
-        const filename = localUri.split("/").pop() || "team-logo.jpg";
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : "image/jpg";
+        if (formData.logo.startsWith("file:")) {
+          const localUri = formData.logo;
+          const filename = localUri.split("/").pop() || "team-logo.jpg";
+          const match = /\.(\w+)$/.exec(filename);
+          const type = match ? `image/${match[1]}` : "image/jpeg";
 
-        payload.append("logo", {
-          uri: localUri,
-          name: filename,
-          type,
-        } as any);
+          payload.append("logo", {
+            uri: localUri,
+            name: filename,
+            type,
+          } as any);
+        }
       }
 
       await dispatch(updateTeam({ teamId, formData: payload })).unwrap();
@@ -160,345 +217,643 @@ const Settings = () => {
     }
   };
 
+  // Handle member position
+  const getMemberPosition = (member: TeamMember) => {
+    if (member.position?.toLowerCase() === "captain") {
+      return "Captain";
+    } else if (member.position?.toLowerCase() === "vicecaptain") {
+      return "Vice Captain";
+    }
+    return member.role.charAt(0).toUpperCase() + member.role.slice(1);
+  };
+
   // Render member item
   const renderMember = ({ item }: { item: TeamMember }) => (
-    <View className="flex-row items-center p-4">
+    <View style={styles.memberItem}>
       <Avatar.Image
         size={50}
         source={{ uri: item.user.profilePic || "https://via.placeholder.com/50" }}
+        style={styles.memberAvatar}
       />
-      <View className="ml-4">
-        <Text className="text-white text-lg font-medium">
+      <View style={styles.memberInfo}>
+        <Text style={styles.memberName}>
           {item.user.firstName} {item.user.lastName}
         </Text>
-        <Text className="text-gray-400 text-sm">{item.role}</Text>
+        <Text style={styles.memberRole}>{getMemberPosition(item)} | {item.user.headline}</Text>
       </View>
+      {isUserAdmin && (
+        <TouchableOpacity 
+          style={styles.memberAction}
+          onPress={() => 
+            router.push(`/(app)/(team)/teams/${teamId}/members/${item.user._id}`)
+          }
+        >
+          <Text className="text-[#7A7A7A] mt-2 text-sm">{item.position?.toUpperCase()}</Text>
+          <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 
-  // Form fields configuration
-  const formFields = [
-    { key: "name", label: "Team Name", icon: null },
-    { key: "sport", label: "Sport", icon: null },
-    { 
-      key: "location", 
-      label: "Location", 
-      icon: <MaterialCommunityIcons name="map-marker" size={24} color="grey" />
-    },
-    { 
-      key: "established", 
-      label: "Established", 
-      icon: <MaterialCommunityIcons name="calendar" size={24} color="grey" />
-    },
-    { 
-      key: "description", 
-      label: "Description", 
-      icon: <MaterialCommunityIcons name="pencil" size={24} color="grey" />
-    },
-  ];
+  const handleFieldPress = (field: keyof typeof formData) => {
+    if (!isUserAdmin) return;
+    setActiveField(field);
+  };
 
-  if (loading || isSaving) {
+  if (loading) {
     return (
       <PageThemeView>
-        <ActivityIndicator animating={true} color="white" size="large" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator animating={true} color="white" size="large" />
+          <Text style={styles.loadingText}>Loading team details...</Text>
+        </View>
       </PageThemeView>
     );
   }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safeArea}>
       <PageThemeView>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.container}>
           {/* Header */}
-          <View className="h-12 w-full flex-row justify-between items-center px-5">
+          <View style={styles.header}>
             <TouchableOpacity
               onPress={() => router.back()}
-              className="basis-[20%]"
+              style={styles.backButton}
             >
-              <TextScallingFalse className="text-[#808080] text-4xl font-normal">
-                Back
-              </TextScallingFalse>
+              <Ionicons name="arrow-back" size={24} color="#808080" />
             </TouchableOpacity>
             
-            <TextScallingFalse className="flex-grow text-center text-white font-bold font-light text-5xl">
-              Team Settings
-            </TextScallingFalse>
+            <Text style={styles.headerTitle}>Team Settings</Text>
             
-            {isSaving ? (
-              <View className="basis-[20%] items-end">
-                <ActivityIndicator size="small" color="#12956B" />
-              </View>
-            ) : (
-              <TouchableOpacity
-                onPress={handleSave}
-                className="basis-[20%] items-end"
-                disabled={!isEdited}
-              >
-                <TextScallingFalse
-                  className={`${isEdited ? "text-[#12956B]" : "text-[#808080]"} text-4xl font-medium`}
+            {isUserAdmin && (
+              isSaving ? (
+                <View style={styles.saveButton}>
+                  <ActivityIndicator size="small" color="#12956B" />
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={handleSave}
+                  style={styles.saveButton}
+                  disabled={!isEdited}
                 >
-                  Save
-                </TextScallingFalse>
-                 <Divider className="bg-gray-600" />
-              </TouchableOpacity>
-             
+                  <Text style={[styles.saveText, !isEdited && styles.saveDisabled]}>
+                    Save
+                  </Text>
+                </TouchableOpacity>
+              )
             )}
           </View>
-           <Divider  className="border-[0.2] bg-[#0A0A0A] " />
+          <Divider style={styles.divider} />
 
-          {/* Team Logo */}
-          <View className="relative w-full items-center mt-6 mb-8">
-            <TouchableOpacity
-              onPress={() => setPicModalVisible(true)}
-              activeOpacity={0.9}
-              className="w-32 h-32 rounded-full border-2 border-gray-600"
-            >
-              {formData.logo ? (
-                <Image
-                  source={{ uri: formData.logo }}
-                  className="w-full h-full rounded-full"
-                />
-              ) : (
-                <View className="w-full h-full rounded-full bg-gray-700 items-center justify-center">
-                  <MaterialCommunityIcons
-                    name="account-group"
-                    size={48}
-                    color="white"
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Team Logo */}
+            <View style={styles.logoContainer}>
+              <TouchableOpacity
+                onPress={() => isUserAdmin && setPicModalVisible(true)}
+                activeOpacity={0.9}
+                style={styles.logoWrapper}
+              >
+                {formData.logo ? (
+                  <Image
+                    source={{ uri: formData.logo }}
+                    style={styles.logo}
                   />
-                </View>
-              )}
-              <View className="absolute bottom-0 right-0 bg-gray-800 rounded-full p-2">
-                <MaterialCommunityIcons
-                  name="camera-plus-outline"
-                  size={20}
-                  color="white"
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* Form Fields */}
-          <View className="px-5">
-            {formFields.map((field, index) => (
-              <View key={field.key} className="mb-4">
-                <Text className="text-gray-400 text-lg mb-1 flex flex-row">{field.label}</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    if (field.key === "description") {
-                      router.push({
-                        pathname: "/teams/[teamId]/settings/EditDescription",
-                        params: { description: formData.description },
-                      });
-                    } else {
-                      setModalVisible(true);
-                    }
-                  }}
-                  className="flex-row items-center justify-between border-b border-gray-700 pb-2"
-                >
-                  <Text
-                    className={`text-xl ${formData[field.key as keyof typeof formData] ? "text-white" : "text-gray-500"}`}
-                    numberOfLines={1}
-                  >
-                    {formData[field.key as keyof typeof formData] || `Add ${field.label.toLowerCase()}`}
-                  </Text>
-                  {field.icon || (
+                ) : (
+                  <View style={styles.logoPlaceholder}>
                     <MaterialCommunityIcons
-                      name="chevron-right"
-                      size={24}
-                      color="gray"
+                      name="account-group"
+                      size={48}
+                      color="white"
                     />
+                  </View>
+                )}
+                {isUserAdmin && (
+                  <View style={styles.cameraIcon}>
+                    <MaterialCommunityIcons
+                      name="camera-plus-outline"
+                      size={20}
+                      color="white"
+                    />
+                  </View>
+                )}
+              </TouchableOpacity>
+              <Text style={styles.teamName}>{formData.name}</Text>
+            </View>
+
+            {/* Form Fields */}
+            <View style={styles.formContainer}>
+              {/* <Text style={styles.sectionTitle}>Team Information</Text> */}
+              
+              <View style={styles.formField} className="flex">
+              <Text style={styles.fieldLabel}>Team Name</Text>
+                <TouchableOpacity
+                  onPress={() => handleFieldPress("name")}
+                  style={styles.fieldValue}
+                >
+                  
+                  <Text style={styles.fieldText} numberOfLines={1}>
+                    {formData.name || "Add team name"}
+                  </Text>
+                  
+                  {isUserAdmin && (
+                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
                   )}
                 </TouchableOpacity>
               </View>
-            ))}
-          </View>
-
-          {/* Members Section */}
-          <View className="mt-8 px-5">
-            <Text className="text-white text-xl font-bold mb-4">
-              Members ({members.length})
-            </Text>
-            <FlatList
-              data={members}
-              renderItem={renderMember}
-              keyExtractor={(item) => item._id}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => (
-                <Divider className="bg-gray-700 my-2" />
-              )}
-            />
-          </View>
-        </ScrollView>
-
-        {/* Logo Picker Modal */}
-        <Modal
-        
-          visible={picModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setPicModalVisible(false)}
-        >
-          <TouchableOpacity
-            className="flex-1 justify-end bg-black/50"
-            activeOpacity={1}
-            onPress={() => setPicModalVisible(false)}
-          >
-            <View className="bg-gray-800 rounded-t-2xl p-8">
-              <View className="items-center mb-4">
-                <Text className="text-white text-lg font-medium">
-                  Change Team Logo
-                </Text>
-                <View className="h-0.5 bg-gray-600 w-1/4 mt-1" />
+              
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Sport</Text>
+                <View style={styles.fieldValue}>
+                  <Text style={styles.fieldText} numberOfLines={1}>
+                    {formData.sport || "Not specified"}
+                  </Text>
+                </View>
               </View>
               
-              <TouchableOpacity
-                className="flex-row items-center py-3 px-4"
-                onPress={pickImage}
-              >
-                <FontAwesome5 name="images" size={20} color="white" />
-                <Text className="text-white ml-4 text-lg">Choose from Gallery</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                className="flex-row items-center py-3 px-4 border-t border-gray-700"
-                onPress={() => {
-                  setFormData(prev => ({ ...prev, logo: "" }));
-                  setIsEdited(true);
-                  setPicModalVisible(false);
-                }}
-              >
-                <MaterialCommunityIcons name="delete" size={20} color="red" />
-                <Text className="text-red-500 ml-4 text-lg">Remove Logo</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-
-        {/* Edit Field Modal */}
-        <Modal
-          visible={isModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <TouchableOpacity
-            className="flex-1 bg-black/50"
-            activeOpacity={1}
-            onPress={() => setModalVisible(false)}
-          >
-            <View className="mt-auto bg-gray-800 p-5 rounded-t-2xl">
-              <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-white text-xl font-bold">Edit Field</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <Icon name="close" size={24} color="white" />
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Location</Text>
+                <TouchableOpacity
+                  onPress={() => handleFieldPress("location")}
+                  style={styles.fieldValue}
+                >
+                  <Text style={styles.fieldText} numberOfLines={1}>
+                    {formData.location || "Add location"}
+                  </Text>
+                  {isUserAdmin && (
+                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                  )}
                 </TouchableOpacity>
               </View>
               
-              <TextInput
-                className="bg-gray-700 text-white p-3 rounded-lg mb-4"
-                placeholder="Enter value..."
-                placeholderTextColor="#999"
-                value={formData.name} // You'd need to track which field is being edited
-                onChangeText={(text) => handleChange("name", text)}
-              />
-              
-              <TouchableOpacity
-                className="bg-blue-500 py-3 rounded-lg items-center"
-                onPress={() => {
-                  // Handle save for the specific field
-                  setModalVisible(false);
-                }}
-              >
-                <Text className="text-white font-medium">Save Changes</Text>
-              </TouchableOpacity>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Established</Text>
+                <TouchableOpacity
+                  onPress={() => handleFieldPress("established")}
+                  style={styles.fieldValue}
+                >
+                  <Text style={styles.fieldText} numberOfLines={1}>
+                    {formData.established || "Add established date"}
+                  </Text>
+                  {isUserAdmin && (
+                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                  )}
+                </TouchableOpacity>
+              </View>
+              {/* Description */}
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Description</Text>
+                <TouchableOpacity
+                
+                  onPress={() => {
+                    if (isUserAdmin) {
+                      router.push({
+                        pathname: `/(app)/(team)/teams/${teamId}/settings/EditDescription` as RelativePathString, 
+                        params: { description: formData.description },
+                      });
+                    }
+                  }}
+                  style={styles.fieldValue}
+                >
+                 <Text style={styles.fieldText} numberOfLines={3}>
+                 {currentDescription || "Add description"}
+                 </Text>
+                  {isUserAdmin && (
+                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          </TouchableOpacity>
-        </Modal>
+
+            {/* Members Section */}
+            <View style={styles.membersHeader}>
+                <Text style={styles.sectionTitle}>Members ({members.length})</Text>
+                
+              </View>
+              <View>
+               
+              {isUserAdmin && (
+                  <TouchableOpacity
+                    onPress={() => router.push(`/(app)/(team)/teams/${teamId}/InviteMembers`)}
+                    style={styles.inviteButton}
+                  >
+                   
+                    <Image 
+                      source={InviteMem}
+                      style={styles.image}
+                      resizeMode="contain"
+                       />
+                  
+                   
+                    <Text style={styles.inviteText}>Invite Members</Text>
+                    
+                  </TouchableOpacity>
+                )}
+                </View>
+                <View className="px-5">
+                <Divider style={styles.memberDivider} />
+                </View>
+               
+
+            <View style={styles.membersContainer}>
+
+              
+              
+              {members.length > 0 ? (
+                <FlatList
+                  key = {members.find(m => m._id)} 
+                  data={members}
+                  renderItem={renderMember}
+                  scrollEnabled={false}
+                  ItemSeparatorComponent={() => <Divider style={styles.memberDivider} />}
+                  style={styles.membersList}
+                />
+              ) : (
+                <View style={styles.noMembers}>
+                  <Text style={styles.noMembersText}>No members yet</Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+
+          {/* Edit Field Modal */}
+          <Modal
+            visible={activeField !== null}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setActiveField(null)}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={styles.modalOverlay}
+            >
+              <TouchableOpacity
+                style={styles.modalBackground}
+                activeOpacity={1}
+                onPress={() => setActiveField(null)}
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>
+                      {activeField ? `Edit ${activeField.charAt(0).toUpperCase() + activeField.slice(1)}` : ""}
+                    </Text>
+                    {/* <TouchableOpacity onPress={() => setActiveField(null)}>
+                      <Icon name="close" size={24} color="white" />
+                    </TouchableOpacity> */}
+                  </View>
+                  
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder={`Enter ${activeField || "value"}...`}
+                    placeholderTextColor="#999"
+                    value={activeField ? formData[activeField] : ""}
+                    onChangeText={(text) => activeField && handleChange(activeField, text)}
+                    autoFocus
+                  />
+                  
+                  {/* <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                      setActiveField(null);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Save Changes</Text>
+                  </TouchableOpacity> */}
+                </View>
+              </TouchableOpacity>
+            </KeyboardAvoidingView>
+          </Modal>
+
+          {/* Logo Picker Modal */}
+          <Modal
+            visible={picModalVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setPicModalVisible(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalBackground}
+              activeOpacity={1}
+              onPress={() => setPicModalVisible(false)}
+            >
+              <View style={styles.pickerContainer}>
+                <View style={styles.pickerHeader}>
+                  <Text style={styles.pickerTitle}>Change Team Logo</Text>
+                  <View style={styles.pickerDivider} />
+                </View>
+                
+                <TouchableOpacity
+                  style={styles.pickerOption}
+                  onPress={pickImage}
+                >
+                  <FontAwesome5 name="images" size={20} color="white" />
+                  <Text style={styles.pickerOptionText}>Choose from Gallery</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.pickerOption, styles.pickerOptionBorder]}
+                  onPress={() => {
+                    setFormData(prev => ({ ...prev, logo: "" }));
+                    setIsEdited(true);
+                    setPicModalVisible(false);
+                  }}
+                >
+                  <MaterialCommunityIcons name="delete" size={20} color="#FF5252" />
+                  <Text style={styles.pickerOptionTextDanger}>Remove Logo</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>
+        </View>
       </PageThemeView>
     </SafeAreaView>
   );
 };
 
-export default Settings;
-
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  image: {
+    width: 48,  
+    height: 48, 
+    tintColor: '#999', 
+    borderRadius:"100%",
+    backgroundColor:"#363636",
+    padding:10,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
   },
   header: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
-  profileContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
+  backButton: {
+    padding: 6,
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: '#444',
-  },
-  editIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#333',
-    borderRadius: 12,
-    padding: 4,
-  },
-  sectionHeader: {
+  headerTitle: {
+    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
-    marginVertical: 12,
-    paddingHorizontal: 16,
+    flex: 1,
+    textAlign: 'center',
   },
-  inputContainer: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
+  saveButton: {
+    padding: 6,
+  },
+  saveText: {
+    color: '#12956B',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  saveDisabled: {
+    color: '#808080',
+  },
+  divider: {
+    backgroundColor: '#383838',
+    height: 1,
+  },
+  scrollContent: {
+    paddingBottom: 30,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  logoWrapper: {
+    width: 110,
+    height: 110,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#444',
+    position: 'relative',
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  logoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 55,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 10,
+    // backgroundColor: '#444',
+    borderRadius: 15,
+    paddingBottom: 80,
+  },
+  teamName: {
+    // color: 'white',
+    // fontSize: 20,
+    // fontWeight: 'bold',
+    // marginTop: 10,
+  },
+  formContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  formField: {
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    color: '#999',
+    fontSize: 12,
     marginBottom: 8,
   },
-  inputLabel: {
-    color: '#999',
-    fontSize: 14,
-    marginBottom: 4,
+  fieldValue: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    // alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#202020',
+    paddingVertical: 4,
+    paddingBottom:10,
   },
-  inputValue: {
+  fieldText: {
     color: 'white',
     fontSize: 16,
+    flex: 1,
+  },
+  membersContainer: {
+    paddingHorizontal: 16,
+  },
+  membersHeader: {
+    paddingHorizontal: 18,
+    // flexDirection: 'row',
+    justifyContent: 'space-between',
+    // alignItems: 'center',
+    // marginBottom: 10,
+    
+  },
+  inviteButton: {
+    marginLeft:5,
+    paddingHorizontal:15,
+    paddingVertical:20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inviteText: {
+
+    color: 'white',
+    fontSize: 18,
+    marginLeft: 12,
+  },
+  membersList: {
+    marginBottom: 20,
   },
   memberItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    paddingVertical: 12,
+  },
+  memberAvatar: {
+    backgroundColor: '#333',
+  },
+  memberInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  memberName: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  memberRole: {
+    color: '#999',
+    fontSize: 10,
+    marginTop: 2,
+  },
+  memberAction: {
+    flexDirection :"row",
+    // padding: 8,
+  
+  },
+  memberDivider: {
+    backgroundColor: '#333',
+  },
+  noMembers: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noMembersText: {
+    color: '#999',
+  },
+  modalOverlay: {
+    flex: 1,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#1E1E1E',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 16,
+    backgroundColor: '#161616',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 15,
+    // paddingTop:0/,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 5,
   },
   modalTitle: {
-    color: 'white',
-    fontSize: 18,
+    marginLeft:6,
+    color: 'gray',
+    fontSize: 12,
     fontWeight: 'bold',
   },
+  modalInput: {
+    backgroundColor: '#2A2B31',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    color: 'white',
+    marginBottom: 2,
+  },
+  modalButton: {
+    backgroundColor: '#12956B',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  pickerContainer: {
+    backgroundColor: '#1C1D23',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  pickerHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  pickerTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  pickerDivider: {
+    height: 4,
+    width: 40,
+    backgroundColor: '#444',
+    borderRadius: 2,
+  },
+  pickerOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  pickerOptionBorder: {
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+  },
+  pickerOptionText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 16,
+  },
+  pickerOptionTextDanger: {
+    color: '#FF5252',
+    fontSize: 16,
+    marginLeft: 16,
+  },
 });
+
+export default Settings;

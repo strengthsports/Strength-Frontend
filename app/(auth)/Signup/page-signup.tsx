@@ -53,7 +53,7 @@ const PageSignup = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  StatusBar.setBackgroundColor("black");
+  // StatusBar.setBackgroundColor("black");
 
   const openModal = () => {
     setModalVisible(true);

@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Entypo";
 import Nopic from "@/assets/images/nopic.jpg";
+import Captain from "../SvgIcons/teams/Captain";
+import ViceCaptain from "../SvgIcons/teams/ViceCaptain";
 
 type TeamMemberProps = {
   imageUrl?: string;
@@ -41,7 +43,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
       {(isCaptain || isViceCaptain) && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
-            {isCaptain ? "C" : "VC"}
+            {isCaptain ? <Captain/> : <ViceCaptain/>}
           </Text>
         </View>
       )}
@@ -97,8 +99,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    top: 8,
-    left: 8,
+    top: 6,
+    left: 6,
     backgroundColor: "#00000",
     paddingHorizontal: 8,
     paddingVertical: 4,

@@ -26,6 +26,7 @@ import { fetchTeams } from "~/reduxStore/slices/team/teamSlice";
 import CustomDivider from "~/components/ui/CustomDivider";
 import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import Toast from "react-native-toast-message";
+import TextScallingFalse from "~/components/CentralText";
 
 interface DrawerContextProps {
   handleOpenDrawer: () => void;
@@ -40,8 +41,8 @@ interface Team {
 }
 
 const DrawerContext = createContext<DrawerContextProps>({
-  handleOpenDrawer: () => {},
-  handleCloseDrawer: () => {},
+  handleOpenDrawer: () => { },
+  handleCloseDrawer: () => { },
   isDrawerOpen: false,
 });
 
@@ -68,7 +69,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
 
   const processTeams = () => {
     const uniqueTeams = new Map<string, Team>();
-    
+
     [...(teams?.createdTeams || []), ...(teams?.joinedTeams || [])].forEach((teamEntry) => {
       if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
         uniqueTeams.set(teamEntry.team._id, {
@@ -111,21 +112,15 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   const visibleTeams = showAllTeams ? teamList : teamList.slice(0, 4);
 
   return (
-    <DrawerContext.Provider 
+    <DrawerContext.Provider
       value={{ handleOpenDrawer, handleCloseDrawer, isDrawerOpen }}
     >
-      <CustomDrawer 
-        ref={drawerRef} 
+      <CustomDrawer
+        ref={drawerRef}
         onClose={handleCloseDrawer}
         onOpen={handleOpenDrawer}
       >
-        <View className="w-full h-full bg-black pt-6">
-          <TouchableOpacity
-            onPress={handleCloseDrawer}
-            className="absolute top-4 right-4 z-10"
-          >
-            <Ionicons name="close" size={25} color="white" />
-          </TouchableOpacity>
+        <View className="w-full h-full bg-black pt-4">
 
           <ScrollView className="flex-1 pt-12">
             {/* Profile Section */}
@@ -136,12 +131,12 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 resizeMode="cover"
               />
               <View className="pl-4">
-                <Text className="text-white text-xl font-semibold">
+                <TextScallingFalse className="text-white text-xl font-semibold">
                   {user?.firstName} {user?.lastName}
-                </Text>
-                <Text className="text-gray-400 text-lg">
-                  @{user?.username}
-                </Text>
+                </TextScallingFalse>
+                <TextScallingFalse numberOfLines={2} className="text-gray-400 text-lg" style={{width:'35%'}}>
+                  @{user?.username} | {user?.headline}
+                </TextScallingFalse>
               </View>
             </View>
 
@@ -152,10 +147,10 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
             />
 
             {/* Teams Section */}
-            <View className="mt-2 w-[90%] mx-auto">
-              <Text className="text-white text-4xl font-bold mb-4">
+            <View style={{ paddingHorizontal: 24 }}>
+              <TextScallingFalse className="text-white text-4xl font-bold mb-4">
                 Manage Teams
-              </Text>
+              </TextScallingFalse>
 
               {visibleTeams.map((team, index) => (
                 <TouchableOpacity
@@ -164,9 +159,9 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                     router.push(`../(team)/teams/${team.id}`);
                     handleCloseDrawer();
                   }}
-                  className={`mb-${index === visibleTeams.length - 1 ? 4 : 2} mx-2`}
+                  className={`mb-${index === visibleTeams.length - 1 ? 4 : 2}`}
                 >
-                  <View className="flex-row items-center mt-4">
+                  <View className="flex-row items-center">
                     <Image
                       source={{ uri: team.url }}
                       className="w-10 h-10 rounded-full"
@@ -180,27 +175,27 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
               ))}
 
               {teamList.length > 4 && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setShowAllTeams(!showAllTeams)}
                   className="mt-2"
                 >
-                  <Text className="text-cyan-400 text-2xl font-semibold">
+                  <Text className="text-white text-2xl font-semibold">
                     {showAllTeams ? "See Less" : "See More"}
                   </Text>
                 </TouchableOpacity>
               )}
 
-              <View className="flex-row mb-4 mt-7">
+              <View className="flex-row mb-2 mt-2">
                 <TouchableOpacity
                   onPress={() => {
                     router.push("/(app)/(team)/teams");
                     handleCloseDrawer();
                   }}
-                  className="border border-[#12956B] px-3 py-1 rounded-md flex-row items-center mr-4"
+                  className="border border-[#12956B] px-3 py-[5px] gap-1 rounded-md flex-row items-center mr-4"
                 >
-                  <Text className="text-[#12956B] text-base font-semibold">
+                  <TextScallingFalse className="text-[#12956B] text-sm font-semibold">
                     Create Team
-                  </Text>
+                  </TextScallingFalse>
                   <AntDesign name="plus" size={10} color="#12956B" />
                 </TouchableOpacity>
 
@@ -209,23 +204,15 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                     router.push("/(app)/(team)/join-team");
                     handleCloseDrawer();
                   }}
-                  className="bg-[#12956B] px-4 py-2 rounded-md"
+                  className="bg-[#303030] px-3 py-2 rounded-md"
                 >
-                  <Text className="text-white text-base font-semibold">
+                  <Text className="text-white text-sm font-semibold">
                     Join Team
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
 
-            <CustomDivider
-              color="#5C5C5C"
-              thickness={0.2}
-              style={{ width: '90%', opacity: 0.5, alignSelf: 'center' }}
-            />
-
-            {/* Settings and Logout */}
-            <View className="w-[90%] mx-auto">
+              {/* Settings and Logout */}
               <TouchableOpacity
                 className="flex-row items-center py-6"
                 onPress={() => {
@@ -241,13 +228,14 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
 
               <TouchableOpacity
                 onPress={handleLogout}
-                className="flex-row items-center py-6"
+                className="flex-row items-center"
               >
                 <Ionicons name="log-out-outline" size={20} color="white" />
                 <Text className="text-white text-4xl font-semibold ml-2">
                   Logout
                 </Text>
               </TouchableOpacity>
+
             </View>
           </ScrollView>
         </View>

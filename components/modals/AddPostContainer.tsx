@@ -561,7 +561,7 @@ export default function AddPostContainer({
           name: "video.mp4",
           type: "video/mp4",
         };
-        formData.append("assets1", file);
+        formData.append("assets1", file as any);
         formData.append("isVideo", "true");
       } else {
         pickedImageUris.forEach((uri, index) => {
@@ -570,7 +570,7 @@ export default function AddPostContainer({
             name: `image_${index}.jpg`,
             type: isTypeVideo ? "video/mp4" : "image/jpeg",
           };
-          formData.append(`assets${index + 1}`, file);
+          formData.append(`assets${index + 1}`, file as any);
         });
       }
 
@@ -899,7 +899,7 @@ export default function AddPostContainer({
             )} */}
 
             {/* Pagination */}
-            {pickedImageUris.length > 1 && (
+            {/* {pickedImageUris.length > 1 && (
               <View className="flex-row justify-center mt-2">
                 {Array.from({ length: pickedImageUris.length }).map((_, i) => (
                   <View
@@ -912,7 +912,7 @@ export default function AddPostContainer({
                   />
                 ))}
               </View>
-            )}
+            )} */}
           </ScrollView>
 
           {/* only render when any feature which is under development is clicked */}

@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { SuggestTeam } from "~/types/team";
 import { SuggestionUser } from "~/types/user";
 import { getToken } from "~/utils/secureStore";
 
@@ -15,19 +16,49 @@ export const communityApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["UsersBySports", "PopularUsers", "UsersByActivity", "UsersByCity"],
+  tagTypes: [
+    "UsersBySports",
+    "PopularUsers",
+    "UsersByActivity",
+    "UsersByCity",
+    "Pages",
+    "PopularTeams",
+    "Teams",
+  ],
   endpoints: (builder) => ({
-    // Get users of similar sports
-    getUsersOfSimilarSports: builder.query<
-      SuggestionUser[],
-      { limit?: number; lastTimeStamp?: string | null }
+    /**
+     * Unified Suggest Users Endpoint
+     *
+     * Accepts query parameters to filter suggestions as follows:
+     * - If `city` is provided, returns users from that city (using a case-insensitive match).
+     * - If `sports` is provided (or uses current user's selected sports on backend), returns users whose selected sports match.
+     * - If `popularUser` is true, returns users sorted by popularity (high followerCount, etc.).
+     *
+     * Excludes the current user and users already followed.
+     *
+     * Uses cursor-based pagination via the `lastTimeStamp` parameter.
+     */
+    suggestUsers: builder.query<
+      { users: SuggestionUser[]; hasMore: boolean; nextCursor: string | null },
+      {
+        city?: string;
+        sports?: boolean;
+        popularUser?: boolean;
+        limit?: number;
+        start?: number;
+        lastTimeStamp?: string | null;
+      }
     >({
-      query: ({ limit = 10, lastTimeStamp }) => ({
-        url: "/similar-sports-users",
-        params: {
-          limit,
-          lastTimeStamp,
-        },
+      query: ({
+        city,
+        sports,
+        popularUser,
+        start = 0,
+        limit = 10,
+        lastTimeStamp,
+      }) => ({
+        url: "/suggest-users",
+        params: { city, sports, popularUser, start, limit, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
@@ -45,33 +76,32 @@ export const communityApi = createApi({
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
-    // Get popular users
-    getPopularUsers: builder.query<
-      SuggestionUser[],
-      { limit?: number; lastTimeStamp?: string | null }
+    // Endpoint for suggesting teams (to support) with filters
+    getTeamsToSupport: builder.query<
+      { teams: SuggestTeam[]; hasMore: boolean; nextCursor: string | null },
+      {
+        search?: string;
+        sport?: string;
+        gender?: string;
+        city?: string;
+        limit?: number;
+        lastTimeStamp?: string | null;
+      }
     >({
-      query: ({ limit = 10, lastTimeStamp }) => ({
-        url: "/popular-users",
-        params: {
-          limit,
-          lastTimeStamp,
-        },
+      query: ({ search, sport, gender, city, limit = 10, lastTimeStamp }) => ({
+        url: "/teams",
+        params: { search, sport, gender, city, limit, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
-    // Get users of specific city
-    getUsersOfSpecificCity: builder.query<
-      SuggestionUser,
-      { city: string; limit?: number; lastTimeStamp?: string | null }
+    // Endpoint for suggesting pages to follow
+    getPagesToFollow: builder.query<
+      { pages: SuggestionUser[]; hasMore: boolean; nextCursor: string | null },
+      { city?: string; limit?: number; lastTimeStamp?: string | null }
     >({
       query: ({ city, limit = 10, lastTimeStamp }) => ({
-        url: "/users-by-city",
-        method: "POST",
-        params: {
-          limit,
-          lastTimeStamp,
-        },
-        body: { city },
+        url: "/pages",
+        params: { city, limit, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
@@ -79,8 +109,8 @@ export const communityApi = createApi({
 });
 
 export const {
-  useGetUsersOfSimilarSportsQuery,
-  useGetPopularUsersQuery,
+  useSuggestUsersQuery,
+  useGetTeamsToSupportQuery,
+  useGetPagesToFollowQuery,
   useGetUsersBasedOnActivityQuery,
-  useLazyGetUsersOfSpecificCityQuery,
 } = communityApi;

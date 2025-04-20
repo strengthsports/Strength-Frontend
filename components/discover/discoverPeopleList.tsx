@@ -9,14 +9,14 @@ import {
 } from "react-native";
 import React, { useMemo, useState } from "react";
 import TextScallingFalse from "../CentralText";
-import { useGetPopularUsersQuery } from "~/reduxStore/api/community/communityApi";
+import { useSuggestUsersQuery } from "~/reduxStore/api/community/communityApi";
 import SuggestionCard from "../Cards/SuggestionCard";
 import { useRouter } from "expo-router";
 
 const DiscoverPeopleList = () => {
   const router = useRouter();
   const { data: popularUsers, isLoading: loadingPopularUsers } =
-    useGetPopularUsersQuery({ limit: 13 });
+    useSuggestUsersQuery({ limit: 13, popularUser: true });
 
   const [removedUserIds, setRemovedUserIds] = useState<Set<string>>(new Set());
 
@@ -26,12 +26,12 @@ const DiscoverPeopleList = () => {
 
   // Split users into first 10 and next 3
   const { first10Users, next3Users } = useMemo(() => {
-    const filteredUsers = (popularUsers || []).filter(
+    const filteredUsers = (popularUsers?.users || []).filter(
       (user) => !removedUserIds.has(user._id)
     );
     return {
       first10Users: filteredUsers.slice(0, 10),
-      next3Users: (popularUsers || []).slice(10, 13), // Get original users 11-13
+      next3Users: (popularUsers?.users || []).slice(10, 13), // Get original users 11-13
     };
   }, [popularUsers, removedUserIds]);
 

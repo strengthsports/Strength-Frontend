@@ -3,11 +3,25 @@ import React, { useState } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/AntDesign";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/reduxStore";
+import { setTeamDescription } from "~/reduxStore/slices/team/teamSlice";
 
 const EditDescription = () => {
   const router = useRouter();
   const { description } = useLocalSearchParams<{ description?: string }>();
-  const [newDescription, setNewDescription] = useState<string>(description || "");
+  // const [newDescription, setNewDescription] = useState<string>(description || "");
+   const { teamId } = useLocalSearchParams<{ teamId: string }>();
+   const dispatch = useDispatch<AppDispatch>();
+   const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
+   const [newDescription, setNewDescription] = useState(currentDescription);
+   
+   
+  const handleSave = () => {
+    dispatch(setTeamDescription(newDescription));
+    router.back();
+  };
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -35,12 +49,14 @@ const EditDescription = () => {
 
         {/* Footer with Save Button */}
         <SafeAreaView className="absolute bottom-0 left-0 right-0 p-6 bg-black">
-          <TouchableOpacity
-            className="bg-green-600 py-3 rounded-lg"
-            onPress={() => router.back({ params: { updatedDescription: newDescription } })}
-          >
-            <Text className="text-white text-center text-lg font-semibold">Save Changes</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+      className="bg-green-600 py-3 rounded-lg"
+      onPress={handleSave}
+    >
+      <Text className="text-white text-center text-lg font-semibold">
+        Save Changes
+      </Text>
+    </TouchableOpacity>
         </SafeAreaView>
       </SafeAreaView>
     </TouchableWithoutFeedback>

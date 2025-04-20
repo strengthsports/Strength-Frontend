@@ -230,6 +230,7 @@ const NotificationCluster = ({
   const notification = cluster.notifications[0];
   return (
     <NotificationCardLayout
+    _id={notification?._id}
       date={notification?.createdAt}
       type={notification?.type as NotificationType}
       sender={notification?.sender}

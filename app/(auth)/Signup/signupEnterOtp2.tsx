@@ -117,13 +117,13 @@ const SignupEnterOtp2 = () => {
             alignItems: "center",
           }}
         >
-          <View>
+          <View style={{ width: '82%'}}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 23, fontWeight: "500" }}
             >
               Enter the verification code
             </TextScallingFalse>
-            <View style={{ width: "81%" }}>
+            <View>
               <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
                 We sent the verification code to {email}
                 <TextScallingFalse

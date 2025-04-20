@@ -67,21 +67,21 @@ const TeamCreatedPage: React.FC = () => {
     <SafeAreaView className="flex-1 bg-black pt-2">
       <Animated.View style={{ flex: 1, transform: [{ translateY }] }}>
         {/* Image Section */}
-        <View className="flex items-center mt-8 px-16">
+        <View className="flex items-center mt-2 px-16">
           <Image
-            source={require("../../../../assets/images/teams/done.png")}
+            source={require("../../../../assets/images/tickmark.gif")}
             className="rounded-full h-40 w-40"
           />
         </View>
 
         <View className="flex items-center mt-4">
-          <Text className="text-white text-6xl font-semibold">
+          <Text className="text-white text-6xl font-bold">
             Team Created!
           </Text>
         </View>
 
         <View className="flex items-center justify-center mt-2">
-          <Text className="text-[#A5A5A5] text-3xl text-center px-12">
+          <Text className="text-[#A5A5A5] text-2xl text-center px-16">
             Your team is now live! Bring your squad together and start the game.
           </Text>
         </View>
@@ -90,21 +90,22 @@ const TeamCreatedPage: React.FC = () => {
         <View className="flex flex-row items-center py-4 w-full mt-8 pl-6">
           <Image
             source={teamData?.logo ? { uri: teamData.logo.uri } : require("../../../../assets/images/teams/dummyteam.png")}
-            className="w-36 h-36"
+            className="w-32 h-32 rounded-sm"
           />
           <Image
             source={require("../../../../assets/images/teams/Vector 64.png")}
             className="mr-4 ml-7 h-[108px]"
           />
-          <View className="flex flex-col ml-2">
-            <Text className="text-white text-[25px] font-bold">
-              {teamData?.name || "Team Name"}
-            </Text>
-          </View>
+           <View className="flex flex-col pl-2 w-[200px] ">
+                        <Text className="text-white font-bold  items-center text-5xl">
+                          {teamData?.name.toUpperCase()}
+                        </Text>
+                      </View>
+         
         </View>
 
-        <View className="px-5 py-2">
-          <Text className="text-[#9F9F9F] text-5xl font-semibold border-b border-[#36403D] pb-4">
+        <View className="px-5 py-8">
+          <Text className="text-[#9F9F9F] text-2xl font-semibold border-b border-[#36403D] pb-1">
             Invited Team Members
           </Text>
         </View>
@@ -131,7 +132,7 @@ const TeamCreatedPage: React.FC = () => {
       </Animated.View>
 
       {/* Save button at the bottom */}
-      <View className="p-6 border-t border-[#363636] bg-black">
+      <View className="pt-4 px-6 border-t border-[#363636] bg-black">
         <TouchableOpacity
           className="bg-[#12956B] p-4 rounded-2xl"
           onPress={handleSubmit}

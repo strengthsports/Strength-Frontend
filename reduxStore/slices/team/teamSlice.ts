@@ -21,6 +21,8 @@ type TeamsList = {
 }
 
 interface TeamState {
+  currentTeam: null,
+  currentTeamDescription: string;
   team: Team | null;
   invited: TeamMember[] | null;
   error: string | null;
@@ -70,7 +72,7 @@ export const createTeam = createAsyncThunk<
   Team,
   TeamPayload,
   { rejectValue: string }
->("team/createTeam", async (teamData: TeamPayload, { rejectWithValue }) => {
+  >("team/createTeam", async (teamData: TeamPayload, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
 
@@ -317,7 +319,9 @@ export const sendInvitations = createAsyncThunk<
 
 // --- Initial State ---
 const initialState: TeamState = {
+  currentTeam: null,
   team: null,
+  currentTeamDescription: "",
   invited: null,
   error: null,
   loading: false,
@@ -336,11 +340,11 @@ const initialState: TeamState = {
 //change user position 
 export const changeUserPosition = createAsyncThunk<
   TeamMember,
-  { teamId: string; userId: string; position: string },
+  { teamId: string; userId: string; newPosition: string }, // Changed parameter name to match usage
   { rejectValue: string }
 >(
   "team/changeUserPosition",
-  async ({ teamId, userId, position }, { rejectWithValue }) => {
+  async ({ teamId, userId, newPosition }, { rejectWithValue }) => {
     try {
       const token = await getToken("accessToken");
 
@@ -350,7 +354,7 @@ export const changeUserPosition = createAsyncThunk<
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId, position }),
+        body: JSON.stringify({ teamId, userId, newPosition }),
       });
 
       const data = await response.json();
@@ -365,8 +369,84 @@ export const changeUserPosition = createAsyncThunk<
 );
 
 
+export const changeUserRole = createAsyncThunk<
+  TeamMember,
+  { teamId: string; userId: string; newRole: string }, 
+  { rejectValue: string }
+>(
+  "team/changeUserRole",
+  async ({ teamId, userId, newRole }, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
 
-// --- Slice ---
+      const response = await fetch(`${BASE_URL}/api/v1/team/change-role`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ teamId, userId, newRole }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Failed to change role");
+      }
+
+      return data.data; // Expected to return updated member
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+export const updateTeamDescription = createAsyncThunk(
+  'team/updateDescription',
+  async ({ teamId, description }: { teamId: string; description: string }, { rejectWithValue }) => {
+    try {
+      const response = await updateTeamAPI(teamId, { description });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const removeTeamMember = createAsyncThunk<
+  { success: boolean; message: string },
+  { teamId: string; userId: string },
+  { rejectValue: string }
+>(
+  "team/removeTeamMember",
+  async ({ teamId, userId }, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+
+      const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ teamId, userId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Failed to remove team member");
+      }
+
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+
+
 const teamSlice = createSlice({
   name: "team",
   initialState,
@@ -377,7 +457,11 @@ const teamSlice = createSlice({
       state.loading = false;
       state.user = null;
     },
+    setTeamDescription: (state, action: PayloadAction<string>) => {
+      state.currentTeamDescription = action.payload;
+    },
   },
+  
   extraReducers: (builder) => {
     builder
       .addCase(createTeam.pending, (state) => {
@@ -466,9 +550,59 @@ const teamSlice = createSlice({
   state.loading = false;
   state.error = action.payload ?? "Error updating team details";
 })
+
+
+.addCase(changeUserRole.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(changeUserRole.fulfilled, (state, action: PayloadAction<TeamMember>) => {
+  state.loading = false;
+  if (state.currentTeam) {
+    const memberIndex = state.currentTeam.members.findIndex(
+      m => m.user._id === action.payload.user._id
+    );
+    if (memberIndex !== -1) {
+      state.currentTeam.members[memberIndex].role = action.payload.role;
+    }
+  }
+})
+.addCase(changeUserRole.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to change user role";
+})
+
+.addCase(removeTeamMember.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(removeTeamMember.fulfilled, (state, action) => {
+  state.loading = false;
+  // Remove the user from the team members if team exists
+  if (state.team) {
+    state.team.members = state.team.members.filter(
+      (member:any) => member.user._id !== action.meta.arg.userId
+    );
+    // Also remove from admin and coach arrays if present
+    state.team.admin = state.team.admin.filter(
+      (adminId:any) => adminId.toString() !== action.meta.arg.userId
+    );
+    state.team.coach = state.team.coach.filter(
+      (coachId:any) => coachId.toString() !== action.meta.arg.userId
+    );
+  }
+})
+.addCase(removeTeamMember.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to remove team member";
+});
+
+
+
   },
+  
   
 });
 
-export const { resetTeamState } = teamSlice.actions;
+export const { resetTeamState,setTeamDescription } = teamSlice.actions;
 export default teamSlice.reducer;

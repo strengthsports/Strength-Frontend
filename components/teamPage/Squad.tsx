@@ -14,7 +14,7 @@ import { useFonts } from "expo-font";
 import { useSelector } from "react-redux";
 import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
-
+import Captain from "../SvgIcons/teams/Captain";
 
 interface SquadProps {
   teamDetails: any;
@@ -64,17 +64,24 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
     return (
       teamDetails.members?.filter((member: any) => {
         const role = member.role?.toLowerCase();
-        if (playerType.toLowerCase() === "all-rounder") {
-          return role === "all-rounder" || role === "member";
+        const playerTypeLower = playerType.toLowerCase();
+        
+        // Handle case-insensitive matching for all variations of "All-Rounders"
+        if (playerTypeLower.includes("rounder")) {
+          return role === "all-rounder" || 
+                 role === "allrounder" || 
+                 role === "member";
         }
-        return role.includes(playerType.toLowerCase());
+        
+        // For other player types, match exactly (case-insensitive)
+        return role === playerTypeLower;
       }) || []
     );
   };
-  
+
 
   const renderMemberSection = (title: string, members: any[]) => (
-    <View className="mb-0">
+    <View   >
       <Text
         style={{
           fontFamily: "Sansation-Regular",
@@ -100,15 +107,16 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                     setShowDownwardDrawer(true);
                   }}
                 >
-                  <TeamMember
-                    imageUrl={user?.profilePic}
-                    name={`${user?.firstName || "Unknown"} ${
-                      user?.lastName || ""
-                    }`}
-                    description={user?.headline || "No description available"}
-                    isAdmin={isAdmin}
-                    onRemove={() => console.log("Remove user:", user?._id)}
+                 <TeamMember
+                  imageUrl={user?.profilePic}
+                  name={`${user?.firstName || "Unknown"} ${user?.lastName || ""}`}
+                  isCaptain={member.position?.toLowerCase() === "captain"}
+                  isViceCaptain={member.position?.toLowerCase() === "vicecaptain"}
+                  description={user?.headline || "No description available"}
+                  isAdmin={isAdmin}
+                  onRemove={() => console.log("Remove user:", user?._id)}
                   />
+
                 </TouchableOpacity>
               </View>
             );
@@ -144,38 +152,35 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         flex: 1,
         maxWidth: "100%",
         paddingHorizontal: 12,
-        // paddingVertical:12,
         backgroundColor: "#0B0B0B",
+        maxHeight:"100%",
+        paddingBottom:80,
       }}
-      
     >
-      
       <View
-  style={{
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-    paddingHorizontal: 16,
-    top: 36,
-  }}
->
-<TouchableOpacity
-  onPress={() => {
-    console.log("ThreeDot Pressed");
-    router.push(`/(app)/(team)/teams/${teamId}/members`);
-  }}
-  activeOpacity={0.7}
-  style={{
-    padding: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <ThreeDot />
-</TouchableOpacity>
-
-</View>
-
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "flex-end",
+          paddingHorizontal: 16,
+          top: 36,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            console.log("ThreeDot Pressed");
+            router.push(`/(app)/(team)/teams/${teamId}/members`);
+          }}
+          activeOpacity={0.7}
+          style={{
+            padding: 10,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ThreeDot />
+        </TouchableOpacity>
+      </View>
 
       {teamDetails?.sport?.playerTypes?.map((playerType: any) =>
         renderMemberSection(playerType.name, categorizeMembers(playerType.name))
@@ -192,6 +197,4 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
 
 export default Squad;
 
-const styles = StyleSheet.create({
-  
-});
+const styles = StyleSheet.create({});

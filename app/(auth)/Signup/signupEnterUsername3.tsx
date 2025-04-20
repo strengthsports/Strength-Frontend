@@ -18,6 +18,7 @@ import { setUsername } from "~/reduxStore/slices/user/onboardingSlice";
 import Toast from "react-native-toast-message";
 import { usernameSchema } from "~/schemas/profileSchema";
 import { vibrationPattern } from "~/constants/vibrationPattern";
+import { checkUsernameAvailability } from "~/utils/usernameCheck";
 
 const signupEnterUsername3 = () => {
   const router = useRouter();
@@ -47,24 +48,35 @@ const signupEnterUsername3 = () => {
     dispatch(setUsername(value)); // Update Redux store with the username
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const validation = usernameSchema.safeParse({ username });
+  
     if (!validation.success) {
       const errorMessage =
         validation.error.errors[0]?.message ||
         "Invalid username. Please try again.";
-
+  
       console.log(
         "Username validation error:",
         validation.error.errors[0]?.message
       );
-
+  
       feedback(errorMessage);
       return;
     }
+  
+    // 👇 Await is valid now
+    const result = await checkUsernameAvailability(username);
+  
+    if (!result.ok || result.data?.exists) {
+      feedback("This username is already taken. Try another one.");
+      return;
+    }
+  
     // Navigate to the next screen if validation passes
     router.push("/Signup/signupEnterLocation4");
   };
+  
 
   return (
     <PageThemeView>

@@ -65,14 +65,14 @@ const ArticlePage = () => {
 
   const renderItem = ({ item }: any) => {
     const { date, time } = formatDateTime(item.updatedAt);
-    // const {hoursAgo} = getHoursAgo(item.updatedAt);
+    // const hoursAgo = getHoursAgo(item.updatedAt);
     return (
       <ScrollView
         style={{ width }}
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full h-72 mt-4 overflow-hidden border-[#181818]">
+        <View className="w-full h-[220px] overflow-hidden border-[#181818]">
           <Image
             source={{ uri: item.imageUrl }}
             className="w-full h-full"
@@ -81,20 +81,20 @@ const ArticlePage = () => {
         </View>
         <View className="mt-6 mx-4">
           <View className="flex-row">
-            <TextScallingFalse className="text-white text-base">
-              Posted at {date} •{" "}
-            </TextScallingFalse>
             <TextScallingFalse className="text-[#12956B] font-bold text-base">
               {item.sportsName}
             </TextScallingFalse>
+            <TextScallingFalse className="text-[#919191] text-base">
+              {"  "}• {date}
+            </TextScallingFalse>
           </View>
-          <TextScallingFalse className="text-white text-6xl mt-3">
+          <TextScallingFalse className="text-white font-bold text-6xl mt-3">
             {item.title}
           </TextScallingFalse>
-          <TextScallingFalse className="text-white mt-2 text-base">
-            by Editor at Strength
+          <TextScallingFalse className="text-[#919191] mt-2 text-base">
+            By Editor at Strength
           </TextScallingFalse>
-          <TextScallingFalse className="text-white mt-4">
+          <TextScallingFalse className="text-white mt-5 text-[15px] leading-normal">
             {item.content}
           </TextScallingFalse>
         </View>
@@ -125,32 +125,37 @@ const ArticlePage = () => {
   return (
     <PageThemeView>
       <View className="flex-1 bg-black">
-        <View className="flex-row items-center px-4 pt-4">
+        <View className="flex-row items-center justify-between px-4 pt-3">
           <TouchableOpacity onPress={() => router.back()} className="ml-1">
             <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
           </TouchableOpacity>
-          <View className="flex-1 items-center">
-            <TextScallingFalse className="text-white text-4xl font-bold">
-              {validSportsName} articles
-            </TextScallingFalse>
-          </View>
+          <TextScallingFalse className="text-white text-3xl font-bold">
+            {validSportsName} articles
+          </TextScallingFalse>
+          <TouchableOpacity onPress={() => console.log("Share button")}>
+            <MaterialCommunityIcons name="share" size={24} color="white" />
+          </TouchableOpacity>
         </View>
         {/* 👇 Dot Indicators */}
-        <View className="flex-row justify-center items-center mt-1.5">
+        <View className="flex-row justify-center items-center mt-1">
           {articles?.map((_, index) => (
             <View
               key={index}
               style={{
-                width: 6,
-                height: 6,
+                width: 5,
+                height: 5,
                 borderRadius: 5,
-                backgroundColor: currentIndex === index ? "#fff" : "#ababab",
+                backgroundColor: currentIndex === index ? "#fff" : "#000",
+                borderColor: "#fff",
+                borderWidth: 1,
                 marginHorizontal: 4,
                 opacity: currentIndex === index ? 1 : 0.7,
               }}
             />
           ))}
         </View>
+
+        <View className="h-[0.8px] bg-[#404040] mt-3" />
 
         <FlatList
           data={articles}

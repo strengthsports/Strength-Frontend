@@ -25,6 +25,7 @@ import SearchHistoryProfile from "~/components/search/searchHistoryProfile";
 import nopic from "@/assets/images/nopic.jpg";
 import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
 import { createSelector } from "@reduxjs/toolkit";
+import TextScallingFalse from "~/components/CentralText";
 
 // Memoized Redux selectors
 const selectFilteredSearchHistory = createSelector(
@@ -172,8 +173,8 @@ const SearchPage: React.FC = () => {
           )}
         </View>
       ) : (
-        <View className="px-5">
-          <View className="flex-row justify-between items-center">
+        <View>
+          <View className="flex-row justify-between items-center px-5">
             <Text className="text-2xl text-[#808080] mb-2">Recent</Text>
             <Text
               onPress={clearSearchHistory}
@@ -189,14 +190,22 @@ const SearchPage: React.FC = () => {
             data={searchHistory}
             renderItem={renderHistoryProfile}
             keyExtractor={(item) => item._id}
-            contentContainerStyle={{ gap: 16 }}
+            contentContainerStyle={{
+              gap: 16,
+              marginLeft: 20,
+              paddingRight: 20,
+            }}
           />
 
           <FlatList
             data={recentSearches}
             renderItem={renderRecentSearch}
             keyExtractor={(item, index) => index.toString()}
-            contentContainerStyle={{ gap: 14, paddingVertical: 16 }}
+            contentContainerStyle={{
+              gap: 14,
+              paddingVertical: 16,
+              paddingHorizontal: 20,
+            }}
           />
         </View>
       )}
@@ -211,15 +220,27 @@ const SearchResultItem = memo(
   ({ item, onPress }: { item: any; onPress: (user: any) => void }) => (
     <TouchableOpacity
       onPress={() => onPress(item)}
-      className="flex-row items-center py-2 px-4 border-b border-black"
+      className="flex-row items-center py-2 px-4"
     >
       <Image
         source={item?.profilePic?.trim() ? { uri: item.profilePic } : nopic}
-        className="w-10 h-10 rounded-full mr-3"
+        className="w-12 h-12 rounded-full mr-3 border border-[#2F2F2F]"
       />
-      <Text className="text-white text-lg font-light">
-        {item.firstName} {item.lastName}
-      </Text>
+      <View>
+        <TextScallingFalse className="text-white text-lg font-medium">
+          {item.firstName} {item.lastName}
+        </TextScallingFalse>
+        <TextScallingFalse className="text-[#EAEAEA] text-base font-light">
+          @{item.username}
+          {item.headline
+            ? ` | ${
+                item.headline.length > 18
+                  ? item.headline.slice(0, 18) + "..."
+                  : item.headline
+              }`
+            : ""}
+        </TextScallingFalse>
+      </View>
     </TouchableOpacity>
   )
 );

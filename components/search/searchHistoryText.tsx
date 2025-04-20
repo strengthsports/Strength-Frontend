@@ -14,12 +14,12 @@ const SearchHistoryText = ({
     <View className="flex-row items-center w-full">
       <Entypo name="back-in-time" size={18} color="white" className="mr-5" />
       {/* Searched Text */}
-      <TextScallingFalse className="text-xl text-white flex-grow">
+      <TextScallingFalse className="text-2xl text-white flex-grow">
         {searchText}
       </TextScallingFalse>
       <Feather
         name="arrow-up-left"
-        size={18}
+        size={20}
         color="grey"
         onPress={() => setSearchText(searchText)}
       />

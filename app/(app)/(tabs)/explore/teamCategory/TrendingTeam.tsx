@@ -1,15 +1,12 @@
 import React from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
+import DiscoverTeams from "~/components/discover/discoverTeamList";
 import ComingSoon from "~/components/explorePage/comingSoon";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
 const TrendingTeam = () => {
-  return (
-    <View className="flex-1 items-center">
-      <ComingSoon text="Teams" />
-    </View>
-  );
+  return <DiscoverTeams />;
 };
 
 export default TrendingTeam;

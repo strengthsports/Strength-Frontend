@@ -50,8 +50,9 @@ const persistConfig = {
     "signup",
     "onboarding",
     "forgotPassword",
-    "profile", 
-    "search", "teamForum",
+    "profile",
+    "search",
+    "teamForum",
     "feed",
   ],
   blacklist: [], // Add any API reducers here
@@ -67,7 +68,7 @@ const rootReducer = combineReducers({
   hashtagPage: hashtagReducer,
   team: teamReducer,
   sports: sportsReducer,
-  search:  searchReducer,
+  search: searchReducer,
   teamForum: teamForumReducer,
   userSuggestions: userSuggestionsReducer,
   feed: feedReducer,
@@ -94,6 +95,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
+      immutableCheck: false,
     }).concat(
       profileApi.middleware,
       sportsApi.middleware,

@@ -79,13 +79,10 @@ export interface UnblockUser {
 export interface SuggestionUser {
   _id: string;
   firstName: string;
-  lastName: string;
-  username: string;
   headline: string;
   type: string;
   profilePic: string;
   coverPic: string;
-  followerCount?: number;
   [key: string]: any;
 }
 

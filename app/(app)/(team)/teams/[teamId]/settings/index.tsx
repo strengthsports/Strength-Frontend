@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import Icon from "react-native-vector-icons/AntDesign";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
 import { Divider, Avatar } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
@@ -112,7 +112,7 @@ const Settings = () => {
       location: addressString,
       established: establishedDate,
       description: team.description || "",
-      logo: team.logo?.url || "",
+      logo: team.logo?.url|| "",
     });
 
     setMembers(team.members || []);
@@ -244,7 +244,9 @@ const Settings = () => {
       {isUserAdmin && (
         <TouchableOpacity 
           style={styles.memberAction}
-          onPress={() => router.push(`/(app)/(team)/teams/${teamId}/members/${item.user._id}`)}
+          onPress={() => 
+            router.push(`/(app)/(team)/teams/${teamId}/members/${item.user._id}`)
+          }
         >
           <Text className="text-[#7A7A7A] mt-2 text-sm">{item.position?.toUpperCase()}</Text>
           <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
@@ -409,7 +411,7 @@ const Settings = () => {
                   onPress={() => {
                     if (isUserAdmin) {
                       router.push({
-                        pathname: `/(app)/(team)/teams/${teamId}/settings/EditDescription`,
+                        pathname: `/(app)/(team)/teams/${teamId}/settings/EditDescription` as RelativePathString, 
                         params: { description: formData.description },
                       });
                     }
@@ -417,8 +419,8 @@ const Settings = () => {
                   style={styles.fieldValue}
                 >
                  <Text style={styles.fieldText} numberOfLines={3}>
-      {currentDescription || "Add description"}
-    </Text>
+                 {currentDescription || "Add description"}
+                 </Text>
                   {isUserAdmin && (
                     <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
                   )}
@@ -462,10 +464,9 @@ const Settings = () => {
               
               {members.length > 0 ? (
                 <FlatList
-                  key={members._id}
+                  key = {members.find(m => m._id)} 
                   data={members}
                   renderItem={renderMember}
-                  keyExtractor={(item) => item._id}
                   scrollEnabled={false}
                   ItemSeparatorComponent={() => <Divider style={styles.memberDivider} />}
                   style={styles.membersList}

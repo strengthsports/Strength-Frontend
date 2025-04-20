@@ -7,7 +7,7 @@ import { RootState } from "~/reduxStore";
 import { useSelector } from "react-redux";
 
 interface TeamMember {
-  id: string;
+  _id: string;
   firstName: string;
   profilePic: string;
   headline?: string;
@@ -112,8 +112,8 @@ const TeamCreatedPage: React.FC = () => {
 
         {/* Team Members List */}
         <ScrollView className="flex-1 px-10">
-          {teamData?.members?.map((member) => (
-            <View key={member.id} className="flex-row items-center py-4">
+          {teamData?.members?.map((member,key) => (
+            <View key={member._id} className="flex-row items-center py-4">
               <Image
                 source={{ uri: member.profilePic || "https://picsum.photos/200/200" }}
                 className="w-14 h-14 rounded-full mr-4"

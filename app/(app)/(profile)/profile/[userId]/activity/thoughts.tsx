@@ -51,7 +51,7 @@ const WrittenPostScreen = () => {
   );
   const memoizedEmptyComponent = memo(() => (
     <Text className="text-white text-center p-4">
-      No new written posts available
+      No written posts available
     </Text>
   ));
 
@@ -72,7 +72,7 @@ const WrittenPostScreen = () => {
     );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 mt-4">
       <FlatList
         data={textPosts || []}
         keyExtractor={(item) => item._id}

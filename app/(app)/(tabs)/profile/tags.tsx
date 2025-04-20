@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
+import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 
 const Tags = () => {
   return (
     <View>
-      <Text>Tags</Text>
+      <UnderDevelopmentModal />
     </View>
   );
 };

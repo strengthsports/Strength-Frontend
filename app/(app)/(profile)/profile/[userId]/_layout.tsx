@@ -189,7 +189,11 @@ const ProfileLayout = () => {
       setSettingsModalVisible({ status: true, message: "Message" });
     } else {
       // router.push("/");
-      return <UnderDevelopmentModal />;
+      return (
+        <View>
+          <UnderDevelopmentModal />
+        </View>
+      );
     }
   };
 
@@ -494,7 +498,10 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Height: {profileData?.height}
+                              Height:{" "}
+                              {profileData?.height || (
+                                <Text style={{ color: "grey" }}>undefined</Text>
+                              )}
                             </TextScallingFalse>
                           </View>
 
@@ -506,7 +513,10 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Weight: {profileData?.weight}
+                              Weight:{" "}
+                              {profileData?.weight || (
+                                <Text style={{ color: "grey" }}>undefined</Text>
+                              )}
                             </TextScallingFalse>
                           </View>
                         </View>
@@ -521,10 +531,16 @@ const ProfileLayout = () => {
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
                               Teams:{" "}
-                              <TextScallingFalse style={{ color: "grey" }}>
-                                {" "}
-                                Pro Trackers
-                              </TextScallingFalse>
+                              {profileData?.createdTeams?.length > 0 &&
+                                profileData.createdTeams.map((team: any) => (
+                                  <TextScallingFalse
+                                    key={team?.team?._id}
+                                    style={{ color: "grey" }}
+                                  >
+                                    {" "}
+                                    {team.name}
+                                  </TextScallingFalse>
+                                ))}
                             </TextScallingFalse>
                           </View>
                         </View>
@@ -630,7 +646,7 @@ const ProfileLayout = () => {
                           style={{
                             color: "grey",
                             fontSize: responsiveFontSize(1.4),
-                            width: "63.25%",
+                            width: "100%",
                           }}
                         >
                           {`${profileData?.address.city}, ${profileData?.address.state}, ${profileData?.address.country}`}

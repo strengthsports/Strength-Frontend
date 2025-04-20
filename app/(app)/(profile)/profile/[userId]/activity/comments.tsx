@@ -1,14 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 
 const comments = () => {
   return (
     <View>
-      <Text>comments</Text>
+      <UnderDevelopmentModal />
     </View>
-  )
-}
+  );
+};
 
-export default comments
+export default comments;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

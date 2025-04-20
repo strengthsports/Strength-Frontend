@@ -51,9 +51,7 @@ const Polls = () => {
   );
 
   const MemoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">
-      No polls available for this user
-    </Text>
+    <Text className="text-white text-center p-4">No polls available</Text>
   ));
 
   if (isLoading)
@@ -78,7 +76,7 @@ const Polls = () => {
     );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 mt-4">
       <FlatList
         data={pollPosts || []}
         keyExtractor={(item) => item._id}

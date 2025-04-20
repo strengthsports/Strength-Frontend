@@ -12,12 +12,19 @@ import PostContainer from "~/components/Cards/postContainer";
 // import { Post } from "~/reduxStore/api/feed/feedPostApi";
 import { Post } from "~/types/post";
 import TextScallingFalse from "~/components/CentralText";
+import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
+import { RootState } from "~/reduxStore";
 
 const Polls = () => {
-  const { posts, error, loading } = useSelector((state: any) => state?.profile);
+  // const { posts, error, loading } = useSelector((state: any) => state?.profile);
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
   const isAndroid = Platform.OS === "android";
 
-  const pollPosts = posts?.filter((post: Post) => post.isPoll);
+  const userPosts = useSelector((state: RootState) =>
+    selectPostsByUserId(state.feed.posts as any, user?._id)
+  );
+
+  const pollPosts = userPosts?.filter((post: Post) => post.isPoll);
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
@@ -51,7 +58,7 @@ const Polls = () => {
     );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 mt-4">
       <FlatList
         data={pollPosts || []}
         keyExtractor={(item) => item._id}

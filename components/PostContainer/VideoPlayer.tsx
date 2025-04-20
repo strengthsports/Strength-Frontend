@@ -5,7 +5,13 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 import { Video, ResizeMode, AVPlaybackStatusSuccess } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -17,6 +23,9 @@ type VideoPlayerProps = {
   autoPlay: boolean;
   isFeedPage?: boolean;
   onPlaybackStatusUpdate?: (status: AVPlaybackStatusSuccess) => void;
+  containerStyle?: StyleProp<ViewStyle>;
+  videoStyle?: StyleProp<ViewStyle>;
+  resizeMode?: ResizeMode;
 };
 
 export type VideoPlayerHandle = {
@@ -29,7 +38,16 @@ export type VideoPlayerHandle = {
 
 const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
   (
-    { videoUri, postId, autoPlay, isFeedPage = false, onPlaybackStatusUpdate },
+    {
+      videoUri,
+      postId,
+      autoPlay,
+      isFeedPage = false,
+      onPlaybackStatusUpdate,
+      containerStyle,
+      videoStyle,
+      resizeMode = ResizeMode.COVER,
+    },
     ref
   ) => {
     const videoRef = useRef<Video | null>(null);
@@ -102,7 +120,11 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
 
     return (
       <TouchableOpacity
-        style={styles.container}
+        style={[
+          styles.container,
+          isFeedPage && styles.feedContainer,
+          containerStyle,
+        ]}
         className={isFeedPage ? "ml-2" : "ml-0"}
         activeOpacity={0.7}
         onPress={() => {
@@ -118,18 +140,10 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
           source={{ uri: videoUri }}
           style={[
             styles.video,
-            isFeedPage
-              ? {
-                  borderTopLeftRadius: 16,
-                  borderBottomLeftRadius: 16,
-                  borderTopWidth: 0.5,
-                  borderBottomWidth: 0.5,
-                  borderLeftWidth: 0.5,
-                  borderColor: "#2F2F2F",
-                }
-              : {},
+            isFeedPage && styles.feedVideoStyle,
+            videoStyle,
           ]}
-          resizeMode={ResizeMode.CONTAIN}
+          resizeMode={resizeMode}
           onPlaybackStatusUpdate={(status) =>
             handlePlaybackStatusUpdate(status as AVPlaybackStatusSuccess)
           }
@@ -150,12 +164,24 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    aspectRatio: 16 / 9,
     backgroundColor: "#000000",
     position: "relative",
   },
+  feedContainer: {
+    aspectRatio: 16 / 9,
+    height: undefined,
+  },
   video: {
     flex: 1,
+    width: "100%",
+  },
+  feedVideoStyle: {
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderLeftWidth: 0.5,
+    borderColor: "#2F2F2F",
   },
   loader: {
     position: "absolute",

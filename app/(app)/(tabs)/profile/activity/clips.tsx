@@ -9,27 +9,33 @@ import {
 import React, { memo, useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
-import { AppDispatch } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
 import PostContainer, {
   PostContainerHandles,
 } from "~/components/Cards/postContainer";
 import { Post } from "~/types/post";
+import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
 
 const Clips = () => {
-  const { posts, error, loading } = useSelector((state: any) => state?.profile);
+  // const { posts, error, loading } = useSelector((state: any) => state?.profile);
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
   const isAndroid = Platform.OS === "android";
   const postRefs = useRef<Record<string, PostContainerHandles | null>>({});
 
+  const userPosts = useSelector((state: RootState) =>
+    selectPostsByUserId(state.feed.posts as any, user?._id)
+  );
+
   // Filter posts to only include video posts
-  const videoPosts = posts?.filter((post: Post) => post?.isVideo);
+  const videoPosts = userPosts?.filter((post: Post) => post?.isVideo);
 
   useEffect(() => {
-    if (!posts || posts.length === 0) {
+    if (!userPosts || userPosts.length === 0) {
       dispatch(getOwnPosts(null));
     }
-  }, [dispatch, posts]);
+  }, [dispatch, userPosts]);
 
   // const viewabilityConfig = useRef({
   //   itemVisiblePercentThreshold: 70,
@@ -52,11 +58,7 @@ const Clips = () => {
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View className="w-screen pl-3">
-        <PostContainer
-          item={item}
-          isMyActivity={true}
-          // autoPlay={false}
-        />
+        <PostContainer item={item} isMyActivity={true} isVisible={true} />
       </View>
     ),
     []
@@ -85,7 +87,7 @@ const Clips = () => {
     );
 
   return (
-    <View>
+    <View className="mt-4">
       <FlatList
         data={videoPosts || []}
         keyExtractor={(item) => item._id}

@@ -1,0 +1,272 @@
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import PageThemeView from "~/components/PageThemeView";
+import SearchHeader from "~/components/search/SearchHeader";
+import SuggestionCard from "~/components/Cards/SuggestionCard";
+import PageSuggestionCard from "~/components/Cards/PageSuggestionCard";
+import TeamSuggestionCard from "~/components/Cards/TeamSuggestionCard";
+import TextScallingFalse from "~/components/CentralText";
+import {
+  useSuggestUsersQuery,
+  useGetPagesToFollowQuery,
+  useGetTeamsToSupportQuery,
+} from "~/reduxStore/api/community/communityApi";
+import { AntDesign } from "@expo/vector-icons";
+import { SuggestionUser } from "~/types/user";
+
+const More = () => {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const suggestionType = (params.filter as string) || "user";
+  const limit = 10;
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [items, setItems] = useState<any[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const isInitialMount = useRef(true);
+
+  // Memoize query parameters to prevent unnecessary re-renders
+  const baseParams = useMemo(
+    () => ({
+      limit: limit + 1,
+      ...(cursor && { lastTimeStamp: cursor }),
+      city: params.city as string,
+    }),
+    [cursor, params.city]
+  );
+
+  const userParams = useMemo(
+    () => ({
+      ...baseParams,
+      sports: Boolean(params.sports),
+      popularUser: Boolean(params.popularUser),
+    }),
+    [baseParams, params.sports, params.popularUser]
+  );
+
+  const teamParams = useMemo(
+    () => ({
+      ...baseParams,
+      sport: params.sport as string,
+      gender: params.gender as string,
+    }),
+    [baseParams, params.sport, params.gender]
+  );
+
+  // Queries with stable parameters
+  const userQuery = useSuggestUsersQuery(userParams, {
+    skip: suggestionType !== "user",
+  });
+  const pageQuery = useGetPagesToFollowQuery(baseParams, {
+    skip: suggestionType !== "page",
+  });
+  const teamQuery = useGetTeamsToSupportQuery(teamParams, {
+    skip: suggestionType !== "team",
+  });
+
+  const queryResponse = useMemo(() => {
+    return suggestionType === "user"
+      ? userQuery
+      : suggestionType === "page"
+      ? pageQuery
+      : teamQuery;
+  }, [suggestionType, userQuery, pageQuery, teamQuery]);
+
+  const { data, isLoading, isFetching } = queryResponse;
+
+  console.log("Resp:", data);
+
+  useEffect(() => {
+    if (data) {
+      // Handle all cases of data structure
+      const fetched =
+        data.users ||
+        data.pages ||
+        data.teams ||
+        (Array.isArray(data) ? data : []);
+
+      // Only process if we actually got data
+      if (fetched.length > 0) {
+        const newItems =
+          fetched.length > limit ? fetched.slice(0, limit) : fetched;
+
+        setItems((prev) => {
+          // Skip deduplication on initial load
+          if (isInitialMount.current) return newItems;
+
+          // Deduplicate for subsequent loads
+          const existingIds = new Set(prev.map((item) => item._id));
+          return [
+            ...prev,
+            ...newItems.filter((item) => !existingIds.has(item._id)),
+          ];
+        });
+
+        setHasMore(fetched.length > limit);
+        if (newItems.length) {
+          setCursor(newItems[newItems.length - 1]?.createdAt || null);
+        }
+      }
+
+      isInitialMount.current = false;
+    }
+  }, [data]);
+
+  // Reset state when params change - FIXED VERSION
+  useEffect(() => {
+    // Only reset if the suggestionType changes
+    if (!isInitialMount.current) {
+      setItems([]);
+      setCursor(null);
+      setHasMore(true);
+      isInitialMount.current = true;
+    }
+  }, [suggestionType]); // Removed other dependencies
+
+  // Stable loadMore function with debouncing
+  const loadMore = useCallback(() => {
+    if (!isFetching && hasMore) {
+      // Triggered by FlatList's onEndReached
+    }
+  }, [isFetching, hasMore]);
+
+  // Memoized render items
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => {
+      switch (suggestionType) {
+        case "user":
+          return (
+            <SuggestionCard
+              user={item}
+              size="regular"
+              removeSuggestion={() => {}}
+            />
+          );
+        case "page":
+          return (
+            <PageSuggestionCard
+              user={item}
+              size="regular"
+              removeSuggestion={() => {}}
+            />
+          );
+        case "team":
+          return (
+            <TeamSuggestionCard
+              team={item}
+              size="regular"
+              removeSuggestion={() => {}}
+            />
+          );
+        default:
+          return null;
+      }
+    },
+    [suggestionType]
+  );
+
+  // Memoized key extractor
+  const keyExtractor = useCallback((item: any) => item._id, []);
+
+  return (
+    <PageThemeView>
+      {/* Header */}
+      <View className="flex-row w-full justify-start items-center p-5 pb-3 relative text-center border-b border-[#181818]">
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => {
+            setCursor(null);
+            router.back();
+          }}
+          className="mr-4"
+        >
+          <AntDesign name="arrowleft" size={24} color="white" />
+        </TouchableOpacity>
+        <View>
+          <TextScallingFalse className="text-white text-4xl font-light">
+            {suggestionType === "user"
+              ? "People to follow"
+              : suggestionType === "page"
+              ? "Pages to follow"
+              : "Teams to support"}
+          </TextScallingFalse>
+        </View>
+      </View>
+
+      {isLoading && items.length === 0 ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#12956B" />
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetching && hasMore ? (
+              <ActivityIndicator
+                size="small"
+                color="#12956B"
+                style={{ marginVertical: 20 }}
+              />
+            ) : null
+          }
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingTop: 10,
+            paddingHorizontal: 10,
+            paddingBottom: hasMore ? 120 : 0,
+          }}
+          numColumns={suggestionType === "user" ? 2 : 1}
+          columnWrapperStyle={
+            suggestionType === "user"
+              ? {
+                  justifyContent: "space-evenly",
+                  width: "auto",
+                  marginTop: 16,
+                  gap: 8,
+                }
+              : undefined
+          }
+          removeClippedSubviews
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={10}
+          ListEmptyComponent={
+            <View className="flex-1 justify-center items-center">
+              <TextScallingFalse className="text-[#808080]">
+                No suggestions found
+              </TextScallingFalse>
+            </View>
+          }
+        />
+      )}
+    </PageThemeView>
+  );
+};
+
+export default More;
+
+const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

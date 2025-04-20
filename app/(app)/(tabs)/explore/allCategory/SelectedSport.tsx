@@ -3,13 +3,30 @@ import React from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
-import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
-import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
+import {
+  useGetCricketLiveMatchesQuery,
+  useGetCricketNextMatchesQuery,
+  useGetCricketRecentMatchesQuery,
+} from "~/reduxStore/api/explore/cricketApi";
+import {
+  useGetFootballLiveMatchesQuery,
+  useGetFootballNextMatchesQuery,
+  useGetFootballRecentMatchesQuery,
+} from "~/reduxStore/api/explore/footballApi";
+import {
+  useGetBasketballLiveMatchesQuery,
+  useGetBasketballNextMatchesQuery,
+  useGetBasketballRecentMatchesQuery,
+} from "~/reduxStore/api/explore/basketballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
+import CricketRecentMatch from "~/components/explorePage/recentMatch/CricketRecentMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
 import SwiperTop from "~/components/explorePage/SwiperTop";
+import FootballRecentMatch from "~/components/explorePage/recentMatch/FootballRecentMatch";
+import BasketballRecentMatch from "~/components/explorePage/recentMatch/BasketballRecentMatch";
+import BasketballLiveMatch from "~/components/explorePage/liveMatch/BasketballLiveMatch";
 
 interface SelectedSportProps {
   sportsName: string;
@@ -67,12 +84,25 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   };
 
   const {
-    data: cricketData,
-    isFetching: isCricketFetching,
+    data: cricketLiveData,
+    isFetching: isCricketLiveFetching,
     refetch: refetchLiveCricket,
-  } = useGetCricketMatchesQuery({});
-  const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
-    cricketData || {};
+  } = useGetCricketLiveMatchesQuery({});
+  const { liveMatches: liveCricketMatches } = cricketLiveData || {};
+
+  const {
+    data: cricketNextData,
+    isFetching: isCricketNextFetching,
+    refetch: refetchNextCricket,
+  } = useGetCricketNextMatchesQuery({});
+  const { nextMatches: nextCricketMatches } = cricketNextData || {};
+
+  const {
+    data: cricketRecentData,
+    isFetching: isCricketRecentFetching,
+    refetch: refetchRecentCricket,
+  } = useGetCricketRecentMatchesQuery({});
+  const { recentMatches: recentCricketMatches } = cricketRecentData || {};
 
   // const renderTrendingLiveMatches = () => {};
 
@@ -80,8 +110,18 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     return (
       <CricketLiveMatch
         liveMatches={liveCricketMatches}
-        isFetching={isCricketFetching}
+        isFetching={isCricketLiveFetching}
         onRefetch={refetchLiveCricket}
+      />
+    );
+  };
+
+  const renderCricketRecentMatches = () => {
+    return (
+      <CricketRecentMatch
+        recentMatches={recentCricketMatches}
+        isFetching={isCricketRecentFetching}
+        onRefetch={refetchRecentCricket}
       />
     );
   };
@@ -89,26 +129,42 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const renderCricketNextMatches = () => {
     return (
       <CricketNextMatch
-        nextMatch={nextCricketMatches}
-        isFetching={isCricketFetching}
+        nextMatches={nextCricketMatches}
+        isFetching={isCricketNextFetching}
       />
     );
   };
 
   const {
-    data: footballData,
-    isFetching: isFootballFetching,
-    refetch: refetchFootball,
-  } = useGetFootballMatchesQuery({});
-  const { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } =
-    footballData || {};
+    data: footballLiveData,
+    isFetching: isFootballLiveFetching,
+    refetch: refetchLiveFootball,
+  } = useGetFootballLiveMatchesQuery({});
+  const { liveMatches: liveFootballMatches } = footballLiveData || {};
+
+  const {
+    data: footballRecentData,
+    isFetching: isFootballRecentFetching,
+    refetch: refetchRecentFootball,
+  } = useGetFootballRecentMatchesQuery({});
+  const { recentMatches: recentFootballMatches } = footballRecentData || {};
 
   const renderFootballLiveMatches = () => {
     return (
       <FootballLiveMatch
         liveMatches={liveFootballMatches}
-        isFetching={isFootballFetching}
-        onRefetch={refetchFootball}
+        isFetching={isFootballLiveFetching}
+        onRefetch={refetchLiveFootball}
+      />
+    );
+  };
+
+  const renderFootballRecentMatches = () => {
+    return (
+      <FootballRecentMatch
+        recentMatches={recentFootballMatches}
+        isFetching={isFootballRecentFetching}
+        onRefetch={refetchRecentFootball}
       />
     );
   };
@@ -117,22 +173,74 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     return <FootballNextMatch />;
   };
 
+  const {
+    data: basketballLiveData,
+    isFetching: isBasketballLiveFetching,
+    refetch: refetchLiveBasketball,
+  } = useGetBasketballLiveMatchesQuery({});
+  const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
+
+  const {
+    data: basketballRecentData,
+    isFetching: isBasketballRecentFetching,
+    refetch: refetchRecentBasketball,
+  } = useGetBasketballRecentMatchesQuery({});
+  const { recentMatches: recentBasketballMatches } = basketballRecentData || {};
+
+  const renderBasketballLiveMatches = () => {
+    return (
+      <BasketballLiveMatch
+        liveMatches={liveBasketballMatches}
+        isFetching={isBasketballLiveFetching}
+        onRefetch={refetchLiveBasketball}
+      />
+    );
+  };
+
+  const renderBasketballRecentMatches = () => {
+    return (
+      <BasketballRecentMatch
+        recentMatches={recentBasketballMatches}
+        isFetching={isBasketballRecentFetching}
+        onRefetch={refetchRecentBasketball}
+      />
+    );
+  };
+
   // one imporvement can be done is using useMemo for sections to avoid re-render first consult about it
   //also can use configMap for reusing if/else statements
   const sections = [{ type: "swiper", content: renderSwiper() }];
 
   sections.push({ type: "matches", content: renderMatches() });
 
-  if (sportsName === "Cricket")
+  if (sportsName === "Cricket") {
     sections.push({
       type: "CricketLiveMatches",
       content: renderCricketLiveMatches(),
     });
-  else if (sportsName === "Football")
+    sections.push({
+      type: "CricketRecentMatches",
+      content: renderCricketRecentMatches(),
+    });
+  } else if (sportsName === "Football") {
     sections.push({
       type: "FootballLiveMatches",
       content: renderFootballLiveMatches(),
     });
+    sections.push({
+      type: "FootballRecentMatches",
+      content: renderFootballRecentMatches(),
+    });
+  } else if (sportsName === "Basketball") {
+    sections.push({
+      type: "BasketballLiveMatches",
+      content: renderBasketballLiveMatches(),
+    });
+    sections.push({
+      type: "BasketballRecentMatches",
+      content: renderBasketballRecentMatches(),
+    });
+  }
 
   sections.push({ type: "dontMiss", content: renderDontMiss() });
 

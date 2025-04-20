@@ -71,6 +71,7 @@ const ArticlePage = () => {
         style={{ width }}
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
       >
         <View className="w-full h-[220px] overflow-hidden border-[#181818]">
           <Image

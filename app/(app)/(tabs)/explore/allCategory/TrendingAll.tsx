@@ -12,8 +12,18 @@ import TextScallingFalse from "~/components/CentralText";
 import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Hashtag from "~/components/explorePage/hashtag";
-import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
-import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
+import {
+  useGetCricketLiveMatchesQuery,
+  useGetCricketNextMatchesQuery,
+} from "~/reduxStore/api/explore/cricketApi";
+import {
+  useGetFootballLiveMatchesQuery,
+  useGetFootballNextMatchesQuery,
+} from "~/reduxStore/api/explore/footballApi";
+import {
+  useGetBasketballLiveMatchesQuery,
+  useGetBasketballNextMatchesQuery,
+} from "~/reduxStore/api/explore/basketballApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import SwiperTop from "~/components/explorePage/SwiperTop";
@@ -25,6 +35,7 @@ import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMa
 import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
+import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoader";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
@@ -33,25 +44,28 @@ const TrendingAll = () => {
   const renderSwiper = () => {
     const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
-      return (
-        <SwipperSkeletonLoader />
-      );
+      return <SwipperSkeletonLoader />;
     }
 
     if (error) {
       return (
+        <View style={{height: 240, width:'100%', justifyContent:'center', alignItems:'center'}}>
         <TextScallingFalse className="text-white">
           Error loading swipper slides.
         </TextScallingFalse>
+        </View>
       );
     }
     return <SwiperTop swiperData={articles ?? []} />;
   };
 
   const renderHashtags = () => (
-    <View className="mt-8">
-      <Hashtag data={hashtagData.slice(0, 3)} />
-      <TouchableOpacity
+    <View className="mt-10">
+      {
+        hashtagData ? 
+        <>
+        <Hashtag data={hashtagData.slice(0, 3)} />
+        <TouchableOpacity
         className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
         activeOpacity={0.6}
         onPress={() => setModalVisible(true)}
@@ -73,6 +87,10 @@ const TrendingAll = () => {
         setModalVisible={setModalVisible}
         hashtagData={hashtagData}
       />
+      </>
+        :
+        <HastagSkeletonLoader />
+      }
     </View>
   );
 
@@ -103,26 +121,42 @@ const TrendingAll = () => {
   };
 
   const {
-    data: cricketData,
-    isFetching: isCricketFetching,
+    data: cricketLiveData,
+    isFetching: isCricketLiveFetching,
     refetch: refetchLiveCricket,
-  } = useGetCricketMatchesQuery({});
-  const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
-    cricketData || {};
+  } = useGetCricketLiveMatchesQuery({});
+  const { liveMatches: liveCricketMatches } = cricketLiveData || {};
 
   const {
-    data: footballData,
-    isFetching: isFootballFetching,
-    refetch: refetchFootball,
-  } = useGetFootballMatchesQuery({});
-  const { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } =
-    footballData || {};
+    data: cricketNextData,
+    isFetching: isCricketNextFetching,
+    refetch: refetchNextCricket,
+  } = useGetCricketNextMatchesQuery({});
+  const { nextMatches: nextCricketMatches } = cricketNextData || {};
 
-  const singleLiveCricketMatch = liveCricketMatches?.slice(1, 2);
-  const singleLiveFootballMatch = liveFootballMatches?.slice(0, 1);
+  const {
+    data: footballLiveData,
+    isFetching: isFootballLiveFetching,
+    refetch: refetchLiveFootball,
+  } = useGetFootballLiveMatchesQuery({});
+  const { liveMatches: liveFootballMatches } = footballLiveData || {};
+
+  const {
+    data: basketballLiveData,
+    isFetching: isBasketballLiveFetching,
+    refetch: refetchLiveBasketball,
+  } = useGetBasketballLiveMatchesQuery({});
+  const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
+
+  const singleLiveCricketMatch = liveCricketMatches?.slice(0, 2);
+  const singleLiveFootballMatch = liveFootballMatches?.slice(0, 2);
+  const singleLiveBasketballMatch = liveBasketballMatches?.slice(0, 2);
 
   const renderTrendingLiveMatches = () => {
-    const isLoading = isCricketFetching || isFootballFetching;
+    const isLoading =
+      isCricketLiveFetching ||
+      isFootballLiveFetching ||
+      isBasketballLiveFetching;
 
     if (isLoading) {
       return (
@@ -135,8 +169,10 @@ const TrendingAll = () => {
       <TrendingLiveMatch
         liveCricketMatches={singleLiveCricketMatch}
         liveFootballMatches={singleLiveFootballMatch}
-        isCricketFetching={isCricketFetching}
-        isFootballFetching={isFootballFetching}
+        liveBasketballMatches={singleLiveBasketballMatch}
+        isCricketFetching={isCricketLiveFetching}
+        isFootballFetching={isFootballLiveFetching}
+        isBasketballFetching={isBasketballLiveFetching}
       />
     );
   };
@@ -144,8 +180,8 @@ const TrendingAll = () => {
   const renderCricketNextMatches = () => {
     return (
       <CricketNextMatch
-        nextMatch={nextCricketMatches}
-        isFetching={isCricketFetching}
+        nextMatches={nextCricketMatches}
+        isFetching={isCricketNextFetching}
       />
     );
   };

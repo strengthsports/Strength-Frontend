@@ -18,7 +18,7 @@ interface ShimmerEffectProps {
 const ShimmerEffect: React.FC<ShimmerEffectProps> = ({
   width,
   height,
-  borderRadius = 10,
+  borderRadius = 0,
   borderTopLeftRadius,
   borderBottomLeftRadius,
 }) => {
@@ -69,15 +69,13 @@ const ShimmerEffect: React.FC<ShimmerEffectProps> = ({
 
 const SwipperSkeletonLoader = () => {
   return (
-    <View className="relative w-full max-w-xl self-center min-h-48 px-2 h-auto my-4">
+    <View className="relative w-full max-w-xl self-center min-h-48 h-auto">
       <View className="flex">
         {/* Image Swiper */}
         <View>
           <ShimmerEffect
             width={postWidth}
             height={240}
-            borderTopLeftRadius={18}
-            borderBottomLeftRadius={18}
           />
         </View>
       </View>

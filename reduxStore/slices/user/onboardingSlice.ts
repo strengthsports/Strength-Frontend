@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
 import { SuggestionUser, User } from "@/types/user";
+import { selectAllPosts } from "../feed/feedSlice";
 
 interface OnboardingState {
   sportsData: { _id: string; name: string }[];
@@ -160,6 +161,7 @@ const onboardingSlice = createSlice({
         ? state.selectedSports.filter((id) => id !== sportId) // Remove sport if it's already selected
         : [...state.selectedSports, sportId]; // Add sport if not selected
       state.selectedSports = updatedSelectedSports;
+      
     },
 
     // Action to set the selected sports array

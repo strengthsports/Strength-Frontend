@@ -1,5 +1,5 @@
-import React, { useCallback, useImperativeHandle } from "react";
-import { Dimensions, StyleSheet } from "react-native";
+import React, { useCallback, useImperativeHandle, useState } from "react";
+import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Portal } from "react-native-paper";
 import Animated, {
@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Define the drawer width (e.g., 75% of screen width)
-const DRAWER_WIDTH = SCREEN_WIDTH * 0.75;
+const DRAWER_WIDTH = SCREEN_WIDTH * 0.67;
 
 export type DrawerRefProps = {
   toggle: () => void;
@@ -35,17 +35,20 @@ const CustomDrawer = React.forwardRef<DrawerRefProps, DrawerProps>(
     // Closed state: -DRAWER_WIDTH, Open state: 0
     const translateX = useSharedValue(-DRAWER_WIDTH);
     const active = useSharedValue(false);
+    const [showOverlay, setShowOverlay] = useState(false);
 
     const openDrawer = useCallback(() => {
       "worklet";
       active.value = true;
       translateX.value = withSpring(0, { damping: 50 });
+      runOnJS(setShowOverlay)(true);
     }, []);
 
     const closeDrawer = useCallback(() => {
       "worklet";
       active.value = false;
       translateX.value = withSpring(-DRAWER_WIDTH, { damping: 20 });
+      runOnJS(setShowOverlay)(false);
     }, []);
 
     const toggleDrawer = useCallback(() => {
@@ -97,6 +100,7 @@ const CustomDrawer = React.forwardRef<DrawerRefProps, DrawerProps>(
         }
       });
 
+
     const rDrawerStyle = useAnimatedStyle(() => {
       // Optional: interpolate borderRadius for a subtle effect
       const borderRadius = interpolate(
@@ -112,8 +116,38 @@ const CustomDrawer = React.forwardRef<DrawerRefProps, DrawerProps>(
       };
     });
 
+    const rOverlayStyle = useAnimatedStyle(() => {
+      const opacity = interpolate(
+        translateX.value,
+        [-DRAWER_WIDTH, 0],
+        [0, 1],
+        Extrapolate.CLAMP
+      );
+      return {
+        opacity,
+        backgroundColor: "rgba(0,0,0,0.5)",
+      };
+    });
+
     return (
       <Portal>
+        {/* Background Overlay */}
+        {showOverlay && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, rOverlayStyle]}
+            pointerEvents="auto"
+          >
+            <TouchableOpacity
+              style={StyleSheet.absoluteFill}
+              activeOpacity={1}
+              onPress={() => {
+                closeDrawer();
+              }}
+            />
+          </Animated.View>
+        )}
+
+        {/* Drawer */}
         <GestureDetector gesture={gesture}>
           <Animated.View style={[styles.drawerContainer, rDrawerStyle]}>
             {children}
@@ -128,10 +162,10 @@ const styles = StyleSheet.create({
   drawerContainer: {
     position: "absolute",
     left: 0,
-    top: 30,
+    top: 0,
     bottom: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: "#fff",
+    backgroundColor: "black",
     elevation: 10,
   },
 });

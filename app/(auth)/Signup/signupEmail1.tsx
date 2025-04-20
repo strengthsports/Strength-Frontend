@@ -467,7 +467,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   container: {
-    justifyContent: "space-between",
     alignItems: "center",
     flex: 1,
   },
@@ -483,7 +482,7 @@ const styles = StyleSheet.create({
   formContainer: {
     gap: 18,
     width: "100%",
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
   },
   nameInputsRow: {
     flexDirection: "row",
@@ -553,7 +552,7 @@ const styles = StyleSheet.create({
     height: 42,
     borderRadius: 5,
     borderColor: "white",
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
@@ -564,7 +563,7 @@ const styles = StyleSheet.create({
   },
   genderButtonText: {
     color: "white",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "400",
   },
   genderRadio: {

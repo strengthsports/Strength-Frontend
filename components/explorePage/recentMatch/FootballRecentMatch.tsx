@@ -5,29 +5,29 @@ import {
   View,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
-import TextScallingFalse from "../../CentralText";
+import TextScallingFalse from "~/components/CentralText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import CricketMatchCard from "../matchCard/CricketMatchCard";
-import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
-// import MatchCard from "../matchCard/CricketMatchCard";
+import FootballMatchCard from "../matchCard/FootballMatchCard";
+import { Colors } from "~/constants/Colors";
 
-interface LiveCricketMatchProps {
-  liveMatches: any[];
+interface RecentFootballMatchProps {
+  recentMatches: any[];
   isFetching: boolean;
   onRefetch: () => void;
 }
 
-const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
-  liveMatches,
+const FootballRecentMatch: React.FC<RecentFootballMatchProps> = ({
+  recentMatches,
   isFetching,
   onRefetch,
 }) => {
   return (
     <View className="mt-4">
       <FlatList
-        data={liveMatches}
-        keyExtractor={(item) => item?.match_id.toString()}
+        data={recentMatches}
+        keyExtractor={(item) => item?.fixture?.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
@@ -35,10 +35,10 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
           <View className="h-[164px] w-[280px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
-                <ScoresSkeletonLoader />
+                <ActivityIndicator size="large" color={Colors.themeColor} />
               </View>
             ) : (
-              <CricketMatchCard match={item} isLive={true} />
+              <FootballMatchCard match={item} isLive={false} />
             )}
           </View>
         )}
@@ -54,6 +54,6 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
   );
 };
 
-export default CricketLiveMatch;
+export default FootballRecentMatch;
 
 const styles = StyleSheet.create({});

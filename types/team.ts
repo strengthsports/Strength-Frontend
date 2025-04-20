@@ -29,3 +29,17 @@ export type TeamMember = {
   headline: string;
   profilePic?: string;
 };
+
+export interface SuggestTeam {
+  _id: string;
+  name: string;
+  address: {
+    city: string;
+    state: string;
+    country: string;
+  };
+  logo: {
+    url: string;
+  };
+  [key: string]: any;
+}

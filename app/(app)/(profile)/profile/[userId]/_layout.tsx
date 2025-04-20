@@ -103,6 +103,12 @@ const ProfileLayout = () => {
   useEffect(() => {
     if (userId) {
       console.log("User ID : ", userId?.id, " Type : ", userId?.type);
+
+      if (userId?.id === undefined && userId?.type === undefined) {
+        router.replace("/(app)/(profile)/profile/profile-not-found");
+        return;
+      }
+
       getUserProfile({
         targetUserId: userId?.id,
         targetUserType: userId?.type,

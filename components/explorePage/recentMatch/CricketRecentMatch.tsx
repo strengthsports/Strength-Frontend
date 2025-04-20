@@ -12,21 +12,21 @@ import CricketMatchCard from "../matchCard/CricketMatchCard";
 import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
 // import MatchCard from "../matchCard/CricketMatchCard";
 
-interface LiveCricketMatchProps {
-  liveMatches: any[];
+interface RecentCricketMatchProps {
+  recentMatches: any[];
   isFetching: boolean;
   onRefetch: () => void;
 }
 
-const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
-  liveMatches,
+const CricketRecentMatch: React.FC<RecentCricketMatchProps> = ({
+  recentMatches,
   isFetching,
   onRefetch,
 }) => {
   return (
     <View className="mt-4">
       <FlatList
-        data={liveMatches}
+        data={recentMatches}
         keyExtractor={(item) => item?.match_id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -38,14 +38,14 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
                 <ScoresSkeletonLoader />
               </View>
             ) : (
-              <CricketMatchCard match={item} isLive={true} />
+              <CricketMatchCard match={item} isLive={false} />
             )}
           </View>
         )}
         ListEmptyComponent={
           <View className="w-screen justify-center mt-10">
             <TextScallingFalse className="text-white self-center text-center pr-7">
-              No live matches available
+              No recent matches available
             </TextScallingFalse>
           </View>
         }
@@ -54,6 +54,6 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
   );
 };
 
-export default CricketLiveMatch;
+export default CricketRecentMatch;
 
 const styles = StyleSheet.create({});

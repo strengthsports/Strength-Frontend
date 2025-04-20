@@ -112,18 +112,18 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: "#1F2937",
+                backgroundColor: "#212121",
                 borderRadius: 100,
                 paddingHorizontal: 16,
                 paddingVertical: 8,
               }}
             >
-              <Icon name="search1" size={20} color="#666" />
+              <Icon name="search1" size={20} color="#CECECE" />
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder="Search..."
-                placeholderTextColor="#666"
+                placeholderTextColor="#CECECE"
                 style={{
                   flex: 1,
                   color: "white",
@@ -135,7 +135,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
           </View>
 
           {/* Members List */}
-          <ScrollView style={{ flex: 1 }}>
+          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
             {members.map((member) => (
               <View
                 key={member._id}
@@ -190,7 +190,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
       fontWeight: "300",
       flexWrap: "wrap",
     }}
-    numberOfLines={2} // optional: limit lines if needed
+    numberOfLines={2} 
   >
     @{member.username} | {member.headline}
   </TextScallingFalse>

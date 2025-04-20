@@ -16,19 +16,19 @@ const NameFlagSubCard = ({
   return (
     <View style={styles.nameCard}>
       {/* Display country flag if it's not "Unknown", otherwise fallback to team logo */}
-      {flag === "Unknown" ? (
+      {flag === "" ? (
         <View style={styles.logoContainer}>
           <Image source={imgUrl} style={styles.teamLogo} resizeMode="contain" />
         </View>
-      ) : teamLogo ? (
+      ) : (
         <View style={styles.logoContainer}>
           <Image
-            source={teamLogo}
+            source={{ uri: flag }}
             style={styles.teamLogo}
             resizeMode="contain"
           />
         </View>
-      ) : null}
+      )}
       <Text style={styles.teamName}>{teamName}</Text>
     </View>
   );

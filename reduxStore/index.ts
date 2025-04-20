@@ -28,17 +28,19 @@ import sportsReducer from "./slices/team/sportSlice";
 import teamForumReducer from "./slices/team/teamForumSlice";
 import feedReducer from "./slices/feed/feedSlice";
 import postReducer from "./slices/post/postSlice";
-import userSuggestionsReducer from "./slices/team/userSuggestionSlice"
+import userSuggestionsReducer from "./slices/team/userSuggestionSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { feedApi } from "./api/feed/services/feedApi";
 import { sportsApi } from "./api/sportsApi";
 import { postsApi } from "./api/posts/postsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
-import { cricketApi } from "./api/explore/cricketApi";
 import { searchApi } from "./api/explore/searchApi";
 import notificationReducer from "./slices/notification/notificationSlice";
+import { cricketApi } from "./api/explore/cricketApi";
 import { footballApi } from "./api/explore/footballApi";
+import { basketballApi } from "./api/explore/basketballApi";
+// import { badmintonApi } from "./api/explore/badmintonApi";
 import { articleApi } from "./api/explore/article/articleApi";
 
 // Persist configuration
@@ -50,8 +52,9 @@ const persistConfig = {
     "signup",
     "onboarding",
     "forgotPassword",
-    "profile", 
-    "search", "teamForum",
+    "profile",
+    "search",
+    "teamForum",
     "feed",
   ],
   blacklist: [], // Add any API reducers here
@@ -67,7 +70,7 @@ const rootReducer = combineReducers({
   hashtagPage: hashtagReducer,
   team: teamReducer,
   sports: sportsReducer,
-  search:  searchReducer,
+  search: searchReducer,
   teamForum: teamForumReducer,
   userSuggestions: userSuggestionsReducer,
   feed: feedReducer,
@@ -79,6 +82,8 @@ const rootReducer = combineReducers({
   [communityApi.reducerPath]: communityApi.reducer,
   [cricketApi.reducerPath]: cricketApi.reducer,
   [footballApi.reducerPath]: footballApi.reducer,
+  [basketballApi.reducerPath]: basketballApi.reducer,
+  // [badmintonApi.reducerPath]: badmintonApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
   [searchApi.reducerPath]: searchApi.reducer,
@@ -94,6 +99,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
+      immutableCheck: false,
     }).concat(
       profileApi.middleware,
       sportsApi.middleware,
@@ -101,6 +107,8 @@ export const store = configureStore({
       communityApi.middleware,
       cricketApi.middleware,
       footballApi.middleware,
+      basketballApi.middleware,
+      // badmintonApi.middleware,
       feedApi.middleware,
       postsApi.middleware,
       searchApi.middleware,

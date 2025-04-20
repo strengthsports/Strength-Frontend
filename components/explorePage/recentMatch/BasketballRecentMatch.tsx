@@ -1,33 +1,31 @@
-import React from "react";
 import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
+  ActivityIndicator,
   FlatList,
 } from "react-native";
-import TextScallingFalse from "../../CentralText";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import CricketMatchCard from "../matchCard/CricketMatchCard";
-import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
-// import MatchCard from "../matchCard/CricketMatchCard";
+import React from "react";
+import TextScallingFalse from "~/components/CentralText";
+import BasketballMatchCard from "../matchCard/BasketballMatchCard";
+import { Colors } from "~/constants/Colors";
 
-interface LiveCricketMatchProps {
-  liveMatches: any[];
+interface RecentBasketballMatchProps {
+  recentMatches: any[];
   isFetching: boolean;
   onRefetch: () => void;
 }
 
-const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
-  liveMatches,
+const BasketballRecentMatch: React.FC<RecentBasketballMatchProps> = ({
+  recentMatches,
   isFetching,
   onRefetch,
 }) => {
   return (
     <View className="mt-4">
       <FlatList
-        data={liveMatches}
-        keyExtractor={(item) => item?.match_id.toString()}
+        data={recentMatches}
+        keyExtractor={(item) => item?.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
@@ -35,10 +33,10 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
           <View className="h-[164px] w-[280px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
-                <ScoresSkeletonLoader />
+                <ActivityIndicator size="large" color={Colors.themeColor} />
               </View>
             ) : (
-              <CricketMatchCard match={item} isLive={true} />
+              <BasketballMatchCard match={item} isLive={false} />
             )}
           </View>
         )}
@@ -54,6 +52,6 @@ const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
   );
 };
 
-export default CricketLiveMatch;
+export default BasketballRecentMatch;
 
 const styles = StyleSheet.create({});

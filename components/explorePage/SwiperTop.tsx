@@ -118,17 +118,29 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
             key={slide._id}
             className="flex-1"
           >
+            {/* <View
+              style={{
+                width: "100%", // make sure it's full width
+                height: "100%", // enough height to show the image
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            > */}
             <Image
               source={{ uri: slide.imageUrl }}
               className="w-full h-full"
               resizeMode="cover"
             />
-            <LinearGradient
-              colors={["rgba(0,0,0,0.95)", "rgba(0,0,0,0.98)", "rgba(0,0,0,1)"]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-              className="absolute bottom-0 left-0 right-0 h-64"
-            />
+            {/* <LinearGradient
+                colors={[
+                  "rgba(0,0,0,0.95)",
+                  "rgba(0,0,0,0.98)",
+                  "rgba(0,0,0,1)",
+                ]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                className="absolute bottom-0 left-0 right-0 h-64"
+              /> */}
             <View className="absolute bottom-9 pl-5">
               <TextScallingFalse
                 className="text-white text-6xl font-bold"
@@ -150,6 +162,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 </TextScallingFalse>
               </View>
             </View>
+            {/* </View> */}
           </Pressable>
         ))
       ) : (

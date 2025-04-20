@@ -17,24 +17,28 @@ import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
 interface LiveTrendingMatchProps {
   liveCricketMatches: any[];
   liveFootballMatches: any[];
+  liveBasketballMatches: any[];
   isCricketFetching: boolean;
   isFootballFetching: boolean;
+  isBasketballFetching: boolean;
 }
 
 const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
   liveCricketMatches,
   liveFootballMatches,
+  liveBasketballMatches,
   isCricketFetching,
   isFootballFetching,
+  isBasketballFetching,
 }) => {
-  const isLoading = isCricketFetching || isFootballFetching;
+  const isLoading =
+    isCricketFetching || isFootballFetching || isBasketballFetching;
 
   // Combine and mark the type of match
   const combinedMatches = [
     ...liveCricketMatches.map((match) => ({ type: "cricket", match })),
     ...liveFootballMatches.map((match) => ({ type: "football", match })),
-    ...liveFootballMatches.map((match) => ({ type: "badminton", match })),
-    ...liveFootballMatches.map((match) => ({ type: "basketball", match })),
+    ...liveBasketballMatches.map((match) => ({ type: "basketball", match })),
   ];
 
   const renderItem = ({ item }: { item: { type: string; match: any } }) => {
@@ -46,9 +50,6 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
         break;
       case "football":
         CardComponent = <FootballMatchCard match={item.match} isLive={true} />;
-        break;
-      case "badminton":
-        CardComponent = <BadmintonMatchCard match={item.match} isLive={true} />;
         break;
       case "basketball":
         CardComponent = (

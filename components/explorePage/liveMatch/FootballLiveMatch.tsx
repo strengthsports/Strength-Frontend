@@ -27,7 +27,7 @@ const FootballLiveMatch: React.FC<LiveFootballMatchProps> = ({
     <View className="mt-4">
       <FlatList
         data={liveMatches}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item?.fixture?.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}

@@ -7,14 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { TouchableWithoutFeedback } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import TeamMember from "./TeamMember";
 import { useFonts } from "expo-font";
 import { useSelector } from "react-redux";
 import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
-import Captain from "../SvgIcons/teams/Captain";
 
 interface SquadProps {
   teamDetails: any;
@@ -39,7 +37,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       );
       setIsAdmin(adminCheck);
     }
-  }, [teamDetails]);
+  }, [teamDetails, user?._id]);
 
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="white" />;
@@ -66,22 +64,21 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         const role = member.role?.toLowerCase();
         const playerTypeLower = playerType.toLowerCase();
         
-        // Handle case-insensitive matching for all variations of "All-Rounders"
         if (playerTypeLower.includes("rounder")) {
           return role === "all-rounder" || 
                  role === "allrounder" || 
-                 role === "member";
+                 role === "member" ||
+                 role === "Captain";
         }
         
-        // For other player types, match exactly (case-insensitive)
+        
         return role === playerTypeLower;
       }) || []
     );
   };
 
-
-  const renderMemberSection = (title: string, members: any[]) => (
-    <View   >
+  const renderMemberSection = (title: string, members: any[], sectionKey: string) => (
+    <View key={`section-${sectionKey}`}>
       <Text
         style={{
           fontFamily: "Sansation-Regular",
@@ -94,11 +91,13 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       </Text>
       <View className="flex mt-6 mb-5 flex-row flex-wrap">
         {members.length > 0 ? (
-          members.map((member, index) => {
+          members.map((member) => {
             const user = member.user;
+            const memberKey = member._id || `member-${Math.random().toString(36).substr(2, 9)}`;
+            
             return (
               <View
-                key={user?._id || member._id || Math.random().toString()}
+                key={memberKey}
                 className="w-1/2 p-1"
               >
                 <TouchableOpacity
@@ -107,22 +106,23 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                     setShowDownwardDrawer(true);
                   }}
                 >
-                 <TeamMember
-                  imageUrl={user?.profilePic}
-                  name={`${user?.firstName || "Unknown"} ${user?.lastName || ""}`}
-                  isCaptain={member.position?.toLowerCase() === "captain"}
-                  isViceCaptain={member.position?.toLowerCase() === "vicecaptain"}
-                  description={user?.headline || "No description available"}
-                  isAdmin={isAdmin}
-                  onRemove={() => console.log("Remove user:", user?._id)}
+                  <TeamMember
+                    key={`team-member-${memberKey}`}
+                    imageUrl={user?.profilePic}
+                    name={`${user?.firstName || "Unknown"} ${user?.lastName || ""}`}
+                    isCaptain={member.position?.toLowerCase() === "captain"}
+                    isViceCaptain={member.position?.toLowerCase() === "vicecaptain"}
+                    description={user?.headline || "No description available"}
+                    isAdmin={isAdmin}
+                    onRemove={() => console.log("Remove user:", user?._id)}
                   />
-
                 </TouchableOpacity>
               </View>
             );
           })
         ) : (
           <TouchableOpacity
+            key={`add-${sectionKey}`}
             className="w-1/2 p-2"
             onPress={() => handleAddMember(title)}
           >
@@ -147,51 +147,54 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   );
 
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        maxWidth: "100%",
-        paddingHorizontal: 12,
-        backgroundColor: "#0B0B0B",
-        maxHeight:"100%",
-        paddingBottom:80,
-      }}
-    >
-      <View
+    <View>
+      <ScrollView
         style={{
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          alignItems: "flex-end",
-          paddingHorizontal: 16,
-          top: 36,
+          flex: 1,
+          maxWidth: "100%",
+          paddingHorizontal: 12,
+          backgroundColor: "#0B0B0B",
+          maxHeight: "100%",
+          paddingBottom: 80,
         }}
       >
-        <TouchableOpacity
-          onPress={() => {
-            console.log("ThreeDot Pressed");
-            router.push(`/(app)/(team)/teams/${teamId}/members`);
-          }}
-          activeOpacity={0.7}
+        <View
           style={{
-            padding: 10,
-            alignItems: "center",
-            justifyContent: "center",
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            alignItems: "flex-end",
+            paddingHorizontal: 16,
+            top: 36,
           }}
         >
-          <ThreeDot />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            onPress={() => router.push(`/(app)/(team)/teams/${teamId}/members`)}
+            activeOpacity={0.7}
+            style={{
+              padding: 10,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ThreeDot />
+          </TouchableOpacity>
+        </View>
 
-      {teamDetails?.sport?.playerTypes?.map((playerType: any) =>
-        renderMemberSection(playerType.name, categorizeMembers(playerType.name))
-      )}
+        {teamDetails?.sport?.playerTypes?.map((playerType: any) =>
+          renderMemberSection(
+            playerType.name,
+            categorizeMembers(playerType.name),
+            playerType._id || playerType.name
+          )
+        )}
 
-      <DownwardDrawer
-        visible={showDownwardDrawer}
-        onClose={() => setShowDownwardDrawer(false)}
-        member={selectedMember}
-      />
-    </ScrollView>
+        <DownwardDrawer
+          visible={showDownwardDrawer}
+          onClose={() => setShowDownwardDrawer(false)}
+          member={selectedMember}
+        />
+      </ScrollView>
+    </View>
   );
 };
 

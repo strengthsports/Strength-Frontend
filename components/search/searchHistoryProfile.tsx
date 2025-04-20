@@ -26,7 +26,7 @@ const SearchHistoryProfile = ({
       >
         {/* Profile Image */}
         <Image
-          className="rounded-full mb-1"
+          className="rounded-full mb-1 border border-[#2F2F2F]"
           source={
             profilePic && profilePic.trim() !== "" ? { uri: profilePic } : nopic
           }

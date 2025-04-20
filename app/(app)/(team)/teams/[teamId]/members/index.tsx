@@ -2,13 +2,17 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from "react-
 import React, { useState, useEffect } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import Icon from "react-native-vector-icons/AntDesign";
-import { RelativePathString, useRouter } from "expo-router";
+// import { RelativePathString, useRouter } from "expo-router";
 import { Divider, Avatar, ActivityIndicator } from "react-native-paper";
-import { useSelector } from "react-redux";
-import { RootState } from "@/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
+// import { useSelector } from "react-redux";
+import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
+// import { RootState } from "@/reduxStore";
 import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
 import nopic from "../../../../../../assets/images/nopic.jpg";
+import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 
 // Define TypeScript Interfaces
 interface User {
@@ -28,7 +32,8 @@ const Members: React.FC = () => {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.profile);
   const { team, loading } = useSelector((state: RootState) => state.team);
-
+  const { teamId } = useLocalSearchParams<{ teamId: string }>();
+  const dispatch = useDispatch<AppDispatch>();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -56,6 +61,8 @@ const Members: React.FC = () => {
   };
 
   useEffect(() => {
+     dispatch(fetchTeamDetails(team?._id));
+         
     if (team?.members) {
       setFilteredMembers(team.members);
     }

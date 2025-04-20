@@ -15,6 +15,7 @@ import {
   Platform,
   Alert,
   Dimensions,
+  Keyboard,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { useRouter } from "expo-router";
@@ -34,8 +35,10 @@ import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import {
+  resetUploadProgress,
   setAddPostContainerOpen,
-  setPostProgressOn,
+  setUploadLoading,
+  uploadPost,
 } from "~/reduxStore/slices/post/postSlice";
 import PollsIcon from "../SvgIcons/addpost/PollsIcon";
 import PollsContainer from "../Cards/PollsContainer";
@@ -44,12 +47,13 @@ import AddImageIcon from "../SvgIcons/addpost/AddImageIcon";
 import FeatureUnderDev from "./FeatureUnderDev";
 import ClipsIcon from "../SvgIcons/addpost/ClipsIcon";
 import { ResizeMode, Video } from "expo-av";
-import Slider from "@react-native-community/slider";
 import { Image } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { Animated } from "react-native";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import CustomHashtagMentionInput from "../ui/CustomHashtagMentionInput";
 import CustomVideoPlayer from "../PostContainer/VideoPlayer";
+import { showEditor } from "react-native-video-trim";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(
@@ -487,27 +491,33 @@ export default function AddPostContainer({
   const [isAlertModalOpen, setAlertModalOpen] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
   const [inputHeight, setInputHeight] = useState(40);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showPollInput, setShowPollInput] = useState(false);
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
   const [showFeatureModal, setShowFeatureModal] = useState(false);
 
   const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
+  const [isVideoTrimmed, setIsVideoTrimmed] = useState<boolean>(false);
 
-  // Improved regex pattern for tag detection
-  const parseTags = (text: string) => {
-    const parts = text.split(/((?:#|@)[a-zA-Z0-9_]+)/g);
-
-    return parts.map((part, index) => {
-      if (part.startsWith("#") || part.startsWith("@")) {
-        return (
-          <TextScallingFalse key={index} style={{ color: "#12956B" }}>
-            {part}
-          </TextScallingFalse>
-        );
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
       }
-      return <TextScallingFalse key={index}>{part}</TextScallingFalse>;
-    });
-  };
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const handleSetActiveIndex = (index: any) => {
     setActiveIndex(index);
@@ -544,11 +554,11 @@ export default function AddPostContainer({
   ]);
 
   // Use callbacks for event handlers to prevent unnecessary re-renders
-  const handlePostSubmit = useCallback(() => {
+  const handlePostSubmit = useCallback(async () => {
     if (!isPostButtonEnabled) return;
+    dispatch(resetUploadProgress());
+    dispatch(setUploadLoading(true));
     dispatch(setAddPostContainerOpen(false));
-    // router.push("/(app)/(tabs)/home");
-    dispatch(setPostProgressOn(true));
 
     try {
       const formData = new FormData();
@@ -592,17 +602,10 @@ export default function AddPostContainer({
         setTypeVideo(false);
       }
 
-      addPost(formData)
-        .unwrap()
-        .finally(() => {
-          dispatch(setPostProgressOn(false));
-        })
-        .catch((error) => {
-          console.error("Failed to add post:", error);
-          showFeedback("Failed to add post. Please try again.");
-        });
+      await dispatch(uploadPost(formData)).unwrap();
     } catch (error) {
       console.error("Failed to add post:", error);
+      showFeedback("Failed to add post. Please try again.");
     }
   }, [
     addPost,
@@ -686,13 +689,10 @@ export default function AddPostContainer({
 
   // Smart handler for image button
   const handlePickImageOrAddMore = useCallback(() => {
-    // If video mode is not active, proceed with image picking
-    if (!isTypeVideo) {
-      if (pickedImageUris.length === 0) {
-        setIsImageRatioModalVisible(true);
-      } else {
-        addMoreImages();
-      }
+    if (pickedImageUris.length === 0) {
+      setIsImageRatioModalVisible(true);
+    } else {
+      addMoreImages();
     }
   }, [addMoreImages, pickedImageUris.length, isTypeVideo]);
 
@@ -722,7 +722,8 @@ export default function AddPostContainer({
         const uri = result.assets[0].uri;
         setPickedVideoUri(uri);
         // Open the video trimmer modal
-        setIsVideoTrimmerVisible(true);
+        // setIsVideoTrimmerVisible(true);
+        showEditor(uri);
       }
     } catch (error) {
       console.error("Error picking video:", error);
@@ -733,6 +734,7 @@ export default function AddPostContainer({
   // Callback when video trimming is complete
   const handleTrimComplete = (trimmedUri: string) => {
     setPickedVideoUri(trimmedUri);
+    setIsVideoTrimmed(true);
     setIsVideoTrimmerVisible(false);
   };
 
@@ -821,55 +823,10 @@ export default function AddPostContainer({
           >
             <View style={{ minHeight: 100 }}>
               {/* Overlay text with highlighting */}
-              <View
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  pointerEvents: "none",
-                  paddingHorizontal: 16,
-                  paddingTop: Platform.OS === "ios" ? 8 : 4,
-                }}
-              >
-                <TextScallingFalse
-                  style={{
-                    fontSize: 16,
-                    color: "transparent",
-                    lineHeight: 24,
-                    // Match TextInput's text alignment behavior
-                    textAlignVertical: "top",
-                    includeFontPadding: false,
-                  }}
-                >
-                  {parseTags(postText)}
-                </TextScallingFalse>
-              </View>
-
-              {/* Actual text input */}
-              <TextInput
-                ref={inputRef}
-                multiline
-                autoFocus
-                placeholder={placeholderText}
-                placeholderTextColor="grey"
+              <CustomHashtagMentionInput
                 value={postText}
                 onChangeText={setPostText}
-                onContentSizeChange={(e) => {
-                  setInputHeight(e.nativeEvent.contentSize.height);
-                }}
-                style={{
-                  fontSize: 16,
-                  color: "white",
-                  paddingHorizontal: 16,
-                  height: Math.max(40, inputHeight),
-                  opacity: 0.99, // Needs to be almost opaque to hide overlay
-                  lineHeight: 24,
-                  textAlignVertical: "top",
-                }}
-                cursorColor={Colors.themeColor}
-                textBreakStrategy="highQuality"
-                keyboardAppearance="dark"
+                placeholder={text}
               />
             </View>
 
@@ -894,9 +851,12 @@ export default function AddPostContainer({
             )}
 
             {/* Only render VideoPlayer when there is a video */}
-            {/* {isTypeVideo && pickedVideoUri !== null && (
-              <CustomVideoPlayer autoPlay={true} videoUri={pickedVideoUri} />
-            )} */}
+            {isTypeVideo && isVideoTrimmed && (
+              <CustomVideoPlayer
+                autoPlay={true}
+                videoUri={pickedVideoUri as string}
+              />
+            )}
 
             {/* Pagination */}
             {/* {pickedImageUris.length > 1 && (
@@ -970,7 +930,9 @@ export default function AddPostContainer({
               {/* Image button */}
               <TouchableOpacity
                 onPress={handlePickImageOrAddMore}
-                disabled={showPollInput || isTypeVideo}
+                disabled={
+                  showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                }
                 activeOpacity={0.7}
               >
                 <AddImageIcon

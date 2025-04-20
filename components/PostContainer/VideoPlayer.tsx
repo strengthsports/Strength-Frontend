@@ -129,7 +129,7 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
                 }
               : {},
           ]}
-          resizeMode={ResizeMode.CONTAIN}
+          resizeMode={ResizeMode.COVER}
           onPlaybackStatusUpdate={(status) =>
             handlePlaybackStatusUpdate(status as AVPlaybackStatusSuccess)
           }

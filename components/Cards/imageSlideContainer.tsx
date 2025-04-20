@@ -21,6 +21,19 @@ import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import { Image } from "expo-image";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 
+// const borderLeftWidth = Platform.select({
+//   ios: {
+//     borderLeftWidth: 3
+//   },
+//   android: {
+//     borderLeftWidth: 0.5
+//   },
+// });
+
+// const borderTopwidth =
+
+// const borderBottomWidth =
+
 interface CustomImageSliderProps {
   images: string[];
   aspectRatio: [number, number];

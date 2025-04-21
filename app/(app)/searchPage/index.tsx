@@ -176,7 +176,7 @@ const SearchPage: React.FC = () => {
       ) : (
         <View>
           <View className="flex-row justify-between items-center px-6 py-2">
-            <TextScallingFalse className="text-2xl text-[#808080] mb-2">Recent</TextScallingFalse>
+            <TextScallingFalse className="text-3xl text-[#808080] mb-2">Recent</TextScallingFalse>
             <TextScallingFalse
               onPress={clearSearchHistory}
               className="text-2xl text-[#808080] mb-2"
@@ -203,7 +203,7 @@ const SearchPage: React.FC = () => {
             renderItem={renderRecentSearch}
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={{
-              gap: 25,
+              gap: 27,
               paddingVertical: 26,
               paddingHorizontal: 20,
             }}

@@ -11,7 +11,6 @@ import {
   View,
   TouchableOpacity,
   Image,
-  Text,
   Platform,
   ToastAndroid,
   ScrollView,
@@ -27,6 +26,7 @@ import CustomDivider from "~/components/ui/CustomDivider";
 import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import Toast from "react-native-toast-message";
 import TextScallingFalse from "~/components/CentralText";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface DrawerContextProps {
   handleOpenDrawer: () => void;
@@ -120,11 +120,11 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
         onClose={handleCloseDrawer}
         onOpen={handleOpenDrawer}
       >
-        <View className="w-full h-full bg-black pt-4">
+        <SafeAreaView className="w-full h-full bg-black pt-4" style={{ justifyContent: 'space-between' }}>
 
           <ScrollView className="flex-1 pt-12">
             {/* Profile Section */}
-            <View className="flex-row items-center pl-6 mb-6">
+            <TouchableOpacity onPress={() => { handleCloseDrawer(); router.push("/(app)/(tabs)/profile") }} activeOpacity={0.7} className="flex-row items-center pl-6 mb-6">
               <Image
                 source={user?.profilePic ? { uri: user.profilePic } : nopic}
                 className="w-14 h-14 rounded-full"
@@ -134,20 +134,21 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 <TextScallingFalse className="text-white text-xl font-semibold">
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
-                <TextScallingFalse numberOfLines={2} className="text-gray-400 text-lg" style={{width:'35%', backgroundColor:'purple'}}>
-                  @{user?.username} | {user?.headline} ksanoasnx sbaosbocsab ocsb csducb sdoub
-                </TextScallingFalse>
+                <View style={{ width: 130 }}>
+                  <TextScallingFalse numberOfLines={2} ellipsizeMode="tail" className="text-gray-400 text-lg">
+                    @{user?.username} | {user?.headline}
+                  </TextScallingFalse>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
 
             <CustomDivider
               color="#5C5C5C"
               thickness={0.2}
               style={{ width: '90%', opacity: 0.5, alignSelf: 'center' }}
             />
-
             {/* Teams Section */}
-            <View style={{ paddingHorizontal: 24 }}>
+            <View style={{ paddingHorizontal: 24, paddingVertical: 7, gap: 7}}>
               <TextScallingFalse className="text-white text-4xl font-bold mb-4">
                 Manage Teams
               </TextScallingFalse>
@@ -161,15 +162,15 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   }}
                   className={`mb-${index === visibleTeams.length - 1 ? 4 : 2}`}
                 >
-                  <View className="flex-row items-center">
+                  <View style={{ width: 210, flexDirection: 'row' }}>
                     <Image
                       source={{ uri: team.url }}
                       className="w-10 h-10 rounded-full"
                       resizeMode="cover"
                     />
-                    <Text className="text-white text-3xl font-medium ml-4">
+                    <TextScallingFalse className="text-white text-3xl font-medium ml-4" style={{ flex: 1 }}>
                       {team.name}
-                    </Text>
+                    </TextScallingFalse>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -179,9 +180,9 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   onPress={() => setShowAllTeams(!showAllTeams)}
                   className="mt-2"
                 >
-                  <Text className="text-white text-2xl font-semibold">
+                  <TextScallingFalse className="text-white text-2xl font-semibold">
                     {showAllTeams ? "See Less" : "See More"}
-                  </Text>
+                  </TextScallingFalse>
                 </TouchableOpacity>
               )}
 
@@ -206,39 +207,31 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   }}
                   className="bg-[#303030] px-3 py-2 rounded-md"
                 >
-                  <Text className="text-white text-sm font-semibold">
+                  <TextScallingFalse className="text-white text-sm font-semibold">
                     Join Team
-                  </Text>
+                  </TextScallingFalse>
                 </TouchableOpacity>
               </View>
-
-              {/* Settings and Logout */}
-              <TouchableOpacity
-                className="flex-row items-center py-6"
-                onPress={() => {
-                  router.push("/(app)/(settings)/settings");
-                  handleCloseDrawer();
-                }}
-              >
-                <Feather name="settings" size={20} color="white" />
-                <Text className="text-white text-4xl font-medium ml-2">
-                  Settings
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleLogout}
-                className="flex-row items-center"
-              >
-                <Ionicons name="log-out-outline" size={20} color="white" />
-                <Text className="text-white text-4xl font-semibold ml-2">
-                  Logout
-                </Text>
-              </TouchableOpacity>
-
             </View>
           </ScrollView>
-        </View>
+          {/* Settings and Logout */}
+          <View style={{justifyContent:'center', alignItems:'center'}}>
+          <View style={{ height: 100, borderTopColor: '#303030', borderWidth: 0.5, width:'85%'}}>
+            <TouchableOpacity
+              className="flex-row items-center py-6"
+              onPress={() => {
+                router.push("/(app)/(settings)/settings");
+                handleCloseDrawer();
+              }}
+            >
+              <Feather name="settings" size={20} color="white" />
+              <TextScallingFalse className="text-white text-4xl font-medium ml-2">
+                Settings
+              </TextScallingFalse>
+            </TouchableOpacity>
+          </View>
+          </View>
+        </SafeAreaView>
       </CustomDrawer>
       {children}
     </DrawerContext.Provider>

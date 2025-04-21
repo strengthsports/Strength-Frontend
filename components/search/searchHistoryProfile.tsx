@@ -16,8 +16,8 @@ const SearchHistoryProfile = ({
 }) => {
   return (
     <View
-      className="items-center rounded-md border-[0.5px] border-[#808080] py-2"
-      style={{ width: width * 0.22 }}
+      className="items-center rounded-xl border-[0.5px] border-[#606060] py-4"
+      style={{ width: width * 0.22}}
     >
       <TouchableOpacity
         className="items-center"
@@ -30,14 +30,14 @@ const SearchHistoryProfile = ({
           source={
             profilePic && profilePic.trim() !== "" ? { uri: profilePic } : nopic
           }
-          style={{ width: 35, height: 35 }}
+          style={{ width: 38, height: 38 }}
         />
-
+        <View>
         {/* Name */}
         <TextScallingFalse
           className="text-white font-semibold text-center"
           numberOfLines={1}
-          style={{ fontSize: 12, maxWidth: "90%" }}
+          style={{ fontSize: 10, maxWidth: "80%" }}
         >
           {name}
         </TextScallingFalse>
@@ -46,10 +46,11 @@ const SearchHistoryProfile = ({
         <TextScallingFalse
           className="text-[#71767b] text-center"
           numberOfLines={1}
-          style={{ fontSize: 10, maxWidth: "90%" }}
+          style={{ fontSize: 8, maxWidth: "80%" }}
         >
           @{username}
         </TextScallingFalse>
+        </View>
       </TouchableOpacity>
     </View>
   );

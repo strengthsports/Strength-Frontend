@@ -10,7 +10,7 @@ const SearchHeader = () => {
     <View className="flex-row my-3 px-5">
     <TouchableOpacity
       activeOpacity={0.8}
-      className="flex-row bg-[#1E1E1E] rounded-3xl px-4 py-[10.2px] items-center flex-1"
+      className="flex-row bg-[#1E1E1E] rounded-3xl px-4 py-[10.2px] border-[0.5px] border-[#343434] items-center flex-1"
       onPress={() => router.push("/(app)/searchPage")}
     >
       {/* <Feather name="search" size={22} color="grey" /> */}

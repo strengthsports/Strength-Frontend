@@ -36,9 +36,15 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
 
   // Combine and mark the type of match
   const combinedMatches = [
-    ...liveCricketMatches.map((match) => ({ type: "cricket", match })),
-    ...liveFootballMatches.map((match) => ({ type: "football", match })),
-    ...liveBasketballMatches.map((match) => ({ type: "basketball", match })),
+    ...(liveCricketMatches || []).map((match) => ({ type: "cricket", match })),
+    ...(liveFootballMatches || []).map((match) => ({
+      type: "football",
+      match,
+    })),
+    ...(liveBasketballMatches || []).map((match) => ({
+      type: "basketball",
+      match,
+    })),
   ];
 
   const renderItem = ({ item }: { item: { type: string; match: any } }) => {

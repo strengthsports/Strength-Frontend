@@ -12,9 +12,9 @@ const SearchHistoryText = ({
 }) => {
   return (
     <View className="flex-row items-center w-full">
-      <Entypo name="back-in-time" size={18} color="white" className="mr-5" />
+      <Entypo name="back-in-time" size={20} color="white" className="mr-5" />
       {/* Searched Text */}
-      <TextScallingFalse className="text-2xl text-white flex-grow">
+      <TextScallingFalse className="text-3xl text-white flex-grow" style={{fontWeight:'400'}}>
         {searchText}
       </TextScallingFalse>
       <Feather

@@ -377,6 +377,8 @@ const handleCreateTeam = async () => {
     }
 
     const teamId = result.data._id;
+    const len = result.data.sport.playerTypes.length-1;
+    const UserRole = result.data.sport.playerTypes[len].name;
     
     // Send invitations if there are members
     if (formData.members.length > 0) {
@@ -386,7 +388,7 @@ const handleCreateTeam = async () => {
           sendInvitations({
             teamId,
             receiverIds: memberIds,
-            role: "member",
+            role: UserRole,
             createdBy: user?.id
           })
         ).unwrap();

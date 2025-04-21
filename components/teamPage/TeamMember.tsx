@@ -59,12 +59,12 @@ const TeamMember: React.FC<TeamMemberProps> = ({
 
       {/* Description */}
       <Text
-        style={styles.description}
-        numberOfLines={3}
-        ellipsizeMode="tail"
-      >
-        {description}
-      </Text>
+     style={styles.description}
+      numberOfLines={2}        // Limits to 3 lines
+     ellipsizeMode="tail"    // Adds "..." at the end when truncated
+>
+  {description}
+</Text>
 
      
     </View>
@@ -121,10 +121,8 @@ const styles = StyleSheet.create({
   },
   description: {
     color: "#717171",
-    fontSize: 12,
+    fontSize: 11,
     textAlign: "center",
-
-    
   },
   
 });

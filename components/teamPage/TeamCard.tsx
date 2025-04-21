@@ -40,19 +40,19 @@ const TeamCard: React.FC<TeamCardProps> = ({
         <View >
           <View className="flex flex-row items-center  h-12 bg-[#191919] text-white px-1 mt-1 rounded-t-[10px]">
             <View className="flex-1" >
-              <Text className="text-left   ml-4 text-white font-bold text-2xl w-[200px]">
+              <Text className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
                 SPORT CATEGORY
               </Text>
             </View>
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 flex-row items-center justify-center space-x-2">
+            <View className="flex-1 flex-row items-center justify-center ">
               <Image
                 source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
                 className="h-6 w-6 mr-2"
               />
-              <ThemedText className="text-white text-xl">
+              <ThemedText className= "flex text-white text-right text-lg">
                 {sportCategory}
               </ThemedText>
             </View>
@@ -67,8 +67,8 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 justify-end items-center">
-              <ThemedText className="text-white text-xl">{captain}</ThemedText>
+            <View className="flex-1  ">
+              <ThemedText className= " text-white text-right mr-6 text-lg">{captain}</ThemedText>
             </View>
           </View>
 

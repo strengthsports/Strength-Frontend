@@ -134,8 +134,8 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 <TextScallingFalse className="text-white text-xl font-semibold">
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
-                <TextScallingFalse numberOfLines={2} className="text-gray-400 text-lg" style={{width:'35%'}}>
-                  @{user?.username} | {user?.headline}
+                <TextScallingFalse numberOfLines={2} className="text-gray-400 text-lg" style={{width:'35%', backgroundColor:'purple'}}>
+                  @{user?.username} | {user?.headline} ksanoasnx sbaosbocsab ocsb csducb sdoub
                 </TextScallingFalse>
               </View>
             </View>

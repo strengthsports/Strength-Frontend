@@ -322,7 +322,10 @@ const ProfileLayout = () => {
                         Teams:{" "}
                         {user?.createdTeams?.length > 0 &&
                           user.createdTeams.map((team: any) => (
-                            <TextScallingFalse key={team?.team?._id} style={{ color: "grey" }}>
+                            <TextScallingFalse
+                              key={team?.team?._id}
+                              style={{ color: "grey" }}
+                            >
                               {" "}
                               {team.name}
                             </TextScallingFalse>
@@ -426,7 +429,7 @@ const ProfileLayout = () => {
                     style={{
                       color: "grey",
                       fontSize: responsiveFontSize(1.4),
-                      width: "63.25%",
+                      width: "100%",
                     }}
                   >
                     {`${user?.address?.city || "undefined"}, ${
@@ -568,8 +571,6 @@ const ProfileLayout = () => {
 
         <View
           style={{
-            borderBottomWidth: 0.3,
-            borderBottomColor: "#505050",
             position: "relative",
             top: 45,
             width: "97%",
@@ -597,7 +598,7 @@ const ProfileLayout = () => {
               >
                 <Text
                   className={`text-[1.1rem] ${
-                    isActive ? "text-[#12956B]" : "text-white"
+                    isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
                   }`}
                 >
                   {tab.name}

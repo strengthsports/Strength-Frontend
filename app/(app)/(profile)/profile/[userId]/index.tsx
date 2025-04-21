@@ -66,7 +66,6 @@ const Overview = () => {
     validSports[0]?.sport.name || null
   );
 
-
   // Get filtered posts from Redux
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
@@ -116,7 +115,7 @@ const Overview = () => {
       y: 0,
       animated: true,
     });
-  }
+  };
 
   if (error) {
     return (
@@ -153,7 +152,7 @@ const Overview = () => {
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
             className="mt-2"
           >
-            <TabsList className="flex-row gap-x-2 w-[100%]">
+            <TabsList className="flex-row gap-x-2 w-[100%] p-1 px-1.5">
               {validSports.map((sport: any) => (
                 <TouchableOpacity
                   key={sport.sport?._id}
@@ -211,12 +210,14 @@ const Overview = () => {
                 {sport.details && (
                   <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-[15px]">
                     <View className="flex-row justify-start flex-wrap gap-8 gap-y-4">
-                      {Object.entries(sport.details).map(
-                        ([key, value], idx) => (
-                          <View
-                            key={idx}
-                            // className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
-                          >
+                      {Object.entries(sport.details)
+                        .filter(
+                          ([key, value]) =>
+                            value &&
+                            (typeof value === "string" ? value.trim() : true)
+                        )
+                        .map(([key, value]) => (
+                          <View key={key}>
                             <Text
                               className="text-white font-bold"
                               style={styles.HeadingText}
@@ -230,8 +231,7 @@ const Overview = () => {
                               {value as string}
                             </Text>
                           </View>
-                        )
-                      )}
+                        ))}
                     </View>
                   </View>
                 )}
@@ -321,12 +321,12 @@ const Overview = () => {
                 }}
               >
                 {isExpanded ? aboutText : truncatedText}
-                 {needsTruncation && (
+                {needsTruncation && (
                   <TextScallingFalse
                     onPress={handleToggle}
                     className="text-[#808080] font-light text-lg"
                   >
-                    {isExpanded ? '  see less' : ' see more'}
+                    {isExpanded ? "  see less" : " see more"}
                   </TextScallingFalse>
                 )}
               </TextScallingFalse>

@@ -1,14 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 
 const tags = () => {
   return (
     <View>
-      <Text>Tags</Text>
+      <UnderDevelopmentModal />
     </View>
-  )
-}
+  );
+};
 
 export default tags;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

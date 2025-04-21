@@ -37,7 +37,7 @@ const ActivityLayout = () => {
 
   const [activeSubSection, setActiveSubSection] = useState("posts");
   return (
-    <View className="mt-2">
+    <View className="flex-1">
       <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
         {/* Horizontal Tab Scroll */}
         <ScrollView
@@ -46,36 +46,46 @@ const ActivityLayout = () => {
           decelerationRate="fast"
           snapToInterval={200}
           snapToAlignment="start"
-          contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
+          contentContainerStyle={{
+            marginTop: 5,
+            paddingStart: 15 * scaleFactor,
+            justifyContent: "flex-start",
+            alignItems: "center",
+            paddingEnd: 15 * scaleFactor,
+            height: 50,
+          }}
+          style={{ flexGrow: 0 }}
         >
-          <TabsList className="flex-row gap-x-2 w-[100%]">
-            {["posts", "thoughts", "polls", "comments", "clips", "articles"].map(
-              (tab, index) => (
-                <Pressable
-                  key={index}
-                  onPress={() => {
-                    setActiveSubSection(tab);
-                    router.push(
-                      tab === "posts"
-                        ? `/(app)/(profile)/profile/${params?.userId}/activity`
-                        : (`/profile/${params?.userId}/activity/${tab}` as any)
-                    );
-                  }}
-                  className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-lg ${
-                    activeSubSection === tab
-                      ? "bg-[#12956B]"
-                      : "bg-black border-gray-600"
-                  } border`}
-                >
-                  <TextScallingFalse className="text-white">
-                    {tab
-                      .charAt(0)
-                      .toUpperCase()
-                      .concat(tab.slice(1, tab.length))}
-                  </TextScallingFalse>
-                </Pressable>
-              )
-            )}
+          <TabsList className="flex-row items-center gap-x-3">
+            {[
+              "posts",
+              "clips",
+              "thoughts",
+              "polls",
+              "comments",
+              "articles",
+            ].map((tab, index) => (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  setActiveSubSection(tab);
+                  router.push(
+                    tab === "posts"
+                      ? `/(app)/(profile)/profile/${params?.userId}/activity`
+                      : (`/profile/${params?.userId}/activity/${tab}` as any)
+                  );
+                }}
+                className={`px-4 py-[9px] flex flex-row gap-x-3 items-center justify-center rounded-[10px] ${
+                  activeSubSection === tab
+                    ? "bg-[#12956B]"
+                    : "bg-black border-[#454545]"
+                } border`}
+              >
+                <TextScallingFalse className="text-white">
+                  {tab.charAt(0).toUpperCase().concat(tab.slice(1, tab.length))}
+                </TextScallingFalse>
+              </Pressable>
+            ))}
           </TabsList>
         </ScrollView>
       </Tabs>

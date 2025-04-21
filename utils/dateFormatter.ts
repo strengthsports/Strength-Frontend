@@ -5,7 +5,7 @@ export const dateFormatter = (date: Date, type: string) => {
   let formattedDate;
   switch (type) {
     case "text":
-      formattedDate = moment(date).format("MMMM YYYY"); // e.g., April 2025
+      formattedDate = moment(date).format("MMM YYYY"); // e.g., April 2025
       break;
 
     case "date":

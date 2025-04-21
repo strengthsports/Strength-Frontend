@@ -95,9 +95,11 @@ const Overview = () => {
 
   //toggle see more
   const maxAboutLength = 140;
-  const aboutText = user?.about || '';
+  const aboutText = user?.about || "";
   const needsTruncation = aboutText.length > maxAboutLength;
-  const truncatedText = needsTruncation ? `${aboutText.substring(0, maxAboutLength).trim()}...` : aboutText;
+  const truncatedText = needsTruncation
+    ? `${aboutText.substring(0, maxAboutLength).trim()}...`
+    : aboutText;
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -112,7 +114,7 @@ const Overview = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
           >
-            <TabsList className="flex-row gap-x-2 w-[100%]">
+            <TabsList className="flex-row gap-x-2 w-[100%] p-1 px-1.5">
               {user?.selectedSports?.map((sport: any) => (
                 <TouchableOpacity
                   key={sport.sport?._id}
@@ -166,25 +168,28 @@ const Overview = () => {
               <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
                   <View className="relative bg-[#161616] w-[96%] px-5 py-4 rounded-[15px] flex-row justify-start flex-wrap gap-8 gap-y-4">
-                    {Object.entries(sport.details).map(([key, value], idx) => (
-                      <View
-                        key={idx}
-                        // className={`${idx < 3 ? "basis-[33%]" : "w-full"}`}
-                      >
-                        <Text
-                          className="text-white font-bold"
-                          style={styles.HeadingText}
-                        >
-                          {key.toUpperCase()}
-                        </Text>
-                        <Text
-                          className="text-white font-light pt-1"
-                          style={styles.DetailText}
-                        >
-                          {value as string}
-                        </Text>
-                      </View>
-                    ))}
+                    {Object.entries(sport.details)
+                      .filter(
+                        ([key, value]) =>
+                          value &&
+                          (typeof value === "string" ? value.trim() : true)
+                      )
+                      .map(([key, value]) => (
+                        <View key={key}>
+                          <Text
+                            className="text-white font-bold"
+                            style={styles.HeadingText}
+                          >
+                            {key.toUpperCase()}
+                          </Text>
+                          <Text
+                            className="text-white font-light pt-1"
+                            style={styles.DetailText}
+                          >
+                            {value as string}
+                          </Text>
+                        </View>
+                      ))}
                     <TouchableOpacity
                       activeOpacity={0.7}
                       className="absolute bottom-8 right-5"
@@ -298,12 +303,12 @@ const Overview = () => {
               }}
             >
               {isExpanded ? aboutText : truncatedText}
-               {needsTruncation && (
+              {needsTruncation && (
                 <TextScallingFalse
                   onPress={handleToggle}
                   className="text-[#808080] font-light text-lg"
-                 >
-                  {isExpanded ? '  see less' : ' see more'}
+                >
+                  {isExpanded ? "  see less" : " see more"}
                 </TextScallingFalse>
               )}
             </TextScallingFalse>

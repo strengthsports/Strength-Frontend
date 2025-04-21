@@ -5,10 +5,9 @@ import {
   Dimensions,
   TouchableOpacity,
   Text,
-  NativeSyntheticEvent,
-  TextLayoutEventData,
+  ActivityIndicator,
 } from "react-native";
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import TextScallingFalse from "../CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import {
@@ -20,7 +19,14 @@ import {
 import { Post } from "~/types/post";
 import { formatTimeAgo } from "~/utils/formatTime";
 import Swiper from "react-native-swiper";
-import { router } from "expo-router";
+import { RelativePathString, router } from "expo-router";
+import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
+import * as VideoThumbnails from "expo-video-thumbnails";
+import ClipsIcon from "~/components/SvgIcons/addpost/ClipsIcon";
+import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
+import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 
 const PostSmallCard = ({
   post,
@@ -29,7 +35,6 @@ const PostSmallCard = ({
   post: Post;
   highlightedHashtag?: string;
 }) => {
-  // console.log("------------------------> ", post)
   const { width: screenWidth2 } = Dimensions.get("window");
   const scaleFactor = screenWidth2 / 410;
 
@@ -37,11 +42,60 @@ const PostSmallCard = ({
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef<Swiper>(null);
 
+  const [thumbnailUri, setThumbnailUri] = useState<string | null>(null);
+  const [thumbnailLoading, setThumbnailLoading] = useState<boolean>(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLiked } = post;
+
+  useEffect(() => {
+    let isMounted = true;
+    const generateThumbnail = async () => {
+      if (post.isVideo && post.assets?.[0]?.url) {
+        setThumbnailLoading(true);
+        setThumbnailUri(null);
+        try {
+          const { uri } = await VideoThumbnails.getThumbnailAsync(
+            post.assets[0].url,
+            {
+              time: 1000,
+              quality: 0.5,
+            }
+          );
+          if (isMounted) {
+            setThumbnailUri(uri);
+          }
+        } catch (e) {
+          console.warn(
+            `Could not generate thumbnail for video ${post.assets[0].url}:`,
+            e
+          );
+          if (isMounted) {
+            setThumbnailUri(null);
+          }
+        } finally {
+          if (isMounted) {
+            setThumbnailLoading(false);
+          }
+        }
+      } else {
+        setThumbnailUri(null);
+        setThumbnailLoading(false);
+      }
+    };
+
+    generateThumbnail();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [post.isVideo, post.assets?.[0]?.url]);
+
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const maxCaptionLength = 40;
+  const maxCaptionLength = 25;
   const captionText = post.caption || "";
   const needsTruncation = captionText.length > maxCaptionLength;
   const truncatedText = needsTruncation
@@ -49,17 +103,12 @@ const PostSmallCard = ({
     : captionText;
 
   const imageUrls = post.assets
-    .filter((asset) => asset.url)
+    .filter((asset) => asset.url && !post.isVideo)
     .map((asset) => asset.url);
-  // console.log(imageUrls)
 
-  // const handleNext = () => {
-  //   swiperRef.current?.scrollBy(1);
-  // };
-
-  // const handlePrev = () => {
-  //   swiperRef.current?.scrollBy(-1);
-  // };
+  const handleLike = () => {
+    dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
+  };
 
   const renderCaptionWithHashtags = (caption: string) => {
     return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
@@ -82,6 +131,12 @@ const PostSmallCard = ({
         );
       }
       return word;
+    });
+  };
+
+  const navigateToPostDetails = () => {
+    router.push({
+      pathname: `/post-details/${post._id}` as RelativePathString,
     });
   };
 
@@ -140,7 +195,7 @@ const PostSmallCard = ({
               {post.postedBy?.headline}
             </TextScallingFalse>
           </View>
-          <View className="flex flex-row  items-center">
+          <View className="flex flex-row items-center">
             <TextScallingFalse className="text-base text-neutral-400">
               {formatTimeAgo(post.createdAt)} &bull;{" "}
             </TextScallingFalse>
@@ -149,34 +204,9 @@ const PostSmallCard = ({
         </View>
       </View>
 
-      {/* <View style={{ alignItems:'flex-end'}}>
-        <View style={{width: '94%', backgroundColor:'#151515', paddingVertical: 15, paddingLeft:5, justifyContent:'center', alignItems:'center', borderTopLeftRadius: 45, borderTopRightRadius: 15}}>
-            <View style={{ width: '85%', paddingLeft: '1%', paddingTop: '10%'}}>
-              <MaterialIcons className="absolute right-0 top-0" name="more-horiz" size={18} color="#a3a3a3" />
-              <TextScallingFalse
-                style={{color:'white', fontSize: responsiveFontSize(1.29), fontWeight:'400'}}
-                numberOfLines={isExpanded ? undefined : 2}
-                ellipsizeMode="tail"
-                onTextLayout={handleTextLayout}
-              >
-                {renderCaptionWithHashtags(post.caption)}
-              </TextScallingFalse>
-              
-            
-              {showSeeMore && !isExpanded && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => setIsExpanded(true)}
-                  className="mt-1"
-                >
-                  <TextScallingFalse style={styles.seeMore}>See more</TextScallingFalse>
-                </TouchableOpacity>
-              )}
-            </View>
-        </View>
-        </View> */}
-
-      <View
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={navigateToPostDetails}
         className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515] flex flex-row`}
       >
         <MaterialIcons
@@ -196,11 +226,36 @@ const PostSmallCard = ({
             </TextScallingFalse>
           )}
         </TextScallingFalse>
-      </View>
+      </TouchableOpacity>
 
-      <View style={{ height: 240 * scaleFactor }}>
-        {imageUrls.length > 0 && (
-          <View style={{ position: "absolute" }}>
+      <TouchableOpacity activeOpacity={0.5} onPress={navigateToPostDetails}>
+        <View style={{ height: 240 * scaleFactor, width: "100%" }}>
+          {post.isVideo ? (
+            <View style={styles.mediaContainer}>
+              {thumbnailLoading ? (
+                <ActivityIndicator
+                  style={StyleSheet.absoluteFill}
+                  size="large"
+                  color="#CCCCCC"
+                />
+              ) : thumbnailUri ? (
+                <>
+                  <Image
+                    source={{ uri: thumbnailUri }}
+                    style={styles.thumbnailImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.iconOverlay}>
+                    <ClipsIconRP />
+                  </View>
+                </>
+              ) : (
+                <View style={styles.thumbnailPlaceholder}>
+                  <Text style={{ color: "grey" }}>No Thumbnail</Text>
+                </View>
+              )}
+            </View>
+          ) : imageUrls.length > 0 ? (
             <Swiper
               ref={swiperRef}
               loop={false}
@@ -219,36 +274,13 @@ const PostSmallCard = ({
                     borderTopLeftRadius: 22,
                     borderBottomLeftRadius: 22,
                   }}
+                  resizeMode="cover"
                 />
               ))}
             </Swiper>
-
-            {/* left right navigation button */}
-            {/* {imageUrls.length > 1 && (
-              <>
-                {currentSlide > 0 && (
-                  <TouchableOpacity
-                    style={[styles.navButton, { left: 10 }]}
-                    onPress={handlePrev}
-                  >
-                    <AntDesign name="left" size={20} color="white" />
-                  </TouchableOpacity>
-                )}
-
-
-                {currentSlide < imageUrls.length - 1 && (
-                  <TouchableOpacity
-                    style={[styles.navButton, { right: 10 }]}
-                    onPress={handleNext}
-                  >
-                    <AntDesign name="right" size={20} color="white" />
-                  </TouchableOpacity>
-                )}
-              </>
-            )} */}
-          </View>
-        )}
-      </View>
+          ) : null}
+        </View>
+      </TouchableOpacity>
 
       <View style={{ width: "100%", alignItems: "flex-end" }}>
         <View
@@ -265,6 +297,7 @@ const PostSmallCard = ({
           <TouchableOpacity
             activeOpacity={0.7}
             style={{ flexDirection: "row" }}
+            onPress={navigateToPostDetails}
           >
             <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
             <TextScallingFalse
@@ -279,10 +312,8 @@ const PostSmallCard = ({
             </TextScallingFalse>
           </TouchableOpacity>
 
-          {/* <View style={{ width: '15%'}}></View> */}
-          {/* dot carousel for multiple images */}
           <View className="pt-9">
-            {imageUrls.length > 1 && (
+            {imageUrls.length > 1 && !post.isVideo && (
               <View style={styles.dotContainer}>
                 {imageUrls.map((_, index) => (
                   <View
@@ -297,7 +328,7 @@ const PostSmallCard = ({
             )}
           </View>
 
-          <TouchableOpacity activeOpacity={0.7}>
+          <TouchableOpacity activeOpacity={0.7} onPress={navigateToPostDetails}>
             <TextScallingFalse
               style={{
                 color: "white",
@@ -334,15 +365,30 @@ const PostSmallCard = ({
           }}
         >
           <View style={{ width: "0.8%" }} />
-          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
-            <AntDesign name="like1" size={12 * scaleFactor} color="#FFC436" />
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 10, fontWeight: "300" }}
-            >
-              Like
-            </TextScallingFalse>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.ButtonsContainer}
+            onPress={handleLike}
+          >
+            <View className="flex flex-row justify-between items-center gap-2">
+              <AntDesign
+                name={isLiked ? "like1" : "like2"}
+                size={12}
+                color={isLiked ? "#FFC436" : "white"}
+              />
+              <TextScallingFalse
+                className={`${isLiked ? "text-amber-400" : "text-white"}`}
+                style={{ fontSize: 10, fontWeight: "300" }}
+              >
+                {isLiked ? "Liked" : "Like"}
+              </TextScallingFalse>
+            </View>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.ButtonsContainer}
+            onPress={navigateToPostDetails}
+          >
             <Feather
               name="message-square"
               size={12 * scaleFactor}
@@ -354,7 +400,11 @@ const PostSmallCard = ({
               Comment
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.5} style={styles.ButtonsContainer}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.ButtonsContainer}
+            onPress={navigateToPostDetails}
+          >
             <FontAwesome5
               name="location-arrow"
               size={10 * scaleFactor}
@@ -379,7 +429,6 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     paddingVertical: 5,
     paddingHorizontal: 8,
-    // padding: 8,
     borderRadius: 25,
     width: "auto",
     flexDirection: "row",
@@ -415,5 +464,37 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 20,
     transform: [{ translateY: -10 }],
+  },
+  mediaContainer: {
+    height: "100%",
+    width: "100%",
+    borderTopLeftRadius: 22,
+    borderBottomLeftRadius: 22,
+    overflow: "hidden",
+    backgroundColor: "#1c1c1c",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  thumbnailImage: {
+    width: "100%",
+    height: "100%",
+  },
+  thumbnailPlaceholder: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  },
+  iconOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
 });

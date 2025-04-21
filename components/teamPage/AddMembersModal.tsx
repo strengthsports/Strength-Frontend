@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Modal,
@@ -42,6 +42,49 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [members, setMembers] = useState<PotentialMember[]>(player);
 
+  // Filter and sort members based on search query
+  const filteredMembers = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return [...members].sort((a, b) =>
+        a.firstName.localeCompare(b.firstName)
+      );
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    
+    return [...members]
+      .filter(member => {
+        const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
+        const username = member?.username?.toLowerCase();
+        
+        return (
+          fullName.includes(query) ||
+          username.includes(query) ||
+          member?.firstName?.toLowerCase().includes(query) ||
+          member?.lastName?.toLowerCase().includes(query)
+        );
+      })
+      .sort((a, b) => {
+        // Prioritize matches that start with the search query
+        const aStartsWith = (
+          a.firstName?.toLowerCase().startsWith(query) ||
+          a.lastName?.toLowerCase().startsWith(query) ||
+          a.username?.toLowerCase().startsWith(query));
+        
+        const bStartsWith = (
+          b.firstName?.toLowerCase().startsWith(query) ||
+          b.lastName?.toLowerCase().startsWith(query) ||
+          b.username?.toLowerCase().startsWith(query)
+        );
+        
+        if (aStartsWith && !bStartsWith) return -1;
+        if (!aStartsWith && bStartsWith) return 1;
+        
+        // If both start with or don't start with, sort alphabetically
+        return a.firstName.localeCompare(b.firstName);
+      });
+  }, [members, searchQuery]);
+
   const toggleMemberSelection = (memberId: string) => {
     setMembers((prevMembers) => {
       if (multiselect) {
@@ -67,7 +110,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
 
   const handleInvite = () => {
     const selectedMembers = members.filter((member) => member.selected);
-    console.log("Selected members ->>>>",selectedMembers);
+    console.log("Selected members ->>>>", selectedMembers);
     onInvite(selectedMembers);
     onClose();
   };
@@ -78,9 +121,8 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
-
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} >
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }}>
         <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 8 }}>
           {/* Header */}
           <View
@@ -131,118 +173,133 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
                   fontSize: 14,
                 }}
               />
+              {searchQuery ? (
+                <TouchableOpacity onPress={() => setSearchQuery("")}>
+                  <Icon name="close" size={20} color="#CECECE" />
+                </TouchableOpacity>
+              ) : null}
             </View>
           </View>
 
           {/* Members List */}
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-            {members.map((member) => (
-              <View
-                key={member._id}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                  paddingHorizontal: 5,
-                }}
-              >
-                {/* User Profile Pic */}
-                <Image
-                  source={member.profilePic ? { uri: member.profilePic } : nopic}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 100,
-                    borderWidth: 1.5,
-                    borderColor: "#1C1C1C",
-                  }}
-                />
-                {/* User Details */}
+            {filteredMembers.length > 0 ? (
+              filteredMembers.map((member) => (
                 <View
+                  key={member._id}
                   style={{
-                    flex: 1,
                     flexDirection: "row",
-                    marginLeft: 8,
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 8,
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: "#3B3B3B",
-                    paddingVertical: 20,
+                    gap: 10,
+                    paddingHorizontal: 5,
                   }}
                 >
-                 <View style={{ flexDirection: "column" }}>
-  <TextScallingFalse
-    style={{
-      color: "#FFFFFF",
-      fontSize: 16,
-      fontWeight: "600",
-    }}
-  >
-    {member.firstName} {member.lastName}
-  </TextScallingFalse>
-
-  <TextScallingFalse
-    style={{
-      width:200,
-      color: "#B2B2B2",
-      fontSize: 12,
-      fontWeight: "300",
-      flexWrap: "wrap",
-    }}
-    numberOfLines={2} 
-  >
-    @{member.username} | {member.headline}
-  </TextScallingFalse>
-</View>
-
-                  <TouchableOpacity
+                  {/* User Profile Pic */}
+                  <Image
+                    source={member.profilePic ? { uri: member.profilePic } : nopic}
                     style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: member.selected
-                        ? "#12956B"
-                        : "#4B5563",
-                      backgroundColor: member.selected
-                        ? "#12956B"
-                        : "transparent",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      width: 40,
+                      height: 40,
+                      borderRadius: 100,
+                      borderWidth: 1.5,
+                      borderColor: "#1C1C1C",
                     }}
-                    onPress={() => toggleMemberSelection(member._id)}
+                  />
+                  {/* User Details */}
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                      marginLeft: 8,
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      borderBottomWidth: 0.5,
+                      borderBottomColor: "#3B3B3B",
+                      paddingVertical: 20,
+                    }}
                   >
-                    {member.selected && (
-                      <Icon name="check" size={20} color="white" />
-                    )}
-                  </TouchableOpacity>
+                    <View style={{ flexDirection: "column" }}>
+                      <TextScallingFalse
+                        style={{
+                          color: "#FFFFFF",
+                          fontSize: 16,
+                          fontWeight: "600",
+                        }}
+                      >
+                        {member.firstName} {member.lastName}
+                      </TextScallingFalse>
+
+                      <TextScallingFalse
+                        style={{
+                          width: 200,
+                          color: "#B2B2B2",
+                          fontSize: 12,
+                          fontWeight: "300",
+                          flexWrap: "wrap",
+                        }}
+                        numberOfLines={2}
+                      >
+                        @{member.username} | {member.headline}
+                      </TextScallingFalse>
+                    </View>
+
+                    <TouchableOpacity
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: member.selected
+                          ? "#12956B"
+                          : "#4B5563",
+                        backgroundColor: member.selected
+                          ? "#12956B"
+                          : "transparent",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onPress={() => toggleMemberSelection(member._id)}
+                    >
+                      {member.selected && (
+                        <Icon name="check" size={20} color="white" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
+              ))
+            ) : (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <TextScallingFalse style={{ color: "#FFFFFF" }}>
+                  No members found
+                </TextScallingFalse>
               </View>
-            ))}
+            )}
           </ScrollView>
 
           {/* Invite Button */}
-          <TouchableOpacity
-            onPress={handleInvite}
-            style={{
-              backgroundColor: "#12956B",
-              borderRadius: 8,
-              paddingVertical: 16,
-              marginTop: 16,
-            }}
-          >
-            <TextScallingFalse
+          {filteredMembers.some(member => member.selected) && (
+            <TouchableOpacity
+              onPress={handleInvite}
               style={{
-                color: "#FFFFFF",
-                textAlign: "center",
-                fontSize: 18,
-                fontWeight: "600",
+                backgroundColor: "#12956B",
+                borderRadius: 8,
+                paddingVertical: 16,
+                marginTop: 16,
               }}
             >
-              {buttonName}
-            </TextScallingFalse>
-          </TouchableOpacity>
+              <TextScallingFalse
+                style={{
+                  color: "#FFFFFF",
+                  textAlign: "center",
+                  fontSize: 18,
+                  fontWeight: "600",
+                }}
+              >
+                {buttonName}
+              </TextScallingFalse>
+            </TouchableOpacity>
+          )}
         </View>
       </SafeAreaView>
     </Modal>

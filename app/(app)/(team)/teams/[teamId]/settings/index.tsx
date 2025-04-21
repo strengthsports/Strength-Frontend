@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback,useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,8 +15,7 @@ import {
   Platform,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
-import Icon from "react-native-vector-icons/AntDesign";
-import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Divider, Avatar } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,7 +29,11 @@ import { Modalize } from "react-native-modalize";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialCommunityIcons, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InviteMem from "~/assets/images/InviteMem.png"
+import InviteMem from "~/assets/images/InviteMem.png";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+
+const DEFAULT_PROFILE_PIC = "https://via.placeholder.com/50";
 
 type TeamMember = {
   _id: string;
@@ -39,10 +42,19 @@ type TeamMember = {
     firstName: string;
     lastName: string;
     profilePic?: string;
-    headline?:string;
+    headline?: string;
   };
   role: string;
   position?: string;
+};
+
+type FormData = {
+  name: string;
+  sport: string;
+  location: string;
+  established: string;
+  description: string;
+  logo: string;
 };
 
 const Settings = () => {
@@ -52,11 +64,32 @@ const Settings = () => {
 
   const { team, loading } = useSelector((state: RootState) => state.team);
   const { user } = useSelector((state: RootState) => state.profile);
+  
+  // Refs
   const inviteModalRef = useRef<Modalize>(null);
+  const nameInputRef = useRef<TextInput>(null);
+  
+  // State
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
-  // Form state
-  const [formData, setFormData] = useState({
+  const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [isEdited, setIsEdited] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [picModalVisible, setPicModalVisible] = useState(false);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [originalData, setOriginalData] = useState<FormData>({
+    name: "",
+    sport: "",
+    location: "",
+    established: "",
+    description: "",
+    logo: "",
+  });
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     sport: "",
     location: "",
@@ -65,41 +98,43 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
     logo: "",
   });
 
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [isEdited, setIsEdited] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [activeField, setActiveField] = useState<keyof typeof formData | null>(null);
-  const [picModalVisible, setPicModalVisible] = useState(false);
-  const [isUserAdmin, setIsUserAdmin] = useState(false);
-  //  const { team, loading } = useSelector((state: RootState) => state.team);
   const params = useLocalSearchParams();
   const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
   const updatedDescription = params?.updatedDescription as string;
 
-   const isAdmin = user?._id === team?.admin?.[0]?._id;
+  // Memoized functions
+  const getMemberPosition = useCallback((member: TeamMember) => {
+    if (member.position?.toLowerCase() === "captain") {
+      return "Captain";
+    } else if (member.position?.toLowerCase() === "vicecaptain") {
+      return "Vice Captain";
+    }
+    return member.role.charAt(0).toUpperCase() + member.role.slice(1);
+  }, []);
+
+  // Effects
   useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      description: currentDescription
-    }));
+    if (teamId) {
+      dispatch(fetchTeamDetails(teamId));
+    }
+  }, [dispatch, teamId]);
+
+  useEffect(() => {
+    if (updatedDescription) {
+      setFormData(prev => ({ ...prev, description: updatedDescription }));
+      router.setParams({ updatedDescription: undefined });
+    }
+  }, [updatedDescription, router]);
+
+  useEffect(() => {
+    if (currentDescription) {
+      setFormData(prev => ({
+        ...prev,
+        description: currentDescription
+      }));
+    }
   }, [currentDescription]);
 
-
-  useEffect(() => {
-    if (updatedDescription) {
-      setFormData((prev) => ({ ...prev, description: updatedDescription }));
-    }
-  }, [updatedDescription]);
-
-
-  useEffect(() => {
-    if (updatedDescription) {
-      setFormData((prev) => ({ ...prev, description: updatedDescription }));
-      router.setParams({ updatedDescription: undefined }); // clean URL
-    }
-  }, [updatedDescription]);
-    
-  // Initialize form data
   useEffect(() => {
     if (!team) return;
     
@@ -107,39 +142,45 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
       ? `${team.address.city}${team.address.state ? `, ${team.address.state}` : ""}${team.address.country ? `, ${team.address.country}` : ""}`
       : "";
       
-    const establishedDate = team.establishedOn
-      ? new Date(team.establishedOn).toLocaleDateString()
-      : "";
-
-    setFormData({
+    let establishedDate = "";
+    let parsedDate = new Date();
+    
+    if (team.establishedOn) {
+      parsedDate = new Date(team.establishedOn);
+      establishedDate = parsedDate.toLocaleDateString();
+      setSelectedDate(parsedDate);
+    }
+  
+    const newFormData = {
       name: team.name || "",
       sport: team.sport?.name || "",
       location: addressString,
       established: establishedDate,
       description: team.description || "",
-      logo: team.logo?.url|| "",
-    });
-
+      logo: team.logo?.url || "", 
+    };
+  
+    setFormData(newFormData);
+    setOriginalData(newFormData); // Set initial original data
     setMembers(team.members || []);
-
-    // Check if current user is an admin
-    const isAdmin = team.admin?.some((admin: any) => admin._id === user?._id);
-    setIsUserAdmin(isAdmin);
+    setIsUserAdmin(team.admin?.some((admin: any) => admin._id === user?._id));
   }, [team, user]);
 
-  // Fetch team details
-  useEffect(() => {
-    if (teamId) {
-      dispatch(fetchTeamDetails(teamId));
-    }
-  }, [dispatch, teamId]);
-
-  const handleChange = (field: keyof typeof formData, value: string) => {
+  const hasChanges = useCallback(() => {
+    return (
+      formData.name !== originalData.name ||
+      formData.location !== originalData.location ||
+      formData.established !== originalData.established ||
+      formData.description !== originalData.description ||
+      formData.logo !== originalData.logo
+    );
+  }, [formData, originalData]);
+  // Handlers
+  const handleChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsEdited(true);
   };
 
-  // Image handling
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -157,14 +198,34 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
       Alert.alert("Error", "Failed to pick image");
     }
   };
+  
+  // Fix: Date handler that works for both iOS and Android
+  const handleDateChange = (event: any, date?: Date) => {
+    // Close the date picker on Android after selection
+    if (Platform.OS === 'android') {
+      setIsDatePickerVisible(false);
+    }
+    
+    // If date is selected (not canceled)
+    if (date) {
+      setSelectedDate(date);
+      const formattedDate = date.toLocaleDateString();
+      handleChange("established", formattedDate);
+    }
+  };
 
-  // Save team data
+  // Fix: Handler for iOS date picker done button
+  const handleDatePickerDone = () => {
+    setIsDatePickerVisible(false);
+    const formattedDate = selectedDate.toLocaleDateString();
+    handleChange("established", formattedDate);
+  };
+
   const handleSave = async () => {
     if (!teamId || !isUserAdmin) return;
     setIsSaving(true);
     
     try {
-      // Process location data
       let city = "", state = "", country = "";
       if (formData.location) {
         const parts = formData.location.split(",").map(s => s.trim());
@@ -172,35 +233,27 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
           ? parts 
           : [...parts, ...Array(3 - parts.length).fill("")];
       }
-
+  
       const payload = new FormData();
-      payload.append("name", formData.name);
+      if (formData.name) payload.append("name", formData.name);
       
-      // Only append other fields if they have values
       if (formData.description) payload.append("description", formData.description);
       if (city) payload.append("address[city]", city);
       if (state) payload.append("address[state]", state);
       if (country) payload.append("address[country]", country);
-
+  
       if (formData.established) {
-        try {
-          const date = new Date(formData.established);
-          if (!isNaN(date.getTime())) {
-            payload.append("establishedOn", date.toISOString());
-          }
-        } catch (error) {
-          console.log("Date parsing error:", error);
-        }
+        // Fix: Ensure date is properly formatted when saving
+        payload.append("establishedOn", selectedDate.toISOString());
       }
-
-      // Only append logo if it's changed
+  
       if (formData.logo && formData.logo !== team?.logo?.url) {
         if (formData.logo.startsWith("file:")) {
           const localUri = formData.logo;
           const filename = localUri.split("/").pop() || "team-logo.jpg";
           const match = /\.(\w+)$/.exec(filename);
           const type = match ? `image/${match[1]}` : "image/jpeg";
-
+  
           payload.append("logo", {
             uri: localUri,
             name: filename,
@@ -208,10 +261,10 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
           } as any);
         }
       }
-
+  
       await dispatch(updateTeam({ teamId, formData: payload })).unwrap();
       await dispatch(fetchTeamDetails(teamId));
-      
+      setOriginalData(formData);
       Alert.alert("Success", "Team updated successfully");
       setIsEdited(false);
     } catch (error: any) {
@@ -222,44 +275,56 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
     }
   };
 
-  // Handle member position
-  const getMemberPosition = (member: TeamMember) => {
-    if (member.position?.toLowerCase() === "captain") {
-      return "Captain";
-    } else if (member.position?.toLowerCase() === "vicecaptain") {
-      return "Vice Captain";
-    }
-    return member.role.charAt(0).toUpperCase() + member.role.slice(1);
-  };
-
   const handleInvitePress = (role: string) => {
     inviteModalRef.current?.close();
-    router.push(
-      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
-    );
+    router.push(`/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}`);
   };
-  const roles = team?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
-  // Render member item
+
+  const handleFieldPress = (field: keyof FormData) => {
+    if (!isUserAdmin) return;
+    
+    switch (field) {
+      case "name":
+        setIsEditingName(true);
+        setTimeout(() => nameInputRef.current?.focus(), 100);
+        break;
+      case "location":
+        setShowLocationPicker(true);
+        break;
+      case "established":
+        setIsDatePickerVisible(true);
+        break;
+      case "description":
+        router.push({
+          pathname: `/(app)/(team)/teams/${teamId}/settings/EditDescription`,
+          params: { description: formData.description },
+        });
+        break;
+    }
+  };
+
   const renderMember = ({ item: member }: { item: TeamMember }) => (
     <View style={styles.memberItem}>
       <Avatar.Image
         size={50}
-        source={{ uri: member.user.profilePic || nopic }}
+        source={{ uri: member.user.profilePic || DEFAULT_PROFILE_PIC }}
         style={styles.memberAvatar}
       />
       <View style={styles.memberInfo}>
-        <Text style={styles.memberName}>
+        <TextScallingFalse style={styles.memberName}>
           {member.user.firstName} {member.user.lastName}
-        </Text>
-        <Text style={styles.memberRole}>{getMemberPosition(member)} | {member.user.headline}</Text>
+        </TextScallingFalse>
+        <TextScallingFalse style={styles.memberRole}>
+          {getMemberPosition(member)} | {member.user.headline || "No headline"}
+        </TextScallingFalse>
       </View>
       {isUserAdmin && (
         <TouchableOpacity 
           style={styles.memberAction}
           onPress={() => {
-            if (isAdmin && team?._id && member?.user?._id) {
+            if (isUserAdmin && team?._id && member?.user?._id) {
               router.push({
-                pathname: `/(app)/(team)/teams/${team._id}/members/${member.user._id}` as RelativePathString,
+                pathname: `/(app)/(team)/teams/${team._id}/members/${member.user._id}`,
                 params: {
                   memberId: member.user._id,
                   member: JSON.stringify(member.user),
@@ -272,67 +337,106 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
             }
           }}
         >
-          <Text className="text-[#7A7A7A] mt-2 text-sm">{member.position?.toUpperCase()}</Text>
+          <TextScallingFalse style={styles.memberPositionText}>
+            {member.position?.toUpperCase() || "MEMBER"}
+          </TextScallingFalse>
           <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
         </TouchableOpacity>
       )}
     </View>
   );
 
-  const handleFieldPress = (field: keyof typeof formData) => {
-    if (!isUserAdmin) return;
-    setActiveField(field);
-  };
+  // Fix: Improved iOS date picker modal
+  const renderIOSDatePicker = () => (
+    <Modal
+      visible={isDatePickerVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setIsDatePickerVisible(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setIsDatePickerVisible(false)}
+      >
+        <View style={styles.datePickerContainer}>
+          <View style={styles.datePickerHeader}>
+            <TouchableOpacity onPress={() => setIsDatePickerVisible(false)}>
+              <TextScallingFalse style={styles.datePickerHeaderButton}>Cancel</TextScallingFalse>
+            </TouchableOpacity>
+            
+            <TextScallingFalse style={styles.datePickerHeaderTitle}>Established Date</TextScallingFalse>
+            
+            <TouchableOpacity onPress={handleDatePickerDone}>
+              <TextScallingFalse style={styles.datePickerHeaderButtonDone}>Done</TextScallingFalse>
+            </TouchableOpacity>
+          </View>
+
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+            themeVariant="dark"
+            maximumDate={new Date()}
+            style={styles.iosDatePicker}
+          />
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
 
   if (loading) {
     return (
       <PageThemeView>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator animating={true} color="white" size="large" />
-          <Text style={styles.loadingText}>Loading team details...</Text>
+          <ActivityIndicator size="large" color="white" />
+          <TextScallingFalse style={styles.loadingText}>Loading team details...</TextScallingFalse>
         </View>
       </PageThemeView>
     );
   }
 
+  const roles = team?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <PageThemeView>
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={24} color="#808080" />
             </TouchableOpacity>
             
-            <Text style={styles.headerTitle}>Team Settings</Text>
+            <TextScallingFalse style={styles.headerTitle}>Team Settings</TextScallingFalse>
             
             {isUserAdmin && (
-              isSaving ? (
-                <View style={styles.saveButton}>
-                  <ActivityIndicator size="small" color="#12956B" />
-                </View>
-              ) : (
-                <TouchableOpacity
-                  onPress={handleSave}
-                  style={styles.saveButton}
-                  disabled={!isEdited}
-                >
-                  <Text style={[styles.saveText, !isEdited && styles.saveDisabled]}>
-                    Save
-                  </Text>
-                </TouchableOpacity>
-              )
-            )}
+  isSaving ? (
+    <View style={styles.saveButton}>
+      <ActivityIndicator size="small" color="#12956B" />
+    </View>
+  ) : hasChanges() ? (
+    <TouchableOpacity
+      onPress={handleSave}
+      style={styles.saveButton}
+    >
+      <TextScallingFalse style={styles.saveText}>
+        Save
+      </TextScallingFalse>
+    </TouchableOpacity>
+  ) : null
+)}
           </View>
           <Divider style={styles.divider} />
 
           <ScrollView 
-            showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             {/* Team Logo */}
             <View style={styles.logoContainer}>
@@ -342,109 +446,108 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
                 style={styles.logoWrapper}
               >
                 {formData.logo ? (
-                  <Image
-                    source={{ uri: formData.logo }}
-                    style={styles.logo}
-                  />
+                  <Image source={{ uri: formData.logo }} style={styles.logo} />
                 ) : (
                   <View style={styles.logoPlaceholder}>
-                    <MaterialCommunityIcons
-                      name="account-group"
-                      size={48}
-                      color="white"
-                    />
+                    <MaterialCommunityIcons name="account-group" size={48} color="white" />
                   </View>
                 )}
                 {isUserAdmin && (
                   <View style={styles.cameraIcon}>
-                    <MaterialCommunityIcons
-                      name="camera-plus-outline"
-                      size={20}
-                      color="white"
-                    />
+                    <MaterialCommunityIcons name="camera-plus-outline" size={20} color="white" />
                   </View>
                 )}
               </TouchableOpacity>
-              <Text style={styles.teamName}>{formData.name}</Text>
             </View>
 
             {/* Form Fields */}
             <View style={styles.formContainer}>
-              {/* <Text style={styles.sectionTitle}>Team Information</Text> */}
-              
-              <View style={styles.formField} className="flex">
-              <Text style={styles.fieldLabel}>Team Name</Text>
-                <TouchableOpacity
-                  onPress={() => handleFieldPress("name")}
-                  style={styles.fieldValue}
-                >
-                  
-                  <Text style={styles.fieldText} numberOfLines={1}>
-                    {formData.name || "Add team name"}
-                  </Text>
-                  
-                  {isUserAdmin && (
-                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
-                  )}
-                </TouchableOpacity>
+              {/* Team Name */}
+              <View style={styles.formField}>
+                <TextScallingFalse style={styles.fieldLabel}>Team Name</TextScallingFalse>
+                {isEditingName ? (
+                  <View style={styles.inlineEditContainer}>
+                    <TextInput
+                      ref={nameInputRef}
+                      style={styles.inlineEditInput}
+                      value={formData.name}
+                      onChangeText={(text) => handleChange("name", text)}
+                      autoFocus
+                      onBlur={() => setIsEditingName(false)}
+                      onSubmitEditing={() => setIsEditingName(false)}
+                      selectTextOnFocus
+                    />
+                    <TouchableOpacity onPress={() => setIsEditingName(false)}>
+                      <MaterialCommunityIcons name="check" size={24} color="#12956B" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => handleFieldPress("name")}
+                    style={styles.fieldValue}
+                  >
+                    <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
+                      {formData.name || "Add team name"}
+                    </TextScallingFalse>
+                    {isUserAdmin && (
+                      <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                    )}
+                  </TouchableOpacity>
+                )}
               </View>
               
+              {/* Sport */}
               <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Sport</Text>
+                <TextScallingFalse style={styles.fieldLabel}>Sport</TextScallingFalse>
                 <View style={styles.fieldValue}>
-                  <Text style={styles.fieldText} numberOfLines={1}>
+                  <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                     {formData.sport || "Not specified"}
-                  </Text>
+                  </TextScallingFalse>
                 </View>
               </View>
               
+              {/* Location */}
               <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Location</Text>
+                <TextScallingFalse style={styles.fieldLabel}>Location</TextScallingFalse>
                 <TouchableOpacity
                   onPress={() => handleFieldPress("location")}
                   style={styles.fieldValue}
                 >
-                  <Text style={styles.fieldText} numberOfLines={1}>
+                  <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                     {formData.location || "Add location"}
-                  </Text>
+                  </TextScallingFalse>
                   {isUserAdmin && (
                     <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
                   )}
                 </TouchableOpacity>
               </View>
               
+              {/* Established Date */}
               <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Established</Text>
+                <TextScallingFalse style={styles.fieldLabel}>Established</TextScallingFalse>
                 <TouchableOpacity
                   onPress={() => handleFieldPress("established")}
                   style={styles.fieldValue}
                 >
-                  <Text style={styles.fieldText} numberOfLines={1}>
+                  <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                     {formData.established || "Add established date"}
-                  </Text>
+                  </TextScallingFalse>
                   {isUserAdmin && (
                     <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
                   )}
                 </TouchableOpacity>
               </View>
+
               {/* Description */}
               <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Description</Text>
+                <TextScallingFalse style={styles.fieldLabel}>Description</TextScallingFalse>
                 <TouchableOpacity
-                
-                  onPress={() => {
-                    if (isUserAdmin) {
-                      router.push({
-                        pathname: `/(app)/(team)/teams/${teamId}/settings/EditDescription` as RelativePathString, 
-                        params: { description: formData.description },
-                      });
-                    }
-                  }}
+                  onPress={() => handleFieldPress("description")}
                   style={styles.fieldValue}
                 >
-                 <Text style={styles.fieldText} numberOfLines={3}>
-                 {currentDescription || "Add description"}
-                 </Text>
+                  <TextScallingFalse style={styles.fieldText} numberOfLines={3}>
+                    {currentDescription || formData.description || "Add description"}
+                  </TextScallingFalse>
                   {isUserAdmin && (
                     <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
                   )}
@@ -454,99 +557,89 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
 
             {/* Members Section */}
             <View style={styles.membersHeader}>
-                <Text style={styles.sectionTitle}>Members ({members.length})</Text>
-                
-              </View>
-              <View>
-               
-              {isUserAdmin && (
+              <TextScallingFalse style={styles.sectionTitle}>Members ({members.length})</TextScallingFalse>
+            </View>
+            
+            {isUserAdmin && (
               <TouchableOpacity
                 onPress={() => inviteModalRef.current?.open()}
                 style={styles.inviteButton}
               >
-                <Image 
+                 <Image 
                   source={InviteMem}
                   style={styles.image}
                   resizeMode="contain"
                 />
-                <Text style={styles.inviteText}>Invite Members</Text>
+                <TextScallingFalse style={styles.inviteText}>Invite Members</TextScallingFalse>
               </TouchableOpacity>
             )}
-
-
-                </View>
-                <View className="px-5">
-                <Divider style={styles.memberDivider} />
-                </View>
-               
+            
+            <View style={styles.memberDividerContainer}>
+              <Divider style={styles.memberDivider} />
+            </View>
 
             <View style={styles.membersContainer}>
-
-              
-              
               {members.length > 0 ? (
                 <FlatList
-                  key = {members.find(m => m._id)} 
                   data={members}
                   renderItem={renderMember}
                   scrollEnabled={false}
                   ItemSeparatorComponent={() => <Divider style={styles.memberDivider} />}
-                  style={styles.membersList}
+                  key={`members-${members.length}`}
                 />
               ) : (
                 <View style={styles.noMembers}>
-                  <Text style={styles.noMembersText}>No members yet</Text>
+                  <TextScallingFalse style={styles.noMembersText}>No members yet</TextScallingFalse>
                 </View>
               )}
             </View>
           </ScrollView>
 
-          {/* Edit Field Modal */}
+          {/* Location Picker Modal */}
           <Modal
-            visible={activeField !== null}
+            visible={showLocationPicker}
             transparent
             animationType="slide"
-            onRequestClose={() => setActiveField(null)}
+            onRequestClose={() => setShowLocationPicker(false)}
           >
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              style={styles.modalOverlay}
-            >
-              <TouchableOpacity
-                style={styles.modalBackground}
-                activeOpacity={1}
-                onPress={() => setActiveField(null)}
-              >
-                <View style={styles.modalContainer}>
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>
-                      {activeField ? `Edit ${activeField.charAt(0).toUpperCase() + activeField.slice(1)}` : ""}
-                    </Text>
-                    {/* <TouchableOpacity onPress={() => setActiveField(null)}>
-                      <Icon name="close" size={24} color="white" />
-                    </TouchableOpacity> */}
-                  </View>
-                  
-                  <TextInput
-                    style={styles.modalInput}
-                    placeholder={`Enter ${activeField || "value"}...`}
-                    placeholderTextColor="#999"
-                    value={activeField ? formData[activeField] : ""}
-                    onChangeText={(text) => activeField && handleChange(activeField, text)}
-                    autoFocus
-                  />
-                  
-                  {/* <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={() => {
-                      setActiveField(null);
-                    }}
-                  >
-                    <Text style={styles.modalButtonText}>Save Changes</Text>
-                  </TouchableOpacity> */}
+            <View style={styles.modalOverlay}>
+              <View style={styles.locationModalContainer}>
+                <View style={styles.locationModalHeader}>
+                  <TouchableOpacity onPress={() => setShowLocationPicker(false)}>
+                    <Ionicons name="close-outline" size={24} color="#999" />
+                  </TouchableOpacity>
+                  <TextScallingFalse style={styles.locationModalTitle}>Select Location</TextScallingFalse>
+                  <View style={{ width: 24 }} />
                 </View>
-              </TouchableOpacity>
-            </KeyboardAvoidingView>
+                
+                <GooglePlacesAutocomplete
+                  placeholder="Search for location"
+                  onPress={(data, details = null) => {
+                    if (details) {
+                      const city = details.address_components?.find(
+                        c => c.types.includes('locality')
+                      )?.long_name || '';
+                      
+                      const state = details.address_components?.find(
+                        c => c.types.includes('administrative_area_level_1')
+                      )?.long_name || '';
+                      
+                      const country = details.address_components?.find(
+                        c => c.types.includes('country')
+                      )?.long_name || '';
+                      
+                      handleChange("location", [city, state, country].filter(Boolean).join(', '));
+                      setShowLocationPicker(false);
+                    }
+                  }}
+                  query={{
+                    key: process.env.EXPO_PUBLIC_GOOGLE_API,
+                    language: 'en',
+                  }}
+                  styles={googlePlacesStyles}
+                />
+              </View>
+            </View>
           </Modal>
 
           {/* Logo Picker Modal */}
@@ -563,32 +656,41 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
             >
               <View style={styles.pickerContainer}>
                 <View style={styles.pickerHeader}>
-                  <Text style={styles.pickerTitle}>Change Team Logo</Text>
+                  <TextScallingFalse style={styles.pickerTitle}>Change Team Logo</TextScallingFalse>
                   <View style={styles.pickerDivider} />
                 </View>
                 
-                <TouchableOpacity
-                  style={styles.pickerOption}
-                  onPress={pickImage}
-                >
+                <TouchableOpacity style={styles.pickerOption} onPress={pickImage}>
                   <FontAwesome5 name="images" size={20} color="white" />
-                  <Text style={styles.pickerOptionText}>Choose from Gallery</Text>
+                  <TextScallingFalse style={styles.pickerOptionText}>Choose from Gallery</TextScallingFalse>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
                   style={[styles.pickerOption, styles.pickerOptionBorder]}
                   onPress={() => {
-                    setFormData(prev => ({ ...prev, logo: "" }));
-                    setIsEdited(true);
+                    handleChange("logo", "");
                     setPicModalVisible(false);
                   }}
                 >
                   <MaterialCommunityIcons name="delete" size={20} color="#FF5252" />
-                  <Text style={styles.pickerOptionTextDanger}>Remove Logo</Text>
+                  <TextScallingFalse style={styles.pickerOptionTextDanger}>Remove Logo</TextScallingFalse>
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
           </Modal>
+
+          {/* Date Pickers - Platform specific rendering */}
+          {Platform.OS === 'ios' ? renderIOSDatePicker() : (
+            isDatePickerVisible && (
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+                maximumDate={new Date()}
+              />
+            )
+          )}
 
           <InviteModal
             modalRef={inviteModalRef}
@@ -596,15 +698,54 @@ const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
             isAdmin={isUserAdmin}
             onInvitePress={handleInvitePress}
           />
-        </View>
+        </KeyboardAvoidingView>
       </PageThemeView>
     </SafeAreaView>
   );
 };
 
+// Google Places Autocomplete styles
+const googlePlacesStyles = {
+  container: {
+    flex: 0,
+  },
+  textInputContainer: {
+    width: '100%',
+    backgroundColor: '#2A2B31',
+    borderRadius: 8,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+  },
+  textInput: {
+    height: 40,
+    color: 'white',
+    fontSize: 16,
+    backgroundColor: '#2A2B31',
+  },
+  predefinedPlacesDescription: {
+    color: '#1faadb',
+  },
+  listView: {
+    backgroundColor: '#1D1D1D',
+  },
+  row: {
+    backgroundColor: '#1D1D1D',
+    padding: 13,
+    height: 50,
+    flexDirection: 'row',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#333',
+  },
+  description: {
+    color: 'white',
+  },
+};
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    // backgroundColor: '#121212',
   },
   image: {
     width: 48,  
@@ -624,27 +765,31 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: 'white',
-    marginTop: 10,
+    marginTop: 0,
+    fontSize: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    // backgroundColor: '#121212',
   },
   backButton: {
-    padding: 6,
+    padding: 5,
   },
   headerTitle: {
     color: 'white',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     flex: 1,
     textAlign: 'center',
   },
   saveButton: {
-    padding: 6,
+    padding: 5,
+    minWidth: 50,
+    alignItems: 'flex-end',
   },
   saveText: {
     color: '#12956B',
@@ -657,119 +802,140 @@ const styles = StyleSheet.create({
   divider: {
     backgroundColor: '#383838',
     height: 1,
+    marginBottom: 5,
   },
   scrollContent: {
     paddingBottom: 30,
   },
   logoContainer: {
     alignItems: 'center',
-    marginVertical: 30,
+    marginVertical: 25,
   },
   logoWrapper: {
     width: 110,
     height: 110,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 2,
     borderColor: '#444',
     position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#2A2B31',
   },
   logo: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   logoPlaceholder: {
     width: '100%',
     height: '100%',
     borderRadius: 55,
-    backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cameraIcon: {
     position: 'absolute',
-    bottom: 0,
-    right: 10,
-    // backgroundColor: '#444',
+    // bottom: 0,
+    right: 0,
+    backgroundColor: '#333',
     borderRadius: 15,
-    paddingBottom: 80,
+    padding: 8,
+   top:0
   },
   teamName: {
-    // color: 'white',
-    // fontSize: 20,
-    // fontWeight: 'bold',
-    // marginTop: 10,
+    color: 'white',
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 15,
   },
   formContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 13,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
   formField: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   fieldLabel: {
     color: '#999',
     fontSize: 12,
-    marginBottom: 8,
+    marginBottom: 5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   fieldValue: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // alignItems: 'center',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#202020',
-    paddingVertical: 4,
-    paddingBottom:10,
+    paddingVertical: 10,
   },
   fieldText: {
     color: 'white',
     fontSize: 16,
     flex: 1,
+    marginRight: 10,
   },
-  membersContainer: {
-    paddingHorizontal: 16,
-  },
-  membersHeader: {
-    paddingHorizontal: 18,
-    // flexDirection: 'row',
-    justifyContent: 'space-between',
-    // alignItems: 'center',
-    // marginBottom: 10,
-    
-  },
-  inviteButton: {
-    marginLeft:5,
-    paddingHorizontal:15,
-    paddingVertical:20,
+  inlineEditContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#202020',
+    paddingVertical: 10,
+  },
+  inlineEditInput: {
+    flex: 1,
+    color: 'white',
+    fontSize: 16,
+    paddingVertical: 0,
+  },
+  membersHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  inviteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  inviteImage: {
+    width: 24,
+    height: 24,
+    tintColor: '#999',
   },
   inviteText: {
-
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     marginLeft: 12,
   },
-  membersList: {
-    marginBottom: 20,
+  memberDividerContainer: {
+    paddingHorizontal: 20,
+  },
+  memberDivider: {
+    backgroundColor: '#333',
+    height: 1,
+  },
+  membersContainer: {
+    paddingHorizontal: 15,
   },
   memberItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 15,
   },
   memberAvatar: {
     backgroundColor: '#333',
   },
   memberInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 15,
   },
   memberName: {
     color: 'white',
@@ -779,15 +945,17 @@ const styles = StyleSheet.create({
   memberRole: {
     color: '#999',
     fontSize: 10,
-    marginTop: 2,
+    marginTop: 3,
   },
   memberAction: {
-    flexDirection :"row",
-    // padding: 8,
-  
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  memberDivider: {
-    backgroundColor: '#333',
+  memberPositionText: {
+    color: '#7A7A7A',
+    fontSize: 12,
+    marginRight: 5,
+    textTransform: 'uppercase',
   },
   noMembers: {
     padding: 20,
@@ -795,52 +963,64 @@ const styles = StyleSheet.create({
   },
   noMembersText: {
     color: '#999',
+    fontSize: 14,
   },
   modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
   modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
-  modalContainer: {
-    backgroundColor: '#161616',
+  datePickerContainer: {
+    backgroundColor: '#1E1E1E',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 15,
-    // paddingTop:0/,
+    padding: 20,
   },
-  modalHeader: {
+  datePickerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 15,
   },
-  modalTitle: {
-    marginLeft:6,
-    color: 'gray',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  modalInput: {
-    backgroundColor: '#2A2B31',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
+  datePickerHeaderButton: {
     color: 'white',
-    marginBottom: 2,
+    fontSize: 16,
   },
-  modalButton: {
-    backgroundColor: '#12956B',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+  datePickerHeaderButtonDone: {
+    color: '#12956B',
+    fontSize: 16,
+    fontWeight: '500',
   },
-  modalButtonText: {
+  datePickerHeaderTitle: {
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
+  },
+  iosDatePicker: {
+    height: 200,
+  },
+  locationModalContainer: {
+    backgroundColor: '#1E1E1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingTop: 10,
+  },
+  locationModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  locationModalTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
   },
   pickerContainer: {
     backgroundColor: '#1C1D23',

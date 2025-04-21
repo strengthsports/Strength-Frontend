@@ -6,20 +6,17 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Dimensions,
-  StyleSheet,
-  Platform,
-  FlatList,
-  ViewToken,
-} from "react-native";
+import { View, TouchableOpacity, Dimensions, StyleSheet } from "react-native";
+import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import { Image } from "expo-image";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
+
+const blurhash =
+  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 interface CustomImageSliderProps {
   images: string[];
@@ -29,11 +26,15 @@ interface CustomImageSliderProps {
   isMyActivity?: boolean;
   postId?: string;
   setIndex: (index: number) => void;
-  onDoubleTap?: () => any;
+  onDoubleTap?: () => void;
 }
 
 const RemoveButton = memo(({ onPress }: { onPress: () => void }) => (
-  <TouchableOpacity onPress={onPress} style={styles.removeButton}>
+  <TouchableOpacity
+    onPress={onPress}
+    className="absolute top-2 right-2 bg-black/50 rounded-full p-1 z-10"
+    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+  >
     <MaterialCommunityIcons name="close" size={20} color="white" />
   </TouchableOpacity>
 ));
@@ -45,81 +46,68 @@ const ImageSlide = memo(
     onRemove,
     isFirstSlide,
     isFeedPage,
+    isMyActivity,
     postId,
     onDoubleTap,
-    containerWidth,
-    containerHeight,
   }: {
     uri: string;
     index: number;
     onRemove: (index: number) => void;
     isFirstSlide: boolean;
+    totalSlides: number;
     isFeedPage?: boolean;
+    isMyActivity?: boolean;
     postId?: string;
     onDoubleTap?: () => any;
-    containerWidth: number;
-    containerHeight: number;
   }) => {
     const router = useRouter();
     const [isError, setIsError] = useState(false);
 
-    const slideStyle = useMemo(
-      () => [styles.slide, { width: containerWidth, height: containerHeight }],
-      [containerWidth, containerHeight, isFirstSlide]
-    );
-
-    const imageStyle = useMemo(
-      () => [
-        styles.image,
-        {
-          borderTopLeftRadius: isFirstSlide ? 16 : 0,
-          borderBottomLeftRadius: isFirstSlide ? 16 : 0,
-          borderTopWidth: isFirstSlide ? 0.5 : 0.4,
-          borderBottomWidth: isFirstSlide ? 0.5 : 0.4,
-          borderLeftWidth: isFirstSlide ? 0.5 : 0,
-          borderColor: "#2F2F2F",
-        },
-      ],
-      [isFirstSlide]
-    );
-
     return (
-      <View style={slideStyle}>
-        <TouchableWithDoublePress
-          style={styles.touchableInner}
-          activeOpacity={0.95}
-          onSinglePress={() => {
-            if (isFeedPage && postId) {
-              router.push({
-                pathname: `/post-view/${postId}` as RelativePathString,
-              });
-            }
+      <TouchableWithDoublePress
+        className={`flex-1 relative overflow-hidden ${
+          !isMyActivity && isFirstSlide ? "ml-2" : ""
+        }`}
+        activeOpacity={0.95}
+        onSinglePress={() => {
+          if (isFeedPage && postId) {
+            router.push({
+              pathname: `/post-view/${postId}` as RelativePathString,
+            });
+          }
+        }}
+        onDoublePress={onDoubleTap}
+      >
+        <Image
+          source={
+            isError ? require("../../assets/images/nocover.png") : { uri }
+          }
+          contentFit="cover"
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            inset: 0,
+            borderTopLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
+            borderBottomLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
+            borderTopWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
+            borderBottomWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
+            borderLeftWidth: !isMyActivity && isFirstSlide ? 0.5 : 0,
+            borderColor: "#2F2F2F",
           }}
-          onDoublePress={onDoubleTap}
-        >
-          <Image
-            source={{ uri }}
-            contentFit="cover"
-            style={imageStyle}
-            placeholder={require("../../assets/images/nocover.png")}
-            placeholderContentFit="cover"
-            transition={300}
-            cachePolicy="memory-disk"
-            onError={(e) => {
-              setIsError(true);
-              console.error("Image Load Error:", uri, e?.error);
-            }}
-          />
-          {isError && (
-            <Image
-              source={require("../../assets/images/nocover.png")}
-              style={styles.imageErrorPlaceholder}
-              contentFit="cover"
-            />
-          )}
-          {!isFeedPage && <RemoveButton onPress={() => onRemove(index)} />}
-        </TouchableWithDoublePress>
-      </View>
+          placeholder={require("../../assets/images/nocover.png")}
+          placeholderContentFit="cover"
+          transition={500}
+          cachePolicy="memory-disk"
+          onError={(e) => {
+            setIsError(true);
+            console.log(`Error loading image ${index}: `, e?.error);
+          }}
+        />
+        {!isFeedPage && !isMyActivity && (
+          <RemoveButton onPress={() => onRemove(index)} />
+        )}
+      </TouchableWithDoublePress>
     );
   }
 );
@@ -131,15 +119,15 @@ const CustomImageSlider = ({
   isFeedPage,
   isMyActivity,
   postId,
-  setIndex: setParentIndex,
+  setIndex,
   onDoubleTap,
 }: CustomImageSliderProps) => {
-  const flatListRef = useRef<FlatList>(null);
+  const swiperRef = useRef<Swiper>(null);
+  const prevImagesLengthRef = useRef(images.length);
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(
     Dimensions.get("window").width
   );
-  const prevImagesLengthRef = useRef(images.length); //ref to track previous length
 
   const containerHeight = useMemo(
     () => containerWidth * (aspectRatio[1] / aspectRatio[0]),
@@ -147,132 +135,131 @@ const CustomImageSlider = ({
   );
 
   useEffect(() => {
-    const updateLayout = ({ window }: { window: { width: number } }) => {
-      setContainerWidth(window.width);
+    if (images.length > prevImagesLengthRef.current) {
+      const newIndex = images.length - 1;
+      const timer = setTimeout(() => {
+        if (
+          swiperRef.current &&
+          typeof swiperRef.current.scrollTo === "function"
+        ) {
+          // console.log(`Scrolling to new index: ${newIndex}`);
+          swiperRef.current.scrollTo(newIndex, false);
+        }
+      }, 50);
+
+      prevImagesLengthRef.current = images.length;
+      return () => clearTimeout(timer);
+    } else {
+      prevImagesLengthRef.current = images.length;
+    }
+  }, [images.length]);
+
+  useEffect(() => {
+    const updateLayout = () => {
+      setContainerWidth(Dimensions.get("window").width);
     };
-    const subscription = Dimensions.addEventListener("change", updateLayout);
-    return () => subscription?.remove();
+    const dimensionsHandler = Dimensions.addEventListener(
+      "change",
+      updateLayout
+    );
+    updateLayout();
+    return () => {
+      dimensionsHandler?.remove();
+    };
   }, []);
 
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
-
-  const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0) {
-        const newIndex = viewableItems[0].index;
-        if (newIndex !== null && newIndex !== activeIndex) {
-          //update state only if the viewable index changes and is valid
-          setActiveIndex(newIndex);
-          setParentIndex(newIndex);
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      // console.log(`Swiper onIndexChanged fired with: ${index}`);
+      setActiveIndex((currentIndex) => {
+        if (currentIndex !== index) {
+          if (typeof setIndex === "function") {
+            setIndex(index);
+          }
+          return index;
         }
-      }
+        return currentIndex;
+      });
     },
-    [activeIndex, setParentIndex]
+    [setIndex]
   );
-
-  //effect for Image Addition
-  useEffect(() => {
-    const currentLength = images.length;
-    const previousLength = prevImagesLengthRef.current;
-
-    // Check if the number of images has increased
-    if (currentLength > previousLength) {
-      const newIndex = currentLength - 1;
-
-      // Update state to the new index
-      setActiveIndex(newIndex);
-      setParentIndex(newIndex);
-
-      // Scroll FlatList to the new index after a short delay
-      setTimeout(() => {
-        flatListRef.current?.scrollToIndex({
-          animated: true,
-          index: newIndex,
-        });
-      }, 100); // Delay allows FlatList to render the new item
-    }
-
-    // Update the ref to store the current length for the next comparison
-    prevImagesLengthRef.current = currentLength;
-  }, [images, setParentIndex]);
-
-  useEffect(() => {
-    const maxIndex = images.length - 1;
-    if (images.length > 0 && activeIndex > maxIndex) {
-      const newCorrectIndex = maxIndex;
-      setActiveIndex(newCorrectIndex);
-      setParentIndex(newCorrectIndex);
-    } else if (images.length === 0 && activeIndex !== 0) {
-      setActiveIndex(0);
-      setParentIndex(0);
-    }
-  }, [images.length, activeIndex, setParentIndex]);
 
   const handleRemoveImage = useCallback(
     (indexToRemove: number) => {
-      onRemoveImage(indexToRemove);
-    },
-    [onRemoveImage]
-  );
+      const currentLength = images.length;
+      const currentActiveIndex = activeIndex;
 
-  const renderItem = useCallback(
-    ({ item, index }: { item: string; index: number }) => (
-      <ImageSlide
-        uri={item}
-        index={index}
-        onRemove={handleRemoveImage}
-        isFirstSlide={index === 0}
-        isFeedPage={isFeedPage}
-        postId={postId}
-        onDoubleTap={onDoubleTap}
-        containerWidth={containerWidth}
-        containerHeight={containerHeight}
-      />
-    ),
-    [
-      handleRemoveImage,
-      isFeedPage,
-      postId,
-      onDoubleTap,
-      containerWidth,
-      containerHeight,
-    ]
+      onRemoveImage(indexToRemove);
+
+      const newLength = currentLength - 1;
+
+      if (newLength > 0 && currentActiveIndex >= newLength) {
+        const newIndex = newLength - 1;
+        // console.log(`Post-removal: Index ${currentActiveIndex} invalid (>= ${newLength}). Setting to ${newIndex}`);
+        setActiveIndex(newIndex);
+        if (typeof setIndex === "function") {
+          setIndex(newIndex);
+        }
+      } else if (newLength <= 0) {
+        //  console.log("Post-removal: List empty. Setting index to 0");
+        setActiveIndex(0);
+        if (typeof setIndex === "function") {
+          setIndex(0);
+        }
+      }
+
+      // Update the ref immediately after triggering removal
+      prevImagesLengthRef.current = newLength;
+    },
+    [activeIndex, images.length, onRemoveImage, setIndex]
   );
 
   if (!images || images.length === 0) {
     return null;
   }
+  const safeActiveIndex = Math.min(Math.max(0, activeIndex), images.length - 1);
 
   return (
-    <View style={styles.wrapper}>
-      <FlatList
-        ref={flatListRef}
-        data={images}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => item || `slide-${index}`}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        style={[styles.flatListContainer, { height: containerHeight }]}
-        contentContainerStyle={styles.flatListContentContainer}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        initialNumToRender={3}
-        maxToRenderPerBatch={3}
-        windowSize={5}
-        getItemLayout={(_, index) => ({
-          length: containerWidth,
-          offset: containerWidth * index,
-          index,
-        })}
-      />
+    <View>
+      <View
+        style={{
+          height: containerHeight,
+          width: containerWidth,
+        }}
+        className="overflow-hidden bg-transparent"
+      >
+        <Swiper
+          {...swiperConfig}
+          ref={swiperRef}
+          onIndexChanged={handleIndexChange}
+          index={safeActiveIndex}
+          key={images.length}
+          removeClippedSubviews={false}
+          loop={false}
+          showsPagination={false}
+        >
+          {images.map((uri, index) => (
+            <ImageSlide
+              key={uri || `slide-${index}`}
+              uri={uri}
+              index={index}
+              onRemove={handleRemoveImage}
+              isFirstSlide={index === 0}
+              totalSlides={images.length}
+              isFeedPage={isFeedPage}
+              isMyActivity={isMyActivity}
+              postId={postId}
+              onDoubleTap={onDoubleTap}
+            />
+          ))}
+        </Swiper>
+      </View>
 
-      {images.length > 1 && (
+      {images.length > 1 && !isFeedPage && !isMyActivity && (
         <View style={styles.paginationContainer}>
           <AnimatedDotsCarousel
             length={images.length}
-            currentIndex={activeIndex}
+            currentIndex={safeActiveIndex}
             maxIndicators={2}
             interpolateOpacityAndColor={true}
             activeIndicatorConfig={{
@@ -289,30 +276,15 @@ const CustomImageSlider = ({
             }}
             decreasingDots={[
               {
-                config: {
-                  color: "#FFFFFF",
-                  margin: 3,
-                  opacity: 0.5,
-                  size: 5,
-                },
+                config: { color: "#FFFFFF", margin: 3, opacity: 0.5, size: 5 },
                 quantity: 1,
               },
               {
-                config: {
-                  color: "#FFFFFF",
-                  margin: 3,
-                  opacity: 0.5,
-                  size: 4,
-                },
+                config: { color: "#FFFFFF", margin: 3, opacity: 0.5, size: 4 },
                 quantity: 1,
               },
               {
-                config: {
-                  color: "#FFFFFF",
-                  margin: 3,
-                  opacity: 0.5,
-                  size: 3,
-                },
+                config: { color: "#FFFFFF", margin: 3, opacity: 0.5, size: 3 },
                 quantity: 1,
               },
             ]}
@@ -324,42 +296,11 @@ const CustomImageSlider = ({
 };
 
 const styles = StyleSheet.create({
-  wrapper: {},
-  flatListContainer: {
-    overflow: "visible",
-    backgroundColor: "#111",
-  },
-  flatListContentContainer: {},
-  slide: {
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  touchableInner: {
-    width: "100%",
-    height: "100%",
-    position: "relative",
-  },
-  image: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  imageErrorPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
-  },
-  removeButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 9999,
-    padding: 4,
-    zIndex: 10,
-  },
   paginationContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
+    paddingVertical: 8,
+    marginTop: 4,
   },
 });
 

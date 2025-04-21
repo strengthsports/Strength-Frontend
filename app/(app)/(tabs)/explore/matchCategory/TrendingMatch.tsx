@@ -2,8 +2,18 @@ import React from "react";
 import { View, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
-import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
-import { useGetFootballMatchesQuery } from "~/reduxStore/api/explore/footballApi";
+import {
+  useGetCricketLiveMatchesQuery,
+  useGetCricketNextMatchesQuery,
+} from "~/reduxStore/api/explore/cricketApi";
+import {
+  useGetFootballLiveMatchesQuery,
+  useGetFootballNextMatchesQuery,
+} from "~/reduxStore/api/explore/footballApi";
+import {
+  useGetBasketballLiveMatchesQuery,
+  useGetBasketballNextMatchesQuery,
+} from "~/reduxStore/api/explore/basketballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
@@ -40,26 +50,39 @@ const TrendingMatch = () => {
   };
 
   const {
-    data: cricketData,
-    isFetching: isCricketFetching,
+    data: cricketLiveData,
+    isFetching: isCricketLiveFetching,
     refetch: refetchLiveCricket,
-  } = useGetCricketMatchesQuery({});
-  const { liveMatches: liveCricketMatches, nextMatch: nextCricketMatches } =
-    cricketData || {};
+  } = useGetCricketLiveMatchesQuery({});
+  const { liveMatches: liveCricketMatches } = cricketLiveData || {};
 
   const {
-    data: footballData,
-    isFetching: isFootballFetching,
-    refetch: refetchFootball,
-  } = useGetFootballMatchesQuery({});
-  const { liveMatches: liveFootballMatches, nextMatch: nextFootballMatches } =
-    footballData || {};
+    data: cricketNextData,
+    isFetching: isCricketNextFetching,
+    refetch: refetchNextCricket,
+  } = useGetCricketNextMatchesQuery({});
+  const { nextMatches: nextCricketMatches } = cricketNextData || {};
 
-  const singleLiveCricketMatch = liveCricketMatches?.slice(1, 2);
+  const {
+    data: footballLiveData,
+    isFetching: isFootballLiveFetching,
+    refetch: refetchLiveFootball,
+  } = useGetFootballLiveMatchesQuery({});
+  const { liveMatches: liveFootballMatches } = footballLiveData || {};
+
+  const {
+    data: basketballLiveData,
+    isFetching: isBasketballLiveFetching,
+    refetch: refetchLiveBasketball,
+  } = useGetBasketballLiveMatchesQuery({});
+  const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
+
+  const singleLiveCricketMatch = liveCricketMatches?.slice(0, 1);
   const singleLiveFootballMatch = liveFootballMatches?.slice(0, 1);
+  const singleLiveBasketballMatch = liveBasketballMatches?.slice(0, 2);
 
   const renderTrendingLiveMatches = () => {
-    const isLoading = isCricketFetching || isFootballFetching;
+    const isLoading = isCricketLiveFetching || isFootballLiveFetching;
 
     if (isLoading) {
       return (
@@ -68,22 +91,14 @@ const TrendingMatch = () => {
         </View>
       );
     }
-
     return (
       <TrendingLiveMatch
         liveCricketMatches={singleLiveCricketMatch}
         liveFootballMatches={singleLiveFootballMatch}
-        isCricketFetching={isCricketFetching}
-        isFootballFetching={isFootballFetching}
-      />
-    );
-  };
-  const renderCricketLiveMatches = () => {
-    return (
-      <CricketLiveMatch
-        liveMatches={liveCricketMatches}
-        isFetching={isCricketFetching}
-        onRefetch={refetchLiveCricket}
+        liveBasketballMatches={singleLiveBasketballMatch}
+        isCricketFetching={isCricketLiveFetching}
+        isFootballFetching={isFootballLiveFetching}
+        isBasketballFetching={isBasketballLiveFetching}
       />
     );
   };
@@ -91,18 +106,8 @@ const TrendingMatch = () => {
   const renderCricketNextMatches = () => {
     return (
       <CricketNextMatch
-        nextMatch={nextCricketMatches}
-        isFetching={isCricketFetching}
-      />
-    );
-  };
-
-  const renderFootballLiveMatches = () => {
-    return (
-      <FootballLiveMatch
-        liveMatches={liveFootballMatches}
-        isFetching={isFootballFetching}
-        onRefetch={refetchFootball}
+        nextMatches={nextCricketMatches}
+        isFetching={isCricketNextFetching}
       />
     );
   };

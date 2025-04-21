@@ -4,12 +4,14 @@ import Svg, { Path } from "react-native-svg";
 const ClipsIcon = ({
   color = "#12956B",
   fw,
+  size = 22,
 }: {
   color?: string;
   fw?: string;
+  size?: number;
 }) => {
   return (
-    <Svg width="22" height="22" viewBox="0 0 21 21" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 21 21" fill="none">
       <Path
         stroke={color}
         strokeWidth={1.4}

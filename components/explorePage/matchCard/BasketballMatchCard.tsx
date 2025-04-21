@@ -1,30 +1,96 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Image, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  Animated,
+  ScrollView,
+} from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import NameFlagSubCard from "../nameFlagSubCard";
 import { countryCodes } from "~/constants/countryCodes";
 
-interface BasketballMatchCardProps {
+interface MatchCardProps {
   match: {
-    id: string;
-    series: string;
-    round: string;
-    t1: string;
-    t1s: string[]; // Array of scores for team 1
-    t2: string;
-    t2s: string[]; // Array of scores for team 2
-    status: string;
-    tournamentImg?: string;
+    id: number;
+    date: string;
+    time: string;
+    venue: string;
+    status: {
+      long: string;
+      short: string;
+      timer: string;
+    };
+    league: {
+      id: number;
+      name: string;
+      type: string;
+      season: number;
+      logo: string;
+    };
+    country: {
+      id: number;
+      name: string;
+      code: string;
+      flag: string;
+    };
+    teams: {
+      home: {
+        id: number;
+        name: string;
+        logo: string;
+      };
+      away: {
+        id: number;
+        name: string;
+        logo: string;
+      };
+    };
+    scores: {
+      home: {
+        quarter_1: number;
+        quarter_2: number;
+        quarter_3: number;
+        quarter_4: number;
+        over_time: number | null;
+        total: number;
+      };
+      away: {
+        quarter_1: number;
+        quarter_2: number;
+        quarter_3: number;
+        quarter_4: number;
+        over_time: number | null;
+        total: number;
+      };
+    };
   };
   isLive?: boolean;
 }
 
+type ScoreKey =
+  | "quarter_1"
+  | "quarter_2"
+  | "quarter_3"
+  | "quarter_4"
+  | "over_time";
+
 const extractShortName = (teamName: string) => {
-  const match = teamName.match(/\[(.*?)\]/);
-  return match ? match[1] : teamName;
+  // Match all words in the team name
+  const words = teamName.match(/\b\w+/g);
+
+  if (!words) return teamName;
+
+  // For single-word teams like "Changhua", return first 3 uppercase letters
+  if (words.length === 1) {
+    return words[0].substring(0, 3).toUpperCase();
+  }
+
+  // For multi-word teams, take the first letter of each word and return uppercase
+  return words.map((word) => word[0].toUpperCase()).join("");
 };
 
-const BasketballMatchCard = ({ match, isLive }: any) => {
+const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
   const opacityValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -51,31 +117,60 @@ const BasketballMatchCard = ({ match, isLive }: any) => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
 
-  const getCountryCode = (teamName: string) =>
-    countryCodes[teamName as keyof typeof countryCodes] || "Unknown";
+  const rawScores = match.scores;
+
+  const scoreKeys: { key: ScoreKey; label: string }[] = [
+    { key: "quarter_1", label: "Q1" },
+    { key: "quarter_2", label: "Q2" },
+    { key: "quarter_3", label: "Q3" },
+    { key: "quarter_4", label: "Q4" },
+    { key: "over_time", label: "OT" },
+  ];
+
+  const scoreColumns = [
+    ...scoreKeys
+      .map(({ key, label }) => ({
+        label,
+        home: rawScores.home[key],
+        away: rawScores.away[key],
+      }))
+      .filter((item) => item.home !== null || item.away !== null), // Remove columns where both home and away are null
+  ];
+
+  scoreColumns.push({
+    label: "Total",
+    home: rawScores.home.total,
+    away: rawScores.away.total,
+  });
+  scoreColumns.reverse();
 
   return (
     <>
-      {/* Top Section - Tournament, Sport, Round */}
-      <View className="px-4 pt-3 pb-1">
+      {/* Tittle Section */}
+      <View className="px-4 pt-3 pb-2">
         <TouchableOpacity
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}
         >
-          {match?.tournamentImg && (
+          {/* {match?.tournamentImg && (
             <View className="p-1 rounded-md">
               <Image
                 source={{ uri: match?.tournamentImg }}
                 className="w-8 h-8 rounded-md self-center"
               />
             </View>
-          )}
-          <TextScallingFalse
-            className="text-[#EAEAEA] text-3xl w-4/5"
-            numberOfLines={numberOfLinesTitle}
-          >
-            BWF WT - JAPAN OPEN: MEN
-          </TextScallingFalse>
+          )} */}
+          <View className="w-4/5 flex-row items-center">
+            <TextScallingFalse className="text-white text-2xl uppercase">
+              {match.country.name} -{" "}
+            </TextScallingFalse>
+            <TextScallingFalse
+              className="text-[#EAEAEA] text-2xl w-4/5"
+              numberOfLines={numberOfLinesTitle}
+            >
+              {match.league.name} {match.league.type}
+            </TextScallingFalse>
+          </View>
         </TouchableOpacity>
 
         {/* Sport Name and Round */}
@@ -83,25 +178,25 @@ const BasketballMatchCard = ({ match, isLive }: any) => {
           <TextScallingFalse className="text-theme text-base font-bold">
             {"\u25B6"} Basketball
           </TextScallingFalse>
-          <TextScallingFalse className="text-[#919191] text-base uppercase">
-            {" \u2022 "} Round 4
+          <TextScallingFalse className="text-[#919191] text-base">
+            {" \u2022 "} {match.status.long}
           </TextScallingFalse>
         </View>
       </View>
 
       {/* Live Indicator */}
       {isLive && (
-        <View className="rounded-full absolute right-5 top-5 bg-[#BC3D40] px-[9px] flex-row items-center justify-center">
+        <View className="rounded-full absolute right-5 top-4 bg-[#BC3D40] px-[7px] flex-row items-center justify-center">
           <Animated.Text
-            className="text-lg text-white font-bold"
+            className="text-xs text-white font-bold"
             style={[
               { opacity: opacityValue },
-              { fontSize: 19, textAlign: "center", paddingTop: 6 },
+              { fontSize: 14, lineHeight: 20 }, // Adjust to match LIVE text height
             ]}
           >
-            &bull;{" "}
+            &bull;
           </Animated.Text>
-          <TextScallingFalse className="text-[11px] text-white font-bold">
+          <TextScallingFalse className="ml-1 text-[11px] text-white font-semibold">
             LIVE
           </TextScallingFalse>
         </View>
@@ -111,49 +206,87 @@ const BasketballMatchCard = ({ match, isLive }: any) => {
       <View className="h-[0.8] bg-[#252525] my-1" />
 
       {/* Teams & Scores Section */}
-      <View className="px-4 mt-1">
-        {/* Team 1 */}
-        <View className="flex-row items-center justify-between mt-2 mb-1">
-          <NameFlagSubCard
-            flag={getCountryCode(match.t1)}
-            teamName={"Lanier A."}
-          />
-          <View className="flex-row gap-4">
-            {/* {match.t1s.map((score, index) => (
-              <TextScallingFalse key={index} className="text-white">
-                {score}
-              </TextScallingFalse>
-            ))} */}
-            <TextScallingFalse className="text-white">2</TextScallingFalse>{" "}
-            <TextScallingFalse className="text-white">21</TextScallingFalse>{" "}
-            <TextScallingFalse className="text-white">22</TextScallingFalse>
+
+      <View className="mt-1">
+        <View className="mt-5 px-5">
+          {/* Team 1 */}
+          <View className="flex-row items-center justify-between mt-2 mb-1">
+            <NameFlagSubCard
+              flag={match.teams.home.logo}
+              teamName={extractShortName(match.teams.home.name)}
+            />
+          </View>
+
+          {/* Team 2 */}
+          <View className="flex-row items-center justify-between mt-2 mb-1">
+            <NameFlagSubCard
+              flag={match.teams.away.logo}
+              teamName={extractShortName(match.teams.away.name)}
+            />
           </View>
         </View>
 
-        {/* Team 2 */}
-        <View className="flex-row items-center justify-between mt-2 mb-1">
-          <NameFlagSubCard
-            flag={getCountryCode(match.t2)}
-            teamName={"Chou T. Ch."}
-          />
-          <View className="flex-row gap-4">
-            {/* {match.t2s.map((score, index) => (
-              <TextScallingFalse key={index} className="text-white">
-                {score}
-              </TextScallingFalse>
-            ))} */}
-            <TextScallingFalse className="text-white">2</TextScallingFalse>{" "}
-            <TextScallingFalse className="text-white">21</TextScallingFalse>{" "}
-            <TextScallingFalse className="text-white">22</TextScallingFalse>
-          </View>
+        {/* Home team and away team scores */}
+        <View className="max-w-[150px] absolute right-3 mt-2">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 0 }}
+            nestedScrollEnabled={true}
+          >
+            <View className="flex-column">
+              {/* Header Row */}
+              <View className="flex-row mb-2">
+                {scoreColumns.map((item) => (
+                  <TextScallingFalse
+                    key={item.label}
+                    className="text-neutral-400 text-sm text-center mx-1 w-10"
+                  >
+                    {item.label}
+                  </TextScallingFalse>
+                ))}
+              </View>
+
+              {/* Home Team Scores */}
+              <View className="flex-row mb-3.5">
+                {scoreColumns.map((item) => (
+                  <TextScallingFalse
+                    key={`home-${item.label}`}
+                    className={`text-lg text-center mx-1 w-10 ${
+                      item.label === "Total" ? "font-bold" : "font-normal"
+                    }
+                    ${
+                      item.label !== "Total" ? "text-[#A7A7A7]" : "text-white"
+                    }`}
+                  >
+                    {item.home}
+                  </TextScallingFalse>
+                ))}
+              </View>
+
+              {/* Away Team Scores */}
+              <View className="flex-row">
+                {scoreColumns.map((item) => (
+                  <TextScallingFalse
+                    key={`away-${item.label}`}
+                    className={`text-lg text-center mx-1 w-10 ${
+                      item.label === "Total" ? "font-bold" : "font-normal"
+                    }
+                  ${item.label !== "Total" ? "text-[#A7A7A7]" : "text-white"}`}
+                  >
+                    {item.away}
+                  </TextScallingFalse>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
         </View>
       </View>
 
       {/* Match Status */}
-      <TextScallingFalse className="absolute bottom-4 left-4 text-neutral-400 text-base mt-2">
-        {/* {match.status} */}
-        yo you wassup wassup
-      </TextScallingFalse>
+      {/* <TextScallingFalse className="absolute bottom-4 left-4 text-neutral-400 text-base mt-2">
+        {match.status.long} - {match.status.timer}
+      </TextScallingFalse> */}
     </>
   );
 };

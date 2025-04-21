@@ -6,20 +6,62 @@ import { countryCodes } from "~/constants/countryCodes";
 import teamLogos from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
 
+// interface MatchCardProps {
+//   match: {
+//     id: string;
+//     series: string;
+//     matchType: string;
+//     t1: string;
+//     t1s: string;
+//     t2: string;
+//     t2s: string;
+//     status: string;
+//     tournamentImg?: string;
+//     dateTimeGMT: string;
+//   };
+//   isLive?: boolean;
+// }
+
 interface MatchCardProps {
   match: {
-    id: string;
+    // Match Identification
+    match_id: number;
+    match_status: string;
+    match_type: string;
+    matchs: string; // e.g., "36th Match"
     series: string;
-    matchType: string;
-    t1: string;
-    t1s: string;
-    t2: string;
-    t2s: string;
-    status: string;
-    tournamentImg?: string;
-    dateTimeGMT: string;
+    series_id: number;
+    series_type: string;
+
+    // Date & Time
+    match_date: string; // e.g., "19-Apr"
+    match_time: string; // e.g., "07:30 PM"
+    date_wise: string; // e.g., "19 Apr 2025, Saturday"
+
+    // Venue
+    venue: string;
+    venue_id: number;
+
+    // Team A Details
+    team_a_id: number;
+    team_a: string;
+    team_a_short: string;
+    team_a_img: string;
+
+    // Team B Details
+    team_b_id: number;
+    team_b: string;
+    team_b_short: string;
+    team_b_img: string;
+
+    // Favorites & Odds
+    fav_team: string;
+    min_rate: string;
+    max_rate: string;
+
+    // Special Match Info
+    is_hundred: number;
   };
-  isLive?: boolean;
 }
 
 const CricketNextMatchCard = ({ match }: MatchCardProps) => {
@@ -27,63 +69,25 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
-  const convertToIST = (gmtDateTime: string | Date) => {
-    const gmtDate = new Date(gmtDateTime);
 
-    if (isNaN(gmtDate.getTime())) {
-      return "Match time loading...";
-    }
+  const extractDate = (
+    matchDate: string
+  ): { date: string; day: string | null } => {
+    const [fullDate, day] = matchDate.split(",").map((str) => str.trim());
 
-    // Calculate IST offset (+5 hours 30 minutes in milliseconds)
-    const istOffset = 5.5 * 60 * 60 * 1000;
+    // Extract day short form
+    const shortDay = day ? day.slice(0, 3) : null;
 
-    // Convert GMT to IST by adding the offset
-    const istDate = new Date(gmtDate.getTime() + istOffset);
+    // Remove year and shorten month
+    const [dayNum, monthFull] = fullDate.split(" ");
+    const shortMonth = monthFull.slice(0, 3); // e.g., "April" → "Apr"
 
-    // Get the current date in IST for comparison
-    const currentDate = new Date();
-    const currentISTDate = new Date(currentDate.getTime() + istOffset);
+    const formattedDate = `${dayNum} ${shortMonth}`;
 
-    // Reset time for date comparison
-    const today = new Date(currentISTDate.setHours(0, 0, 0, 0));
-    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-
-    // Extract components of the IST date
-    const hours = istDate.getHours() % 12 || 12; // Convert to 12-hour format
-    const minutes = String(istDate.getMinutes()).padStart(2, "0");
-    const amPm = istDate.getHours() >= 12 ? "PM" : "AM";
-
-    const day = String(istDate.getDate()).padStart(2, "0");
-    const month = String(istDate.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
-    const year = istDate.getFullYear();
-
-    // Determine if the date is today, tomorrow, or beyond
-    let dateLabel;
-    if (istDate >= today && istDate < tomorrow) {
-      dateLabel = "Today";
-    } else if (
-      istDate >= tomorrow &&
-      istDate < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
-    ) {
-      dateLabel = "Tomorrow";
-    } else {
-      dateLabel = `${day}/${month}/${year}`;
-    }
-
-    return `${dateLabel}\n${hours}:${minutes} ${amPm}`;
-  };
-  const getCountryCode = (teamName: string) =>
-    countryCodes[teamName as keyof typeof countryCodes] || "Unknown";
-
-  const extractShortName = (teamName: string) => {
-    const match = teamName.match(/\[(.*?)\]/); // Extract text inside square brackets
-    const shortName = match?.[1] || teamName; // Use short form if available, else full name
-    return shortName; // Return short form if available, else full name
+    return { date: formattedDate, day: shortDay };
   };
 
-  const getTeamLogo = (teamShortName: string) => {
-    return teamLogos[teamShortName] || require("~/assets/images/logo2.png"); // Fallback image
-  };
+  // const { date, day } = extractDate(match.match_date);
 
   return (
     <>
@@ -95,14 +99,14 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}
         >
-          {match?.tournamentImg && (
+          {/* {match?.tournamentImg && (
             <View className="p-1 rounded-md">
               <Image
                 source={{ uri: match?.tournamentImg }}
                 className="w-8 h-8 rounded-md self-center"
               />
             </View>
-          )}
+          )} */}
           <TextScallingFalse
             className="text-white text-3xl w-4/5"
             numberOfLines={numberOfLinesTitle}
@@ -124,28 +128,30 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
 
       <View className="pl-10 pt-5">
         <TextScallingFalse className="text-[#9E9E9E] text-base uppercase">
-          {" \u2022 "} {match.matchType}
+          {" \u2022 "} {match.match_type}
         </TextScallingFalse>
       </View>
       <View className="flex-row items-center justify-between px-10 pt-5">
         <View className="flex-column gap-y-3">
           {/* view 1 */}
           <NameFlagSubCard
-            flag={getCountryCode(match?.t1)}
-            teamName={extractShortName(match?.t1)}
+            flag={match.team_a_img}
+            teamName={match.team_a_short}
           />
 
           {/* view 3 */}
           <NameFlagSubCard
-            flag={getCountryCode(match?.t2)}
-            teamName={extractShortName(match?.t2)}
+            flag={match.team_b_img}
+            teamName={match.team_b_short}
           />
         </View>
         <View className="w-[1px] h-12 bg-neutral-700 ml-28" />
         {/* view 2 */}
         <View className="items-center">
           <TextScallingFalse className="text-neutral-300 text-center text-base">
-            {convertToIST(match?.dateTimeGMT)}
+            {/* {day}
+            {date} */}
+            {match.match_time}
           </TextScallingFalse>
         </View>
       </View>

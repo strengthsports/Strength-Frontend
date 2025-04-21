@@ -32,10 +32,10 @@ const ActivityLayout = () => {
   const tabs = useMemo(
     () => [
       { name: "Posts" },
+      { name: "Clips" },
       { name: "Thoughts" },
       { name: "Polls" },
       { name: "Comments" },
-      { name: "Clips" },
       { name: "Articles" },
     ],
     []
@@ -50,7 +50,7 @@ const ActivityLayout = () => {
         return <Polls />;
       case "Thoughts":
         return <WrittenPost />;
-      case "Comments" :
+      case "Comments":
         return <Comments />;
       case "Clips":
         return <Clips />;
@@ -62,7 +62,7 @@ const ActivityLayout = () => {
   }, [activeTab]);
 
   return (
-    <View>
+    <View className="mr-2">
       {/* Horizontal Tab Scroll */}
       <ScrollView
         horizontal
@@ -71,10 +71,11 @@ const ActivityLayout = () => {
         snapToInterval={200}
         snapToAlignment="start"
         contentContainerStyle={{
+          marginTop: 5,
           paddingStart: 15 * scaleFactor,
           justifyContent: "flex-start",
           alignItems: "center",
-          columnGap: 8,
+          gap: 12,
           width: "auto",
         }}
       >
@@ -86,8 +87,8 @@ const ActivityLayout = () => {
               onPress={() => {
                 setActiveTab(tab.name);
               }}
-              className={`px-5 py-2 flex flex-row gap-x-3 items-center justify-center rounded-lg ${
-                isActive ? "bg-[#12956B]" : "bg-black border-gray-600"
+              className={`px-4 py-[9px] flex flex-row items-center justify-center rounded-[10px] ${
+                isActive ? "bg-[#12956B]" : "bg-black border-[#454545]"
               } border`}
             >
               <TextScallingFalse className="text-white">

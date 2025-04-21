@@ -11,13 +11,16 @@ import {
   PanResponder,
 } from "react-native";
 import { BlurView } from "expo-blur";
+import Captain from "../SvgIcons/teams/Captain";
+import CaptainSq from "../SvgIcons/teams/CaptainSq";
+import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
 
-const DownwardDrawer = ({ visible, onClose, member }: any) => {
+const DownwardDrawer = ({ visible, onClose, member , team }: any) => {
   const screenHeight = Dimensions.get("window").height;
   const profilePic = member?.user?.profilePic || "https://via.placeholder.com/150";
   const [isFollowing, setIsFollowing] = useState(false);
   const translateY = new Animated.Value(0);
-
+//  console.log("Member Model coming data ----->",member);
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
@@ -37,6 +40,8 @@ const DownwardDrawer = ({ visible, onClose, member }: any) => {
       }
     },
   });
+
+  
 
   const handleFollowToggle = () => {
     setIsFollowing((prev) => !prev);
@@ -65,9 +70,14 @@ const DownwardDrawer = ({ visible, onClose, member }: any) => {
             
           </View>
           <View>
-              <Text style={styles.memberName}>
+            <View className="flex-row">
+              <Text style={styles.memberName} className="pr-3">
                 {member?.user?.firstName} {member?.user?.lastName}
               </Text>
+              
+              {(member?.position == "Captain"|| member?.position == "captain") && <CaptainSq />}
+              {(member?.position == "ViceCaptain"|| member?.position == "vicecaptain") && <ViceCaptainSq/>}
+              </View>
               <Text style={styles.memberDescription}>
                 {member?.user?.headline || "No description available"}
               </Text>
@@ -95,11 +105,11 @@ const DownwardDrawer = ({ visible, onClose, member }: any) => {
 
           <Text style={styles.sectionTitle}>Role</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeText}>Batter</Text>
+            <Text style={styles.closeText}>{member?.role}</Text>
           </TouchableOpacity>
           <Text style={styles.sectionTitle}>Position</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeText}>Vice Captain</Text>
+            <Text style={styles.closeText}>{member?.position}</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -136,8 +146,9 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     marginRight: 15,
-    borderWidth: 2,
-    borderColor: "white",
+    marginLeft:3,
+    // borderWidth: 2,
+    // borderColor: "white",
   },
   memberName: {
     fontSize: 18,
@@ -158,7 +169,7 @@ const styles = StyleSheet.create({
   followButton: {
     flex: 1,
     paddingVertical: 8,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#12956B",
     borderRadius: 8,
     alignItems: "center",
     marginRight: 10,
@@ -189,17 +200,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   sectionTitle: {
-    fontSize: 16,
+    
+    fontSize: 14,
     fontWeight: "bold",
     color: "gray",
-    marginTop: 25,
+    marginTop: 18,
+    marginLeft:6
   },
   closeButton: {
-    marginTop: 2,
-    padding: 15,
+    marginTop:3,
+    marginLeft:0,
+    padding: 18,
+    paddingHorizontal:17,
     backgroundColor: "#141414",
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   closeText: {
     color: "white",

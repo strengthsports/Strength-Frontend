@@ -8,7 +8,8 @@ import {
   Modal,
   TouchableWithoutFeedback,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  FlatList
 } from "react-native";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -54,10 +55,8 @@ interface ActionButtonProps {
 }
 
 
-
-// Role Dropdown Component
-
-const RoleDropdown = React.memo(({ 
+// Role Dropdown Component - With properly named component and fixed keys
+const RoleDropdownComponent = ({ 
   visible, 
   onClose, 
   roles, 
@@ -81,29 +80,40 @@ const RoleDropdown = React.memo(({
     </TouchableWithoutFeedback>
     
     <View style={styles.dropdownContainer}>
-      <ScrollView>
-        {roles.map((role) => (
+      {/* Use FlatList instead of ScrollView for better key handling */}
+      <FlatList
+        data={roles}
+        key={(item) => item._id}
+        renderItem={({ item: role }) => (
           <TouchableOpacity
-            key={role._id}
             style={[
               styles.roleItem,
               currentRole === role.name && styles.selectedRole
             ]}
             onPress={() => {
               onSelect(role.name);
-              onClose(); // This will close the dropdown after selection
+              onClose();
             }}
           >
             <Text style={styles.roleText}>{role.name}</Text>
             {currentRole === role.name && (
-              <AntIcon name="check" size={16} color="#12956B" />
+              <AntIcon name="check" size={16} color="#12956B"/>
             )}
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        )}
+      />
     </View>
   </Modal>
-));
+);
+
+// Apply React.memo with a display name
+
+const RoleDropdown = React.memo(RoleDropdownComponent);
+
+// Set a display name for easier debugging
+RoleDropdown.displayName = 'RoleDropdown';
+
+
 
 // Action Button Component
 const ActionButton = React.memo(({ 

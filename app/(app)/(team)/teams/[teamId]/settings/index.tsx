@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback,useRef } from "react";
 import {
   View,
   Text,
@@ -25,6 +25,8 @@ import {
   fetchTeamDetails,
   updateTeam,
 } from "~/reduxStore/slices/team/teamSlice";
+import InviteModal from "~/components/teamPage/InviteModel";
+import { Modalize } from "react-native-modalize";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialCommunityIcons, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -50,7 +52,9 @@ const Settings = () => {
 
   const { team, loading } = useSelector((state: RootState) => state.team);
   const { user } = useSelector((state: RootState) => state.profile);
-
+  const inviteModalRef = useRef<Modalize>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -67,11 +71,12 @@ const Settings = () => {
   const [activeField, setActiveField] = useState<keyof typeof formData | null>(null);
   const [picModalVisible, setPicModalVisible] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  //  const { team, loading } = useSelector((state: RootState) => state.team);
   const params = useLocalSearchParams();
   const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
   const updatedDescription = params?.updatedDescription as string;
 
-  
+   const isAdmin = user?._id === team?.admin?.[0]?._id;
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
@@ -227,28 +232,47 @@ const Settings = () => {
     return member.role.charAt(0).toUpperCase() + member.role.slice(1);
   };
 
+  const handleInvitePress = (role: string) => {
+    inviteModalRef.current?.close();
+    router.push(
+      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
+    );
+  };
+  const roles = team?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
   // Render member item
-  const renderMember = ({ item }: { item: TeamMember }) => (
+  const renderMember = ({ item: member }: { item: TeamMember }) => (
     <View style={styles.memberItem}>
       <Avatar.Image
         size={50}
-        source={{ uri: item.user.profilePic || "https://via.placeholder.com/50" }}
+        source={{ uri: member.user.profilePic || nopic }}
         style={styles.memberAvatar}
       />
       <View style={styles.memberInfo}>
         <Text style={styles.memberName}>
-          {item.user.firstName} {item.user.lastName}
+          {member.user.firstName} {member.user.lastName}
         </Text>
-        <Text style={styles.memberRole}>{getMemberPosition(item)} | {item.user.headline}</Text>
+        <Text style={styles.memberRole}>{getMemberPosition(member)} | {member.user.headline}</Text>
       </View>
       {isUserAdmin && (
         <TouchableOpacity 
           style={styles.memberAction}
-          onPress={() => 
-            router.push(`/(app)/(team)/teams/${teamId}/members/${item.user._id}`)
-          }
+          onPress={() => {
+            if (isAdmin && team?._id && member?.user?._id) {
+              router.push({
+                pathname: `/(app)/(team)/teams/${team._id}/members/${member.user._id}` as RelativePathString,
+                params: {
+                  memberId: member.user._id,
+                  member: JSON.stringify(member.user),
+                  role: JSON.stringify(member.role),
+                },
+              });
+            } else {
+              setSelectedMember(member);
+              setShowDownwardDrawer(true);
+            }
+          }}
         >
-          <Text className="text-[#7A7A7A] mt-2 text-sm">{item.position?.toUpperCase()}</Text>
+          <Text className="text-[#7A7A7A] mt-2 text-sm">{member.position?.toUpperCase()}</Text>
           <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
         </TouchableOpacity>
       )}
@@ -436,22 +460,20 @@ const Settings = () => {
               <View>
                
               {isUserAdmin && (
-                  <TouchableOpacity
-                    onPress={() => router.push(`/(app)/(team)/teams/${teamId}/InviteMembers`)}
-                    style={styles.inviteButton}
-                  >
-                   
-                    <Image 
-                      source={InviteMem}
-                      style={styles.image}
-                      resizeMode="contain"
-                       />
-                  
-                   
-                    <Text style={styles.inviteText}>Invite Members</Text>
-                    
-                  </TouchableOpacity>
-                )}
+              <TouchableOpacity
+                onPress={() => inviteModalRef.current?.open()}
+                style={styles.inviteButton}
+              >
+                <Image 
+                  source={InviteMem}
+                  style={styles.image}
+                  resizeMode="contain"
+                />
+                <Text style={styles.inviteText}>Invite Members</Text>
+              </TouchableOpacity>
+            )}
+
+
                 </View>
                 <View className="px-5">
                 <Divider style={styles.memberDivider} />
@@ -567,6 +589,13 @@ const Settings = () => {
               </View>
             </TouchableOpacity>
           </Modal>
+
+          <InviteModal
+            modalRef={inviteModalRef}
+            roles={roles}
+            isAdmin={isUserAdmin}
+            onInvitePress={handleInvitePress}
+          />
         </View>
       </PageThemeView>
     </SafeAreaView>

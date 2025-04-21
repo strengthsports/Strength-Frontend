@@ -192,6 +192,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           visible={showDownwardDrawer}
           onClose={() => setShowDownwardDrawer(false)}
           member={selectedMember}
+          team = {teamDetails}
         />
       </ScrollView>
     </View>

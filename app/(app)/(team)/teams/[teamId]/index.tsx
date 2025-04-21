@@ -27,8 +27,9 @@ import InviteMembers from "~/components/SvgIcons/teams/InviteMembers";
 import LeaveTeam from "~/components/SvgIcons/teams/LeaveTeam";
 import TextScallingFalse from "~/components/CentralText";
 import { Modalize } from "react-native-modalize";
+import InviteModal from "~/components/teamPage/InviteModel"; 
 
-const roles = ["Batter", "Bowler", "All-Rounder"];
+
 const { height } = Dimensions.get("window");
 
 const TeamPage: React.FC = () => {
@@ -47,9 +48,12 @@ const TeamPage: React.FC = () => {
 
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
-    // console.log("Admin Info -------> ",teamDetails?.admin[0]);
-    // console.log("Current User ---->",user?._id)
   }, [teamId]);
+
+
+  const roles = teamDetails?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
+
+
 
   const captainMember = teamDetails?.members?.find(
     (member:any) => member?.position?.toLowerCase() === "captain"
@@ -59,7 +63,7 @@ const TeamPage: React.FC = () => {
   );
 
   const captain =
-    captainMember?.user?.firstName ||
+    captainMember?.user?.firstname ||
     teamDetails?.admin?.[0]?.firstName ||
     "Loading...";
 
@@ -176,25 +180,12 @@ const TeamPage: React.FC = () => {
           </ScrollView>
       </CombinedDrawer>
 
-      {isAdmin && (
-        <Modalize
-          ref={modalRef}
-          adjustToContentHeight
-          modalStyle={styles.modal}
-          handleStyle={{ backgroundColor: "#888" }}
-        >
-          <TextScallingFalse style={styles.title}>Invite</TextScallingFalse>
-          {roles.map((role) => (
-            <TouchableOpacity
-              key={role}
-              style={styles.roleButton}
-              onPress={() => handleInvitePress(role)}
-            >
-              <TextScallingFalse style={styles.roleText}>{role}</TextScallingFalse>
-            </TouchableOpacity>
-          ))}
-        </Modalize>
-      )}
+      <InviteModal
+        modalRef={modalRef}
+        roles={roles}
+        isAdmin={isAdmin}
+        onInvitePress={handleInvitePress}
+      />
     </View>
   );
 };

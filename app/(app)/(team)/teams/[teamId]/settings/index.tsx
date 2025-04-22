@@ -147,10 +147,13 @@ const Settings = () => {
     
     if (team.establishedOn) {
       parsedDate = new Date(team.establishedOn);
-      establishedDate = parsedDate.toLocaleDateString();
+      // Format as "Month Year" (e.g., "January 2023")
+      establishedDate = parsedDate.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+      });
       setSelectedDate(parsedDate);
     }
-  
     const newFormData = {
       name: team.name || "",
       sport: team.sport?.name || "",
@@ -201,15 +204,16 @@ const Settings = () => {
   
   // Fix: Date handler that works for both iOS and Android
   const handleDateChange = (event: any, date?: Date) => {
-    // Close the date picker on Android after selection
     if (Platform.OS === 'android') {
       setIsDatePickerVisible(false);
     }
     
-    // If date is selected (not canceled)
     if (date) {
       setSelectedDate(date);
-      const formattedDate = date.toLocaleDateString();
+      const formattedDate = date.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+      });
       handleChange("established", formattedDate);
     }
   };
@@ -217,7 +221,10 @@ const Settings = () => {
   // Fix: Handler for iOS date picker done button
   const handleDatePickerDone = () => {
     setIsDatePickerVisible(false);
-    const formattedDate = selectedDate.toLocaleDateString();
+    const formattedDate = selectedDate.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
     handleChange("established", formattedDate);
   };
 
@@ -478,7 +485,7 @@ const Settings = () => {
                       selectTextOnFocus
                     />
                     <TouchableOpacity onPress={() => setIsEditingName(false)}>
-                      <MaterialCommunityIcons name="check" size={24} color="#12956B" />
+                      {/* <MaterialCommunityIcons name="check" size={24} color="#12956B" /> */}
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -489,9 +496,9 @@ const Settings = () => {
                     <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                       {formData.name || "Add team name"}
                     </TextScallingFalse>
-                    {isUserAdmin && (
-                      <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
-                    )}
+                    {/* {isUserAdmin && (
+                      // <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                    )} */}
                   </TouchableOpacity>
                 )}
               </View>
@@ -500,6 +507,10 @@ const Settings = () => {
               <View style={styles.formField}>
                 <TextScallingFalse style={styles.fieldLabel}>Sport</TextScallingFalse>
                 <View style={styles.fieldValue}>
+                  <Image
+                    source={{ uri: team?.sport.logo || "https://via.placeholder.com/150" }}
+                    className="h-6 w-6 mr-2"
+                    />
                   <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                     {formData.sport || "Not specified"}
                   </TextScallingFalse>
@@ -517,14 +528,14 @@ const Settings = () => {
                     {formData.location || "Add location"}
                   </TextScallingFalse>
                   {isUserAdmin && (
-                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                    <MaterialCommunityIcons name="chevron-down" size={20} color="#999" />
                   )}
                 </TouchableOpacity>
               </View>
               
               {/* Established Date */}
               <View style={styles.formField}>
-                <TextScallingFalse style={styles.fieldLabel}>Established</TextScallingFalse>
+                <TextScallingFalse style={styles.fieldLabel}>Established On</TextScallingFalse>
                 <TouchableOpacity
                   onPress={() => handleFieldPress("established")}
                   style={styles.fieldValue}
@@ -533,25 +544,24 @@ const Settings = () => {
                     {formData.established || "Add established date"}
                   </TextScallingFalse>
                   {isUserAdmin && (
-                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                  <MaterialCommunityIcons name="calendar-blank" size={20} color="#999" />
                   )}
                 </TouchableOpacity>
               </View>
 
               {/* Description */}
-              <View style={styles.formField}>
-                <TextScallingFalse style={styles.fieldLabel}>Description</TextScallingFalse>
+              <View className="flex-row justify-between border-b-[0.2px] border-[#626262] mb-7 pb-6">
+                <TextScallingFalse className="text-white mt-3 " style={styles.fieldLabel}>Description</TextScallingFalse>
                 <TouchableOpacity
                   onPress={() => handleFieldPress("description")}
-                  style={styles.fieldValue}
+                 
                 >
-                  <TextScallingFalse style={styles.fieldText} numberOfLines={3}>
-                    {currentDescription || formData.description || "Add description"}
-                  </TextScallingFalse>
-                  {isUserAdmin && (
-                    <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
+                 {isUserAdmin && (
+                    <MaterialCommunityIcons name="chevron-right" size={20} color="#999" />
                   )}
+                 
                 </TouchableOpacity>
+                
               </View>
             </View>
 

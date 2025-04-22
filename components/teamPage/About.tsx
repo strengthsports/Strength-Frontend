@@ -105,7 +105,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
         </TextScallingFalse>
       </View>
 
-      <View className="p-2 ml-3 mt-1 flex flex-row items-center">
+      <View className="p-2 ml-3  flex flex-row items-center">
         <Members />
         <Text className="text-white text-4xl ml-1">Members - {teamDetails?.members?.length || 0}</Text>
       </View>
@@ -117,7 +117,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
         </Text>
       </View>
 
-      <View className="p-2 ml-3 mt-3 flex flex-row items-center">
+      <View className="p-2 ml-3  flex flex-row items-center">
         <TeamId />
        
         <CopyCode code={handleTeamUniqueId()} onCopy={handleCopySuccess} />

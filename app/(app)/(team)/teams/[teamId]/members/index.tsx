@@ -159,7 +159,7 @@ const Members: React.FC = () => {
                     <TextScallingFalse className="text-white text-2xl font-medium">
                       {member.user.firstName} {member.user.lastName}
                     </TextScallingFalse>
-                    <TextScallingFalse className="text-gray-400 text-sm">{"@"}{member?.user?.username}{" "}|{" "}{member.user.headline}</TextScallingFalse>
+                    <TextScallingFalse className="text-gray-400 text-sm mr-9">{"@"}{member?.user?.username}{" "}|{" "}{member.user.headline}</TextScallingFalse>
                   </View>
                   <Icon name="right" size={12} color="gray" />
                 </TouchableOpacity>

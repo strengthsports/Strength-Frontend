@@ -38,7 +38,7 @@ interface MatchCardProps {
     match_type: string;
     match_status: string;
     venue: string;
-    current_inning: number;
+    current_inning?: number;
     matchs: string;
 
     team_a: string;
@@ -55,12 +55,12 @@ interface MatchCardProps {
     team_b_img: string;
     team_b_id: number;
 
-    balling_team: string;
-    toss: string;
-    result: string;
+    balling_team?: string;
+    toss?: string;
+    result?: string;
     match_date: string;
     match_time: string;
-    need_run_ball: string;
+    need_run_ball?: string;
   };
   isLive?: boolean;
 }
@@ -256,13 +256,25 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
         </View>
       </View>
       {/* Match Status */}
-      <TextScallingFalse className="py-2 px-1 ml-4 text-neutral-400 text-base">
-        {match.result
-          ? match.result
-          : match?.current_inning === 1
-          ? filterTossData(match?.toss)
-          : match.need_run_ball}
-      </TextScallingFalse>
+      <View className="px-4 pb-2">
+        {isLive
+          ? match.current_inning === 1
+            ? match.toss && (
+                <TextScallingFalse className="text-yellow-300 text-xs">
+                  {filterTossData(match.toss)}
+                </TextScallingFalse>
+              )
+            : match.need_run_ball && (
+                <TextScallingFalse className="text-green-400 text-xs">
+                  {match.need_run_ball}
+                </TextScallingFalse>
+              )
+          : match.result && (
+              <TextScallingFalse className="text-green-400 text-xs">
+                {match.result}
+              </TextScallingFalse>
+            )}
+      </View>
     </>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   Image,
@@ -31,6 +30,7 @@ import { createTeam } from "~/reduxStore/slices/team/teamSlice";
 // import { fetchMemberSuggestions } from "~/reduxStore/slices/team/teamSlice";
 import { fetchUserSuggestions } from "~/reduxStore/slices/team/userSuggestionSlice";
 import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
+import TextScallingFalse from "~/components/CentralText";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -377,6 +377,8 @@ const handleCreateTeam = async () => {
     }
 
     const teamId = result.data._id;
+    const len = result.data.sport.playerTypes.length-1;
+    const UserRole = result.data.sport.playerTypes[len].name;
     
     // Send invitations if there are members
     if (formData.members.length > 0) {
@@ -386,7 +388,7 @@ const handleCreateTeam = async () => {
           sendInvitations({
             teamId,
             receiverIds: memberIds,
-            role: "member",
+            role: UserRole,
             createdBy: user?.id
           })
         ).unwrap();
@@ -461,17 +463,17 @@ const handleCreateTeam = async () => {
 
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
             <View className="px-4 py-2 lg:px-20">
-              <Text className="text-white text-7xl font-bold mb-2">
+              <TextScallingFalse className="text-white text-7xl font-bold mb-2">
                 Create New Team
-              </Text>
-              <Text className="text-gray-400 text-md mb-8">
+              </TextScallingFalse>
+              <TextScallingFalse className="text-gray-400 text-md mb-8">
                 Forge Unbreakable Bonds, Play Strong, and Conquer Together –
                 Create Your Team Now.
-              </Text>
+              </TextScallingFalse>
 
               {/* Logo Upload */}
               <View className="mb-6 h-48">
-                <Text className="text-white text-2xl mb-2">Logo*</Text>
+                <TextScallingFalse className="text-white text-2xl mb-2">Logo*</TextScallingFalse>
                 <TouchableOpacity
                   onPress={selectImage}
                   className="border border-[#515151] h-40 rounded-lg px-4 flex-row items-center"
@@ -486,7 +488,7 @@ const handleCreateTeam = async () => {
                   ) : (
                     <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
                       <Icon name="upload" size={30} color="gray" />
-                      <Text className="text-gray-400 text-xl">Upload Logo</Text>
+                      <TextScallingFalse className="text-gray-400 text-xl">Upload Logo</TextScallingFalse>
                     </View>
                   )}
                   {formData.logo && (
@@ -494,7 +496,7 @@ const handleCreateTeam = async () => {
                       onPress={() => setFormData({ ...formData, logo: null })}
                       className="absolute right-2 top-2 bg-gray-800 rounded-full w-6 h-6 items-center justify-center"
                     >
-                      <Text className="text-white text-sm">✕</Text>
+                      <TextScallingFalse className="text-white text-sm">✕</TextScallingFalse>
                     </TouchableOpacity>
                   )}
                 </TouchableOpacity>
@@ -504,7 +506,7 @@ const handleCreateTeam = async () => {
               <View className="space-y-6">
                 {/* Name */}
                 <View className="mt-2">
-                  <Text className="text-white text-2xl mb-1">Name*</Text>
+                  <TextScallingFalse className="text-white text-2xl mb-1">Name*</TextScallingFalse>
                   <TextInput
                     value={formData.name}
                     onChangeText={(text) =>
@@ -518,7 +520,7 @@ const handleCreateTeam = async () => {
 
                 {/* Sport */}
                 <View className="mt-4">
-                  <Text className="text-white text-2xl mt-2 mb-1">Sport*</Text>
+                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">Sport*</TextScallingFalse>
                   <TouchableOpacity
                     onPress={toggleDropdown}
                     className="border border-[#515151] rounded-lg p-4 flex-row justify-between items-center"
@@ -530,7 +532,7 @@ const handleCreateTeam = async () => {
                           className="w-6 h-6 mr-2"
                         />
                       )}
-                      <Text
+                      <TextScallingFalse
                         className={`${
                           selectedGame.name === "Select Game"
                             ? "text-gray-400"
@@ -538,7 +540,7 @@ const handleCreateTeam = async () => {
                         }`}
                       >
                         {selectedGame.name}
-                      </Text>
+                      </TextScallingFalse>
                     </View>
                     <Icon
                       name={isDropdownOpen ? "up" : "down"}
@@ -560,7 +562,7 @@ const handleCreateTeam = async () => {
                               source={{ uri: sport?.logo }}
                               className="w-8 h-8 mr-2 "
                             />
-                            <Text className="text-white ml-2">{sport.name}</Text>
+                            <TextScallingFalse className="text-white ml-2">{sport.name}</TextScallingFalse>
                           </View>
                         </TouchableOpacity>
                       ))}
@@ -570,20 +572,20 @@ const handleCreateTeam = async () => {
 
                 {/* Location */}
                 <View className="mt-4">
-                  <Text className="text-white text-2xl mt-2 mb-1">
+                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
                     Location*
-                  </Text>
+                  </TextScallingFalse>
                   <TouchableOpacity
                     className="border border-[#515151] rounded-lg flex-row items-center p-4"
                     onPress={() => setLocationModal(true)}
                   >
-                    <Text
+                    <TextScallingFalse
                       className={`flex-1 ${
                         formData.address.city ? "text-white" : "text-gray-400"
                       }`}
                     >
                       {formData.address.city || "Add location"}
-                    </Text>
+                    </TextScallingFalse>
                     <EntypoIcon name="location-pin" size={20} color="#b0b0b0" />
                   </TouchableOpacity>
                 </View>
@@ -596,20 +598,20 @@ const handleCreateTeam = async () => {
 
                 {/* Established */}
                 <View className="mt-4">
-                  <Text className="text-white text-2xl mt-2 mb-1">
+                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
                     Established On*
-                  </Text>
+                  </TextScallingFalse>
                   <TouchableOpacity
                     className="border border-[#515151] rounded-lg flex-row items-center p-4"
                     onPress={() => setShow(true)}
                   >
-                    <Text
+                    <TextScallingFalse
                       className={`flex-1 ${
                         selectedDate ? "text-white" : "text-gray-400"
                       }`}
                     >
                       {selectedDate || "MM/YYYY"}
-                    </Text>
+                    </TextScallingFalse>
                     <Icon name="calendar" size={20} color="#b0b0b0" />
                   </TouchableOpacity>
 
@@ -627,9 +629,9 @@ const handleCreateTeam = async () => {
 
                 {/* Gender Selection */}
                 <View className="mt-4">
-                  <Text style={{ color: "white", fontSize: 14, marginTop: 8 }}>
+                  <TextScallingFalse style={{ color: "white", fontSize: 14, marginTop: 8 }}>
                     Gender*
-                  </Text>
+                  </TextScallingFalse>
                   <View className="flex-row mt-1">
                     <TouchableOpacity
                       onPress={() =>
@@ -637,7 +639,7 @@ const handleCreateTeam = async () => {
                       }
                       className="flex-1 border rounded-lg flex-row items-center justify-center border-[#515151] p-4 mr-4"
                     >
-                      <Text className="text-white">Female</Text>
+                      <TextScallingFalse className="text-white">Female</TextScallingFalse>
                       <View
                         className={`w-4 h-4 rounded-full border-2 ml-6 ${
                           formData.gender === "female"
@@ -653,7 +655,7 @@ const handleCreateTeam = async () => {
                       }
                       className="flex-1 border rounded-lg flex-row items-center justify-center border-[#515151] p-4"
                     >
-                      <Text className="text-white">Male</Text>
+                      <TextScallingFalse className="text-white">Male</TextScallingFalse>
                       <View
                         className={`w-4 h-4 rounded-full border-2 ml-6 ${
                           formData.gender === "male"
@@ -667,9 +669,9 @@ const handleCreateTeam = async () => {
 
                 {/* Description */}
                 <View className="mt-4">
-                  <Text className="text-white text-2xl mt-2 mb-1">
+                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
                     Description
-                  </Text>
+                  </TextScallingFalse>
                   <TextInput
                     value={formData.description}
                     onChangeText={(text) =>
@@ -687,9 +689,9 @@ const handleCreateTeam = async () => {
               {/* Members Section */}
               {selectedGame._id !== "123" && (
             <View className="mt-4">
-           <Text className="text-white text-2xl mt-4 mb-4">
+           <TextScallingFalse className="text-white text-2xl mt-4 mb-4">
             Add members
-           </Text>
+           </TextScallingFalse>
     
            <View className="flex-row flex-wrap -mx-2 mb-4">
            {/* Existing Members */}
@@ -712,9 +714,9 @@ const handleCreateTeam = async () => {
           onPress={() => setShowMembersModal(true)}
         >
           <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
-            <Text className="text-gray-400 text-2xl">+</Text>
+            <TextScallingFalse className="text-gray-400 text-2xl">+</TextScallingFalse>
           </View>
-          <Text className="text-gray-400">Add Member</Text>
+          <TextScallingFalse className="text-gray-400">Add Member</TextScallingFalse>
         </TouchableOpacity>
       </View>
     </View>
@@ -744,11 +746,11 @@ const handleCreateTeam = async () => {
               onPress={handleCreateTeam}
             
             >
-              <Text className={`text-center text-3xl text-bold ${
+              <TextScallingFalse className={`text-center text-3xl text-bold ${
                 isFormComplete() ? "text-white" : "text-white"
               }`}>
                 Create team
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
             )}
           </View>

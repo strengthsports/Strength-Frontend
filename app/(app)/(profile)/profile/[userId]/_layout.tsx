@@ -52,6 +52,7 @@ import PicModal from "~/components/profilePage/PicModal";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
 import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
+import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 
 // Define the context type
 interface ProfileContextType {
@@ -193,7 +194,12 @@ const ProfileLayout = () => {
     if (!followingStatus) {
       setSettingsModalVisible({ status: true, message: "Message" });
     } else {
-      router.push("/");
+      // router.push("/");
+      return (
+        <View>
+          <UnderDevelopmentModal />
+        </View>
+      );
     }
   };
 
@@ -234,11 +240,55 @@ const ProfileLayout = () => {
   };
 
   // Error component
+  // if (error) {
+  //   return (
+  //     <View>
+  //       <TextScallingFalse className="text-red-500">
+  //         {error as string}
+  //       </TextScallingFalse>
+  //     </View>
+  //   );
+  // }
+
+  // better error handling
   if (error) {
+    console.error("Profile fetch error:", error);
+
+    let displayError = "Failed to load profile data.";
+
+    // Check common RTK Query error structures
+    if (typeof error === "object" && error !== null) {
+      if ("data" in error && error.data) {
+        if (typeof error.data === "string") {
+          displayError = error.data;
+        } else if (
+          typeof error.data === "object" &&
+          "message" in error.data &&
+          typeof error.data.message === "string"
+        ) {
+          displayError = error.data.message; // Common pattern for API errors
+        }
+      } else if ("error" in error && typeof error.error === "string") {
+        displayError = error.error; // Common pattern for fetch errors
+      } else if ("message" in error && typeof error.message === "string") {
+        displayError = error.message;
+      }
+      // Add more checks based on your specific API error structure if needed
+    } else if (typeof error === "string") {
+      displayError = error;
+    }
+
     return (
-      <View>
-        <TextScallingFalse className="text-red-500">
-          {error as string}
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}
+      >
+        <TextScallingFalse className="text-red-500 text-center">
+          {displayError}
         </TextScallingFalse>
       </View>
     );
@@ -454,7 +504,10 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Height: {profileData?.height}
+                              Height:{" "}
+                              {profileData?.height || (
+                                <Text style={{ color: "grey" }}>undefined</Text>
+                              )}
                             </TextScallingFalse>
                           </View>
 
@@ -466,7 +519,10 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Weight: {profileData?.weight}
+                              Weight:{" "}
+                              {profileData?.weight || (
+                                <Text style={{ color: "grey" }}>undefined</Text>
+                              )}
                             </TextScallingFalse>
                           </View>
                         </View>
@@ -481,10 +537,16 @@ const ProfileLayout = () => {
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
                               Teams:{" "}
-                              <TextScallingFalse style={{ color: "grey" }}>
-                                {" "}
-                                Pro Trackers
-                              </TextScallingFalse>
+                              {profileData?.createdTeams?.length > 0 &&
+                                profileData.createdTeams.map((team: any) => (
+                                  <TextScallingFalse
+                                    key={team?.team?._id}
+                                    style={{ color: "grey" }}
+                                  >
+                                    {" "}
+                                    {team.name}
+                                  </TextScallingFalse>
+                                ))}
                             </TextScallingFalse>
                           </View>
                         </View>
@@ -590,7 +652,7 @@ const ProfileLayout = () => {
                           style={{
                             color: "grey",
                             fontSize: responsiveFontSize(1.4),
-                            width: "63.25%",
+                            width: "100%",
                           }}
                         >
                           {`${profileData?.address.city}, ${profileData?.address.state}, ${profileData?.address.country}`}

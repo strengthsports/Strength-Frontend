@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, Image } from "react-native";
 import { ThemedText } from "~/components/ThemedText";
 import img from "@/assets/images/teams/Vector 64.png";
+import PageThemeView from "../PageThemeView";
+import TextScallingFalse from "../CentralText";
 
 type TeamCardProps = {
   teamName: string;
@@ -23,6 +25,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
 }) => {
   return (
     <>
+ 
       <View className="rounded-lg max-width-[500] mb-3 p-3 pt-[-8]">
         <View className="flex flex-row py-4 w-64 max-w-84">
           <Image source={{ uri: teamLogo }} className="w-32 h-32 mt-1 rounded ml-8" />
@@ -36,27 +39,32 @@ const TeamCard: React.FC<TeamCardProps> = ({
             </View>
           </View>
         </View>
+        
+
         {/* Team Details */}
-        <View >
+
+        <View  >
           <View className="flex flex-row items-center  h-12 bg-[#191919] text-white px-1 mt-1 rounded-t-[10px]">
             <View className="flex-1" >
-              <Text className="text-left   ml-4 text-white font-bold text-2xl w-[200px]">
+              <Text className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
                 SPORT CATEGORY
               </Text>
             </View>
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 flex-row items-center justify-center space-x-2">
+            <View className="flex-1 flex-row items-center justify-center ">
               <Image
                 source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
                 className="h-6 w-6 mr-2"
               />
-              <ThemedText className="text-white text-xl">
+              <ThemedText className= "flex text-white text-right text-lg">
                 {sportCategory}
               </ThemedText>
             </View>
           </View>
+
+
           {/* Captain */}
           <View className="flex flex-row items-center justify-between h-12 bg-[#191919] px-1 mt-1  text-white">
             <View className="flex-1">
@@ -67,8 +75,8 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 justify-end items-center">
-              <ThemedText className="text-white text-xl">{captain}</ThemedText>
+            <View className="flex-1  ">
+              <TextScallingFalse className= " text-white text-right mr-6 text-3xl">{captain}</TextScallingFalse>
             </View>
           </View>
 
@@ -82,8 +90,8 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 justify-end items-center">
-              <ThemedText className="text-white text-xl">{viceCapt}</ThemedText>
+            <View className="flex-1 ">
+              <TextScallingFalse className=" text-white text-right mr-6 text-3xl">{viceCapt}</TextScallingFalse>
             </View>
           </View>
 
@@ -97,12 +105,14 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 justify-end items-center">
-              <ThemedText className="text-white text-xl">{location}</ThemedText>
+            <View className="flex-1">
+              <TextScallingFalse className="text-white text-right mr-6 text-3xl">{location}</TextScallingFalse>
             </View>
           </View>
         </View>
       </View>
+     
+    
     </>
   );
 };

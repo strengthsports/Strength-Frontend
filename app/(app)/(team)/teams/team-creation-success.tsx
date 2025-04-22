@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, Animated } from "react-native";
+import { View,  Image, TouchableOpacity, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { RootState } from "~/reduxStore";
 import { useSelector } from "react-redux";
+import TextScallingFalse from "~/components/CentralText";
 
 interface TeamMember {
   _id: string;
@@ -75,15 +76,15 @@ const TeamCreatedPage: React.FC = () => {
         </View>
 
         <View className="flex items-center mt-4">
-          <Text className="text-white text-6xl font-bold">
+          <TextScallingFalse className="text-white text-6xl font-bold">
             Team Created!
-          </Text>
+          </TextScallingFalse>
         </View>
 
         <View className="flex items-center justify-center mt-2">
-          <Text className="text-[#A5A5A5] text-2xl text-center px-16">
+          <TextScallingFalse className="text-[#A5A5A5] text-2xl text-center px-16">
             Your team is now live! Bring your squad together and start the game.
-          </Text>
+          </TextScallingFalse>
         </View>
         
         {/* Team Details Section */}
@@ -97,17 +98,17 @@ const TeamCreatedPage: React.FC = () => {
             className="mr-4 ml-7 h-[108px]"
           />
            <View className="flex flex-col pl-2 w-[200px] ">
-                        <Text className="text-white font-bold  items-center text-5xl">
+                        <TextScallingFalse className="text-white font-bold  items-center text-5xl">
                           {teamData?.name.toUpperCase()}
-                        </Text>
+                        </TextScallingFalse>
                       </View>
          
         </View>
 
         <View className="px-5 py-8">
-          <Text className="text-[#9F9F9F] text-2xl font-semibold border-b border-[#36403D] pb-1">
+          <TextScallingFalse className="text-[#9F9F9F] text-2xl font-semibold border-b border-[#36403D] pb-1">
             Invited Team Members
-          </Text>
+          </TextScallingFalse>
         </View>
 
         {/* Team Members List */}
@@ -119,12 +120,12 @@ const TeamCreatedPage: React.FC = () => {
                 className="w-14 h-14 rounded-full mr-4"
               />
               <View className="flex-1 border-b border-[#5C5C5C] pb-4">
-                <Text className="text-white text-3xl font-semibold">
+                <TextScallingFalse className="text-white text-3xl font-semibold">
                   {member.firstName}
-                </Text>
-                <Text className="text-[#9CA3AF] text-2xl">
+                </TextScallingFalse>
+                <TextScallingFalse className="text-[#9CA3AF] text-2xl">
                   {member.headline || "Team Member"}
-                </Text>
+                </TextScallingFalse>
               </View>
             </View>
           ))}
@@ -137,9 +138,9 @@ const TeamCreatedPage: React.FC = () => {
           className="bg-[#12956B] p-4 rounded-2xl"
           onPress={handleSubmit}
         >
-          <Text className="text-white text-3xl font-semibold text-center">
+          <TextScallingFalse className="text-white text-3xl font-semibold text-center">
             Go to Teams Page
-          </Text>
+          </TextScallingFalse>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

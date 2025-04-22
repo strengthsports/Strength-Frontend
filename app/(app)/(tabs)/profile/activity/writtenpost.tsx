@@ -9,16 +9,24 @@ import {
 import React, { memo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feed/feedPostApi";
+// import { Post } from "~/reduxStore/api/feed/feedPostApi";
+import { Post } from "~/types/post";
 import TextScallingFalse from "~/components/CentralText";
+import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
+import { RootState } from "~/reduxStore";
 
 const WrittenPost = () => {
-  const { posts, error, loading } = useSelector((state: any) => state?.profile);
+  // const { posts, error, loading } = useSelector((state: any) => state?.profile);
+  const { error, loading, user } = useSelector((state: any) => state?.profile);
   const isAndroid = Platform.OS === "android";
 
+  const userPosts = useSelector((state: RootState) =>
+    selectPostsByUserId(state.feed.posts as any, user?._id)
+  );
+
   // Filter posts where `assets` is missing or empty
-  const textPosts = posts?.filter(
-    (post: any) => !post.assets || post.assets.length === 0
+  const textPosts = userPosts?.filter(
+    (post: Post) => (!post.assets || post.assets.length === 0) && !post.isPoll
   );
 
   const renderItem = useCallback(
@@ -52,7 +60,7 @@ const WrittenPost = () => {
     );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 mt-4">
       <FlatList
         data={textPosts || []}
         keyExtractor={(item) => item._id}

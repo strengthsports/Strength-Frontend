@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   Dimensions,
@@ -26,6 +25,7 @@ import nopic from "@/assets/images/nopic.jpg";
 import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
 import { createSelector } from "@reduxjs/toolkit";
 import TextScallingFalse from "~/components/CentralText";
+import SearchSkeletonLoader from "~/components/skeletonLoaders/SearchSkeletonLoader";
 
 // Memoized Redux selectors
 const selectFilteredSearchHistory = createSelector(
@@ -148,10 +148,10 @@ const SearchPage: React.FC = () => {
   return (
     <SafeAreaView>
       <View
-        className="flex-row items-center my-3 gap-x-2 max-w-[640px] w-[95%] mx-auto"
+        className="flex-row items-center my-3 gap-x-5 max-w-[640px] w-[92%] mx-auto"
         onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity style={{width: 20, height: 40, justifyContent:'center'}} onPress={() => router.back()}>
           <BackIcon2 />
         </TouchableOpacity>
         <MemoizedSearchInput
@@ -163,7 +163,8 @@ const SearchPage: React.FC = () => {
       {searchText ? (
         <View className="px-5 mt-3">
           {isSearching ? (
-            <ActivityIndicator size="small" color="white" />
+            // <ActivityIndicator size="small" color="white" />
+            <SearchSkeletonLoader />
           ) : (
             <FlatList
               data={searchResults}
@@ -174,14 +175,14 @@ const SearchPage: React.FC = () => {
         </View>
       ) : (
         <View>
-          <View className="flex-row justify-between items-center px-5">
-            <Text className="text-2xl text-[#808080] mb-2">Recent</Text>
-            <Text
+          <View className="flex-row justify-between items-center px-6 py-2">
+            <TextScallingFalse className="text-3xl text-[#808080] mb-2">Recent</TextScallingFalse>
+            <TextScallingFalse
               onPress={clearSearchHistory}
               className="text-2xl text-[#808080] mb-2"
             >
               Clear
-            </Text>
+            </TextScallingFalse>
           </View>
 
           <FlatList
@@ -192,7 +193,7 @@ const SearchPage: React.FC = () => {
             keyExtractor={(item) => item._id}
             contentContainerStyle={{
               gap: 16,
-              marginLeft: 20,
+              paddingStart: 16,
               paddingRight: 20,
             }}
           />
@@ -202,8 +203,8 @@ const SearchPage: React.FC = () => {
             renderItem={renderRecentSearch}
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={{
-              gap: 14,
-              paddingVertical: 16,
+              gap: 27,
+              paddingVertical: 26,
               paddingHorizontal: 20,
             }}
           />

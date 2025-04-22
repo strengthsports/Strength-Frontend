@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import {
   DarkTheme,
   DefaultTheme,
@@ -45,12 +46,11 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
             <PaperProvider>
-              {/* <Slot /> */}
               <Stack
                 screenOptions={{ headerShown: false, animation: "fade" }}
               />

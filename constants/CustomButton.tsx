@@ -20,13 +20,14 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "black", // Button background color
     paddingVertical: 10, // Reduced padding for smaller button size
-    paddingHorizontal: 16, // Adjusted padding for smaller button size
+    paddingHorizontal: 30, // Adjusted padding for smaller button size
     borderRadius: 20, // More rounded corners
     alignItems: "center",
     // justifyContent: "center",
     marginVertical: 2, // Smaller margin
-    borderColor: "#9D9D9D", // Gray border color
+    borderColor: "#6F6F6F", // Gray border color
     borderWidth: 0.5, // Border width to make it visible
+    marginRight:12,
   },
   buttonText: {
     color: "white",

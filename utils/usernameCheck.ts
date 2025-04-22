@@ -1,16 +1,16 @@
 
-import {getToken,} from "@/utils/secureStore";
+// import {getToken,} from "@/utils/secureStore";
 
 export const checkUsernameAvailability = async (username: string) => {
   try {
-    const accessToken = await getToken("accessToken");
+    // const accessToken = await getToken("accessToken");
 
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/checkUsername`,
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/check-username`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          // Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username }),

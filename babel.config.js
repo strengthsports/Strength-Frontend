@@ -13,6 +13,8 @@ module.exports = function (api) {
           importSource: "nativewind",
         },
       ],
-    ]
+      "@babel/plugin-transform-flow-strip-types",
+      "@babel/plugin-proposal-export-namespace-from",
+    ],
   };
 };

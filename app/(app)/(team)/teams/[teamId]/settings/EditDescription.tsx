@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/AntDesign";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,19 +9,25 @@ import { setTeamDescription } from "~/reduxStore/slices/team/teamSlice";
 
 const EditDescription = () => {
   const router = useRouter();
-  const { description } = useLocalSearchParams<{ description?: string }>();
-  // const [newDescription, setNewDescription] = useState<string>(description || "");
-   const { teamId } = useLocalSearchParams<{ teamId: string }>();
-   const dispatch = useDispatch<AppDispatch>();
-   const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
-   const [newDescription, setNewDescription] = useState(currentDescription);
-   
-   
+  const { teamId } = useLocalSearchParams<{ teamId: string }>();
+  const dispatch = useDispatch<AppDispatch>();
+  const currentDescription = useSelector((state: RootState) => state.team.currentTeamDescription);
+  const { team } = useSelector((state: RootState) => state.team);
+  
+  // Initialize state with the correct description
+  const [newDescription, setNewDescription] = useState(
+    currentDescription || team?.description || ""
+  );
+
+  // Update state when currentDescription changes
+  useEffect(() => {
+    setNewDescription(currentDescription || team?.description || "");
+  }, [currentDescription, team?.description]);
+
   const handleSave = () => {
     dispatch(setTeamDescription(newDescription));
     router.back();
   };
-
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -37,26 +43,28 @@ const EditDescription = () => {
         <View className="px-6 pt-6 flex-1 pb-20">
           <Text className="text-white text-5xl font-semibold mb-3">Team Description</Text>
           <Text className="text-gray-500 mb-3">
-            Share details about your team’s goals, history, achievements, or unique aspects.
+            Share details about your team's goals, history, achievements, or unique aspects.
           </Text>
           <TextInput
             className="bg-black border border-gray-800 text-white text-base rounded-lg p-4 h-80"
             value={newDescription}
             onChangeText={setNewDescription}
             multiline
+            placeholder="Enter team description..."
+            placeholderTextColor="#6b7280"
           />
         </View>
 
         {/* Footer with Save Button */}
         <SafeAreaView className="absolute bottom-0 left-0 right-0 p-6 bg-black">
-        <TouchableOpacity
-      className="bg-green-600 py-3 rounded-lg"
-      onPress={handleSave}
-    >
-      <Text className="text-white text-center text-lg font-semibold">
-        Save Changes
-      </Text>
-    </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-green-600 py-3 rounded-lg"
+            onPress={handleSave}
+          >
+            <Text className="text-white text-center text-lg font-semibold">
+              Save Changes
+            </Text>
+          </TouchableOpacity>
         </SafeAreaView>
       </SafeAreaView>
     </TouchableWithoutFeedback>

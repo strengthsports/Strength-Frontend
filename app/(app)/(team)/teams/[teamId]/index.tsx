@@ -4,9 +4,14 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  // RefreshControl,
+  // ActivityIndicator,
+  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  TouchableOpacity
+  Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent
 } from "react-native";
 import {
   useRouter,
@@ -27,8 +32,9 @@ import InviteMembers from "~/components/SvgIcons/teams/InviteMembers";
 import LeaveTeam from "~/components/SvgIcons/teams/LeaveTeam";
 import TextScallingFalse from "~/components/CentralText";
 import { Modalize } from "react-native-modalize";
+import InviteModal from "~/components/teamPage/InviteModel"; 
 
-const roles = ["Batter", "Bowler", "All-Rounder"];
+
 const { height } = Dimensions.get("window");
 
 const TeamPage: React.FC = () => {
@@ -47,9 +53,12 @@ const TeamPage: React.FC = () => {
 
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
-    // console.log("Admin Info -------> ",teamDetails?.admin[0]);
-    // console.log("Current User ---->",user?._id)
   }, [teamId]);
+
+
+  const roles = teamDetails?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
+
+
 
   const captainMember = teamDetails?.members?.find(
     (member:any) => member?.position?.toLowerCase() === "captain"
@@ -59,9 +68,14 @@ const TeamPage: React.FC = () => {
   );
 
   const captain =
-    captainMember?.user?.firstName ||
-    teamDetails?.admin?.[0]?.firstName ||
+    captainMember?.user?.firstname + captainMember?.user?.lastname ||
+    teamDetails?.admin?.[0]?.firstName +" "+  teamDetails?.admin?.[0]?.lastName ||
     "Loading...";
+
+  const viceCapt = viceCaptainMember?.user?.firstname + viceCaptainMember?.user?.lastname ||
+  
+  "Not Assigned";
+
 
   const handleDeleteTeam = async () => {
     try {
@@ -141,7 +155,7 @@ const TeamPage: React.FC = () => {
           teamName={teamDetails?.name || "Loading..."}
           sportCategory={teamDetails?.sport?.name || "Loading..."}
           captain={captain}
-          viceCapt={viceCaptainMember?.user?.firstName || "Not Assigned"}
+          viceCapt={viceCapt} 
           location={
             teamDetails?.address
               ? `${teamDetails.address.city}, ${teamDetails.address.country}`
@@ -176,25 +190,12 @@ const TeamPage: React.FC = () => {
           </ScrollView>
       </CombinedDrawer>
 
-      {isAdmin && (
-        <Modalize
-          ref={modalRef}
-          adjustToContentHeight
-          modalStyle={styles.modal}
-          handleStyle={{ backgroundColor: "#888" }}
-        >
-          <TextScallingFalse style={styles.title}>Invite</TextScallingFalse>
-          {roles.map((role) => (
-            <TouchableOpacity
-              key={role}
-              style={styles.roleButton}
-              onPress={() => handleInvitePress(role)}
-            >
-              <TextScallingFalse style={styles.roleText}>{role}</TextScallingFalse>
-            </TouchableOpacity>
-          ))}
-        </Modalize>
-      )}
+      <InviteModal
+        modalRef={modalRef}
+        roles={roles}
+        isAdmin={isAdmin}
+        onInvitePress={handleInvitePress}
+      />
     </View>
   );
 };

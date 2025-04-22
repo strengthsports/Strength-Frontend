@@ -13,6 +13,7 @@ import { useFonts } from "expo-font";
 import { useSelector } from "react-redux";
 import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
+import Nopic from "../../assets/images/nopic.jpg";
 
 interface SquadProps {
   teamDetails: any;
@@ -94,7 +95,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           members.map((member) => {
             const user = member.user;
             const memberKey = member._id || `member-${Math.random().toString(36).substr(2, 9)}`;
-            
+            const profilePic = user?.profilePic ? { uri: user.profilePic } : Nopic;
             return (
               <View
                 key={memberKey}

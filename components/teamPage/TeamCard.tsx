@@ -50,17 +50,18 @@ const TeamCard: React.FC<TeamCardProps> = ({
                 SPORT CATEGORY
               </Text>
             </View>
-            <View className="flex-1  justify-center items-center">
+            <View className="flex-1   justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 flex-row items-center justify-center ">
+            <View className="flex-1 ml-3 flex-row items-center justify-center ">
               <Image
                 source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
                 className="h-6 w-6 mr-2"
               />
-              <ThemedText className= "flex text-white text-right text-lg">
+              <View></View>
+              <Text className= "text-white text-right mr-5 text-3xl">
                 {sportCategory}
-              </ThemedText>
+              </Text>
             </View>
           </View>
 
@@ -75,7 +76,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1  justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1  ">
+            <View className="flex-1">
               <TextScallingFalse className= " text-white text-right mr-6 text-3xl">{captain}</TextScallingFalse>
             </View>
           </View>

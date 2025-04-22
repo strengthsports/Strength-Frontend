@@ -4,9 +4,14 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  // RefreshControl,
+  // ActivityIndicator,
+  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  TouchableOpacity
+  Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent
 } from "react-native";
 import {
   useRouter,
@@ -66,6 +71,11 @@ const TeamPage: React.FC = () => {
     captainMember?.user?.firstname + captainMember?.user?.lastname ||
     teamDetails?.admin?.[0]?.firstName +" "+  teamDetails?.admin?.[0]?.lastName ||
     "Loading...";
+
+  const viceCapt = viceCaptainMember?.user?.firstname + viceCaptainMember?.user?.lastname ||
+  
+  "Not Assigned";
+
 
   const handleDeleteTeam = async () => {
     try {
@@ -145,7 +155,7 @@ const TeamPage: React.FC = () => {
           teamName={teamDetails?.name || "Loading..."}
           sportCategory={teamDetails?.sport?.name || "Loading..."}
           captain={captain}
-          viceCapt={viceCaptainMember?.user?.firstName +" "+ viceCaptainMember?.user?.lastName || "Not Assigned"}
+          viceCapt={viceCapt} 
           location={
             teamDetails?.address
               ? `${teamDetails.address.city}, ${teamDetails.address.country}`

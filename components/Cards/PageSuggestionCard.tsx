@@ -10,6 +10,8 @@ import { useFollow } from "~/hooks/useFollow";
 import { Entypo } from "@expo/vector-icons";
 import { RootState } from "~/reduxStore";
 import { Divider } from "react-native-elements";
+import MultipleProfiles from "../ui/atom/MultipleProfiles";
+import FollowerText from "../ui/atom/FollowerText";
 
 const PageSuggestionCard = ({
   user,
@@ -150,7 +152,7 @@ const PageSuggestionCard = ({
                   size === "small" ? "text-xl" : "text-2xl"
                 } font-semibold`}
               >
-                {user.firstName} {user.lastName}
+                {user.firstName}
               </TextScallingFalse>
               <TextScallingFalse
                 className={`text-[#EAEAEA] ${
@@ -162,14 +164,19 @@ const PageSuggestionCard = ({
             </View>
 
             {/* Following information */}
-            {user.followers.length > 0 && (
-              <View>
-                <TextScallingFalse className="text-lg text-[#808080]">
-                  {user.followers.map((f) => f.firstName + `, `)} and{" "}
-                  {user.followerCount} others you know supports
-                </TextScallingFalse>
-              </View>
-            )}
+            {user.followers &&
+              user.followers.length > 0 &&
+              user.followerCount > 1 && (
+                <View className="flex-row items-center gap-x-2">
+                  <MultipleProfiles users={user.followers} size="small" />
+                  <FollowerText
+                    user={{
+                      followers: user.followers,
+                      followerCount: user.followerCount,
+                    }}
+                  />
+                </View>
+              )}
           </View>
           {/* Follow Button */}
           <TouchableOpacity

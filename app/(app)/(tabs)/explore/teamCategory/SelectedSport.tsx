@@ -9,7 +9,7 @@ interface SelectedSportProps {
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
-  return <DiscoverTeams sport="6771941c77a19c8141f2f1b7" />;
+  return <DiscoverTeams sport={sportsName} />;
 };
 
 export default SelectedSport;

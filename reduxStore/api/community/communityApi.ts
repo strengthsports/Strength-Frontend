@@ -26,39 +26,20 @@ export const communityApi = createApi({
     "Teams",
   ],
   endpoints: (builder) => ({
-    /**
-     * Unified Suggest Users Endpoint
-     *
-     * Accepts query parameters to filter suggestions as follows:
-     * - If `city` is provided, returns users from that city (using a case-insensitive match).
-     * - If `sports` is provided (or uses current user's selected sports on backend), returns users whose selected sports match.
-     * - If `popularUser` is true, returns users sorted by popularity (high followerCount, etc.).
-     *
-     * Excludes the current user and users already followed.
-     *
-     * Uses cursor-based pagination via the `lastTimeStamp` parameter.
-     */
     suggestUsers: builder.query<
-      { users: SuggestionUser[]; hasMore: boolean; nextCursor: string | null },
+      { users: SuggestionUser[]; hasMore: boolean; nextOffset: string | null },
       {
         city?: string;
         sports?: boolean;
         popularUser?: boolean;
-        limit?: number;
-        start?: number;
+        limit: number;
+        start: number;
         lastTimeStamp?: string | null;
       }
     >({
-      query: ({
-        city,
-        sports,
-        popularUser,
-        start = 0,
-        limit = 10,
-        lastTimeStamp,
-      }) => ({
-        url: "/suggest-users",
-        params: { city, sports, popularUser, start, limit, lastTimeStamp },
+      query: ({ city, sports, start, limit = 10, lastTimeStamp }) => ({
+        url: "/users",
+        params: { city, sports, start, limit, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
@@ -78,30 +59,44 @@ export const communityApi = createApi({
     }),
     // Endpoint for suggesting teams (to support) with filters
     getTeamsToSupport: builder.query<
-      { teams: SuggestTeam[]; hasMore: boolean; nextCursor: string | null },
+      { teams: SuggestTeam[]; hasMore: boolean; nextOffset: string | null },
       {
         search?: string;
         sport?: string;
         gender?: string;
         city?: string;
-        limit?: number;
+        limit: number;
+        start: number;
         lastTimeStamp?: string | null;
       }
     >({
-      query: ({ search, sport, gender, city, limit = 10, lastTimeStamp }) => ({
+      query: ({
+        search,
+        sport,
+        gender,
+        city,
+        limit = 10,
+        start,
+        lastTimeStamp,
+      }) => ({
         url: "/teams",
-        params: { search, sport, gender, city, limit, lastTimeStamp },
+        params: { search, sport, gender, city, limit, start, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
     // Endpoint for suggesting pages to follow
     getPagesToFollow: builder.query<
-      { pages: SuggestionUser[]; hasMore: boolean; nextCursor: string | null },
-      { city?: string; limit?: number; lastTimeStamp?: string | null }
+      { pages: SuggestionUser[]; hasMore: boolean; nextOffset: string | null },
+      {
+        city?: string;
+        limit: number;
+        start: number;
+        lastTimeStamp?: string | null;
+      }
     >({
-      query: ({ city, limit = 10, lastTimeStamp }) => ({
+      query: ({ city, limit, start, lastTimeStamp }) => ({
         url: "/pages",
-        params: { city, limit, lastTimeStamp },
+        params: { city, limit, start, lastTimeStamp },
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),

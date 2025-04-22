@@ -1,73 +1,107 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
-import SuggestionCard from "@/components/Cards/SuggestionCard";
-import { Divider } from "react-native-elements";
-import { RelativePathString, useRouter } from "expo-router";
+import { useRouter, RelativePathString } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import {
   useGetPagesToFollowQuery,
   useGetTeamsToSupportQuery,
   useGetUsersBasedOnActivityQuery,
   useSuggestUsersQuery,
 } from "~/reduxStore/api/community/communityApi";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import SearchHeader from "~/components/search/SearchHeader";
+import SuggestionCard from "@/components/Cards/SuggestionCard";
 import PageSuggestionCard from "~/components/Cards/PageSuggestionCard";
 import TeamSuggestionCard from "~/components/Cards/TeamSuggestionCard";
-import { SuggestionUser } from "~/types/user";
-import { SuggestTeam } from "~/types/team";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
+import { debounce } from "~/utils/debounce";
+
+import { SuggestionUser } from "~/types/user";
+import { SuggestTeam } from "~/types/team";
+import PageThemeView from "~/components/PageThemeView";
+
+const DEBOUNCE_DELAY = 1000;
 
 const Community = () => {
   const router = useRouter();
-  // Fetch different types of suggestions
+  const [refreshing, setRefreshing] = useState(false);
+  const [removedUserIds, setRemovedUserIds] = useState<Set<string>>(new Set());
+
   const {
     data: similarSportsUsers,
     isLoading: loadingSimilarSportsUsers,
     error: similarSportsError,
-  } = useSuggestUsersQuery({ limit: 6, sports: true });
+    refetch,
+  } = useSuggestUsersQuery({ limit: 4, start: 0, sports: true });
+
   const {
     data: popularUsers,
     isLoading: loadingPopularUsers,
     error: popularUsersError,
-  } = useSuggestUsersQuery({ limit: 6, popularUser: true });
+  } = useSuggestUsersQuery({ limit: 4, start: 0 });
+
   const {
     data: citywiseUsers,
     isLoading: loadingCitywiseUsers,
     error: cityUsersError,
-  } = useSuggestUsersQuery({ limit: 6, city: "kolkata" });
+  } = useSuggestUsersQuery({ limit: 4, start: 0, city: "kolkata" });
+
   const {
     data: usersBasedOnActivity,
     isLoading: loadingUsersBasedOnActivity,
     error: activityUsersError,
-  } = useGetUsersBasedOnActivityQuery({ limit: 6 });
-  //Pages
+  } = useGetUsersBasedOnActivityQuery({ limit: 4 });
+
   const {
     data: pagesToSupport,
     isLoading: loadingPagesToSupport,
     error: pagesError,
-  } = useGetPagesToFollowQuery({ limit: 2 });
-  //Teams
+  } = useGetPagesToFollowQuery({ limit: 2, start: 0 });
+
   const {
     data: popularTeams,
     isLoading: loadingPopularTeams,
     error: teamsError,
-  } = useGetTeamsToSupportQuery({ limit: 2 });
+  } = useGetTeamsToSupportQuery({ limit: 2, start: 0 });
 
-  // console.log("User based on activity : ", usersBasedOnActivity);
-  // console.log("Pages : ", pagesToSupport);
-  // console.log("Teams : ", popularTeams);
-  console.log("Popular users : ", popularUsers);
+  console.log("Popular Teams : ", popularTeams);
 
-  // Define sections grouped by suggestion type
-  const sections = useMemo(
-    () => [
+  const debouncedRefetch = useRef(
+    debounce(async () => {
+      try {
+        await refetch();
+      } finally {
+        setRefreshing(false);
+      }
+    }, DEBOUNCE_DELAY)
+  ).current;
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    debouncedRefetch();
+  }, [debouncedRefetch]);
+
+  const removeSuggestion = useCallback((userId: string) => {
+    setRemovedUserIds((prev) => new Set(prev).add(userId));
+  }, []);
+
+  const sections = useMemo(() => {
+    return [
       {
         title: "people you may know in similar sports",
         type: "User",
@@ -110,154 +144,142 @@ const Community = () => {
         data: popularUsers?.users || [],
         hasMore: popularUsers?.hasMore,
       },
-    ],
-    [
-      similarSportsUsers?.users,
-      usersBasedOnActivity,
-      citywiseUsers?.users,
-      popularUsers?.users,
-      popularTeams?.teams,
-      pagesToSupport?.pages,
-    ]
-  );
+    ].filter((section) => section.data.length > 0);
+  }, [
+    similarSportsUsers,
+    usersBasedOnActivity,
+    citywiseUsers,
+    popularUsers,
+    popularTeams,
+    pagesToSupport,
+  ]);
 
-  // Filter out sections with no data
-  const filteredSections = useMemo(
-    () => sections.filter((section) => section.data?.length > 0),
-    [sections]
-  );
+  const renderSection = useCallback(
+    ({
+      item,
+    }: {
+      item: {
+        title: string;
+        type: string;
+        data: SuggestionUser[] | SuggestTeam[];
+        hasMore: boolean;
+      };
+    }) => {
+      const filteredData = item.data.filter(
+        (user) => !removedUserIds.has(user._id)
+      );
+      if (filteredData.length === 0) return null;
 
-  // Track removed user IDs
-  const [removedUserIds, setRemovedUserIds] = useState<Set<string>>(new Set());
+      const isSingleColumn = item.type === "Page" || item.type === "Team";
 
-  // Add user ID to removed list
-  const removeSuggestion = (userId: string) => {
-    setRemovedUserIds((prev) => new Set([...prev, userId]));
-  };
-
-  // Render each section with removed users filtered out
-  const renderSection = ({
-    item,
-  }: {
-    item: {
-      title: string;
-      type: string;
-      data: SuggestionUser[] | SuggestTeam[];
-      hasMore: boolean;
-    };
-  }) => {
-    // Filter out removed users
-    const filteredData = item.data.filter(
-      (user) => !removedUserIds.has(user._id)
-    );
-    if (filteredData.length === 0) return null;
-
-    const isSingleColumn = item.type === "Page" || item.type === "Team";
-
-    return (
-      <View className="mt-4 pb-6 border-b-[4px] border-[#1E1E1E]">
-        <Text className="text-white text-3xl font-medium ml-2 mb-2 capitalize">
-          {item.title}
-        </Text>
-        <FlatList
-          data={filteredData}
-          keyExtractor={(user) => user._id}
-          renderItem={({ item }) =>
-            item.empty ? (
-              <View style={{ flex: 1, margin: 4 }} />
-            ) : item.type === "User" ? (
-              <SuggestionCard
-                user={item as SuggestionUser}
-                size="regular"
-                removeSuggestion={removeSuggestion}
-              />
-            ) : item.type === "Page" ? (
-              <PageSuggestionCard
-                user={item as SuggestionUser}
-                size="regular"
-                removeSuggestion={removeSuggestion}
-              />
-            ) : (
-              <TeamSuggestionCard
-                team={item as SuggestTeam}
-                size="regular"
-                removeSuggestion={removeSuggestion}
-              />
-            )
-          }
-          numColumns={isSingleColumn ? 1 : 2}
-          columnWrapperStyle={
-            isSingleColumn
-              ? undefined
-              : {
-                  justifyContent: "space-evenly",
-                  width: "auto",
-                  marginTop: 16,
-                  gap: 8,
+      return (
+        <View className="mt-4 pb-6 border-b-[2px] border-[#1E1E1E]">
+          <Text className="text-white text-3xl font-medium ml-2 mb-2 capitalize">
+            {item.title}
+          </Text>
+          <FlatList
+            data={filteredData}
+            keyExtractor={(user) => user._id}
+            renderItem={({ item }) =>
+              item.type === "User" ? (
+                <SuggestionCard
+                  user={item as SuggestionUser}
+                  size="regular"
+                  removeSuggestion={removeSuggestion}
+                />
+              ) : item.type === "Page" ? (
+                <PageSuggestionCard
+                  user={item as SuggestionUser}
+                  size="regular"
+                  removeSuggestion={removeSuggestion}
+                />
+              ) : (
+                <TeamSuggestionCard
+                  team={item as SuggestTeam}
+                  size="regular"
+                  removeSuggestion={removeSuggestion}
+                />
+              )
+            }
+            numColumns={isSingleColumn ? 1 : 2}
+            columnWrapperStyle={
+              isSingleColumn
+                ? undefined
+                : {
+                    justifyContent: "space-evenly",
+                    width: "auto",
+                    marginTop: 16,
+                    gap: 8,
+                  }
+            }
+            ListFooterComponent={
+              <TouchableOpacity
+                className="mt-4 self-center rounded-full"
+                onPress={() =>
+                  router.push(
+                    `/(app)/(tabs)/community/more?filter=${item.type.toLowerCase()}` as RelativePathString
+                  )
                 }
-          }
-          ListFooterComponent={
-            <TouchableOpacity
-              className="mt-4 self-center rounded-full"
-              onPress={() =>
-                router.push(
-                  `/(app)/(tabs)/community/more?filter=${item.type.toLocaleLowerCase()}&sports=true` as RelativePathString
-                )
-              }
-            >
-              <Text className="text-white text-2xl font-normal">
-                See more {`>`}
-              </Text>
-            </TouchableOpacity>
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-    );
-  };
+              >
+                <Text className="text-white text-2xl font-normal">
+                  See more {`>`}
+                </Text>
+              </TouchableOpacity>
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      );
+    },
+    [removeSuggestion, removedUserIds]
+  );
 
-  if (
+  const allLoading =
+    loadingSimilarSportsUsers ||
+    loadingCitywiseUsers ||
+    loadingPopularUsers ||
+    loadingUsersBasedOnActivity ||
+    loadingPagesToSupport ||
+    loadingPopularTeams;
+
+  const allErrors =
     similarSportsError &&
     popularUsersError &&
     pagesError &&
     teamsError &&
     cityUsersError &&
-    activityUsersError
-  ) {
-    console.log(
-      similarSportsError,
-      popularUsersError,
-      pagesError,
-      teamsError,
-      cityUsersError,
-      activityUsersError
-    );
-    showFeedback("Can't retrieve suggestions now ! Try again later !");
-  }
+    activityUsersError;
+
+  useEffect(() => {
+    if (allErrors) {
+      console.log(
+        similarSportsError,
+        popularUsersError,
+        pagesError,
+        teamsError,
+        cityUsersError,
+        activityUsersError
+      );
+      showFeedback("Can't retrieve suggestions now! Try again later.");
+    }
+  }, [allErrors]);
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      {/* Search Bar */}
+    <PageThemeView>
       <View
         style={{ width: "100%", borderColor: "#181818", borderBottomWidth: 1 }}
       >
         <SearchHeader />
       </View>
 
-      <View className="px-4">
-        {/* Suggestions List */}
-        {loadingSimilarSportsUsers ||
-        loadingCitywiseUsers ||
-        loadingPopularUsers ||
-        loadingUsersBasedOnActivity ||
-        loadingPagesToSupport ||
-        loadingPopularTeams ? (
+      <View className="px-4 pb-20">
+        {allLoading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#12956B" />
           </View>
         ) : (
           <FlatList
-            data={filteredSections as any}
+            data={sections}
             keyExtractor={(section) => section.title}
             renderItem={renderSection}
             showsVerticalScrollIndicator={false}
@@ -269,10 +291,19 @@ const Community = () => {
                 </TextScallingFalse>
               </View>
             }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#12956B", "#6E7A81"]}
+                tintColor="#6E7A81"
+                progressBackgroundColor="#181A1B"
+              />
+            }
           />
         )}
       </View>
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

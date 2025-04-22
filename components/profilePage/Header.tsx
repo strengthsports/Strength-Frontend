@@ -36,16 +36,18 @@ const Header = ({
         </TextScallingFalse>
       </View>
       {/* add post button and message button */}
-      <View className="flex-row gap-x-3">
-        <PostButton onPress={handlePostContainerOpen} />
-        <TouchableOpacity activeOpacity={0.5}>
-          <MaterialCommunityIcons
-            name="message-reply-text-outline"
-            size={27}
-            color="white"
-          />
-        </TouchableOpacity>
-      </View>
+      {!isBackButtonVisible && (
+        <View className="flex-row gap-x-3">
+          <PostButton onPress={handlePostContainerOpen} />
+          <TouchableOpacity activeOpacity={0.5}>
+            <MaterialCommunityIcons
+              name="message-reply-text-outline"
+              size={27}
+              color="white"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

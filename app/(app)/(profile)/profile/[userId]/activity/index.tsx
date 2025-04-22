@@ -11,7 +11,8 @@ import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profil
 import TextScallingFalse from "~/components/CentralText";
 import PostContainer from "~/components/Cards/postContainer";
 import { useLocalSearchParams } from "expo-router";
-import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+// import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
+import { Post } from "~/types/post";
 
 const Posts = () => {
   const params = useLocalSearchParams();
@@ -43,14 +44,14 @@ const Posts = () => {
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View className="w-screen">
-        <PostContainer item={item} isMyActivity={true} />
+        <PostContainer item={item} isMyActivity={true} isVisible={true} />
       </View>
     ),
     [] // Empty dependency array ensures the function is memoized and doesn't re-create
   );
 
   const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No new posts available</Text>
+    <Text className="text-white text-center p-4">No posts available</Text>
   ));
 
   // Loading
@@ -75,17 +76,19 @@ const Posts = () => {
   }
 
   return (
-    <FlatList
-      data={posts || []}
-      keyExtractor={(item) => item._id}
-      initialNumToRender={5}
-      removeClippedSubviews={isAndroid}
-      windowSize={11}
-      renderItem={renderItem}
-      ListEmptyComponent={memoizedEmptyComponent}
-      bounces={false}
-      contentContainerStyle={{ paddingBottom: 40 }}
-    />
+    <View className="mt-4">
+      <FlatList
+        data={posts || []}
+        keyExtractor={(item) => item._id}
+        initialNumToRender={5}
+        removeClippedSubviews={isAndroid}
+        windowSize={11}
+        renderItem={renderItem}
+        ListEmptyComponent={memoizedEmptyComponent}
+        bounces={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      />
+    </View>
   );
 };
 

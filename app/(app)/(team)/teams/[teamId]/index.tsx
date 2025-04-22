@@ -63,8 +63,8 @@ const TeamPage: React.FC = () => {
   );
 
   const captain =
-    captainMember?.user?.firstname ||
-    teamDetails?.admin?.[0]?.firstName ||
+    captainMember?.user?.firstname + captainMember?.user?.lastname ||
+    teamDetails?.admin?.[0]?.firstName +" "+  teamDetails?.admin?.[0]?.lastName ||
     "Loading...";
 
   const handleDeleteTeam = async () => {
@@ -145,7 +145,7 @@ const TeamPage: React.FC = () => {
           teamName={teamDetails?.name || "Loading..."}
           sportCategory={teamDetails?.sport?.name || "Loading..."}
           captain={captain}
-          viceCapt={viceCaptainMember?.user?.firstName || "Not Assigned"}
+          viceCapt={viceCaptainMember?.user?.firstName +" "+ viceCaptainMember?.user?.lastName || "Not Assigned"}
           location={
             teamDetails?.address
               ? `${teamDetails.address.city}, ${teamDetails.address.country}`

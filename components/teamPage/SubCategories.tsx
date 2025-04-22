@@ -11,7 +11,7 @@ import {
 import AppLoading from "expo-app-loading";
 
 const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
-  const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("SQUAD");
+  const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("ABOUT");
 
   const [fontsLoaded] = useFonts({
     SairaExtraCondensed_500Medium,

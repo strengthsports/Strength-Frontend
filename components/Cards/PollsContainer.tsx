@@ -152,7 +152,7 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
         className={`${
           mode === "create"
             ? "w-[92%] mt-[-30px] ml-2 mr-1 pt-5 pb-8 rounded-2xl"
-            : "w-[100%] mt-[-30px]"
+            : "w-[100%]"
         }`}
       >
         {(mode === "create" || onClose) && (

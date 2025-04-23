@@ -69,7 +69,7 @@ const ShimmerEffect: React.FC<ShimmerEffectProps> = ({
 
 const SearchSkeletonLoader = () => {
   return (
-    <View className="relative w-full max-w-xl self-center min-h-48 px-2 h-auto my-4">
+    <View className="relative w-full max-w-xl self-center px-2 h-auto my-4">
       <View className="flex">
         {/* Profile Section */}
         <View className="relative ml-[5%] flex flex-row gap-2 z-20" style={{alignItems:'center'}}>

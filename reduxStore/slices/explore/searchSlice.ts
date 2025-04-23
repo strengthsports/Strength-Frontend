@@ -15,13 +15,18 @@ const searchSlice = createSlice({
   initialState,
   reducers: {
     addSearchHistory: (state, action: PayloadAction<any>) => {
-      state.searchHistory = [action.payload, ...state.searchHistory].slice(0, 10); // Keep last 10 searches
-    },
+      const newUser = action.payload;
+      const filtered = state.searchHistory.filter(user => user._id !== newUser._id);
+      state.searchHistory = [newUser, ...filtered].slice(0, 10);
+    },    
     addRecentSearch: (state, action: PayloadAction<string>) => {
-      state.recentSearches = [action.payload, ...state.recentSearches].slice(0, 10);
+      const term = action.payload.trim().toLowerCase(); // normalize casing/spacing
+      const filtered = state.recentSearches.filter(item => item.trim().toLowerCase() !== term);
+      state.recentSearches = [term, ...filtered].slice(0, 10);
     },
     resetSearchHistory: (state) => {
       state.searchHistory = []; // Reset search history to empty array
+      state.recentSearches = [];
     },
   },
 });

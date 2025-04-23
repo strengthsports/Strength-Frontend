@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    marginBottom:10
   },
   title: {
     fontSize: 18,
@@ -54,9 +55,11 @@ const styles = StyleSheet.create({
     color: "white",
   },
   roleButton: {
-    paddingVertical: 18,
+    // paddingVertical: 18,
+    // paddingBottom:20,
     backgroundColor: "black",
-    marginVertical: 6,
+    marginBottom:20,
+    // marginVertical: 10,
     padding: 20,
     borderRadius: 10,
   },

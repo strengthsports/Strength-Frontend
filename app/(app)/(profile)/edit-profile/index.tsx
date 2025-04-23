@@ -25,7 +25,10 @@ import { responsiveFontSize } from "react-native-responsive-dimensions";
 import CustomButton from "~/components/common/CustomButtons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { editUserProfile } from "~/reduxStore/slices/user/profileSlice";
+import {
+  editUserProfile,
+  optimisticallyUpdateUser,
+} from "~/reduxStore/slices/user/profileSlice";
 import { UserData } from "@/types/user";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { getToken } from "~/utils/secureStore";
@@ -514,6 +517,7 @@ const EditProfile = () => {
         : "";
 
       setFormData((prev) => ({ ...prev, [field]: weightString }));
+
       finalUploadData.set("weight", weightString);
     } else if (field === "username") {
       const usernameRegex = /^[a-z0-9._]+$/;

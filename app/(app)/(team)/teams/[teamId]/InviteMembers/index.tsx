@@ -255,7 +255,7 @@ const InviteMember: React.FC = () => {
 
       {/* List */}
       {loading ? (
-        <Text style={styles.status}>Loading suggestions...</Text>
+        <TextScallingFalse style={styles.status}>Loading suggestions...</TextScallingFalse>
       ) : error ? (
         <TextScallingFalse style={[styles.status, { color: "red" }]}>{error}</TextScallingFalse>
       ) : (
@@ -269,7 +269,7 @@ const InviteMember: React.FC = () => {
 
           {filteredMembers.length >= limit && (
             <TouchableOpacity style={styles.seeMoreButton} onPress={handleSeeMore}>
-              <Text style={styles.seeMoreText}>See More</Text>
+              <TextScallingFalse style={styles.seeMoreText}>See More</TextScallingFalse>
             </TouchableOpacity>
           )}
         </>

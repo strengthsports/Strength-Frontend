@@ -161,14 +161,12 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
             </View>
           )} */}
           <View className="w-4/5 flex-row items-center">
-            <TextScallingFalse className="text-white text-2xl uppercase">
-              {match.country.name} -{" "}
-            </TextScallingFalse>
             <TextScallingFalse
               className="text-[#EAEAEA] text-2xl w-4/5"
               numberOfLines={numberOfLinesTitle}
+              ellipsizeMode="tail"
             >
-              {match.league.name} {match.league.type}
+              {match.country.name} -{match.league.name}
             </TextScallingFalse>
           </View>
         </TouchableOpacity>

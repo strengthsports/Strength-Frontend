@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import { Redirect } from "expo-router";
 import LoginScreen from "./(auth)/login";
 import "../global.css";

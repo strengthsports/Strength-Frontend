@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Text,
   Modal,
+  RefreshControl,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
+// import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Hashtag from "~/components/explorePage/hashtag";
+import { useGetTrendingHashtagQuery } from "~/reduxStore/api/explore/hashtagApi";
 import {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
@@ -39,6 +41,7 @@ import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoa
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
   const renderSwiper = () => {
@@ -49,50 +52,75 @@ const TrendingAll = () => {
 
     if (error) {
       return (
-        <View style={{height: 240, width:'100%', justifyContent:'center', alignItems:'center'}}>
-        <TextScallingFalse className="text-white">
-          Error loading swipper slides.
-        </TextScallingFalse>
+        <View
+          style={{
+            height: 240,
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TextScallingFalse className="text-white">
+            Error loading swipper slides.
+          </TextScallingFalse>
         </View>
       );
     }
     return <SwiperTop swiperData={articles ?? []} />;
   };
 
-  const renderHashtags = () => (
-    <View className="mt-10">
-      {
-        hashtagData ? 
-        <>
+  const renderHashtags = () => {
+    const {
+      data: hashtagData,
+      isLoading,
+      error,
+    } = useGetTrendingHashtagQuery({});
+
+    if (isLoading) return <HastagSkeletonLoader />;
+    if (error)
+      return (
+        <View
+          style={{
+            height: 240,
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TextScallingFalse className="text-white">
+            Error loading Hashtags.
+          </TextScallingFalse>
+        </View>
+      );
+
+    return (
+      <View className="mt-10">
         <Hashtag data={hashtagData.slice(0, 3)} />
         <TouchableOpacity
-        className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
-        activeOpacity={0.6}
-        onPress={() => setModalVisible(true)}
-      >
-        <View className="flex-row items-center justify-center">
-          <Text className="text-white">See more</Text>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={18}
-            color="#E9E9E9"
-            className="mt-0.5 ml-1.5"
-          />
-        </View>
-      </TouchableOpacity>
+          className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
+          activeOpacity={0.6}
+          onPress={() => setModalVisible(true)}
+        >
+          <View className="flex-row items-center justify-center">
+            <Text className="text-white">See more</Text>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={18}
+              color="#E9E9E9"
+              className="mt-0.5 ml-1.5"
+            />
+          </View>
+        </TouchableOpacity>
 
-      {/* Include HashtagModal */}
-      <HashtagModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        hashtagData={hashtagData}
-      />
-      </>
-        :
-        <HastagSkeletonLoader />
-      }
-    </View>
-  );
+        {/* Include HashtagModal */}
+        <HashtagModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          hashtagData={hashtagData}
+        />
+      </View>
+    );
+  };
 
   const renderMatches = () => {
     return (
@@ -202,15 +230,42 @@ const TrendingAll = () => {
     { type: "footballNextMatches", content: renderFootballNextMatches() },
   ];
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchLiveCricket(),
+        refetchNextCricket(),
+        refetchLiveFootball(),
+        refetchLiveBasketball(),
+        // Optionally refetch article data if needed:
+        // refetchSportArticles?.(),
+      ]);
+    } catch (error) {
+      console.error("Refresh failed", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <View className="flex-1">
       <FlatList
         data={sections}
         keyExtractor={(item) => item.type}
-        // keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => item.content}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#12956B", "#6E7A81"]}
+            tintColor="#6E7A81"
+            progressViewOffset={60}
+            progressBackgroundColor="#181A1B"
+          />
+        }
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

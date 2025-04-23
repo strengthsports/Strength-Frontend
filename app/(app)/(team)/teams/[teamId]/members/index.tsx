@@ -13,6 +13,7 @@ import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
 import nopic from "../../../../../../assets/images/nopic.jpg";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
+import TextScallingFalse from "~/components/CentralText";
 
 // Define TypeScript Interfaces
 interface User {
@@ -91,7 +92,6 @@ const Members: React.FC = () => {
   }
 
   const groupedMembers = groupMembersByRole(filteredMembers);
-
   return (
     <PageThemeView>
       {/* Header */}
@@ -99,12 +99,12 @@ const Members: React.FC = () => {
         <TouchableOpacity onPress={() => router.back()}>
           <Icon name="arrowleft" size={28} color="white" />
         </TouchableOpacity>
-        <Text className="text-white text-2xl font-bold">Members</Text>
+        <TextScallingFalse className="text-white text-2xl font-bold">Members</TextScallingFalse>
         {isAdmin && (
           <TouchableOpacity onPress={() => router.push("/teams/settings/edit-members")}>
             <View className="flex-row items-center space-x-2">
               <Image source={require("../../../../../../assets/images/edit.png")} style={{ width: 20, height: 20 }} />
-              <Text className="text-white text-lg">Edit</Text>
+              <TextScallingFalse className="text-white text-lg">Edit</TextScallingFalse>
             </View>
           </TouchableOpacity>
         )}
@@ -121,7 +121,7 @@ const Members: React.FC = () => {
             placeholderTextColor="gray"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            className="text-white text-lg flex-1 ml-2"
+            className="text-white TextScallingFalse-lg flex-1 ml-2"
           />
         </View>
       </View>
@@ -132,7 +132,7 @@ const Members: React.FC = () => {
         keyExtractor={(role) => role}
         renderItem={({ item: role }) => (
           <View className="py-1 rounded-sm mb-0 mx-1">
-            <Text className="text-gray-500 text-4xl font-bold mb-2">{role}</Text>
+            <TextScallingFalse className="text-gray-500 text-4xl font-bold mb-2">{role}</TextScallingFalse>
             <View className="bg-[#121212] rounded-2xl py-2">
               {groupedMembers[role].map((member) => (
                 <TouchableOpacity
@@ -143,7 +143,7 @@ const Members: React.FC = () => {
                       router.push({
                         pathname: `/teams/${team._id}/members/${member.user._id}` as RelativePathString,
                         params: {
-                          memberId: member.user._id,
+                          // memberId: member.user._id,
                           member: JSON.stringify(member.user),
                           role: JSON.stringify(member.role),
                         },
@@ -156,10 +156,10 @@ const Members: React.FC = () => {
                 >
                   <Avatar.Image size={50} source={member.user.profilePic ? { uri: member.user.profilePic } : nopic} />
                   <View className="ml-4 mt-2 flex-1 border-b pb-3 bottom-2 border-[#3B3B3B]">
-                    <Text className="text-white text-2xl font-medium">
+                    <TextScallingFalse className="text-white text-2xl font-medium">
                       {member.user.firstName} {member.user.lastName}
-                    </Text>
-                    <Text className="text-gray-400 text-sm">{member.user.headline}</Text>
+                    </TextScallingFalse>
+                    <TextScallingFalse className="text-gray-400 text-sm mr-9">{"@"}{member?.user?.username}{" "}|{" "}{member.user.headline}</TextScallingFalse>
                   </View>
                   <Icon name="right" size={12} color="gray" />
                 </TouchableOpacity>

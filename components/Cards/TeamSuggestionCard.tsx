@@ -8,6 +8,8 @@ import nocoverpic from "@/assets/images/nocover.png";
 import nopic from "@/assets/images/nopic.jpg";
 import { Entypo } from "@expo/vector-icons";
 import { RootState } from "~/reduxStore";
+import MultipleProfiles from "../ui/atom/MultipleProfiles";
+import FollowerText from "../ui/atom/FollowerText";
 
 const TeamSuggestionCard = ({
   team,
@@ -56,75 +58,87 @@ const TeamSuggestionCard = ({
           </TextScallingFalse>
         </TouchableOpacity>
 
-        <View className="flex-row items-start gap-x-2 flex-grow">
-          {/* Profile Image */}
-          <TouchableOpacity
-            activeOpacity={0.5}
-            // onPress={() =>
-            //   router.push(`/(app)/(profile)/profile/${serializedUser}`)
-            // }
-            disabled={onboarding}
-            className={`bg-white rounded-xl ${
-              size === "small" ? "w-12 h-12" : "w-16 h-16"
-            } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
-            // style={{ marginTop: "10%" }}
-          >
-            <Image
-              source={team.logo ? { uri: team.logo.url } : nopic}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
+        <View className="flex-col">
+          {/* Details section */}
+          <View className="basis-[80%] flex-row gap-x-2">
+            {/* Profile Image */}
+            <TouchableOpacity
+              activeOpacity={0.5}
+              // onPress={() =>
+              //   router.push(`/(app)/(profile)/profile/${serializedUser}`)
+              // }
+              disabled={onboarding}
+              className={`bg-white rounded-xl ${
+                size === "small" ? "w-12 h-12" : "w-16 h-16"
+              } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
+              // style={{ marginTop: "10%" }}
+            >
+              <Image
+                source={team.logo ? { uri: team.logo.url } : nopic}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
 
-          {/* Name and headline */}
-          <View className="flex-col items-start">
-            <View>
-              <TextScallingFalse
-                className={`text-white ${
-                  size === "small" ? "text-xl" : "text-2xl"
-                } font-semibold`}
-              >
-                {team.name}
-              </TextScallingFalse>
-              <TextScallingFalse
-                className={`text-[#9F9F9F] ${
-                  size === "small" ? "text-xs" : "text-base"
-                }`}
-              >
-                {team.address?.city} {team.address?.state}{" "}
-                {team.address?.country}
-              </TextScallingFalse>
-            </View>
-            <View>
-              <TextScallingFalse className="mt-10 text-lg text-[#9F9F9F]">
-                Ravi, M.S. Dhoni, and 14M others you know supports
-              </TextScallingFalse>
+            {/* Name and headline */}
+            <View className="flex-col gap-y-5">
+              <View>
+                <TextScallingFalse
+                  className={`text-white ${
+                    size === "small" ? "text-xl" : "text-2xl"
+                  } font-semibold`}
+                >
+                  {team.name}
+                </TextScallingFalse>
+                <TextScallingFalse
+                  className={`text-[#9F9F9F] ${
+                    size === "small" ? "text-sm" : "text-lg"
+                  }`}
+                >
+                  {team.address?.city} {team.address?.state}{" "}
+                  {team.address?.country}
+                </TextScallingFalse>
+              </View>
+              {team.supporters &&
+                team.supporters.length > 0 &&
+                team.supporterCount > 1 && (
+                  <View className="flex-row items-center">
+                    <MultipleProfiles users={team.supporters} />
+                    <FollowerText
+                      user={{
+                        followers: team.supporters,
+                        followerCount: team.supporterCount,
+                      }}
+                    />
+                  </View>
+                )}
             </View>
           </View>
-        </View>
 
-        <View>
-          {/* Follow Button */}
-          <TouchableOpacity
-            className={`mt-4 border-[0.5px] rounded-3xl px-8 py-2 border-[#DEDEDE]`}
-            activeOpacity={0.6}
-          >
-            {followingStatus ? (
-              <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
-                <Entypo
-                  className="mr-4"
-                  name="check"
-                  size={14}
-                  color="#DEDEDE"
-                />
-                Supporting
-              </TextScallingFalse>
-            ) : (
-              <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
-                Support
-              </TextScallingFalse>
-            )}
-          </TouchableOpacity>
+          {/* Support button */}
+          <View className="basis-[20%]">
+            {/* Follow Button */}
+            <TouchableOpacity
+              className={`border-[0.5px] rounded-3xl px-8 py-2 border-[#DEDEDE]`}
+              activeOpacity={0.6}
+            >
+              {followingStatus ? (
+                <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
+                  <Entypo
+                    className="mr-4"
+                    name="check"
+                    size={14}
+                    color="#DEDEDE"
+                  />
+                  Supporting
+                </TextScallingFalse>
+              ) : (
+                <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
+                  Support
+                </TextScallingFalse>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

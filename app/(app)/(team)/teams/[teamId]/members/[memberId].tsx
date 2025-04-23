@@ -215,7 +215,11 @@ const ProfileSection = React.memo(({ member }: { member: any }) => (
       style={styles.profileImage}
     />
     <Text style={styles.nameText}>{member?.firstName} {member?.lastName}</Text>
+    <View className="flex-row">
+    <Text style={styles.roleText}>{"@"}{member?.username} | {" "}</Text> 
     <Text style={styles.roleText}>{member?.headline}</Text>
+    </View>
+    
   </View>
 ));
 
@@ -362,22 +366,22 @@ const MemberDetails = () => {
     setHasChanges(hasPositionChanged || hasRoleChanged);
   }, [memberPosition, role, originalRole, parsedMember?.position]);
 
-  // Handlers
-  const handleSave = useCallback(async () => {
-    if (!hasChanges) return;
+  // // Handlers
+  // const handleSave = useCallback(async () => {
+  //   if (!hasChanges) return;
     
-    setIsUpdating(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      Alert.alert("Changes Saved", `Role updated to "${role}"`);
-      setHasChanges(false);
-    } catch (error) {
-      console.error("Failed to save changes:", error);
-      Alert.alert("Error", "Could not save changes. Please try again.");
-    } finally {
-      setIsUpdating(false);
-    }
-  }, [hasChanges, role]);
+  //   setIsUpdating(true);
+  //   try {
+  //     await new Promise(resolve => setTimeout(resolve, 500));
+  //     Alert.alert("Changes Saved", `Role updated to "${role}"`);
+  //     setHasChanges(false);
+  //   } catch (error) {
+  //     console.error("Failed to save changes:", error);
+  //     Alert.alert("Error", "Could not save changes. Please try again.");
+  //   } finally {
+  //     setIsUpdating(false);
+  //   }
+  // }, [hasChanges, role]);
 
   const handleRoleSelect = useCallback((selectedRole: string) => {
     if (selectedRole === role) return;

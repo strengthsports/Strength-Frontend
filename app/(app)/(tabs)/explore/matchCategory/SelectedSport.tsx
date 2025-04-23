@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, FlatList } from "react-native";
+import React, { useState } from "react";
+import { View, Text, FlatList, RefreshControl } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
 import {
@@ -30,6 +30,7 @@ interface SelectedSportProps {
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
+  const [refreshing, setRefreshing] = useState(false);
   const renderMatches = () => {
     return (
       <View className="flex-row items-center pl-7 mt-3">
@@ -222,6 +223,24 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       content: renderFootballNextMatches(),
     });
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchLiveCricket(),
+        refetchNextCricket(),
+        refetchLiveFootball(),
+        refetchLiveBasketball(),
+        // Optionally refetch article data if needed:
+        // refetchSportArticles?.(),
+      ]);
+    } catch (error) {
+      console.error("Refresh failed", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <View className="flex-1">
       <FlatList
@@ -231,6 +250,16 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
         renderItem={({ item }) => item.content}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#12956B", "#6E7A81"]}
+            tintColor="#6E7A81"
+            progressViewOffset={60}
+            progressBackgroundColor="#181A1B"
+          />
+        }
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

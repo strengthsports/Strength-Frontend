@@ -4,8 +4,11 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
-  ActivityIndicator,
+  KeyboardAvoidingView,
   Image,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
@@ -26,6 +29,7 @@ import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
 import { createSelector } from "@reduxjs/toolkit";
 import TextScallingFalse from "~/components/CentralText";
 import SearchSkeletonLoader from "~/components/skeletonLoaders/SearchSkeletonLoader";
+import PageThemeView from "~/components/PageThemeView";
 
 // Memoized Redux selectors
 const selectFilteredSearchHistory = createSelector(
@@ -146,7 +150,7 @@ const SearchPage: React.FC = () => {
   );
 
   return (
-    <SafeAreaView>
+    <PageThemeView>
       <View
         className="flex-row items-center my-3 gap-x-5 max-w-[640px] w-[92%] mx-auto"
         onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
@@ -164,7 +168,9 @@ const SearchPage: React.FC = () => {
         <View className="px-5 mt-3">
           {isSearching ? (
             // <ActivityIndicator size="small" color="white" />
-            <SearchSkeletonLoader />
+            Array.from({ length: 14 }).map((_, index) => (
+              <SearchSkeletonLoader key={index} />
+            ))
           ) : (
             <FlatList
               data={searchResults}
@@ -174,15 +180,19 @@ const SearchPage: React.FC = () => {
           )}
         </View>
       ) : (
-        <View>
+        <>
+        {
+          (searchHistory.length > 0 || recentSearches.length > 0) ? (
+            <View>
           <View className="flex-row justify-between items-center px-6 py-2">
             <TextScallingFalse className="text-3xl text-[#808080] mb-2">Recent</TextScallingFalse>
+            <TouchableOpacity activeOpacity={0.7} onPress={clearSearchHistory} style={{width: 60, alignItems:'flex-end'}}>
             <TextScallingFalse
-              onPress={clearSearchHistory}
               className="text-2xl text-[#808080] mb-2"
             >
               Clear
             </TextScallingFalse>
+            </TouchableOpacity>
           </View>
 
           <FlatList
@@ -191,6 +201,7 @@ const SearchPage: React.FC = () => {
             data={searchHistory}
             renderItem={renderHistoryProfile}
             keyExtractor={(item) => item._id}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
               gap: 16,
               paddingStart: 16,
@@ -202,6 +213,7 @@ const SearchPage: React.FC = () => {
             data={recentSearches}
             renderItem={renderRecentSearch}
             keyExtractor={(item, index) => index.toString()}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
               gap: 27,
               paddingVertical: 26,
@@ -209,8 +221,17 @@ const SearchPage: React.FC = () => {
             }}
           />
         </View>
+          )
+          :
+          (
+            <View style={{width:'100%', padding: 100, justifyContent:'center', alignItems:'center'}}>
+            <TextScallingFalse style={{color:'grey', fontWeight:'400', fontSize: 13}}>No recent search available !</TextScallingFalse>
+            </View>
+          )
+        }
+        </>
       )}
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 
@@ -221,7 +242,7 @@ const SearchResultItem = memo(
   ({ item, onPress }: { item: any; onPress: (user: any) => void }) => (
     <TouchableOpacity
       onPress={() => onPress(item)}
-      className="flex-row items-center py-2 px-4"
+      className="flex-row items-center py-2 px-3"
     >
       <Image
         source={item?.profilePic?.trim() ? { uri: item.profilePic } : nopic}

@@ -15,8 +15,18 @@ import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import { Image } from "expo-image";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 
-const blurhash =
-  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
+// const borderLeftWidth = Platform.select({
+//   ios: {
+//     borderLeftWidth: 3
+//   },
+//   android: {
+//     borderLeftWidth: 0.5
+//   },
+// });
+
+// const borderTopwidth =
+
+// const borderBottomWidth =
 
 interface CustomImageSliderProps {
   images: string[];

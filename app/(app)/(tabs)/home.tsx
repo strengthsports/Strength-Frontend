@@ -38,12 +38,11 @@ import TextScallingFalse from "~/components/CentralText";
 import { useNavigation } from "@react-navigation/native";
 import { useScroll } from "~/context/ScrollContext";
 import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
-import { SafeAreaView } from "react-native-safe-area-context";
 import debounce from "lodash.debounce";
-import { setPostProgressOn } from "~/reduxStore/slices/post/postSlice";
 import eventBus from "~/utils/eventBus";
 import PageThemeView from "~/components/PageThemeView";
 import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
+import UploadProgressBar from "~/components/UploadProgressBar";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -85,9 +84,7 @@ const Home = () => {
   const navigation = useNavigation();
   const { loading, error, hasMore, currentPage } = useSelector(selectFeedState);
   const posts = useSelector(selectAllPosts);
-  const isPostProgressOn = useSelector(
-    (state: RootState) => state.post.isPosting
-  );
+  const { progress } = useSelector((state: RootState) => state.post);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
@@ -119,41 +116,6 @@ const Home = () => {
     dispatch(fetchFeedPosts({ page: 1 }));
     setIsRefreshing(false);
   }, [dispatch]);
-
-  // Animated progress value for the progress bar
-  const progress = useRef(new Animated.Value(0)).current;
-  const widthInterpolated = useMemo(
-    () =>
-      progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: ["0%", "100%"],
-      }),
-    [progress]
-  );
-
-  // Animate progress when posting comment
-  useEffect(() => {
-    if (isPostProgressOn) {
-      Animated.timing(progress, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: false,
-      }).start(() => {
-        console.log("Progress completed!");
-        onProgressComplete();
-      });
-    } else {
-      progress.setValue(0);
-    }
-  }, [isPostProgressOn]);
-
-  // On progress complete show feedback and refresh
-  const onProgressComplete = useCallback(() => {
-    showFeedback("Post uploaded successfully!", "success");
-    handleRefresh();
-    // Dispatch an action to update isPostProgressOn to false
-    dispatch(setPostProgressOn(false));
-  }, [dispatch, handleRefresh]);
 
   // Listener for tab press to scroll to top and refresh posts
   useEffect(() => {
@@ -274,11 +236,7 @@ const Home = () => {
   return (
     <PageThemeView>
       <CustomHomeHeader />
-      {isPostProgressOn && (
-        <Animated.View
-          style={[styles.progressBar, { width: widthInterpolated }]}
-        />
-      )}
+      <UploadProgressBar />
       {loading && currentPage === 1 ? (
         <ActivityIndicator size="large" color={Colors.themeColor} />
       ) : (

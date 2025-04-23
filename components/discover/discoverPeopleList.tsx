@@ -12,11 +12,12 @@ import TextScallingFalse from "../CentralText";
 import { useSuggestUsersQuery } from "~/reduxStore/api/community/communityApi";
 import SuggestionCard from "../Cards/SuggestionCard";
 import { useRouter } from "expo-router";
+import MultipleProfiles from "../ui/atom/MultipleProfiles";
 
 const DiscoverPeopleList = () => {
   const router = useRouter();
   const { data: popularUsers, isLoading: loadingPopularUsers } =
-    useSuggestUsersQuery({ limit: 13, popularUser: true });
+    useSuggestUsersQuery({ limit: 13, start: 0 });
 
   const [removedUserIds, setRemovedUserIds] = useState<Set<string>>(new Set());
 
@@ -58,22 +59,7 @@ const DiscoverPeopleList = () => {
             <View style={styles.itemWrapper}>
               {item.isCustomCard ? (
                 <View className="bg-black justify-center items-center gap-y-2 rounded-xl pb-4 relative border w-[150px] h-[180px] border-[#80808085] overflow-hidden">
-                  <View
-                    className="flex-row justify-center items-center"
-                    style={{ overflow: "visible" }}
-                  >
-                    {next3Users.map((user, index) => (
-                      <Image
-                        key={user._id}
-                        source={{ uri: user.profilePic }}
-                        className="size-12 rounded-full border-4 border-black"
-                        style={{
-                          marginLeft: index === 0 ? 0 : -20,
-                          zIndex: 3 - index,
-                        }}
-                      />
-                    ))}
-                  </View>
+                  <MultipleProfiles users={next3Users} />
                   <TouchableOpacity
                     onPress={() => router.push("/(app)/(tabs)/community")}
                   >

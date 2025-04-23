@@ -116,7 +116,7 @@ const SuggestionCard = ({
           } rounded-t-xl overflow-hidden`}
         >
           <Image
-            source={user.coverPic ? { uri: user.coverPic } : nocoverpic}
+            source={nocoverpic}
             className="w-full h-full"
             resizeMode="cover"
           />
@@ -134,11 +134,7 @@ const SuggestionCard = ({
           } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
           style={{ marginTop: "10%" }}
         >
-          <Image
-            source={user.profilePic ? { uri: user.profilePic } : nopic}
-            className="w-full h-full"
-            resizeMode="cover"
-          />
+          <Image source={nopic} className="w-full h-full" resizeMode="cover" />
         </TouchableOpacity>
 
         <View className="items-center flex-grow">

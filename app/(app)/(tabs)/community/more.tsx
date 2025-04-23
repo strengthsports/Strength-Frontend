@@ -13,10 +13,8 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import PageThemeView from "~/components/PageThemeView";
-import SearchHeader from "~/components/search/SearchHeader";
 import SuggestionCard from "~/components/Cards/SuggestionCard";
 import PageSuggestionCard from "~/components/Cards/PageSuggestionCard";
 import TeamSuggestionCard from "~/components/Cards/TeamSuggestionCard";
@@ -27,14 +25,13 @@ import {
   useGetTeamsToSupportQuery,
 } from "~/reduxStore/api/community/communityApi";
 import { AntDesign } from "@expo/vector-icons";
-import { SuggestionUser } from "~/types/user";
 
 const More = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const suggestionType = (params.filter as string) || "user";
   const limit = 10;
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [offset, setOffset] = useState<number>(0);
   const [items, setItems] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const isInitialMount = useRef(true);
@@ -42,18 +39,17 @@ const More = () => {
   // Memoize query parameters to prevent unnecessary re-renders
   const baseParams = useMemo(
     () => ({
-      limit: limit + 1,
-      ...(cursor && { lastTimeStamp: cursor }),
+      limit,
+      start: offset,
       city: params.city as string,
     }),
-    [cursor, params.city]
+    [offset, params.city]
   );
 
   const userParams = useMemo(
     () => ({
       ...baseParams,
       sports: Boolean(params.sports),
-      popularUser: Boolean(params.popularUser),
     }),
     [baseParams, params.sports, params.popularUser]
   );
@@ -88,50 +84,37 @@ const More = () => {
 
   const { data, isLoading, isFetching } = queryResponse;
 
-  console.log("Resp:", data);
-
   useEffect(() => {
     if (data) {
-      // Handle all cases of data structure
       const fetched =
         data.users ||
         data.pages ||
         data.teams ||
         (Array.isArray(data) ? data : []);
 
-      // Only process if we actually got data
-      if (fetched.length > 0) {
-        const newItems =
-          fetched.length > limit ? fetched.slice(0, limit) : fetched;
-
-        setItems((prev) => {
-          // Skip deduplication on initial load
-          if (isInitialMount.current) return newItems;
-
-          // Deduplicate for subsequent loads
-          const existingIds = new Set(prev.map((item) => item._id));
-          return [
-            ...prev,
-            ...newItems.filter((item) => !existingIds.has(item._id)),
-          ];
-        });
-
-        setHasMore(fetched.length > limit);
-        if (newItems.length) {
-          setCursor(newItems[newItems.length - 1]?.createdAt || null);
+      setItems((prev) => {
+        if (isInitialMount.current) {
+          isInitialMount.current = false;
+          return fetched;
         }
-      }
 
-      isInitialMount.current = false;
+        const existingIds = new Set(prev.map((item) => item._id));
+        return [
+          ...prev,
+          ...fetched.filter((item: any) => !existingIds.has(item._id)),
+        ];
+      });
+
+      setOffset(data.nextOffset ?? offset);
+      setHasMore(data.hasMore ?? false);
     }
   }, [data]);
 
   // Reset state when params change - FIXED VERSION
   useEffect(() => {
-    // Only reset if the suggestionType changes
     if (!isInitialMount.current) {
       setItems([]);
-      setCursor(null);
+      setOffset(0);
       setHasMore(true);
       isInitialMount.current = true;
     }
@@ -189,7 +172,7 @@ const More = () => {
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() => {
-            setCursor(null);
+            setOffset(0);
             router.back();
           }}
           className="mr-4"

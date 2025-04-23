@@ -53,7 +53,13 @@ const CustomHomeHeader = () => {
         <TouchableOpacity onPress={handleOpenDrawer}>
           <Image
             source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
-            style={{ width: 36, height: 36, borderRadius: 18 }}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              borderColor: "#2F2F2F",
+              borderWidth: 1,
+            }}
           />
         </TouchableOpacity>
 

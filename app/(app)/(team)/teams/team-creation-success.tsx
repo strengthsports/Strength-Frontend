@@ -10,6 +10,8 @@ import TextScallingFalse from "~/components/CentralText";
 interface TeamMember {
   _id: string;
   firstName: string;
+  lastName:string;
+  username:string;
   profilePic: string;
   headline?: string;
 }
@@ -63,6 +65,7 @@ const TeamCreatedPage: React.FC = () => {
       }
     });
   };
+   console.log("User Name------>",teamData.members);
 
   return (
     <SafeAreaView className="flex-1 bg-black pt-2">
@@ -75,13 +78,13 @@ const TeamCreatedPage: React.FC = () => {
           />
         </View>
 
-        <View className="flex items-center mt-4">
+        <View className="flex items-center mt-[-12px]">
           <TextScallingFalse className="text-white text-6xl font-bold">
             Team Created!
           </TextScallingFalse>
         </View>
 
-        <View className="flex items-center justify-center mt-2">
+        <View className="flex items-center justify-center mt-2 mb-[-20px]">
           <TextScallingFalse className="text-[#A5A5A5] text-2xl text-center px-16">
             Your team is now live! Bring your squad together and start the game.
           </TextScallingFalse>
@@ -105,30 +108,46 @@ const TeamCreatedPage: React.FC = () => {
          
         </View>
 
-        <View className="px-5 py-8">
+        <View className="px-5 mt-8 py-0">
           <TextScallingFalse className="text-[#9F9F9F] text-2xl font-semibold border-b border-[#36403D] pb-1">
             Invited Team Members
           </TextScallingFalse>
         </View>
 
         {/* Team Members List */}
-        <ScrollView className="flex-1 px-10">
-          {teamData?.members?.map((member,key) => (
-            <View key={member._id} className="flex-row items-center py-4">
-              <Image
-                source={{ uri: member.profilePic || "https://picsum.photos/200/200" }}
-                className="w-14 h-14 rounded-full mr-4"
-              />
-              <View className="flex-1 border-b border-[#5C5C5C] pb-4">
-                <TextScallingFalse className="text-white text-3xl font-semibold">
-                  {member.firstName}
-                </TextScallingFalse>
-                <TextScallingFalse className="text-[#9CA3AF] text-2xl">
-                  {member.headline || "Team Member"}
-                </TextScallingFalse>
-              </View>
-            </View>
-          ))}
+        <ScrollView className="flex-1 px-6 ">
+
+
+        {Array.from(new Map(teamData?.members?.map(member => [member._id, member])).values()).map((member) => (
+  <View key={member._id} className="flex-row items-center py-4">
+    <Image
+      source={{ uri: member.profilePic || "https://picsum.photos/200/200" }}
+      className="w-12 h-12 mb-2 rounded-full mr-4"
+    />
+    <View className="flex-1  border-b border-[#5C5C5C] pb-4">
+      <View className="flex-row">
+      <TextScallingFalse className="text-white text-3xl font-semibold">
+        {member.firstName + " "}
+      </TextScallingFalse>
+      <TextScallingFalse className="text-white text-3xl font-semibold">
+        {member.lastName}
+      </TextScallingFalse>
+      </View>
+      {/* <TextScallingFalse className="text-[#9CA3AF] text-lg">
+        {member.username || ""}
+      </TextScallingFalse> */}
+      <TextScallingFalse className="text-[#9CA3AF] text-lg">
+        {member.headline || "Team Member"}
+      </TextScallingFalse>
+       
+      
+    </View>
+   
+  </View>
+))}
+
+
+
         </ScrollView>
       </Animated.View>
 

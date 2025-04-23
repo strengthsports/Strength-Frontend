@@ -57,7 +57,7 @@ export const cricketApi = createApi({
           (match: any) => match.match_status === "Finished"
         );
 
-        return recentMatches;
+        return { recentMatches };
       },
     }),
   }),

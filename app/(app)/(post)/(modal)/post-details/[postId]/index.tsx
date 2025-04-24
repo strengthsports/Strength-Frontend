@@ -21,10 +21,13 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Keyboard,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
-import { CommenterCard } from "~/components/feedPage/CommentModal";
+import {
+  useLazyFetchCommentsQuery,
+  useLazyFetchRepliesQuery,
+} from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Divider } from "react-native-elements";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { Comment, Post } from "~/types/post";
@@ -36,8 +39,21 @@ import {
 import { Colors } from "~/constants/Colors";
 import nopic from "@/assets/images/nopic.jpg";
 import { MaterialIcons } from "@expo/vector-icons";
+import PageThemeView from "~/components/PageThemeView";
+import { CommenterCard } from "~/components/comment/CommenterCard";
+import { showFeedback } from "~/utils/feedbackToast";
 
 const MAX_HEIGHT = 80;
+
+type ReplyPaginationState = {
+  [commentId: string]: {
+    replies: Comment[];
+    cursor: string | null;
+    hasNextPage: boolean;
+    loading: boolean;
+    replyCount: number;
+  };
+};
 
 // Extracted and memoized ListHeader component
 const ListHeader = memo(
@@ -62,6 +78,61 @@ const ListHeader = memo(
   }
 );
 
+// Memoized Reply section to prevent unnecessary re-renders
+const ReplySection = memo(
+  ({
+    commentId,
+    replies,
+    hasNextPage,
+    loading,
+    loadMoreReplies,
+    handleReply,
+    parentComment,
+  }: {
+    commentId: string;
+    replies: Comment[];
+    hasNextPage: boolean;
+    loading: boolean;
+    loadMoreReplies: (commentId: string) => void;
+    handleReply: (comment: Comment) => void;
+    parentComment: Comment;
+  }) => {
+    if (replies.length === 0 && !loading) return null;
+
+    console.log(hasNextPage);
+
+    return (
+      <View className="ml-8 mt-2">
+        {replies.map((reply) => (
+          <CommenterCard
+            key={reply._id}
+            parent={parentComment}
+            comment={reply}
+            targetId={commentId}
+            targetType="Comment"
+            onReply={handleReply}
+          />
+        ))}
+
+        {hasNextPage && (
+          <TouchableOpacity
+            className="px-20 py-2"
+            onPress={() => loadMoreReplies(commentId)}
+          >
+            <TextScallingFalse className="font-semibold text-theme">
+              Show more replies...
+            </TextScallingFalse>
+          </TouchableOpacity>
+        )}
+
+        {loading && (
+          <ActivityIndicator size="small" color={Colors.themeColor} />
+        )}
+      </View>
+    );
+  }
+);
+
 const PostDetailsPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -69,6 +140,13 @@ const PostDetailsPage = () => {
   const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
   const post = useSelector((state: RootState) => selectPostById(state, postId));
+
+  // Comment state management
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMoreComments, setHasMoreComments] = useState<boolean>(true);
+  const [replyStates, setReplyStates] = useState<ReplyPaginationState>({});
+  const [loadingComments, setLoadingComments] = useState<boolean>(false);
 
   // Animated progress bar
   const progress = useRef(new Animated.Value(0)).current;
@@ -84,39 +162,166 @@ const PostDetailsPage = () => {
     name: string;
   } | null>(null);
 
+  // RTK Query hooks
+  const [fetchComments] = useLazyFetchCommentsQuery();
+  const [fetchReplies] = useLazyFetchRepliesQuery();
+
+  // Handle error if post not found
   if (!post) {
-    return <TextScallingFalse>Post not found</TextScallingFalse>;
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-black">
+        <TextScallingFalse className="text-white text-lg">
+          Post not found
+        </TextScallingFalse>
+      </SafeAreaView>
+    );
   }
 
-  // Scroll to end on mount
+  // Initial comments load
+  const loadComments = useCallback(
+    async (refresh = false) => {
+      if ((loadingComments || !hasMoreComments) && !refresh) return;
+
+      setLoadingComments(true);
+      try {
+        const response = await fetchComments({
+          postId,
+          limit: 4,
+          cursor: refresh ? null : cursor,
+        }).unwrap();
+
+        if (response?.data) {
+          const newComments = response.data.comments || [];
+
+          if (refresh) {
+            setComments(newComments);
+          } else {
+            setComments((prev) => [...prev, ...newComments]);
+          }
+
+          if (newComments.length > 0) {
+            const lastComment = newComments[newComments.length - 1];
+            setCursor(lastComment.createdAt);
+          }
+
+          setHasMoreComments(response.data.hasNextPage || false);
+        } else {
+          setHasMoreComments(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch comments:", error);
+      } finally {
+        setLoadingComments(false);
+      }
+    },
+    [fetchComments, postId, cursor, loadingComments, hasMoreComments]
+  );
+
+  // Handle refreshing comments
+  const handleRefresh = useCallback(() => {
+    setCursor(null);
+    setHasMoreComments(true);
+    loadComments(true);
+  }, [loadComments]);
+
+  // Initial fetch on mount
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-    return () => clearTimeout(timeout);
+    loadComments(true);
   }, []);
 
-  // Fetch comments for the post.
-  const {
-    data: comments,
-    error: fetchError,
-    isLoading: isFetching,
-    refetch: refetchComments,
-  } = useFetchCommentsQuery({ targetId: post._id, targetType: "Post" });
+  // Load more replies for a specific comment
+  const loadMoreReplies = useCallback(
+    async (commentId: string) => {
+      // Get current reply state or initialize if it doesn't exist
+      const currentState = replyStates[commentId] || {
+        replies: [],
+        cursor: null,
+        hasNextPage: true,
+        loading: false,
+        replyCount: 0,
+      };
 
+      if (currentState.loading || !currentState.hasNextPage) return;
+
+      // Update loading state
+      setReplyStates((prev) => ({
+        ...prev,
+        [commentId]: { ...currentState, loading: true },
+      }));
+
+      try {
+        const response = await fetchReplies({
+          commentId,
+          limit: 2,
+          cursor: currentState.cursor,
+        }).unwrap();
+
+        console.log(response);
+
+        if (response?.data) {
+          const newReplies = response.data.replies || [];
+          const updatedReplies = [...currentState.replies, ...newReplies];
+
+          setReplyStates((prev) => ({
+            ...prev,
+            [commentId]: {
+              replies: updatedReplies,
+              cursor: response.data.endCursor,
+              hasNextPage: response.data.hasNextPage,
+              loading: false,
+              replyCount:
+                currentState.replyCount ||
+                response.data.totalCount ||
+                updatedReplies.length,
+            },
+          }));
+        }
+      } catch (error) {
+        console.error(
+          `Failed to fetch replies for comment ${commentId}:`,
+          error
+        );
+        setReplyStates((prev) => ({
+          ...prev,
+          [commentId]: { ...prev[commentId], loading: false },
+        }));
+      }
+    },
+    [fetchReplies, replyStates]
+  );
+
+  // Initialize reply states for comments with replies
   useEffect(() => {
-    if (fetchError) {
-      console.error("Failed to fetch comments:", fetchError);
-    }
-  }, [fetchError]);
+    const initializeReplyStates = async () => {
+      for (const comment of comments) {
+        // Only initialize for comments with replies that haven't been initialized yet
+        if (
+          comment.commentsCount > 0 &&
+          (!replyStates[comment._id] ||
+            replyStates[comment._id].replies.length === 0)
+        ) {
+          // Initialize the reply state if it doesn't exist
+          if (!replyStates[comment._id]) {
+            setReplyStates((prev) => ({
+              ...prev,
+              [comment._id]: {
+                replies: [],
+                cursor: null,
+                hasNextPage: true,
+                loading: false,
+                replyCount: comment.commentsCount,
+              },
+            }));
+          }
 
-  // Memoized sorted comments array
-  const sortedComments = useMemo(() => {
-    return [...(comments?.data || [])].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }, [comments?.data]);
+          // Load initial replies for this comment
+          await loadMoreReplies(comment._id);
+        }
+      }
+    };
+
+    initializeReplyStates();
+  }, [comments]);
 
   // Handle Reply button tap
   const handleReply = useCallback((comment: Comment) => {
@@ -125,7 +330,7 @@ const PostDetailsPage = () => {
     textInputRef.current?.focus();
   }, []);
 
-  // Memoize text change handler
+  // Handle text change in comment input
   const handleTextChange = useCallback(
     (text: string) => {
       setCommentText(text);
@@ -136,31 +341,81 @@ const PostDetailsPage = () => {
     [replyingTo]
   );
 
-  // Handle posting a new comment or reply.
+  // Handle posting a new comment or reply
   const handlePostComment = useCallback(async () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || isPosting) return;
+
     setIsPosting(true);
     const isReply = replyingTo !== null;
     const textToPost = commentText;
+    const targetId = isReply ? replyingTo!.commentId : undefined;
+
+    // Clear input and reply context immediately for better UX
     setCommentText("");
     if (isReply) setReplyingTo(null);
+
     try {
-      await dispatch(
+      const result = await dispatch(
         postComment({
-          targetId: isReply ? replyingTo!.commentId : post._id,
-          targetType: isReply ? "Comment" : "Post",
+          postId: post._id,
+          parentCommentId: targetId,
           text: textToPost,
         })
       ).unwrap();
-      await refetchComments();
+
+      // Handle the response
+      if (result && result.data) {
+        const newComment = {
+          ...result.data,
+          postedBy: {
+            _id: user?._id,
+            type: user?.type,
+            profilePic: user?.profilePic,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            headline: user?.headline,
+            username: user?.username,
+          },
+        };
+
+        // Show message
+        isReply
+          ? showFeedback("Reply sent", "success")
+          : showFeedback("Comment posted successfully", "success");
+        // Dismiss keyboard
+        Keyboard.dismiss();
+        // Scroll to top
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+
+        if (isReply) {
+          // Add the new reply to its parent comment's replies
+          setReplyStates((prev) => {
+            const currentReplies = prev[targetId as string]?.replies || [];
+            const currentCount = prev[targetId as string]?.replyCount || 0;
+
+            return {
+              ...prev,
+              [targetId as string]: {
+                ...prev[targetId as string],
+                replies: [newComment, ...currentReplies],
+                replyCount: currentCount + 1,
+                hasNextPage: true,
+              },
+            };
+          });
+        } else {
+          // Add the new comment to the top of the comments list
+          setComments((prev) => [newComment, ...prev]);
+        }
+      }
     } catch (error) {
-      console.log("Failed to post comment:", error);
+      console.error("Failed to post comment:", error);
     } finally {
       setIsPosting(false);
     }
-  }, [commentText, dispatch, post._id, refetchComments, replyingTo]);
+  }, [commentText, dispatch, post._id, replyingTo, isPosting]);
 
-  // Animate the progress bar while posting.
+  // Animate the progress bar while posting
   useEffect(() => {
     if (isPosting) {
       Animated.timing(progress, {
@@ -175,76 +430,101 @@ const PostDetailsPage = () => {
 
   // Memoize renderItem to avoid unnecessary re-renders
   const renderItem = useCallback(
-    ({ item }: { item: Comment & { replies?: Comment[] } }) => {
-      const validReplies = item.replies?.filter(
-        (reply) => reply.text && reply.text.trim() !== ""
-      );
+    ({ item }: { item: Comment }) => {
+      const replyState = replyStates[item._id] || {
+        replies: [],
+        cursor: null,
+        hasNextPage: item.commentsCount > 0,
+        loading: false,
+        replyCount: item.commentsCount,
+      };
+
       return (
-        <View className="px-2">
+        <View className="px-2 mb-4">
           <CommenterCard
             comment={item}
             targetId={post._id}
             targetType="Post"
             onReply={handleReply}
           />
-          {validReplies && validReplies.length > 0 && (
-            <View className="ml-8 mt-2">
-              {validReplies.map((reply) => (
-                <CommenterCard
-                  key={reply._id}
-                  parent={item}
-                  comment={reply}
-                  targetId={item._id}
-                  targetType="Comment"
-                  onReply={handleReply}
-                />
-              ))}
-            </View>
+
+          {item.commentsCount > 0 && (
+            <ReplySection
+              commentId={item._id}
+              replies={replyState.replies}
+              hasNextPage={
+                replyState.hasNextPage && replyState.replies.length > 2
+              }
+              loading={replyState.loading}
+              loadMoreReplies={loadMoreReplies}
+              handleReply={handleReply}
+              parentComment={item}
+            />
           )}
         </View>
       );
     },
-    [handleReply, post._id]
+    [replyStates, handleReply, loadMoreReplies, post._id]
   );
 
-  const widthInterpolated = useMemo(
-    () =>
-      progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: ["0%", "100%"],
-      }),
-    [progress]
-  );
+  // Memoize keyExtractor to avoid re-renders
+  const keyExtractor = useCallback((item: Comment) => item._id, []);
+
+  // Memoize progress bar width animation
+  const widthInterpolated = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0%", "100%"],
+  });
+
+  // Memoize empty component
+  const ListEmptyComponent = useCallback(() => {
+    if (loadingComments) {
+      return (
+        <View className="flex-1 justify-center items-center py-10">
+          <ActivityIndicator size="large" color={Colors.themeColor} />
+        </View>
+      );
+    }
+
+    return (
+      <View className="flex-1 justify-center items-center py-10">
+        <TextScallingFalse className="text-gray-500 text-center">
+          Drop the first comment and start the chant!
+        </TextScallingFalse>
+      </View>
+    );
+  }, [loadingComments]);
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <PageThemeView>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         <FlatList
           ref={flatListRef}
-          data={sortedComments}
-          keyExtractor={(item) => item._id}
+          data={comments}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
           ListHeaderComponent={<ListHeader post={post} router={router} />}
-          renderItem={({ item }) => renderItem({ item })}
-          inverted={false}
-          ListEmptyComponent={
-            isFetching ? (
-              <ActivityIndicator size="large" color={Colors.themeColor} />
-            ) : (
-              <TextScallingFalse
-                style={{
-                  color: "grey",
-                  textAlign: "center",
-                  paddingTop: 20,
-                }}
-              >
-                Hey! Be the first one to comment here!
-              </TextScallingFalse>
-            )
-          }
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
+          ListEmptyComponent={ListEmptyComponent}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: 120,
+          }}
+          onEndReached={() => {
+            if (!loadingComments && hasMoreComments) {
+              loadComments();
+            }
+          }}
+          onEndReachedThreshold={0.3}
+          onRefresh={handleRefresh}
+          refreshing={loadingComments && cursor === null}
+          removeClippedSubviews={Platform.OS === "android"}
+          initialNumToRender={5}
+          maxToRenderPerBatch={10}
+          windowSize={10}
         />
 
         {/* Sticky comment input bar */}
@@ -277,32 +557,34 @@ const PostDetailsPage = () => {
                   resizeMode="cover"
                 />
                 {replyingTo && (
-                  <View
-                    style={{
-                      backgroundColor: "#333",
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                      marginLeft: 8,
-                    }}
+                  <TouchableOpacity
+                    onPress={() => setReplyingTo(null)}
+                    className="flex-row items-center bg-neutral-800 px-2 py-1 rounded-lg ml-2"
                   >
-                    <TextScallingFalse
-                      style={{ color: Colors.themeColor, fontWeight: "600" }}
-                    >
+                    <TextScallingFalse className="text-theme mr-1">
                       {replyingTo.name}
                     </TextScallingFalse>
-                  </View>
+                    <MaterialIcons
+                      name="close"
+                      size={14}
+                      color={Colors.themeColor}
+                    />
+                  </TouchableOpacity>
                 )}
                 <TextInput
                   ref={textInputRef}
-                  autoFocus={true}
                   placeholder="Type your comment here"
                   className="flex-1 px-4 bg-neutral-900 text-white"
-                  style={{ height: Math.max(40, inputHeight) }}
+                  style={{
+                    height: Math.min(Math.max(40, inputHeight), MAX_HEIGHT),
+                    maxHeight: MAX_HEIGHT,
+                  }}
                   multiline={true}
                   textAlignVertical="top"
                   onContentSizeChange={(event) =>
-                    setInputHeight(event.nativeEvent.contentSize.height)
+                    setInputHeight(
+                      Math.min(event.nativeEvent.contentSize.height, MAX_HEIGHT)
+                    )
                   }
                   scrollEnabled={inputHeight >= MAX_HEIGHT}
                   placeholderTextColor="grey"
@@ -312,18 +594,16 @@ const PostDetailsPage = () => {
                 />
                 <TouchableOpacity
                   onPress={handlePostComment}
-                  disabled={isPosting}
+                  disabled={isPosting || !commentText.trim()}
+                  className="p-1"
                 >
                   <MaterialIcons
-                    className="p-2"
                     name="send"
                     size={22}
                     color={
-                      isPosting
-                        ? "#292A2D"
-                        : commentText
-                        ? Colors.themeColor
-                        : "grey"
+                      isPosting || !commentText.trim()
+                        ? "#565656"
+                        : Colors.themeColor
                     }
                   />
                 </TouchableOpacity>
@@ -332,7 +612,7 @@ const PostDetailsPage = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

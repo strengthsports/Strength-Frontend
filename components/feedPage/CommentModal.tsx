@@ -19,16 +19,12 @@ import {
   Dimensions,
 } from "react-native";
 import { Divider } from "react-native-elements";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import TextScallingFalse from "../CentralText";
-import {
-  useDeleteCommentMutation,
-  useFetchCommentsQuery,
-  usePostCommentMutation,
-} from "~/reduxStore/api/feed/features/feedApi.comment";
+import { useLazyFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 import nopic from "@/assets/images/nopic.jpg";
 import { Comment } from "~/types/post";
 import { KeyboardAvoidingView } from "react-native";
@@ -39,235 +35,8 @@ import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import StickyInput from "../ui/StickyInput";
-
-interface ReportModalProps {
-  commentId: string;
-  targetId: string;
-  targetType: string;
-  showDelete: boolean;
-}
-
-// Memoized ReportModal component
-const ReportModal = memo(
-  ({ commentId, targetId, targetType, showDelete }: ReportModalProps) => {
-    const [deleteComment, { isLoading: isDeleting }] =
-      useDeleteCommentMutation();
-    const { refetch: refetchComments } = useFetchCommentsQuery({
-      targetId,
-      targetType: "Post",
-    });
-
-    const handleDeleteComment = async () => {
-      try {
-        // console.log('Deleting comment with ID:', commentId);
-        // console.log('Target ID:', targetId);
-        // console.log('Target Type:', targetType);
-        // console.log('Deletion in progress:', isDeleting);
-
-        const response = await deleteComment({
-          commentId,
-          targetId,
-          targetType,
-        }).unwrap();
-        refetchComments(); //refresh page after deletion
-        console.log("Deletion successful:", response);
-      } catch (error) {
-        console.error("Deletion failed:", error);
-      }
-    };
-    return (
-      <>
-        <View className="h-28 w-[104%] bg-neutral-900 self-center rounded-t-[40px] p-4 border-t border-x border-neutral-700">
-          <Divider
-            className="w-16 self-center rounded-full bg-neutral-700 my-1"
-            width={4}
-          />
-          <View className="flex-1 justify-evenly">
-            {/* <Text className="text-neutral-500 text-xxs text-center mt-1">Comment ID: {commentId}</Text> */}
-
-            {showDelete ? (
-              //comment options for my comments
-              <TouchableOpacity
-                className="flex-row items-center py-2 px-2 active:bg-neutral-800 rounded-lg"
-                onPress={handleDeleteComment}
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <ActivityIndicator color={Colors.themeColor} />
-                ) : (
-                  <MaterialIcons name="delete" size={20} color="red" />
-                )}
-                <TextScallingFalse className="text-red-600 ml-4">
-                  Delete
-                </TextScallingFalse>
-              </TouchableOpacity>
-            ) : (
-              //comment options for others comment
-              <TouchableOpacity className="flex-row items-center py-2 px-2 active:bg-neutral-800 rounded-lg">
-                <MaterialIcons name="report-problem" size={18} color="white" />
-                <TextScallingFalse className="text-white ml-4">
-                  Report
-                </TextScallingFalse>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </>
-    );
-  }
-);
-
-interface CommenterCardProps {
-  comment: Comment;
-  targetId: string;
-  targetType: string;
-  onReply?: (comment: Comment) => void;
-  parent?: Comment;
-}
-
-// Memoized CommenterCard component
-export const CommenterCard = memo(
-  ({ comment, targetId, targetType, onReply, parent }: CommenterCardProps) => {
-    const router = useRouter();
-    const dispatch = useDispatch<AppDispatch>();
-    const [isReportModalVisible, setIsReportModalVisible] = useState(false);
-    const [isCommentLiked, setIsCommentLiked] = useState(false);
-    const [commentLikesCount, setCommentLikesCount] = useState(
-      comment.likesCount
-    );
-    const serializedUser = encodeURIComponent(
-      JSON.stringify({
-        id: comment?.postedBy?._id,
-        type: comment?.postedBy?.type,
-      })
-    );
-
-    // Handle like on comment
-    const toggleLikeOnComment = async () => {
-      try {
-        if (isCommentLiked) {
-          setIsCommentLiked(false);
-          setCommentLikesCount((prev) => prev - 1);
-          await dispatch(
-            toggleLike({ targetId: comment._id, targetType: "Comment" })
-          );
-        } else {
-          setIsCommentLiked(true);
-          setCommentLikesCount((prev) => prev + 1);
-          await dispatch(
-            toggleLike({ targetId: comment._id, targetType: "Comment" })
-          );
-        }
-      } catch (err) {
-        console.log(err);
-        if (isCommentLiked) {
-          setIsCommentLiked(true);
-          setCommentLikesCount((prev) => prev + 1);
-        } else {
-          setIsCommentLiked(false);
-          setCommentLikesCount((prev) => prev - 1);
-        }
-      }
-    };
-
-    return (
-      <View className="pl-12 pr-1 py-2 my-2 relative">
-        <TouchableOpacity
-          className={`${
-            targetType === "Comment" ? "size-12 top-2" : "size-14 top-0"
-          } absolute left-4 z-10 aspect-square rounded-full bg-slate-400`}
-        >
-          <Image
-            className="w-full h-full rounded-full"
-            source={
-              comment?.postedBy?.profilePic
-                ? { uri: comment.postedBy.profilePic }
-                : nopic
-            }
-          />
-        </TouchableOpacity>
-        <View
-          className={`relative ${
-            targetType === "Comment"
-              ? "ml-6 rounded-xl rounded-tl-none px-5"
-              : "w-full rounded-xl px-10"
-          } bg-neutral-900 py-2`}
-        >
-          <View className="absolute right-3 top-2 flex flex-row items-center gap-2">
-            <TextScallingFalse className="text-xs text-neutral-300">
-              1w
-            </TextScallingFalse>
-            <TouchableOpacity onPress={() => setIsReportModalVisible(true)}>
-              <MaterialIcons name="more-horiz" size={16} color="white" />
-              {isReportModalVisible && (
-                <Modal
-                  visible={isReportModalVisible}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={() => setIsReportModalVisible(false)}
-                >
-                  {/* Report modal code here */}
-                </Modal>
-              )}
-            </TouchableOpacity>
-          </View>
-          <View>
-            <TextScallingFalse className="font-bold text-white text-lg">
-              {comment?.postedBy?.firstName} {comment?.postedBy?.lastName}
-            </TextScallingFalse>
-            <TextScallingFalse
-              className="text-xs w-4/5 text-[#EAEAEA]"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              @{comment?.postedBy?.username} | {comment?.postedBy?.headline}
-            </TextScallingFalse>
-          </View>
-
-          <TextScallingFalse
-            className="text-[#12956B] font-medium mt-2"
-            onPress={() =>
-              router.push(`/(app)/(profile)/profile/${serializedUser}`)
-            }
-          >
-            {targetType === "Comment" && "@" + parent?.postedBy?.username + " "}
-            <TextScallingFalse className="text-xl font-normal text-white mt-4 mb-3">
-              {comment?.text}
-            </TextScallingFalse>
-          </TextScallingFalse>
-        </View>
-        <View className="flex-row gap-2 items-center ml-10 mt-1">
-          <TouchableOpacity onPress={toggleLikeOnComment}>
-            <TextScallingFalse
-              className={`${
-                isCommentLiked ? "text-amber-400" : "text-white"
-              } text-lg font-medium`}
-            >
-              {isCommentLiked ? "Liked" : "Like"}
-            </TextScallingFalse>
-          </TouchableOpacity>
-          {commentLikesCount > 0 && (
-            <TextScallingFalse className="text-[#939393] text-lg font-normal">
-              {`• `} <AntDesign name="like1" size={12} color="#FABE25" />{" "}
-              {` ${commentLikesCount}`}
-            </TextScallingFalse>
-          )}
-          <TextScallingFalse className="text-2xl text-[#939393]">
-            |
-          </TextScallingFalse>
-          <TouchableOpacity onPress={() => onReply && onReply(comment)}>
-            <TextScallingFalse className="text-white text-lg font-medium">
-              Reply{" "}
-            </TextScallingFalse>
-          </TouchableOpacity>
-          <TextScallingFalse className="mt-1 text-xl text-[#939393] font-normal">
-            {comment.commentsCount > 0 && `• ${comment.commentsCount} replies`}
-          </TextScallingFalse>
-        </View>
-      </View>
-    );
-  }
-);
+import emptyLike from "@/assets/images/emptyLike.jpg";
+import { CommenterCard } from "../comment/CommenterCard";
 
 interface CommentItemProps {
   item: Comment;
@@ -280,15 +49,6 @@ export const CommentItem = ({
   targetId,
   handleReply,
 }: CommentItemProps) => {
-  const [expanded, setExpanded] = useState(false);
-
-  // Filter out invalid replies
-  const validReplies = item.replies?.filter(
-    (reply: any) => reply.text && reply.text.trim() !== ""
-  );
-
-  console.log("Replies : ", validReplies.length);
-
   return (
     <View style={{ paddingHorizontal: 8 }}>
       <CommenterCard
@@ -297,29 +57,6 @@ export const CommentItem = ({
         targetType="Post"
         onReply={handleReply}
       />
-      {validReplies && validReplies.length > 0 && (
-        <View style={{ marginLeft: 32, marginTop: 8 }}>
-          {validReplies
-            .slice(0, expanded ? validReplies.length : 1)
-            .map((reply: any) => (
-              <CommenterCard
-                key={reply._id}
-                parent={item}
-                comment={reply}
-                targetId={item._id} // reply's parent id
-                targetType="Comment"
-                onReply={handleReply}
-              />
-            ))}
-          {!expanded && validReplies.length > 1 && (
-            <TouchableOpacity onPress={() => setExpanded(true)}>
-              <TextScallingFalse style={{ color: "#12956B", marginTop: 5 }}>
-                Load more replies...
-              </TextScallingFalse>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
     </View>
   );
 };
@@ -334,6 +71,8 @@ const CommentModal = memo(
   ({ autoFocusKeyboard = false, targetId, onClose }: CommentModalProps) => {
     const dispatch = useDispatch<AppDispatch>();
     const { user } = useSelector((state: RootState) => state?.profile);
+    const [comments, setComments] = useState([]);
+    const [cursor, setCursor] = useState(null);
     const screenHeight = Dimensions.get("window").height;
     const bottomSheetHeight = screenHeight * 0.8;
     const snapThreshold = bottomSheetHeight / 3;
@@ -345,19 +84,25 @@ const CommentModal = memo(
     const upwardThreshold = 50; // User must drag up at least 50 px
     const downwardThreshold = 50; // User must drag down at least 50 px
 
-    // Fetch comments for the target
-    const {
-      data: comments,
-      error: fetchError,
-      isLoading: isFetching,
-      refetch: refetchComments,
-    } = useFetchCommentsQuery({ targetId, targetType: "Post" });
+    const [fetchComments, { data, isFetching }] = useLazyFetchCommentsQuery();
+
+    const loadMoreComments = async () => {
+      const response = await fetchComments({
+        postId: targetId,
+        limit: 10,
+        cursor,
+      });
+      console.log("Comments : ", response);
+      if (response?.data?.data?.comments?.length) {
+        setComments((prev) => [...prev, ...response.data.data.comments]);
+        const lastComment = response.data.comments.at(-1);
+        setCursor(lastComment.createdAt); // Update cursor for next call
+      }
+    };
 
     useEffect(() => {
-      if (fetchError) {
-        console.error("Failed to fetch comments:", fetchError);
-      }
-    }, [fetchError]);
+      loadMoreComments(); // initial fetch
+    }, []);
 
     // Function to handle reply context from nested comment components
     const handleReply = (comment: Comment) => {
@@ -523,7 +268,7 @@ const CommentModal = memo(
                 <ActivityIndicator size="large" color={Colors.themeColor} />
               ) : (
                 <FlatList
-                  data={[...(comments?.data || [])].sort(
+                  data={[...(comments || [])].sort(
                     (a, b) =>
                       new Date(b.createdAt).getTime() -
                       new Date(a.createdAt).getTime()
@@ -531,15 +276,35 @@ const CommentModal = memo(
                   keyExtractor={(item) => item._id}
                   renderItem={renderItem}
                   ListEmptyComponent={
-                    <TextScallingFalse
+                    <View
+                      className="justify-center items-center"
                       style={{
-                        color: "grey",
-                        textAlign: "center",
-                        paddingTop: 20,
+                        paddingTop: bottomSheetHeight / 4,
+                        rowGap: 10,
                       }}
                     >
-                      Hey! Be the first one to comment here!
-                    </TextScallingFalse>
+                      <Image
+                        source={emptyLike}
+                        style={{
+                          borderRadius: 100,
+                          width: 70,
+                          height: 70,
+                        }}
+                      />
+                      <TextScallingFalse className="text-2xl text-[#808080] text-center">
+                        Drop the first comment and start the chant!
+                      </TextScallingFalse>
+                      <TouchableOpacity className="rounded-full px-5 py-1.5 border border-white flex-row gap-x-3 items-center">
+                        <Feather
+                          name="message-square"
+                          size={16}
+                          color="white"
+                        />
+                        <TextScallingFalse className="text-white">
+                          Leave a comment
+                        </TextScallingFalse>
+                      </TouchableOpacity>
+                    </View>
                   }
                   contentContainerStyle={{
                     flexGrow: 1,

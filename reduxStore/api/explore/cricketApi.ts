@@ -42,8 +42,11 @@ export const cricketApi = createApi({
         const nextMatches = matches.filter(
           (match: any) => match.match_status === "Upcoming"
         );
+        const nextIPLMatches = nextMatches.filter(
+          (match: any) => match.series === "Indian Premier League 2025"
+        );
 
-        return { nextMatches };
+        return { nextIPLMatches };
       },
     }),
     getCricketRecentMatches: builder.query({

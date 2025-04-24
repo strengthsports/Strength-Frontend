@@ -31,7 +31,7 @@ import { showFeedback } from "~/utils/feedbackToast";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import CommentModal from "../feedPage/CommentModal";
 import StickyInput from "../ui/StickyInput";
-import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
+// import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
 import CustomVideoPlayer from "../PostContainer/VideoPlayer";
@@ -108,10 +108,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
     const progress = useRef(new Animated.Value(0)).current;
 
-    const { refetch: refetchComments } = useFetchCommentsQuery({
-      targetId: item._id,
-      targetType: "Post",
-    });
+    // const { refetch: refetchComments } = useFetchCommentsQuery({
+    //   targetId: item._id,
+    //   targetType: "Post",
+    // });
 
     const handleTextChange = (text: string) => {
       setCommentText(text);
@@ -559,6 +559,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           transparent
           animationType="slide"
           onRequestClose={() => setIsCommentCountModalVisible(false)}
+          style={{
+            flex: 1,
+          }}
         >
           <CommentModal
             targetId={item._id}

@@ -418,7 +418,9 @@ const handleCreateTeam = async () => {
           address: formData.address,
           gender: formData.gender,
           description: formData.description,
+          
           members: formData.members,
+          
           id: teamId 
         })
       }
@@ -616,6 +618,7 @@ return (
                       maximumDate={new Date()}
                     />
                   )}
+                  
                 </View>
 
                 {/* Gender Selection */}
@@ -680,23 +683,23 @@ return (
               {/* Members Section */}
             
 
-{selectedGame._id !== "123" && (
-  <View className="mt-4">
-    <TextScallingFalse className="text-white text-2xl mt-4 mb-4">
+              {selectedGame._id !== "123" && (
+              <View className="mt-4">
+               <TextScallingFalse className="text-white text-2xl mt-4 mb-4">
       Add members
-    </TextScallingFalse>
+                </TextScallingFalse>
     
 
-      {/* Existing Members */}
-      <View className="flex-row flex-wrap -mx-1">
-      {Array.from(new Map(formData.members.map(member => [member._id, member])).values())
-        .map((member) => (
-          <MemberCard
+               {/* Existing Members */}
+               <View className="flex-row flex-wrap -mx-1">
+               {Array.from(new Map(formData.members.map(member => [member._id, member])).values())
+             .map((member) => (
+             <MemberCard
             key={member._id}
             imageUrl={member.profilePic || ''}
             name={`${member.firstName} ${member.lastName || ''}`}
             description={member.headline || ''}
-            isAdmin={true} // Since this is team creation, all can be removed
+            isAdmin={true} 
             onRemove={() => removeMember(member._id)}
             onPress={() => {}}
           />
@@ -719,9 +722,9 @@ return (
         <TextScallingFalse className="text-gray-400">Add Member</TextScallingFalse>
       </TouchableOpacity>
 
-  </View>
+             </View>
     
-    <AddMembersModal
+              <AddMembersModal
       visible={showMembersModal}
       onClose={() => setShowMembersModal(false)}
       onInvite={handleInviteMembers}

@@ -36,6 +36,7 @@ import { postsApi } from "./api/posts/postsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { searchApi } from "./api/explore/searchApi";
+import { hashtagApi } from "./api/explore/hashtagApi";
 import notificationReducer from "./slices/notification/notificationSlice";
 import { cricketApi } from "./api/explore/cricketApi";
 import { footballApi } from "./api/explore/footballApi";
@@ -88,6 +89,7 @@ const rootReducer = combineReducers({
   [postsApi.reducerPath]: postsApi.reducer,
   [searchApi.reducerPath]: searchApi.reducer,
   [articleApi.reducerPath]: articleApi.reducer,
+  [hashtagApi.reducerPath]: hashtagApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -112,7 +114,8 @@ export const store = configureStore({
       feedApi.middleware,
       postsApi.middleware,
       searchApi.middleware,
-      articleApi.middleware
+      articleApi.middleware,
+      hashtagApi.middleware
     ),
 });
 

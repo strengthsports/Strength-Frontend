@@ -4,21 +4,6 @@ import { Image, TouchableOpacity, View, Animated } from "react-native";
 import { useState, useEffect, useRef } from "react";
 import { countryCodes } from "~/constants/countryCodes";
 
-// interface MatchCardProps {
-//   match: {
-//     id: string;
-//     series: string;
-//     matchType: string;
-//     t1: string;
-//     t1s: string;
-//     t2: string;
-//     t2s: string;
-//     status: string;
-//     tournamentImg?: string;
-//   };
-//   isLive?: boolean;
-// }
-
 interface MatchCardProps {
   match: {
     fixture: {

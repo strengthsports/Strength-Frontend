@@ -17,17 +17,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/AntDesign";
 import EntypoIcon from "react-native-vector-icons/Entypo";
 import MemberCard from "@/components/teamPage/Member";
-import DateTimePicker, {
-  DateTimePickerEvent,
-
-} from "@react-native-community/datetimepicker";
+import DateTimePicker, {DateTimePickerEvent,} from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
 import { sendInvitations } from "~/reduxStore/slices/team/teamSlice";
 import LocationModal from "@/components/teamPage/LocationModal";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "~/reduxStore";
 import { createTeam } from "~/reduxStore/slices/team/teamSlice";
-// import { fetchMemberSuggestions } from "~/reduxStore/slices/team/teamSlice";
 import { fetchUserSuggestions } from "~/reduxStore/slices/team/userSuggestionSlice";
 import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
 import TextScallingFalse from "~/components/CentralText";
@@ -138,16 +134,13 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     return (
       formData.name &&
       formData.sport &&
-      formData.sport !== "123" && // Not the default "Select Sports" ID
+      formData.sport !== "123" && 
       formData.establishedOn &&
       formData.address.city &&
       formData.description
     );
   };
   
-  
-
-
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleSelectGame = (game: { name: string; _id: string; logo: string }) => {
@@ -425,7 +418,9 @@ const handleCreateTeam = async () => {
           address: formData.address,
           gender: formData.gender,
           description: formData.description,
+          
           members: formData.members,
+          
           id: teamId 
         })
       }
@@ -445,9 +440,7 @@ const handleCreateTeam = async () => {
 
 
 
-
-
-  return (
+return (
     <SafeAreaView className="flex-1 bg-black px-2">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -625,6 +618,7 @@ const handleCreateTeam = async () => {
                       maximumDate={new Date()}
                     />
                   )}
+                  
                 </View>
 
                 {/* Gender Selection */}
@@ -687,41 +681,50 @@ const handleCreateTeam = async () => {
               </View>
 
               {/* Members Section */}
-              {selectedGame._id !== "123" && (
-            <View className="mt-4">
-           <TextScallingFalse className="text-white text-2xl mt-4 mb-4">
-            Add members
-           </TextScallingFalse>
-    
-           <View className="flex-row flex-wrap -mx-2 mb-4">
-           {/* Existing Members */}
-           {formData.members.map((member) => (
-          <View key={member._id} className="w-1/2 h-[200px] px-2 mt-4 ">
-          <MemberCard
-            imageUrl={member.profilePic}
-            name={`${member.firstName} ${member.lastName || ""}`}
-            description={member.headline || "No description"}
-            isAdmin={true}
-            status={member.status}
-            onRemove={() => removeMember(member._id)}
-          />
-           </View>
-          ))}
+            
 
-      <View className="w-1/2 px-2 mb-4 mt-4 ml-1">
-        <TouchableOpacity
-          className="border  border-[#515151] h-[200px] rounded-lg p-8 items-center justify-center "
-          onPress={() => setShowMembersModal(true)}
-        >
-          <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
-            <TextScallingFalse className="text-gray-400 text-2xl">+</TextScallingFalse>
-          </View>
-          <TextScallingFalse className="text-gray-400">Add Member</TextScallingFalse>
-        </TouchableOpacity>
-      </View>
-    </View>
+              {selectedGame._id !== "123" && (
+              <View className="mt-4">
+               <TextScallingFalse className="text-white text-2xl mt-4 mb-4">
+      Add members
+                </TextScallingFalse>
     
-     <AddMembersModal
+
+               {/* Existing Members */}
+               <View className="flex-row flex-wrap -mx-1">
+               {Array.from(new Map(formData.members.map(member => [member._id, member])).values())
+             .map((member) => (
+             <MemberCard
+            key={member._id}
+            imageUrl={member.profilePic || ''}
+            name={`${member.firstName} ${member.lastName || ''}`}
+            description={member.headline || ''}
+            isAdmin={true} 
+            onRemove={() => removeMember(member._id)}
+            onPress={() => {}}
+          />
+        ))}
+      
+      {/* Add Member Button */}
+      
+      <TouchableOpacity
+        onPress={() => setShowMembersModal(true)}
+        className="bg-black p-4 h-[200px] mt-2 rounded-lg items-center justify-center shadow-lg border border-[#515151]"
+        style={{
+          width: 170,
+          marginHorizontal: 6,
+          marginBottom: 6,
+        }}
+      >
+        <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
+          <TextScallingFalse className="text-gray-400 text-2xl">+</TextScallingFalse>
+        </View>
+        <TextScallingFalse className="text-gray-400">Add Member</TextScallingFalse>
+      </TouchableOpacity>
+
+             </View>
+    
+              <AddMembersModal
       visible={showMembersModal}
       onClose={() => setShowMembersModal(false)}
       onInvite={handleInviteMembers}
@@ -730,8 +733,9 @@ const handleCreateTeam = async () => {
       player={fetchedUsers}
       loading={loading}
     />
-           </View>
-            )}
+  </View>
+)}
+
 
             </View>
           </ScrollView>

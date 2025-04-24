@@ -90,7 +90,7 @@ const TeamPage: React.FC = () => {
   const handleInvitePress = (role: string) => {
     modalRef.current?.close();
     router.push(
-      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
+      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role}` as RelativePathString
     );
   };
 

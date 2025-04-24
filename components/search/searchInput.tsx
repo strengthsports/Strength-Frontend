@@ -19,7 +19,7 @@ const SearchInput = ({ searchText, setSearchText }: { searchText: string; setSea
   return (
     <TouchableOpacity activeOpacity={0.5}
       onPress={() => {}}
-      className="flex-row bg-[#212121] rounded-3xl border-[0.5px] border-[#343434] px-4 items-center flex-1">
+      className="flex-row bg-[#212121] rounded-3xl h-[40px] border-[0.5px] border-[#343434] px-4 items-center flex-1">
       {/* <Feather name="search" size={22} color="grey" /> */}
       <SearchIcon />
       <TextInput

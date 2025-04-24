@@ -20,10 +20,12 @@ const MemberCard: React.FC<MemberCardProps> = ({
   onRemove,
   onPress,
 }) => {
+
+  
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-black p-4 h-[200px] rounded-lg  items-center shadow-lg border border-[#515151] relative"
+      className="bg-black p-4 h-[200px] rounded-lg mt-2  items-center shadow-xl border border-[#515151] relative"
       style={{
         width: 170, 
         

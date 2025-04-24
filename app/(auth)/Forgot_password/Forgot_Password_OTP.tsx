@@ -24,8 +24,10 @@ const Forgot_Password_OTP = () => {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false); // New state for loading
   const dispatch = useDispatch<AppDispatch>();
+  const { email } = useLocalSearchParams();
 
-  const email = params?.email as string;
+  // const email = params?.email as string;
+  console.log("email-",email)
 
   const handleVerificationCode = async () => {
     if (!otp) {
@@ -78,15 +80,15 @@ const Forgot_Password_OTP = () => {
             alignItems: "center",
           }}
         >
-          <View>
+          <View style={{width:'100%', paddingHorizontal: 36}}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 23, fontWeight: "500" }}
             >
               Enter the verification code
             </TextScallingFalse>
-            <View style={{ width: "81%" }}>
+            <View>
               <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
-                We sent the verification code to- ExampleEmail@gmail.com{" "}
+                We sent the verification code to- {email}{" "}
                 <TextScallingFalse style={{ fontSize: 13, color: "#12956B" }}>
                   Edit mail
                 </TextScallingFalse>

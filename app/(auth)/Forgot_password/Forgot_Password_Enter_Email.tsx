@@ -79,15 +79,15 @@ const Forgot_Password_Enter_Email = () => {
         </View>
       </View>
       <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ marginTop: 55 }}>
+        <View style={{ marginTop: 55, width:'100%', paddingHorizontal: 40}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 24, fontWeight: "500" }}
           >
             Forgot password?
           </TextScallingFalse>
-          <View style={{ width: "83%" }}>
+          <View>
             <TextScallingFalse
-              style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+              style={{ color: "white", fontSize: 12, fontWeight: "400"}}
             >
               We'll send a verification code to this email if it matches an
               existing Strength account.

@@ -33,7 +33,7 @@ export const forgotPassword = createAsyncThunk<
 >("forgotPassword/forgotPassword", async (email, { rejectWithValue }) => {
   try {
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/forgot-password`,
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/initiate-forgot-password`,
       {
         method: "POST",
         headers: {
@@ -92,7 +92,7 @@ export const setNewPassword = createAsyncThunk<
   async ({ resetToken, newPassword }, { rejectWithValue }) => {
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/set-newpassword`,
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/setNew-password`,
         {
           method: "POST",
           headers: {

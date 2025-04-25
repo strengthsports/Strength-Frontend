@@ -4,14 +4,9 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
-  // RefreshControl,
-  // ActivityIndicator,
-  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Animated,
-  NativeSyntheticEvent,
-  NativeScrollEvent
+  TouchableOpacity
 } from "react-native";
 import {
   useRouter,
@@ -57,7 +52,8 @@ const TeamPage: React.FC = () => {
 
 
   const roles = teamDetails?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
-
+  
+  console.log(teamDetails?.members);
 
 
   const captainMember = teamDetails?.members?.find(
@@ -67,15 +63,14 @@ const TeamPage: React.FC = () => {
     (member:any) => member?.position?.toLowerCase() === "vicecaptain"
   );
 
-  const captain =
-    captainMember?.user?.firstname + captainMember?.user?.lastname ||
-    teamDetails?.admin?.[0]?.firstName +" "+  teamDetails?.admin?.[0]?.lastName ||
-    "Loading...";
+  const captain = captainMember 
+  ? `${captainMember.user?.firstName || ''} ${captainMember.user?.lastName || ''}`.trim()
+  : `${teamDetails?.admin?.[0]?.firstName || ''} ${teamDetails?.admin?.[0]?.lastName || ''}`.trim() || "Loading...";
 
-  const viceCapt = viceCaptainMember?.user?.firstname + viceCaptainMember?.user?.lastname ||
-  
-  "Not Assigned";
-
+// Fixed vice-captain name concatenation
+const viceCapt = viceCaptainMember
+  ? `${viceCaptainMember.user?.firstName || ''} ${viceCaptainMember.user?.lastName || ''}`.trim()
+  : "Not assigned";
 
   const handleDeleteTeam = async () => {
     try {
@@ -90,7 +85,7 @@ const TeamPage: React.FC = () => {
   const handleInvitePress = (role: string) => {
     modalRef.current?.close();
     router.push(
-      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role}` as RelativePathString
+      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
     );
   };
 

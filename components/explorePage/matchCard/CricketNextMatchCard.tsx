@@ -6,22 +6,6 @@ import { countryCodes } from "~/constants/countryCodes";
 import teamLogos from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
 
-// interface MatchCardProps {
-//   match: {
-//     id: string;
-//     series: string;
-//     matchType: string;
-//     t1: string;
-//     t1s: string;
-//     t2: string;
-//     t2s: string;
-//     status: string;
-//     tournamentImg?: string;
-//     dateTimeGMT: string;
-//   };
-//   isLive?: boolean;
-// }
-
 interface MatchCardProps {
   match: {
     // Match Identification

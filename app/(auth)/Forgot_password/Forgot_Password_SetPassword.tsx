@@ -36,6 +36,14 @@ const Forgot_Password_SetPassword = () => {
   };
 
   const handlePassword = async () => {
+    if (createPassword.length < 6 || confirmPassword.length < 6) {
+      Toast.show({
+        type: "error",
+        text1: "Alert",
+        text2: "Password must be at least 6 characters long.",
+      });
+      return;
+    }
     if (createPassword !== confirmPassword) {
       Toast.show({
         type: "error",
@@ -51,6 +59,7 @@ const Forgot_Password_SetPassword = () => {
       const resultAction = await dispatch(
         setNewPassword({ resetToken, newPassword: createPassword })
       );
+      console.log("Result Action:", resultAction);
 
       if (setNewPassword.fulfilled.match(resultAction)) {
         router.push("/Forgot_password/PasswordChanged_Successfully");
@@ -74,10 +83,13 @@ const Forgot_Password_SetPassword = () => {
 
   return (
     <PageThemeView>
-      <View style={{ marginTop: 80 }}>
+      <View style={{ marginTop: 80, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 25 }}>
+        <TouchableOpacity onPress={() => router.push("/(auth)/login")} activeOpacity={0.4} style={{ width: 50, height: 30 }}>
+          <View style={{ width: 45 }} />
+        </TouchableOpacity>
         <Logo />
+        <View style={{ width: 45 }} />
       </View>
-
       <View
         style={{
           width: "100%",
@@ -148,7 +160,7 @@ const Forgot_Password_SetPassword = () => {
         </View>
 
         {/* Toggle Show/Hide Password */}
-        <View style={{ width: "81%", alignItems: "flex-end" }}>
+        <View style={{ width: "81%", alignItems: "flex-end", paddingTop: 10 }}>
           <TouchableOpacity activeOpacity={0.5} onPress={toggleShowPassword}>
             <TextScallingFalse style={{ color: "#12956B", fontSize: 13 }}>
               {showPassword ? "Hide" : "Show"} Password

@@ -192,27 +192,25 @@ export const postComment = createAsyncThunk(
   "feed/postComment",
   async (
     {
-      targetId,
-      targetType,
+      postId,
+      parentCommentId,
       text,
-    }: { targetId: string; targetType: string; text: string },
+    }: { postId: string; parentCommentId: string | undefined; text: string },
     { getState, dispatch, rejectWithValue }
   ) => {
     console.log("Called");
     const state = getState() as RootState;
     let post;
     let updatedPost;
-    if (targetType === "Post") {
-      post = selectPostById(state, targetId);
-      // Optimistic update
-      updatedPost = {
-        ...post,
-        commentsCount: post.commentsCount + 1,
-      };
+    post = selectPostById(state, postId);
+    // Optimistic update
+    updatedPost = {
+      ...post,
+      commentsCount: post.commentsCount + 1,
+    };
 
-      // Update Redux state immediately
-      dispatch(updatePost(updatedPost));
-    }
+    // Update Redux state immediately
+    dispatch(updatePost(updatedPost));
 
     try {
       const token = await getToken("accessToken");
@@ -228,16 +226,18 @@ export const postComment = createAsyncThunk(
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ targetId, targetType, text }),
+          body: JSON.stringify({ postId, parentCommentId, text }),
         }
       );
 
+      // console.log(response);
+
       if (!response.ok) throw new Error("Failed to post comment");
 
-      return updatedPost;
+      return response.json();
     } catch (error: any) {
       // Rollback on error
-      if (targetType === "Post" && post) {
+      if (post) {
         dispatch(updatePost(post));
       }
       return rejectWithValue(

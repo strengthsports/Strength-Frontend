@@ -8,7 +8,7 @@ import {
   Image,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard, Modal, StyleSheet
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
@@ -55,6 +55,7 @@ const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchBarHeight, setSearchBarHeight] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Memoized Redux state selections
   const userId = useSelector((state: RootState) => state.profile.user?._id);
@@ -121,6 +122,7 @@ const SearchPage: React.FC = () => {
 
   const clearSearchHistory = useCallback(() => {
     dispatch(resetSearchHistory());
+    setModalVisible(false);
   }, [dispatch]);
 
   // Memoized list renderers
@@ -149,13 +151,49 @@ const SearchPage: React.FC = () => {
     []
   );
 
+  interface ClearSearchAlertModalProps {
+    visible: boolean; // Indicates whether the modal is visible
+    onClose: () => void; // Function to close the modal
+    onConfirm: () => void; // Function to confirm the action
+  }
+    // Function to handle closing the modal
+    const handleCloseModal = () => {
+      setModalVisible(false);
+    };
+  const ClearSearchAlertModal: React.FC<ClearSearchAlertModalProps> = ({ visible, onClose, onConfirm }) => {
+    if (!visible) return null; // Don't render if modal is not visible
+
+    return (
+      <Modal transparent={true} animationType="fade" visible={visible}>
+        <View style={styles.overlay}>
+          <View style={styles.modalContainer}>
+            <TextScallingFalse style={{ color: 'white', fontSize: 20 }}>Clear search history?</TextScallingFalse>
+            <TextScallingFalse style={{ fontSize: 12, color: 'white', lineHeight: 17, fontWeight:'400'}}>Your search history is only visible to you, by clearing your search history both your recent searches and texts will be removed.</TextScallingFalse>
+
+            <View style={{ width:'100%', alignItems:'flex-end'}}>
+              <View style={{flexDirection:'row', gap: 35}}>
+              <TouchableOpacity onPress={handleCloseModal} >
+                <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Cancel</TextScallingFalse>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={clearSearchHistory} >
+                <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Confirm</TextScallingFalse>
+              </TouchableOpacity>
+            </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   return (
     <PageThemeView>
       <View
         className="flex-row items-center my-3 gap-x-5 max-w-[640px] w-[92%] mx-auto"
         onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
       >
-        <TouchableOpacity style={{width: 20, height: 40, justifyContent:'center'}} onPress={() => router.back()}>
+        <TouchableOpacity style={{ width: 20, height: 40, justifyContent: 'center' }} onPress={() => router.back()}>
           <BackIcon2 />
         </TouchableOpacity>
         <MemoizedSearchInput
@@ -181,54 +219,60 @@ const SearchPage: React.FC = () => {
         </View>
       ) : (
         <>
-        {
-          (searchHistory.length > 0 || recentSearches.length > 0) ? (
-            <View>
-          <View className="flex-row justify-between items-center px-6 py-2">
-            <TextScallingFalse className="text-3xl text-[#808080] mb-2">Recent</TextScallingFalse>
-            <TouchableOpacity activeOpacity={0.7} onPress={clearSearchHistory} style={{width: 60, alignItems:'flex-end'}}>
-            <TextScallingFalse
-              className="text-2xl text-[#808080] mb-2"
-            >
-              Clear
-            </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
+          {
+            (searchHistory.length > 0 || recentSearches.length > 0) ? (
+              <View>
+                <View className="flex-row justify-between items-center px-6 py-2">
+                  <TextScallingFalse className="text-3xl text-[#808080] mb-2">Recent</TextScallingFalse>
+                  <TouchableOpacity onPress={() => setModalVisible(true)} activeOpacity={0.7} style={{ width: 60, alignItems: 'flex-end' }}>
+                    <TextScallingFalse
+                      className="text-2xl text-[#808080] mb-2"
+                    >
+                      Clear
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                  {/* Clear Search Alert Modal */}
+                  <ClearSearchAlertModal
+                    visible={modalVisible} // Pass the visibility state to the modal
+                    onClose={handleCloseModal} // Pass the function to close the modal
+                    onConfirm={clearSearchHistory} // Pass the function to confirm the action
+                  />
+                </View>
 
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={searchHistory}
-            renderItem={renderHistoryProfile}
-            keyExtractor={(item) => item._id}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              gap: 16,
-              paddingStart: 16,
-              paddingRight: 20,
-            }}
-          />
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={searchHistory}
+                  renderItem={renderHistoryProfile}
+                  keyExtractor={(item) => item._id}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{
+                    gap: 16,
+                    paddingStart: 16,
+                    paddingRight: 20,
+                  }}
+                />
 
-          <FlatList
-            data={recentSearches}
-            renderItem={renderRecentSearch}
-            keyExtractor={(item, index) => index.toString()}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              gap: 27,
-              paddingVertical: 26,
-              paddingHorizontal: 20,
-            }}
-          />
-        </View>
-          )
-          :
-          (
-            <View style={{width:'100%', padding: 100, justifyContent:'center', alignItems:'center'}}>
-            <TextScallingFalse style={{color:'grey', fontWeight:'400', fontSize: 13}}>No recent search available !</TextScallingFalse>
-            </View>
-          )
-        }
+                <FlatList
+                  data={recentSearches}
+                  renderItem={renderRecentSearch}
+                  keyExtractor={(item, index) => index.toString()}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{
+                    gap: 27,
+                    paddingVertical: 26,
+                    paddingHorizontal: 20,
+                  }}
+                />
+              </View>
+            )
+              :
+              (
+                <View style={{ width: '100%', padding: 100, justifyContent: 'center', alignItems: 'center' }}>
+                  <TextScallingFalse style={{ color: 'grey', fontWeight: '400', fontSize: 13 }}>No recent search available !</TextScallingFalse>
+                </View>
+              )
+          }
         </>
       )}
     </PageThemeView>
@@ -255,16 +299,35 @@ const SearchResultItem = memo(
         <TextScallingFalse className="text-[#EAEAEA] text-base font-light">
           @{item.username}
           {item.headline
-            ? ` | ${
-                item.headline.length > 18
-                  ? item.headline.slice(0, 18) + "..."
-                  : item.headline
-              }`
+            ? ` | ${item.headline.length > 18
+              ? item.headline.slice(0, 18) + "..."
+              : item.headline
+            }`
             : ""}
         </TextScallingFalse>
       </View>
     </TouchableOpacity>
   )
 );
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  modalContainer: {
+    backgroundColor: "#202020",
+    padding: 22,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    height: 180,
+    gap: 12,
+    width: '85%',
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 export default SearchPage;

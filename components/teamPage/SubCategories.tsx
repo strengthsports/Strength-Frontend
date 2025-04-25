@@ -41,7 +41,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
             onPress={() => setSelectedTab("ABOUT")}
           >
             <Text
-              className="text-white text-6xl mt-2"
+              className="text-white text-[21px] mt-1"
               style={{ fontFamily: "SairaExtraCondensed_500Medium" }}
             >
               ABOUT
@@ -55,7 +55,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
             onPress={() => setSelectedTab("SQUAD")}
           >
             <Text
-              className="text-white justify-center text-6xl mt-2"
+              className="text-white text-[21px] mt-1"
               style={{ fontFamily: "SairaExtraCondensed_500Medium" }}
             >
               SQUAD

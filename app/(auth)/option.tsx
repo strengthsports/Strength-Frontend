@@ -11,6 +11,10 @@ import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 const option = () => {
   const router = useRouter();
 
+  const handleNavigation = () => {
+    router.push("/Signup/signupEmail1"); // Navigate to the next page on button press
+  };
+
   return (
     <PageThemeView>
       <View className="gap-[130px]">
@@ -34,7 +38,7 @@ const option = () => {
         {/* Main Buttons */}
         <View className="w-full items-center gap-[50px]">
           <TouchableOpacity
-            onPress={() => router.push("/Signup/signupEmail1")}
+            onPress={handleNavigation}
             activeOpacity={0.5}
             className="bg-white w-[71%] h-[90px] rounded-md flex-row items-center justify-center gap-[45px]"
           >

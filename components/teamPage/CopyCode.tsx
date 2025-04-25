@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {View, TouchableOpacity, Text, StyleSheet, Animated, Easing } from "react-native";
 import * as Clipboard from 'expo-clipboard';
-
+import Copy from "../../components/SvgIcons/teams/CopyCode"
 const CopyCode = ({ code }) => {
   const [copied, setCopied] = useState(false);
   const scaleAnim = new Animated.Value(1);
@@ -52,6 +52,7 @@ const CopyCode = ({ code }) => {
           onPress={handleCopy}
           activeOpacity={0.7}
         >
+          <Copy/>
           <Text style={styles.buttonText}>
             {copied ? "✓ Copied" : "Copy Code"}
           </Text>
@@ -68,21 +69,23 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   button: {
+    flexDirection:"row",
     backgroundColor: "#141414",
     paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    borderColor: "#9D9D9D",
-    borderWidth: 0.5,
+    borderColor: "#2B2B2B",
+    borderWidth: 1,
     marginLeft: 8,
     minWidth: 80,
   },
   buttonText: {
-    color: "white",
-    fontSize: 12,
+    color: "#CECECE",
+    fontSize: 10,
     fontWeight: '500',
+    marginLeft:5,
   },
   tooltip: {
     position: 'absolute',

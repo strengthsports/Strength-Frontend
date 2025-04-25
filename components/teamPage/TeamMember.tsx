@@ -32,6 +32,17 @@ const TeamMember: React.FC<TeamMemberProps> = ({
 }) => {
   return (
     <View style={styles.container}>
+ {/* Badge */}
+     {(isCaptain || isViceCaptain) && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>
+            {isCaptain ? <Captain/> : <ViceCaptain/>}
+          </Text>
+        </View>
+      )}
+
+
+      <View className=" justify-center ">
       {/* Profile Image */}
       <Image
         source={imageUrl ? { uri: imageUrl } : Nopic}
@@ -39,14 +50,10 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         resizeMode="cover"
       />
 
-      {/* Badge */}
-      {(isCaptain || isViceCaptain) && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>
-            {isCaptain ? <Captain/> : <ViceCaptain/>}
-          </Text>
-        </View>
-      )}
+     
+
+
+      <View className="">
 
       {/* Name */}
       <Text
@@ -65,6 +72,8 @@ const TeamMember: React.FC<TeamMemberProps> = ({
 >
   {description}
 </Text>
+     </View>
+     </View>
 
      
     </View>
@@ -94,13 +103,16 @@ const styles = StyleSheet.create({
     height: 92,
     width: 92,
     borderRadius: 100,
-    marginTop: 8,
-    marginBottom: 8,
+    marginHorizontal:20,
+    marginVertical:12,
+    // marginTop: 14,
+    // justifyContent:"center",
+    
   },
   badge: {
     position: "absolute",
     top: 6,
-    left: 6,
+    left: 4,
     backgroundColor: "#00000",
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -116,10 +128,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
-    marginBottom:-10,
+    // marginBottom:-10,
     
   },
   description: {
+    top:4,
     color: "#717171",
     fontSize: 11,
     textAlign: "center",

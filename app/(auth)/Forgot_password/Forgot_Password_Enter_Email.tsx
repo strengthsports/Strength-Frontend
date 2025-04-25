@@ -1,4 +1,4 @@
-import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { StyleSheet, View, ActivityIndicator, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import Logo from "@/components/logo";
@@ -10,6 +10,7 @@ import { forgotPassword } from "~/reduxStore/slices/user/forgotPasswordSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/reduxStore";
 import Toast from "react-native-toast-message"; // Import Toast
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 const Forgot_Password_Enter_Email = () => {
   const [email, setEmail] = useState("");
@@ -73,21 +74,23 @@ const Forgot_Password_Enter_Email = () => {
 
   return (
     <PageThemeView>
-      <View style={{ marginTop: 80 }}>
-        <View>
+        <View style={{marginTop: 80, flexDirection:'row', justifyContent:'space-between', alignItems:'center', paddingHorizontal: 25}}>
+          <TouchableOpacity onPress={()=>router.push("/(auth)/login")} activeOpacity={0.4} style={{width: 50, height: 30}}>
+          <BackIcon />
+          </TouchableOpacity>
           <Logo />
+          <View style={{width: 45}} />
         </View>
-      </View>
       <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ marginTop: 55 }}>
+        <View style={{ marginTop: 55, width:'100%', paddingHorizontal: 40}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 24, fontWeight: "500" }}
           >
             Forgot password?
           </TextScallingFalse>
-          <View style={{ width: "83%" }}>
+          <View>
             <TextScallingFalse
-              style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+              style={{ color: "white", fontSize: 12, fontWeight: "400"}}
             >
               We'll send a verification code to this email if it matches an
               existing Strength account.

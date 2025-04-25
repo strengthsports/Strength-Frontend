@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Animated, Easing } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, Animated, Easing ,TouchableOpacity} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import Supporters from "~/components/SvgIcons/teams/Supporters";
@@ -26,7 +26,8 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const { user } = useSelector((state: RootState) => state.profile);
-  
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [descriptionLines, setDescriptionLines] = useState(0);
   // Get support state from Redux
   const isSupporting = useSelector(selectIsSupporting);
   const supporterCount = useSelector(selectSupporterCount);
@@ -56,6 +57,13 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
     } else {
       dispatch(supportTeam(teamDetails._id));
     }
+  };
+  const toggleDescription = () => {
+    setShowFullDescription(!showFullDescription);
+  };
+
+  const onTextLayout = (e: any) => {
+    setDescriptionLines(e.nativeEvent.lines.length);
   };
 
   const handleEstablished = () => {
@@ -110,14 +118,14 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
         </Animated.View>
       )}
 
-      <View className="p-4 bg-[#0B0B0B] rounded-lg">
+      <View className="p-6 bg-[#0B0B0B] rounded-lg">
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center">
             <Supporters />
             <Text className="text-white text-3xl ml-3 font-bold">
               {supporterCount || 0}
             </Text>
-            <Text className="text-[#565656] text-4xl font-semibold ml-1">
+            <Text className="text-[#9C9C9C] text-4xl font-medium ml-1">
               Supporters
             </Text>
           </View>
@@ -134,29 +142,40 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
           )}
         </View>
 
-        <TextScallingFalse className="text-white bg-[#0B0B0B] pt-8 text-5xl font-bold mb-2">
+        <TextScallingFalse className="text-[#CECECE]  pt-8 text-5xl font-bold mb-2">
           Description
         </TextScallingFalse>
-        <TextScallingFalse className="text-white text-xl mr-3">
-          {teamDetails?.description || "No description available"}
-        </TextScallingFalse>
+       <View>
+       <TextScallingFalse 
+    className="text-[#CECECE] text-[14px] mr-3"
+    numberOfLines={showFullDescription ? undefined : 4}
+    onTextLayout={onTextLayout}
+  >
+    {teamDetails?.description || "No description available"}
+  </TextScallingFalse>
+  {!showFullDescription && descriptionLines > 3 && (
+    <TouchableOpacity onPress={toggleDescription}>
+      <Text className="text-[#818181] text-xl mt-1">See More</Text>
+    </TouchableOpacity>
+  )}
+</View>
       </View>
 
       <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <Members />
-        <Text className="text-white text-4xl ml-1">Members - {teamDetails?.members?.length || 0}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-3">Members - {teamDetails?.members?.length || 0}</Text>
       </View>
 
       <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <EstabilishedOn />
-        <Text className="text-white text-4xl ml-2">
+        <Text className="text-[#CECECE] text-3xl ml-3">
           Established On - {handleEstablished()}
         </Text>
       </View>
 
       <View className="p-2 ml-3 flex flex-row items-center">
         <TeamId />
-        <Text className="text-white ml-2"> Team unique ID - {handleTeamUniqueId()}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-2"> Team unique ID - {handleTeamUniqueId()}</Text>
         <CopyCode code={handleTeamUniqueId()} onCopy={handleCopySuccess} />
       </View>
     </ScrollView>

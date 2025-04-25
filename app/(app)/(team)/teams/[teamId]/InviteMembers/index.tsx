@@ -24,6 +24,7 @@ import {
 } from "~/reduxStore/slices/team/teamSlice";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
 
 // Types
 type Member = {
@@ -44,6 +45,7 @@ const colors = {
   cardBackground: "#000000",
   inputBackground: "#262626",
 };
+
 
 const InviteMember: React.FC = () => {
   // Hooks & Params
@@ -203,16 +205,20 @@ const InviteMember: React.FC = () => {
           />
           <View style={{ flex: 1 }}>
             <TextScallingFalse style={styles.name}>{fullName}</TextScallingFalse>
-            {item.headline && (
-              <TextScallingFalse style={styles.headline}>
-                {item.headline}
-              </TextScallingFalse>
+            {item.headline && item.username && (
+             <TextScallingFalse 
+             style={styles.headline}
+             numberOfLines={1} 
+             ellipsizeMode="tail"
+           >
+             @{item.username}{" | "}{item.headline}
+           </TextScallingFalse>
             )}
             <View style={styles.dividerLine} />
           </View>
           <Ionicons
             name={isSelected ? "checkbox" : "square-outline"}
-            size={24}
+            size={30}
             color={isSelected ? colors.primary : colors.mutedText}
           />
         </TouchableOpacity>
@@ -243,7 +249,7 @@ const InviteMember: React.FC = () => {
 
       {/* Search Bar */}
       <View style={styles.searchWrapper}>
-        <Ionicons name="search" size={20} color={colors.mutedText} style={styles.searchIcon} />
+       <SearchIcon/>
         <TextInput
           style={styles.searchInput}
           placeholder="Search members..."
@@ -255,28 +261,27 @@ const InviteMember: React.FC = () => {
 
       {/* List */}
       {loading ? (
-        <TextScallingFalse style={styles.status}>Loading suggestions...</TextScallingFalse>
+        <TextScallingFalse style={styles.status}>Loading...</TextScallingFalse>
       ) : error ? (
         <TextScallingFalse style={[styles.status, { color: "red" }]}>{error}</TextScallingFalse>
       ) : (
         <>
           <FlatList
+           
             data={filteredMembers}
             keyExtractor={(item) => item._id}
             renderItem={renderMember}
             contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
           />
 
-          {filteredMembers.length >= limit && (
-            <TouchableOpacity style={styles.seeMoreButton} onPress={handleSeeMore}>
-              <TextScallingFalse style={styles.seeMoreText}>See More</TextScallingFalse>
-            </TouchableOpacity>
-          )}
+         
         </>
       )}
     </View>
   );
 };
+
 
 export default InviteMember;
 
@@ -285,7 +290,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingTop: 48,
   },
   header: {
@@ -293,6 +298,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    // paddingHorizontal: 16,
   },
   headerTitle: {
     fontSize: 18,
@@ -313,8 +319,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.inputBackground,
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderRadius: 50,
+    marginHorizontal:2,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     marginBottom: 16,
   },
@@ -323,8 +330,9 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    marginLeft: 8,
     color: colors.text,
-    fontSize: 16,
+    fontSize: 14,
   },
   status: {
     textAlign: "center",
@@ -337,19 +345,21 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+  
+    // padding: 10,
     backgroundColor: colors.cardBackground,
     borderRadius: 12,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   avatar: {
-    width: 48,
-    height: 48,
+    width: 40,
+    height: 40,
     borderRadius: 24,
     marginRight: 12,
     backgroundColor: colors.border,
   },
   name: {
+    marginTop:14,
     color: colors.text,
     fontSize: 16,
     fontWeight: "500",
@@ -357,22 +367,14 @@ const styles = StyleSheet.create({
   headline: {
     color: colors.mutedText,
     fontSize: 12,
-    marginTop: 2,
+    // marginTop: 2,
+    marginRight:15,
   },
   dividerLine: {
     height: 0.5,
     backgroundColor: "#313131",
-    marginTop: 8,
+    marginTop: 16,
     width: "100%",
   },
-  seeMoreButton: {
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 22,
-  },
-  seeMoreText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: "200",
-  },
+
 });

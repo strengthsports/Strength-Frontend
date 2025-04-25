@@ -65,13 +65,29 @@ const exploreSportsCategories = [
   "Trending",
   "Cricket",
   "Football",
-  "Badminton",
   "Basketball",
   "More \u2193",
 ];
 
+const teamSportsCategorires = [
+  "Trending",
+  "Cricket",
+  "Football",
+  "Basketball",
+  "Kabaddi",
+  "Hockey",
+  "Baseball",
+  "Volleyball",
+  "Rugby",
+];
+
 export const ExploreAllSportsCategoryHeader = () => {
   const dispatch = useDispatch();
+
+  const selectedExploreCategory = useSelector(
+    (state: RootState) => state.explore.selectedExploreCategory
+  );
+
   const selectedExploreSportsCategory = useSelector(
     (state: RootState) => state.explore.selectedExploreSportsCategory
   );
@@ -80,13 +96,28 @@ export const ExploreAllSportsCategoryHeader = () => {
     dispatch(setSelectedExploreSportsCategory(sportsCategory));
   };
 
+  const exploreSportsCategories =
+    selectedExploreCategory === "Teams"
+      ? [
+          "Trending",
+          "Cricket",
+          "Football",
+          "Basketball",
+          "Kabaddi",
+          "Hockey",
+          "Baseball",
+          "Volleyball",
+          "Rugby",
+        ]
+      : ["Trending", "Cricket", "Football", "Basketball", "More \u2193"];
+
   return (
     <View className=" bg-black">
       {/* Sportscategory ScrollView */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 8 }}
+        contentContainerStyle={{ paddingTop: 8, paddingRight: 8 }}
       >
         {exploreSportsCategories.map((sportsCategory, index) => (
           <TouchableOpacity

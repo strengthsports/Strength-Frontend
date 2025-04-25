@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Animated, Easing } from "react-native";
-import { useFonts } from "expo-font";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { View, Text, ScrollView, ActivityIndicator, Animated, Easing ,TouchableOpacity} from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
 import Supporters from "~/components/SvgIcons/teams/Supporters";
 import CustomButton from "~/constants/CustomButton";
 import Members from "~/components/SvgIcons/teams/Members";
@@ -9,29 +9,67 @@ import EstabilishedOn from "~/components/SvgIcons/teams/EstabilishedOn";
 import TeamId from "~/components/SvgIcons/teams/TeamId";
 import CopyCode from "./CopyCode";
 import TextScallingFalse from "../CentralText";
+import { 
+  supportTeam, 
+  unsupportTeam, 
+  checkSupportStatus,
+  clearSupportError
+} from "../../reduxStore/slices/team/teamSlice";
+import { selectIsSupporting, selectSupporterCount, selectSupportLoading, selectSupportError } from "../../reduxStore/slices/team/teamSlice";
 
 interface AboutProps {
   teamDetails: any;
 }
 
 const About: React.FC<AboutProps> = ({ teamDetails }) => {
-  const [supportersCount, setSupportersCount] = useState(4123);
-  const [isSupporting, setIsSupporting] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const { user } = useSelector((state: RootState) => state.profile);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [descriptionLines, setDescriptionLines] = useState(0);
+  // Get support state from Redux
+  const isSupporting = useSelector(selectIsSupporting);
+  const supporterCount = useSelector(selectSupporterCount);
+  const supportLoading = useSelector(selectSupportLoading);
+  const supportError = useSelector(selectSupportError);
 
-  const handleButtonPress = () => {
-    setIsSupporting((prevIsSupporting) => {
-      const newIsSupporting = !prevIsSupporting;
-      setSupportersCount((prevCount) =>
-        prevIsSupporting ? prevCount - 1 : prevCount + 1
-      );
-      return newIsSupporting;
-    });
+  useEffect(() => {
+    // Check support status when component mounts or teamId changes
+    if (teamDetails?._id && user?._id) {
+      dispatch(checkSupportStatus(teamDetails._id));
+    }
+  }, [teamDetails?._id, user?._id, dispatch]);
+
+  useEffect(() => {
+    // Handle support errors
+    if (supportError) {
+      console.error("Support Error:", supportError);
+      dispatch(clearSupportError());
+    }
+  }, [supportError, dispatch]);
+
+  const handleSupportPress = () => {
+    if (!teamDetails?._id || supportLoading || !user?._id) return;
+    
+    if (isSupporting) {
+      dispatch(unsupportTeam(teamDetails._id));
+    } else {
+      dispatch(supportTeam(teamDetails._id));
+    }
+  };
+  const toggleDescription = () => {
+    setShowFullDescription(!showFullDescription);
+  };
+
+  const onTextLayout = (e: any) => {
+    setDescriptionLines(e.nativeEvent.lines.length);
   };
 
   const handleEstablished = () => {
-    const date = new Date(teamDetails?.establishedOn);
+    if (!teamDetails?.establishedOn) return "Not specified";
+    
+    const date = new Date(teamDetails.establishedOn);
     const formattedDate = date.toLocaleDateString("en-GB", {
       month: "long",
       year: "numeric",
@@ -67,7 +105,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   };
 
   return (
-    <ScrollView className="pb-[500px]">
+    <ScrollView className="pb-[500px] bg-[#0B0B0B]">
       {/* Copied Message Animation */}
       {showCopiedMessage && (
         <Animated.View 
@@ -80,46 +118,64 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
         </Animated.View>
       )}
 
-      <View className="p-4 ml-1 bg-black rounded-lg">
+      <View className="p-6 bg-[#0B0B0B] rounded-lg">
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center">
             <Supporters />
-            <Text className="text-white text-3xl ml-1 font-bold">
-              {supportersCount}
+            <Text className="text-white text-3xl ml-3 font-bold">
+              {supporterCount || 0}
             </Text>
-            <Text className="text-gray-500 text-4xl font-semibold ml-1">
+            <Text className="text-[#9C9C9C] text-4xl font-medium ml-1">
               Supporters
             </Text>
           </View>
-          <CustomButton
-            buttonName={isSupporting ? "✓ Supporting" : "+ Support"}
-            onPress={handleButtonPress}
-          />
+          
+          {supportLoading ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <CustomButton
+              buttonName={isSupporting ? "✓ Supporting" : "+ Support"}
+              onPress={handleSupportPress}
+              disabled={supportLoading || !user?._id}
+              buttonClass={isSupporting ? "bg-green-500" : "bg-blue-500"}
+            />
+          )}
         </View>
 
-        <TextScallingFalse className="text-white pt-8 text-5xl font-bold mb-2">
+        <TextScallingFalse className="text-[#CECECE]  pt-8 text-5xl font-bold mb-2">
           Description
         </TextScallingFalse>
-        <TextScallingFalse className="text-white text-xl mr-3">
-          {teamDetails?.description}
-        </TextScallingFalse>
+       <View>
+       <TextScallingFalse 
+    className="text-[#CECECE] text-[14px] mr-3"
+    numberOfLines={showFullDescription ? undefined : 4}
+    onTextLayout={onTextLayout}
+  >
+    {teamDetails?.description || "No description available"}
+  </TextScallingFalse>
+  {!showFullDescription && descriptionLines > 3 && (
+    <TouchableOpacity onPress={toggleDescription}>
+      <Text className="text-[#818181] text-xl mt-1">See More</Text>
+    </TouchableOpacity>
+  )}
+</View>
       </View>
 
-      <View className="p-2 ml-3  flex flex-row items-center">
+      <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <Members />
-        <Text className="text-white text-4xl ml-1">Members - {teamDetails?.members?.length || 0}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-3">Members - {teamDetails?.members?.length || 0}</Text>
       </View>
 
-      <View className="p-2 ml-3 flex flex-row items-center">
+      <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <EstabilishedOn />
-        <Text className="text-white text-4xl ml-2">
+        <Text className="text-[#CECECE] text-3xl ml-3">
           Established On - {handleEstablished()}
         </Text>
       </View>
 
-      <View className="p-2 ml-3  flex flex-row items-center">
+      <View className="p-2 ml-3 flex flex-row items-center">
         <TeamId />
-       
+        <Text className="text-[#CECECE] text-3xl ml-2"> Team unique ID - {handleTeamUniqueId()}</Text>
         <CopyCode code={handleTeamUniqueId()} onCopy={handleCopySuccess} />
       </View>
     </ScrollView>

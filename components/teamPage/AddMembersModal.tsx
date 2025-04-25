@@ -283,8 +283,9 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
               onPress={handleInvite}
               style={{
                 backgroundColor: "#12956B",
-                borderRadius: 8,
-                paddingVertical: 16,
+                borderRadius: 10,
+                paddingVertical: 12,
+            
                 marginTop: 16,
               }}
             >
@@ -292,7 +293,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({
                 style={{
                   color: "#FFFFFF",
                   textAlign: "center",
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: "600",
                 }}
               >

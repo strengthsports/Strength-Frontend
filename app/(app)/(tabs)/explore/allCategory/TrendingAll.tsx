@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Text,
   Modal,
+  RefreshControl,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
+// import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Hashtag from "~/components/explorePage/hashtag";
+import { useGetTrendingHashtagQuery } from "~/reduxStore/api/explore/hashtagApi";
 import {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
@@ -36,12 +38,11 @@ import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMa
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
 import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoader";
-import { RefreshControl } from "react-native";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
-  const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const renderSwiper = () => {
     const { data: articles, error, isLoading } = useGetSportArticleQuery();
@@ -68,39 +69,58 @@ const TrendingAll = () => {
     return <SwiperTop swiperData={articles ?? []} />;
   };
 
-  const renderHashtags = () => (
-    <View className="mt-10">
-      {hashtagData ? (
-        <>
-          <Hashtag data={hashtagData.slice(0, 3)} />
-          <TouchableOpacity
-            className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
-            activeOpacity={0.6}
-            onPress={() => setModalVisible(true)}
-          >
-            <View className="flex-row items-center justify-center">
-              <Text className="text-white">See more</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={18}
-                color="#E9E9E9"
-                className="mt-0.5 ml-1.5"
-              />
-            </View>
-          </TouchableOpacity>
+  const renderHashtags = () => {
+    const {
+      data: hashtagData,
+      isLoading,
+      error,
+    } = useGetTrendingHashtagQuery({});
 
-          {/* Include HashtagModal */}
-          <HashtagModal
-            modalVisible={modalVisible}
-            setModalVisible={setModalVisible}
-            hashtagData={hashtagData}
-          />
-        </>
-      ) : (
-        <HastagSkeletonLoader />
-      )}
-    </View>
-  );
+    if (isLoading) return <HastagSkeletonLoader />;
+    if (error)
+      return (
+        <View
+          style={{
+            height: 240,
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TextScallingFalse className="text-white">
+            Error loading Hashtags.
+          </TextScallingFalse>
+        </View>
+      );
+
+    return (
+      <View className="mt-10">
+        <Hashtag data={hashtagData.slice(0, 3)} />
+        <TouchableOpacity
+          className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
+          activeOpacity={0.6}
+          onPress={() => setModalVisible(true)}
+        >
+          <View className="flex-row items-center justify-center">
+            <Text className="text-white">See more</Text>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={18}
+              color="#E9E9E9"
+              className="mt-0.5 ml-1.5"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* Include HashtagModal */}
+        <HashtagModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          hashtagData={hashtagData}
+        />
+      </View>
+    );
+  };
 
   const renderMatches = () => {
     return (

@@ -25,8 +25,12 @@ export const cricketApi = createApi({
 
         // Extract live matches
         // Extra checking for live match
-        const liveMatches = matches.filter(
+        const liveMatchesAll = matches.filter(
           (match: any) => match.match_status === "Live"
+        );
+
+        const liveMatches = matches.filter(
+          (match: any) => match.series === "Indian Premier League 2025"
         );
 
         return { liveMatches };
@@ -39,8 +43,11 @@ export const cricketApi = createApi({
 
         // Extract next matches
         // Extra checking for next match
-        const nextMatches = matches.filter(
+        const nextMatchesAll = matches.filter(
           (match: any) => match.match_status === "Upcoming"
+        );
+        const nextMatches = nextMatchesAll.filter(
+          (match: any) => match.series === "Indian Premier League 2025"
         );
 
         return { nextMatches };
@@ -53,11 +60,15 @@ export const cricketApi = createApi({
 
         // Extract recent matches
         // Extra checking for recent match
-        const recentMatches = matches.filter(
+        const recentMatchesAll = matches.filter(
           (match: any) => match.match_status === "Finished"
         );
 
-        return recentMatches;
+        const recentMatches = matches.filter(
+          (match: any) => match.series === "Indian Premier League 2025"
+        );
+
+        return { recentMatches };
       },
     }),
   }),

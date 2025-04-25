@@ -53,12 +53,12 @@ const TeamCard: React.FC<TeamCardProps> = ({
             <View className="flex-1   justify-center items-center">
              <View className="w-[14px] border-t-2 border-white"></View>
             </View>
-            <View className="flex-1 ml-3 flex-row items-center justify-center ">
+            <View className="flex-1 ml-0 flex-row items-center justify-center ">
               <Image
                 source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
                 className="h-6 w-6 mr-2"
               />
-              <View></View>
+             
               <Text className= "text-white text-right mr-5 text-3xl">
                 {sportCategory}
               </Text>

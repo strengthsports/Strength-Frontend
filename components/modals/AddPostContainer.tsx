@@ -53,7 +53,7 @@ import { Animated } from "react-native";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import CustomHashtagMentionInput from "../ui/CustomHashtagMentionInput";
 import CustomVideoPlayer from "../PostContainer/VideoPlayer";
-import { showEditor } from "react-native-video-trim";
+// import { showEditor } from "react-native-video-trim";
 
 // Memoized sub-components for better performance
 const Figure = React.memo(

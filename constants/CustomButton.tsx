@@ -18,21 +18,21 @@ const CustomButton: React.FC<CustomButtonProps> = ({ buttonName, onPress }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "black", // Button background color
-    paddingVertical: 10, // Reduced padding for smaller button size
-    paddingHorizontal: 30, // Adjusted padding for smaller button size
-    borderRadius: 20, // More rounded corners
+    backgroundColor: "black", 
+    paddingVertical: 9, 
+    paddingHorizontal: 28,
+    borderRadius: 20,
     alignItems: "center",
-    // justifyContent: "center",
-    marginVertical: 2, // Smaller margin
-    borderColor: "#6F6F6F", // Gray border color
-    borderWidth: 0.5, // Border width to make it visible
+   
+    marginVertical: 2, 
+    borderColor: "#6F6F6F",
+    borderWidth: 0.5, 
     marginRight:12,
   },
   buttonText: {
     color: "white",
-    fontSize: 14, // Smaller font size
-    fontWeight: "bold",
+    fontSize: 12,
+    fontWeight: "semibold",
   },
 });
 

@@ -6,22 +6,6 @@ import { countryCodes } from "~/constants/countryCodes";
 import teamLogos from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
 
-// interface MatchCardProps {
-//   match: {
-//     id: string;
-//     series: string;
-//     matchType: string;
-//     t1: string;
-//     t1s: string;
-//     t2: string;
-//     t2s: string;
-//     status: string;
-//     tournamentImg?: string;
-//     dateTimeGMT: string;
-//   };
-//   isLive?: boolean;
-// }
-
 interface MatchCardProps {
   match: {
     // Match Identification
@@ -70,24 +54,11 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
 
-  const extractDate = (
-    matchDate: string
-  ): { date: string; day: string | null } => {
-    const [fullDate, day] = matchDate.split(",").map((str) => str.trim());
-
-    // Extract day short form
-    const shortDay = day ? day.slice(0, 3) : null;
-
-    // Remove year and shorten month
-    const [dayNum, monthFull] = fullDate.split(" ");
-    const shortMonth = monthFull.slice(0, 3); // e.g., "April" → "Apr"
-
-    const formattedDate = `${dayNum} ${shortMonth}`;
-
-    return { date: formattedDate, day: shortDay };
-  };
-
-  // const { date, day } = extractDate(match.match_date);
+  //Extracting match day and match date
+  const parts = match.date_wise.split(", ");
+  const fullDay = parts[1]; // "Wednesday"
+  const shortDay = fullDay.slice(0, 3); // "Wed"
+  const matchDate = match.match_date.replace("-", " ");
 
   return (
     <>
@@ -149,8 +120,9 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
         {/* view 2 */}
         <View className="items-center">
           <TextScallingFalse className="text-neutral-300 text-center text-base">
-            {/* {day}
-            {date} */}
+            {shortDay} {matchDate}
+          </TextScallingFalse>
+          <TextScallingFalse className="text-neutral-300 text-center text-base">
             {match.match_time}
           </TextScallingFalse>
         </View>

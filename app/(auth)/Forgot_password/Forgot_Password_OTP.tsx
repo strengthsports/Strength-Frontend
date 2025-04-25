@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Platform, ToastAndroid,
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -15,7 +16,7 @@ import TextScallingFalse from "@/components/CentralText";
 import { useLocalSearchParams } from "expo-router";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/reduxStore";
-import { verifyOtp } from "~/reduxStore/slices/user/forgotPasswordSlice";
+import { verifyOtp, resendOtpForPassword } from "~/reduxStore/slices/user/forgotPasswordSlice";
 import Toast from "react-native-toast-message";
 
 const Forgot_Password_OTP = () => {
@@ -27,7 +28,7 @@ const Forgot_Password_OTP = () => {
   const { email } = useLocalSearchParams();
 
   // const email = params?.email as string;
-  console.log("email-",email)
+  console.log("email-", email)
 
   const handleVerificationCode = async () => {
     if (!otp) {
@@ -66,11 +67,52 @@ const Forgot_Password_OTP = () => {
     }
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+  const handleResendCode = async () => {
+    if (!email) {
+      console.warn("Email not found");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const resultAction = await dispatch(resendOtpForPassword(email));
+
+      if (resendOtpForPassword.fulfilled.match(resultAction)) {
+        // ✅ TypeScript knows this is { payload: { message: string } }
+        showToast(resultAction.payload.message || "OTP sent successfully!");
+      } else {
+        // ❌ Rejected path — payload is string (your error message)
+        const errorMessage = resultAction.payload || "Failed to send OTP";
+        showToast(errorMessage);
+      }
+    } catch (error) {
+      showToast("Unexpected error occurred");
+      console.error("Resend OTP error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const showToast = (message) => {
+    if (Platform.OS === "android") {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      // Add iOS toast method here if needed
+      console.log("Toast:", message);
+    }
+  };
+
   return (
     <PageThemeView>
-      <View style={{ marginTop: 80 }}>
-        <View>
+      <View>
+        <View style={{ marginTop: 80, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 25 }}>
+          <TouchableOpacity onPress={() => router.push("/(auth)/login")} activeOpacity={0.4} style={{ width: 50, height: 30 }}>
+            <View style={{width: 45}}/>
+          </TouchableOpacity>
           <Logo />
+          <View style={{ width: 45 }} />
         </View>
         <View
           style={{
@@ -80,7 +122,7 @@ const Forgot_Password_OTP = () => {
             alignItems: "center",
           }}
         >
-          <View style={{width:'100%', paddingHorizontal: 36}}>
+          <View style={{ width: '100%', paddingHorizontal: 36 }}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 23, fontWeight: "500" }}
             >
@@ -89,9 +131,11 @@ const Forgot_Password_OTP = () => {
             <View>
               <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
                 We sent the verification code to- {email}{" "}
-                <TextScallingFalse style={{ fontSize: 13, color: "#12956B" }}>
-                  Edit mail
-                </TextScallingFalse>
+                <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/(auth)/Forgot_password/Forgot_Password_Enter_Email")} style={{ width: 80 }}>
+                  <TextScallingFalse style={{ fontSize: 13, color: "#12956B" }}>
+                    Edit Email
+                  </TextScallingFalse>
+                </TouchableOpacity>
               </TextScallingFalse>
             </View>
           </View>
@@ -117,13 +161,18 @@ const Forgot_Password_OTP = () => {
               autoCapitalize="none"
             />
           </View>
-          <TouchableOpacity activeOpacity={0.5} style={{ marginTop: 35 }}>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 14, fontWeight: "400" }}
-            >
-              Resend code
-            </TextScallingFalse>
-          </TouchableOpacity>
+          {
+            isLoading ?
+              <ActivityIndicator style={{ marginTop: 35 }} size="small" color="white" />
+              :
+              <TouchableOpacity onPress={handleResendCode} activeOpacity={0.5} style={{ marginTop: 35 }}>
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+                >
+                  Resend code
+                </TextScallingFalse>
+              </TouchableOpacity>
+          }
           <View style={{ marginTop: 50 }}>
             <SignupButton onPress={handleVerificationCode} disabled={false}>
               {loading ? (

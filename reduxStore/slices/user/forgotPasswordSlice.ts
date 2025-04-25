@@ -82,6 +82,34 @@ export const verifyOtp = createAsyncThunk<
   }
 });
 
+// Async thunk for resending OTP
+export const resendOtpForPassword = createAsyncThunk<
+  { message: string }, // Success response type
+  string,              // Argument type (email)
+  { rejectValue: string }
+>("forgotPassword/resendOtpForPassword", async (email, { rejectWithValue }) => {
+  try {
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/forgotResend-otp`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      }
+    );
+    const data = await response.json();
+    if (response.ok) {
+      return data;
+    } else {
+      return rejectWithValue(data.message || "Failed to resend OTP.");
+    }
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
 // Async thunk for setting a new password
 export const setNewPassword = createAsyncThunk<
   SetNewPasswordResponse, // Success response type
@@ -112,6 +140,7 @@ export const setNewPassword = createAsyncThunk<
     }
   }
 );
+
 
 // Slice
 const forgotPasswordSlice = createSlice({
@@ -153,6 +182,19 @@ const forgotPasswordSlice = createSlice({
       .addCase(verifyOtp.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to verify OTP.";
+      })
+      // Resend OTP
+      .addCase(resendOtpForPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(resendOtpForPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.success = true;
+      })
+      .addCase(resendOtpForPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Failed to resend OTP.";
       })
       // Set New Password
       .addCase(setNewPassword.pending, (state) => {

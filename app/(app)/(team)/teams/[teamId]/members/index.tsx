@@ -9,11 +9,14 @@ import { AppDispatch, RootState } from "@/reduxStore";
 // import { useSelector } from "react-redux";
 import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
 // import { RootState } from "@/reduxStore";
-import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
 import nopic from "../../../../../../assets/images/nopic.jpg";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 import TextScallingFalse from "~/components/CentralText";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import Edit from "../../../../../../components/SvgIcons/teams/Edit"
+
 
 // Define TypeScript Interfaces
 interface User {
@@ -95,33 +98,40 @@ const Members: React.FC = () => {
   return (
     <PageThemeView>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 bg-black">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Icon name="arrowleft" size={28} color="white" />
-        </TouchableOpacity>
-        <TextScallingFalse className="text-white text-2xl font-bold">Members</TextScallingFalse>
-        {isAdmin && (
-          <TouchableOpacity onPress={() => router.push("/teams/settings/edit-members")}>
-            <View className="flex-row items-center space-x-2">
-              <Image source={require("../../../../../../assets/images/edit.png")} style={{ width: 20, height: 20 }} />
-              <TextScallingFalse className="text-white text-lg">Edit</TextScallingFalse>
-            </View>
-          </TouchableOpacity>
-        )}
-      </View>
+      <View className="flex-row items-center justify-between px-4 py-2 bg-black">
+  <TouchableOpacity onPress={() => router.back()}>
+    <BackIcon/>
+  </TouchableOpacity>
 
-      <Divider className="bg-gray-600" />
+  {/* Conditionally render Members text in the center */}
+  <View className={isAdmin ? "flex-row items-center justify-center flex-1" : "flex-1 items-center mr-8 justify-center"}>
+    <TextScallingFalse className="text-white text-4xl font-semibold ">Members</TextScallingFalse>
+  </View>
+
+  {/* Conditionally render Edit button if isAdmin is true */}
+  {isAdmin && (
+    <TouchableOpacity onPress={() => router.push("/teams/settings/edit-members")}>
+      <View className="flex-row items-center space-x-2">
+       <Edit/>
+        <TextScallingFalse className="text-white text-lg">Edit</TextScallingFalse>
+      </View>
+    </TouchableOpacity>
+  )}
+</View>
+
+
+      <Divider className="bg-gray-600 mt-2" />
 
       {/* Search */}
       <View className="px-4 py-4">
-        <View className="flex-row items-center bg-[#262626] rounded-full px-4 py-2">
-          <SearchIcon className="w-5 h-5 text-gray-400" />
+        <View className="flex-row items-center bg-[#262626] h-15 rounded-full px-4 py-2 ">
+          <SearchIcon />
           <TextInput
             placeholder="Search members..."
             placeholderTextColor="gray"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            className="text-white TextScallingFalse-lg flex-1 ml-2"
+            className="text-white TextScallingFalse-lg flex-1 ml-2 mt-1 "
           />
         </View>
       </View>

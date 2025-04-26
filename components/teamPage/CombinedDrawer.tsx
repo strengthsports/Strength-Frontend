@@ -12,6 +12,7 @@ import Icon from "react-native-vector-icons/AntDesign";
 import { RelativePathString, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import BackIcon from "../SvgIcons/Common_Icons/BackIcon";
 
 interface MenuItem {
   label: string;
@@ -107,7 +108,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         style={{ height: HEADER_HEIGHT }}
       >
         <TouchableOpacity onPress={() => router.push("/(app)/(tabs)/home")}>
-          <Icon name="arrowleft" size={24} color="white" />
+          <BackIcon/>
         </TouchableOpacity>
         <View className="flex-row items-center gap-x-5">
           <TouchableOpacity

@@ -43,6 +43,7 @@ import { footballApi } from "./api/explore/footballApi";
 import { basketballApi } from "./api/explore/basketballApi";
 // import { badmintonApi } from "./api/explore/badmintonApi";
 import { articleApi } from "./api/explore/article/articleApi";
+import userCommentsReducer from './slices/comments/userCommentsSlice';
 
 // Persist configuration
 const persistConfig = {
@@ -77,6 +78,7 @@ const rootReducer = combineReducers({
   feed: feedReducer,
   post: postReducer,
   notification: notificationReducer,
+  userComments: userCommentsReducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [sportsApi.reducerPath]: sportsApi.reducer,
   [notificationApi.reducerPath]: notificationApi.reducer,

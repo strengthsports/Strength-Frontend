@@ -15,13 +15,11 @@ import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
 interface LiveCricketMatchProps {
   liveMatches: any[];
   isFetching: boolean;
-  onRefetch: () => void;
 }
 
 const CricketLiveMatch: React.FC<LiveCricketMatchProps> = ({
   liveMatches,
   isFetching,
-  onRefetch,
 }) => {
   return (
     <View className="mt-4">

@@ -48,17 +48,31 @@ interface MatchCardProps {
   };
 }
 
-const CricketNextMatchCard = ({ match }: MatchCardProps) => {
+interface GroupedMatchProps {
+  series: string;
+  groupedMatches: MatchCardProps["match"][];
+}
+
+const CricketNextMatchCard = ({
+  series,
+  groupedMatches,
+}: GroupedMatchProps) => {
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
 
   //Extracting match day and match date
-  const parts = match.date_wise.split(", ");
-  const fullDay = parts[1]; // "Wednesday"
-  const shortDay = fullDay.slice(0, 3); // "Wed"
-  const matchDate = match.match_date.replace("-", " ");
+  const extractDayAndDate = (
+    match_dateWise: string,
+    match_date: string
+  ): string | null => {
+    const parts = match_dateWise.split(", ");
+    const fullDay = parts[1]; // "Wednesday"
+    const shortDay = fullDay.slice(0, 3); // "Wed"
+    const matchDate = match_date.replace("-", " ");
+    return `${shortDay} ${matchDate}`;
+  };
 
   return (
     <>
@@ -83,7 +97,7 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >
-            {match.series}
+            {series}
           </TextScallingFalse>
         </TouchableOpacity>
 
@@ -97,36 +111,40 @@ const CricketNextMatchCard = ({ match }: MatchCardProps) => {
 
       <View className="h-[0.8] bg-neutral-700" />
 
-      <View className="pl-10 pt-5">
-        <TextScallingFalse className="text-[#9E9E9E] text-base uppercase">
-          {" \u2022 "} {match.match_type}
-        </TextScallingFalse>
-      </View>
-      <View className="flex-row items-center justify-between px-10 pt-5">
-        <View className="flex-column gap-y-3">
-          {/* view 1 */}
-          <NameFlagSubCard
-            flag={match.team_a_img}
-            teamName={match.team_a_short}
-          />
+      {groupedMatches.map((match) => (
+        <View key={match.match_id}>
+          <View className="pl-10 pt-5">
+            <TextScallingFalse className="text-[#9E9E9E] text-base uppercase">
+              {" \u2022 "} {match.match_type}
+            </TextScallingFalse>
+          </View>
+          <View className="flex-row items-center justify-between px-10 pt-5">
+            <View className="flex-column gap-y-3">
+              {/* view 1 */}
+              <NameFlagSubCard
+                flag={match.team_a_img}
+                teamName={match.team_a_short}
+              />
 
-          {/* view 3 */}
-          <NameFlagSubCard
-            flag={match.team_b_img}
-            teamName={match.team_b_short}
-          />
+              {/* view 3 */}
+              <NameFlagSubCard
+                flag={match.team_b_img}
+                teamName={match.team_b_short}
+              />
+            </View>
+            <View className="w-[1px] h-12 bg-neutral-700 ml-28" />
+            {/* view 2 */}
+            <View className="items-center">
+              <TextScallingFalse className="text-neutral-300 text-center text-base">
+                {extractDayAndDate(match.date_wise, match.match_date)}
+              </TextScallingFalse>
+              <TextScallingFalse className="text-neutral-300 text-center text-base">
+                {match.match_time}
+              </TextScallingFalse>
+            </View>
+          </View>
         </View>
-        <View className="w-[1px] h-12 bg-neutral-700 ml-28" />
-        {/* view 2 */}
-        <View className="items-center">
-          <TextScallingFalse className="text-neutral-300 text-center text-base">
-            {shortDay} {matchDate}
-          </TextScallingFalse>
-          <TextScallingFalse className="text-neutral-300 text-center text-base">
-            {match.match_time}
-          </TextScallingFalse>
-        </View>
-      </View>
+      ))}
 
       {/* <TextScallingFalse className="text-white text-center text-base mb-2">{match?.t1}</TextScallingFalse> */}
     </>

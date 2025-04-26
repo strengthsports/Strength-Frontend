@@ -62,7 +62,7 @@ const TrendingMatch = () => {
     isFetching: isCricketNextFetching,
     refetch: refetchNextCricket,
   } = useGetCricketNextMatchesQuery({});
-  const { nextMatches: nextCricketMatches } = cricketNextData || {};
+  const { nextMatches: nextCricketMatches = [] } = cricketNextData || {};
 
   const {
     data: footballLiveData,
@@ -70,6 +70,13 @@ const TrendingMatch = () => {
     refetch: refetchLiveFootball,
   } = useGetFootballLiveMatchesQuery({});
   const { liveMatches: liveFootballMatches } = footballLiveData || {};
+
+  const {
+    data: footballNextData,
+    isFetching: isFootballNextFetching,
+    refetch: refetchNextFootball,
+  } = useGetFootballNextMatchesQuery({});
+  const { nextMatches: nextFootballMatches } = footballNextData || {};
 
   const {
     data: basketballLiveData,
@@ -114,7 +121,12 @@ const TrendingMatch = () => {
   };
 
   const renderFootballNextMatches = () => {
-    return <FootballNextMatch />;
+    return (
+      <FootballNextMatch
+        nextMatches={nextFootballMatches}
+        isFetching={isFootballNextFetching}
+      />
+    );
   };
 
   const sections = [

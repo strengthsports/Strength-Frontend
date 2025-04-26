@@ -31,7 +31,12 @@ export const footballApi = createApi({
       },
     }),
     getFootballNextMatches: builder.query({
-      query: () => `/fixtures?next=5`,
+      query: () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const nextDate = tomorrow.toISOString().split("T")[0];
+        return `/fixtures?date=${nextDate}`;
+      },
       transformResponse: (response: any) => {
         const matches = response.response || [];
         // Extract next matches

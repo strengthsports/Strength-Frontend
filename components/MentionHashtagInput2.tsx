@@ -23,9 +23,11 @@ const TRENDING_HASHTAGS = [
 const MentionHashtagInput2 = ({
   text,
   setPostText,
+  setTaggedUsers,
 }: {
   text: string;
   setPostText: (text: string) => void;
+  setTaggedUsers: React.Dispatch<React.SetStateAction<string[]>>;
 }) => {
   const userId = useSelector((state: RootState) => state.profile.user?._id);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
@@ -192,13 +194,20 @@ const MentionHashtagInput2 = ({
     [selection, suggestionType, text]
   );
 
+  const handleSetTaggedUser = (taggedUser: string) => {
+    setTaggedUsers((prev) => [...prev, taggedUser]);
+  };
+
   console.log("User results : ", userResults);
 
   const renderSuggestionItem = useCallback(
     ({ item }: { item: any }) => (
       <TouchableOpacity
         style={styles.suggestionItem}
-        onPress={() => insertSuggestion(item)}
+        onPress={() => {
+          insertSuggestion(item);
+          handleSetTaggedUser(item._id);
+        }}
       >
         {suggestionType === "@" ? (
           <View style={{ flexDirection: "row", alignItems: "center" }}>

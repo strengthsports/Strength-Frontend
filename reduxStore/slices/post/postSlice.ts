@@ -41,8 +41,8 @@ export const uploadPost = createAsyncThunk(
       console.log(error);
       throw error; // Re-throw for handling in the component
     } finally {
-      dispatch(setUploadLoading(false)); // ← Critical!
-      dispatch(setUploadProgress(0)); // ← Reset to 0% (optional)
+      dispatch(setUploadLoading(false));
+      // ← let the component clear progress after its fade‑out animation
     }
   }
 );

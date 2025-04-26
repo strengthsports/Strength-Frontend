@@ -339,7 +339,11 @@ const Overview = () => {
       {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
-          onSeeAllPress={() => {}}
+          onSeeAllPress={() => {
+            router.push(
+              `/(app)/(profile)/profile/${fetchedUserId.id}/activity`
+            );
+          }}
           scaleFactor={scaleFactor}
         />
       )}

@@ -1,109 +1,78 @@
-import {
-  Dimensions,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import React, { useCallback, useMemo, useState } from "react";
-import { useRouter } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
+import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
+import React, { useMemo } from "react";
 import TextScallingFalse from "~/components/CentralText";
-import WrittenPost from "./writtenpost";
-import { MotiView } from "moti";
-import Polls from "./polls";
-import Posts from "./posts";
-import Comments from "./comments";
-import Clips from "./clips";
-import Articles from "./articles";
 
-const ActivityLayout = () => {
+export default function ActivityTabLayout() {
   const router = useRouter();
+  const segments = useSegments();
   const { width } = useWindowDimensions();
-  // Dynamic scaling for responsiveness
-  const containerWidth = width > 768 ? "50%" : "96%";
-  const { width: screenWidth2 } = Dimensions.get("window");
-  const scaleFactor = screenWidth2 / 410;
+  const scaleFactor = width / 410;
 
-  const [activeTab, setActiveTab] = useState("Posts");
+  const currentSegment = useMemo(() => {
+    if (Array.isArray(segments) && segments.length > 0) {
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment === "activity" ? "index" : lastSegment;
+    }
+    return "index";
+  }, [segments]);
 
-  // Define the available tabs.
   const tabs = useMemo(
     () => [
-      { name: "Posts" },
-      { name: "Clips" },
-      { name: "Thoughts" },
-      { name: "Polls" },
-      { name: "Comments" },
-      { name: "Articles" },
+      { name: "Posts", segment: "index" },
+      { name: "Clips", segment: "clips" },
+      { name: "Thoughts", segment: "thoughts" },
+      { name: "Polls", segment: "polls" },
+      { name: "Comments", segment: "comments" },
+      { name: "Articles", segment: "articles" },
     ],
     []
   );
 
-  // Memoized function to render the current tab's content.
-  const renderContent = useCallback(() => {
-    switch (activeTab) {
-      case "Posts":
-        return <Posts />;
-      case "Polls":
-        return <Polls />;
-      case "Thoughts":
-        return <WrittenPost />;
-      case "Comments":
-        return <Comments />;
-      case "Clips":
-        return <Clips />;
-      case "Articles":
-        return <Articles />;
-      default:
-        return <Posts />;
-    }
-  }, [activeTab]);
+  const handleTabPress = (segment: string) => {
+    const path =
+      segment === "index"
+        ? `/profile/activity`
+        : `/profile/activity/${segment}`;
+    router.replace(path as any);
+  };
 
   return (
-    <View className="mr-2">
-      {/* Horizontal Tab Scroll */}
+    <View className="mr-2 bg-black">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"
-        snapToInterval={200}
-        snapToAlignment="start"
         contentContainerStyle={{
           marginTop: 5,
           paddingStart: 15 * scaleFactor,
           justifyContent: "flex-start",
           alignItems: "center",
           gap: 12,
-          width: "auto",
+          // width: "auto",
         }}
       >
-        {tabs.map((tab, index) => {
-          const isActive = activeTab === tab.name;
+        {tabs.map((tab) => {
+          const isActive = currentSegment === tab.segment;
           return (
             <Pressable
-              key={index}
-              onPress={() => {
-                setActiveTab(tab.name);
-              }}
-              className={`px-4 py-[9px] flex flex-row items-center justify-center rounded-[10px] ${
+              key={tab.name}
+              onPress={() => handleTabPress(tab.segment)}
+              className={`px-4 py-[9px] flex flex-row items-center justify-center rounded-[10px] border ${
                 isActive ? "bg-[#12956B]" : "bg-black border-[#454545]"
-              } border`}
+              }`}
             >
-              <TextScallingFalse className="text-white">
+              <TextScallingFalse className="text-white font-medium text-[14px]">
                 {tab.name}
               </TextScallingFalse>
             </Pressable>
           );
         })}
       </ScrollView>
-      {/* Animated Tab Content */}
-      <MotiView className="flex-1">{renderContent()}</MotiView>
+
+      <View className="flex-1 w-full h-auto">
+        <Slot />
+      </View>
     </View>
   );
-};
-
-export default ActivityLayout;
-
-const styles = StyleSheet.create({});
+}

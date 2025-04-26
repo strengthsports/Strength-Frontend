@@ -10,6 +10,7 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Comment } from "~/types/post";
 import nopic from "@/assets/images/nopic.jpg";
 import { formatTimeAgo } from "~/utils/formatTime";
+import { toggleLikeComment } from "~/api/like/toggleLikeComment";
 
 interface CommenterCardProps {
   comment: Comment;
@@ -25,7 +26,7 @@ export const CommenterCard = memo(
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
-    const [isCommentLiked, setIsCommentLiked] = useState(false);
+    const [isCommentLiked, setIsCommentLiked] = useState(comment.isLiked);
     const [commentLikesCount, setCommentLikesCount] = useState(
       comment.likesCount
     );
@@ -42,16 +43,11 @@ export const CommenterCard = memo(
         if (isCommentLiked) {
           setIsCommentLiked(false);
           setCommentLikesCount((prev) => prev - 1);
-          await dispatch(
-            toggleLike({ targetId: comment._id, targetType: "Comment" })
-          );
         } else {
           setIsCommentLiked(true);
           setCommentLikesCount((prev) => prev + 1);
-          await dispatch(
-            toggleLike({ targetId: comment._id, targetType: "Comment" })
-          );
         }
+        await toggleLikeComment({ commentId: comment._id });
       } catch (err) {
         console.log(err);
         if (isCommentLiked) {
@@ -68,8 +64,8 @@ export const CommenterCard = memo(
       <View className="pl-12 pr-1 py-2 my-2 relative">
         <TouchableOpacity
           className={`${
-            targetType === "Comment" ? "size-10 top-2" : "size-12 top-0"
-          } absolute left-4 z-10 aspect-square rounded-full bg-slate-400`}
+            targetType === "Comment" ? "size-10" : "size-12"
+          } absolute top-2 left-4 z-10 aspect-square rounded-full bg-slate-400`}
         >
           <Image
             className="w-full h-full rounded-full"
@@ -82,10 +78,9 @@ export const CommenterCard = memo(
         </TouchableOpacity>
         <View
           className={`relative ${
-            targetType === "Comment"
-              ? "ml-4 rounded-xl rounded-tl-none px-5"
-              : "w-full rounded-xl px-10"
-          } bg-neutral-900 py-2`}
+            targetType === "Comment" ? "ml-4" : "ml-6"
+          } rounded-xl rounded-tl-none px-5
+          bg-neutral-900 py-2`}
         >
           <View className="absolute right-3 top-2 flex flex-row items-center gap-2">
             <TextScallingFalse className="text-xs text-neutral-300">
@@ -142,7 +137,7 @@ export const CommenterCard = memo(
           </TouchableOpacity>
           {commentLikesCount > 0 && (
             <TextScallingFalse className="text-[#939393] text-lg font-normal">
-              {`• `} <AntDesign name="like1" size={12} color="#FABE25" />{" "}
+              <AntDesign name="like1" size={12} color="#FABE25" />{" "}
               {` ${commentLikesCount}`}
             </TextScallingFalse>
           )}
@@ -151,11 +146,13 @@ export const CommenterCard = memo(
           </TextScallingFalse>
           <TouchableOpacity onPress={() => onReply && onReply(comment)}>
             <TextScallingFalse className="text-white text-lg font-medium">
-              Reply{" "}
+              Reply
             </TextScallingFalse>
           </TouchableOpacity>
           <TextScallingFalse className="mt-1 text-xl text-[#939393] font-normal">
-            {comment.commentsCount > 0 && `• ${comment.commentsCount} replies`}
+            {comment.commentsCount > 0 &&
+              targetType !== "Comment" &&
+              `${comment.commentsCount}`}
           </TextScallingFalse>
         </View>
       </View>

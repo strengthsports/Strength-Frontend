@@ -24,17 +24,20 @@ const CricketNextMatch: React.FC<NextCricketMatchProps> = ({
     <View className="mt-7">
       <FlatList
         data={nextMatches}
-        keyExtractor={(item) => item?.match_id.toString()}
+        keyExtractor={(item, index) => `${item.series}_${index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545] mb-10">
+          <View className="min-h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545] mb-10">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ActivityIndicator size="large" color={Colors.themeColor} />
               </View>
             ) : (
-              <CricketNextMatchCard match={item} />
+              <CricketNextMatchCard
+                series={item.series}
+                groupedMatches={item.matches}
+              />
             )}
           </View>
         )}

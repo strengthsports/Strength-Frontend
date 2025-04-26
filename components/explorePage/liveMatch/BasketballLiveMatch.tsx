@@ -13,13 +13,11 @@ import { Colors } from "~/constants/Colors";
 interface LiveBasketballMatchProps {
   liveMatches: any[];
   isFetching: boolean;
-  onRefetch: () => void;
 }
 
 const BasketballLiveMatch: React.FC<LiveBasketballMatchProps> = ({
   liveMatches,
   isFetching,
-  onRefetch,
 }) => {
   return (
     <View className="mt-4">

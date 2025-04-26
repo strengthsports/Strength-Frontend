@@ -153,7 +153,7 @@ const FootballMatchCard = ({ match, isLive }: MatchCardProps) => {
       case "INT":
         return "Match Interrupted";
       case "FT":
-        return "Match Finished";
+        return "Full Time";
       default:
         return "In Progress";
     }

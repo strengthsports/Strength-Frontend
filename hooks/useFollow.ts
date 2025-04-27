@@ -17,10 +17,10 @@ export const useFollow = () => {
 
   // Function to follow a user
   const followUser = useCallback(
-    async (followData: FollowUser) => {
+    async (followData: FollowUser,isTeam?:boolean) => {
       try {
-        dispatch(setFollowingCount("follow"));
-        dispatch(
+        !isTeam && dispatch(setFollowingCount("follow"));
+        !isTeam && dispatch(
           updateAllPostsFollowStatus({
             userId: followData.followingId,
             isFollowing: true,
@@ -28,8 +28,8 @@ export const useFollow = () => {
         );
         await followUserMutation(followData).unwrap();
       } catch (error) {
-        dispatch(setFollowingCount("unfollow"));
-        dispatch(
+        !isTeam && dispatch(setFollowingCount("unfollow"));
+        !isTeam && dispatch(
           updateAllPostsFollowStatus({
             userId: followData.followingId,
             isFollowing: false,
@@ -43,10 +43,10 @@ export const useFollow = () => {
 
   // Function to undo a unfollow a user
   const unFollowUser = useCallback(
-    async (unfollowData: FollowUser) => {
+    async (unfollowData: FollowUser,isTeam?:boolean) => {
       try {
-        dispatch(setFollowingCount("unfollow"));
-        dispatch(
+        !isTeam && dispatch(setFollowingCount("unfollow"));
+        !isTeam && dispatch(
           updateAllPostsFollowStatus({
             userId: unfollowData.followingId,
             isFollowing: false,
@@ -54,8 +54,8 @@ export const useFollow = () => {
         );
         await unFollowUserMutation(unfollowData).unwrap();
       } catch (error) {
-        dispatch(setFollowingCount("follow"));
-        dispatch(
+        !isTeam && dispatch(setFollowingCount("follow"));
+        !isTeam && dispatch(
           updateAllPostsFollowStatus({
             userId: unfollowData.followingId,
             isFollowing: true,

@@ -7,15 +7,19 @@ import TextScallingFalse from "../CentralText";
 import RightArrow from "../Arrows/RightArrow";
 import { useAssociate } from "~/context/UseAssociate";
 import Icon from "react-native-vector-icons/AntDesign";
+import { RelativePathString, useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 
 const MemberEntry = ({
   member,
   isLast,
   isEditView,
+  isAdmin
 }: {
   member: Member;
   isLast: boolean;
   isEditView?: boolean;
+  isAdmin?:boolean
 }) => {
   const {
     openModal,
@@ -24,8 +28,26 @@ const MemberEntry = ({
     selectedMembers,
   } = useAssociate();
 
+
+  console.log("2nd",isAdmin);
+  const router = useRouter();
+  const teamId = useSelector((state)=>state.team.team._id);
+
+  const handleTeamClick = ()=>{
+    console.log("Hit")
+    router.push({
+      pathname: `/teams/${teamId}/members/${member._id}` as RelativePathString,
+      params: {
+        // memberId: member.user._id,
+        member: JSON.stringify(member),
+        role: JSON.stringify(member.role),
+      },
+    })
+  }
+
   // Handle select member
   const handleSelectMember = () => {
+    
     toggleMemberSelection({
       memberId: member._id,
       memberUsername: member.username,
@@ -80,7 +102,7 @@ const MemberEntry = ({
             </TextScallingFalse>
           </View>
           {isEditView && !isSelectModeEnabled && (
-            <TouchableOpacity onPress={() => openModal(member)}>
+            <TouchableOpacity onPress={() => isAdmin ? handleTeamClick() : openModal(member)}>
               <RightArrow />
             </TouchableOpacity>
           )}

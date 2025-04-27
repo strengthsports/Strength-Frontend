@@ -597,6 +597,42 @@ export const fetchSupporters = createAsyncThunk<
   }
 );
 
+//join team request by user who not present in the team
+export const joinTeam = createAsyncThunk<
+  { team: Team; message: string }, // Return type
+  { teamId: string; userId: string }, // Only requires teamId and userId
+  { rejectValue: string }
+>(
+  'team/joinTeam',
+  async ({ teamId, userId }, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      
+      const response = await fetch(`${BASE_URL}/api/v1/send-teamJoinRequest`, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamId, userId }), 
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Failed to join team");
+      }
+
+      return {
+        team: data.data.team,
+        message: data.message || "Successfully joined team"
+      };
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
 
 
 const teamSlice = createSlice({
@@ -815,9 +851,23 @@ const teamSlice = createSlice({
 .addCase(checkSupportStatus.rejected, (state, action) => {
   state.supportLoading = false;
   state.supportError = action.payload ?? "Failed to check support status";
+})
+
+.addCase(joinTeam.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(joinTeam.fulfilled, (state, action) => {
+  state.loading = false;
+  // Update the team in state with the new member
+  if (action.payload.team) {
+    state.team = action.payload.team;
+  }
+})
+.addCase(joinTeam.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to join team";
 });
-
-
 
 
 

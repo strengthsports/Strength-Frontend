@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Notification } from "~/types/others";
+import { logoutUser } from "../user/authSlice";
 
 type NotificationState = {
   notificationCount: number;
@@ -31,6 +32,17 @@ const notificationSlice = createSlice({
     resetCount: (state) => {
       state.notificationCount = 0;
     },
+  },
+  extraReducers: (builder) => {
+    // Logout
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.hasNewNotification = false;
+      state.notificationCount = 0;
+      state.notifications = [];
+    });
+    builder.addCase(logoutUser.rejected, (state, action) => {
+      state.error = action.payload as string;
+    });
   },
 });
 

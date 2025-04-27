@@ -52,6 +52,7 @@ export const AssociateProvider = ({
   );
 
   const openModal = (member: Member) => {
+    console.log("member modal")
     setSelectedMember(member);
     setIsModalOpen(true);
   };

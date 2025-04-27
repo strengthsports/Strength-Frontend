@@ -43,9 +43,13 @@ const DownwardDrawer = ({ visible, onClose, member , team }: any) => {
 
   
 
+  
+
   const handleFollowToggle = () => {
     setIsFollowing((prev) => !prev);
   };
+
+
 
   return (
     <Modal

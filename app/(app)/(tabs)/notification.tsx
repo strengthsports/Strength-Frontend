@@ -15,6 +15,7 @@ import {
   useGetNotificationsQuery,
   useMarkNotificationsAsReadMutation,
 } from "~/reduxStore/api/notificationApi";
+import { TouchableOpacity } from "react-native";
 
 type GroupedSection = {
   title: string;
@@ -26,6 +27,45 @@ export type Cluster = {
   target: any;
   notifications: Notification[];
   latestNotification: Notification;
+};
+
+// Tab configuration
+const tabs = [
+  { id: "All", label: "All" },
+  { id: "Teams", label: "Teams" },
+  { id: "Tags", label: "Mentions" },
+  { id: "Other", label: "Other" },
+];
+
+// Add this helper function to map tabs to notification types
+const getTypesForTab = (tab: typeof activeTab): string[] => {
+  switch (tab) {
+    case "Teams":
+      return ["JoinTeamRequest", "TeamInvitation"];
+    case "Tags":
+      return ["Tag"];
+    case "Other":
+      return [
+        "Follow",
+        "Like",
+        "Comment",
+        "Report",
+        "PageInvitation",
+        "JoinPageRequest",
+      ];
+    default: // "All"
+      return [
+        "JoinTeamRequest",
+        "TeamInvitation",
+        "Follow",
+        "Like",
+        "Comment",
+        "Report",
+        "PageInvitation",
+        "JoinPageRequest",
+        "Tag",
+      ];
+  }
 };
 
 const NotificationPage = () => {
@@ -44,15 +84,12 @@ const NotificationPage = () => {
   const [markAsRead] = useMarkNotificationsAsReadMutation();
 
   const [newNotificationIds, setNewNotificationIds] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<
+    "All" | "Teams" | "Mentions" | "Other"
+  >("All");
   const [refreshing, setRefreshing] = useState(false);
   const initialLoad = useRef(true);
   const previousData = useRef<Notification[]>([]);
-
-  // Get all unread notification IDs
-  const unreadNotificationIds =
-    notifications?.notifications
-      ?.filter((notification) => !notification.isNotificationRead)
-      ?.map((notification) => notification._id) || [];
 
   useEffect(() => {
     console.log("🎯 Effect RUNNING. hasNewNotification:", hasNewNotification);
@@ -191,13 +228,45 @@ const NotificationPage = () => {
     }
   }, 1000);
 
-  const groupedNotifications = groupNotifications(notifications?.notifications);
+  const groupedNotifications = groupNotifications(
+    notifications?.notifications || []
+  )
+    .map((section) => ({
+      ...section,
+      data: section.data.filter((cluster) =>
+        getTypesForTab(activeTab).includes(cluster.type)
+      ),
+    }))
+    .filter((section) => section.data.length > 0);
 
   return (
     <SafeAreaView className="flex-1 p-6 pb-16 bg-black">
-      <Text className="text-6xl font-normal text-white mb-4">
-        Notifications
-      </Text>
+      <View className="mb-4">
+        <Text className="text-6xl font-normal text-white mb-4">
+          Notifications
+        </Text>
+        {/* Category Navbar */}
+        <View className="flex-row justify-start gap-x-2 border-b border-[#121212] pb-2">
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              className={`px-5 py-2 rounded-full border border-neutral-800 ${
+                activeTab === tab.id ? "bg-neutral-800" : ""
+              }`}
+              activeOpacity={0.7}
+            >
+              <Text
+                className={`text-lg font-medium ${
+                  activeTab === tab.id ? "text-white" : "text-gray-400"
+                }`}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       {isLoading && <LoadingIndicator />}
       {isError && <ErrorIndicator />}

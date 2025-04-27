@@ -35,7 +35,7 @@ const option = () => {
         <View className="w-full items-center gap-[50px]">
           <TouchableOpacity
             onPress={() => router.push("/Signup/signupEmail1")}
-            activeOpacity={0.5}
+            activeOpacity={0.7}
             className="bg-white w-[71%] h-[90px] rounded-md flex-row items-center justify-center gap-[48px]"
           >
             <Image source={User} className="w-[45px] h-[45px]" />
@@ -46,7 +46,7 @@ const option = () => {
 
           <TouchableOpacity
             onPress={() => router.push("/Signup/page-signup")}
-            activeOpacity={0.5}
+            activeOpacity={0.7}
             className="bg-white w-[71%] h-[90px] rounded-md flex-row items-center justify-center gap-[45px]"
           >
             <Image source={page} className="w-[45px] h-[45px]" />

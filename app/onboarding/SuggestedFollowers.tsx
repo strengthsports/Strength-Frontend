@@ -205,6 +205,7 @@ const SuggestedSupportScreen: React.FC = () => {
     ),
     [handleClose, handleSelectedPlayers]
   );
+  const filteredUsers = users.filter(userItem => userItem._id !== user?._id);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
@@ -212,7 +213,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
       {/* FlatList scrolls everything from Logo to suggestions */}
       <FlatList
-        data={loading ? [] : users}
+        data={loading ? [] : filteredUsers}
         keyExtractor={(item) => item._id}
         numColumns={2}
         renderItem={renderItem}

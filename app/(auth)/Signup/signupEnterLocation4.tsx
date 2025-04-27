@@ -23,7 +23,7 @@ import useGetAddress from "@/hooks/useGetAddress";
 import { Vibration, ToastAndroid, Platform } from "react-native";
 import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
-import debounce from "lodash";
+import debounce from "lodash/debounce";
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
 
@@ -195,14 +195,20 @@ const signupEnterLocation4 = () => {
   };
   
 
+  interface Prediction {
+    place_id: string; // or number, depending on your actual data
+    description: string;
+    // Add other properties as needed
+  }
+
   return (
     <PageThemeView>
-      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
+      <View style={{flex: 1}}>
       <View style={{ marginTop: 80 }}>
         <Logo />
       </View>
       <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ gap: 25}}>
+        <View style={{ gap: 25 }}>
         <View style={{ marginTop: 55}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 23, fontWeight: "500" }}
@@ -218,7 +224,7 @@ const signupEnterLocation4 = () => {
             </TextScallingFalse>
           </View>
         </View>
-        <View style={{ marginTop: 20, width: "80%", zIndex: 2 }}>
+        <View style={{ width: "80%", zIndex: 2}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 14, fontWeight: "400" }}
           >
@@ -232,32 +238,40 @@ const signupEnterLocation4 = () => {
             onFocus={() => setShowSuggestions(true)}
           />
           {showSuggestions && predictions.length > 0 && (
+            <View style={{ width: 335}}>
             <View
               style={{
-                backgroundColor: "white",
-                borderRadius: 10,
-                width: "107%",
+                backgroundColor: "#202020",
+                borderRadius: 12,
+                width: '100%',
                 maxHeight: 100,
-                marginTop: 5,
+                marginTop: 8,
+                paddingVertical: 6,
+                paddingHorizontal: 1,
               }}
             >
               <FlatList
                 data={predictions}
                 keyExtractor={(item) => item.place_id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
+                renderItem={({ item, index}) => (
+                  <TouchableOpacity activeOpacity={0.7}
                     onPress={() => handlePlaceSelect(item)}
                     style={{
-                      padding: 10,
-
-                      borderBottomWidth: 1,
-                      borderBottomColor: "#eee",
+                      padding: 11,
+                      paddingVertical: 10,
+                      borderBottomWidth: index === predictions.length - 1 ? 0 : 0.8,
+                      borderBottomColor: "#383838",
                     }}
                   >
-                    <Text>{item.description}</Text>
+                    <TextScallingFalse style={{color:'white'}}>{item.description}</TextScallingFalse>
                   </TouchableOpacity>
                 )}
+                scrollEnabled={true}
+                keyboardShouldPersistTaps="always"
+                showsVerticalScrollIndicator={true}
+                indicatorStyle="white"
               />
+            </View>
             </View>
           )}
         </View>
@@ -276,8 +290,8 @@ const signupEnterLocation4 = () => {
             borderColor: "grey",
             height: 35,
             borderRadius: 20,
-            marginTop: 35,
             flexDirection: "row",
+            alignSelf:'center'
           }}
         >
           {loading ? (
@@ -316,7 +330,7 @@ const signupEnterLocation4 = () => {
         </View>
       </View>
       </View>
-      </ScrollView>
+      </View>
     </PageThemeView>
   );
 };

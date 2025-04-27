@@ -93,7 +93,6 @@ const SuggestionCard = ({
     setModalOpen(true);
   };
 
-  console.log("User ",user.firstName,"coverpic",user.coverPic)
 
   return (
     <>

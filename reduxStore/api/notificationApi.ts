@@ -16,14 +16,38 @@ export const notificationApi = createApi({
   }),
   tagTypes: ["Notifications"],
   endpoints: (builder) => ({
-    getNotifications: builder.query({
+    getNotifications: builder.query<
+      {
+        notifications: any[];
+        unreadCount: number;
+      },
+      void
+    >({
       query: () => ({
         url: "/api/v1/notification",
         method: "GET",
       }),
       transformResponse: (response: any) => response.data,
+      providesTags: ["Notifications"],
+    }),
+    markNotificationsAsRead: builder.mutation<
+      {
+        updatedCount: number;
+      },
+      {
+        notificationIds: string[];
+      }
+    >({
+      query: (body) => ({
+        url: "/api/v1/notification/mark-as-read",
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: (response: any) => response.data,
+      invalidatesTags: ["Notifications"],
     }),
   }),
 });
 
-export const { useGetNotificationsQuery } = notificationApi;
+export const { useGetNotificationsQuery, useMarkNotificationsAsReadMutation } =
+  notificationApi;

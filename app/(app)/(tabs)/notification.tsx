@@ -2,10 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import {
-  fetchNotifications,
-  setHasNewNotification,
-} from "~/reduxStore/slices/notification/notificationSlice";
+import { setHasNewNotification } from "~/reduxStore/slices/notification/notificationSlice";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import GroupedNotificationCard from "~/components/notificationPage/GroupedNotificationCard";
 import moment from "moment";
@@ -14,7 +11,10 @@ import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
 import { RefreshControl } from "react-native";
 import { Notification, NotificationType } from "~/types/others";
-import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationsAsReadMutation,
+} from "~/reduxStore/api/notificationApi";
 
 type GroupedSection = {
   title: string;
@@ -32,34 +32,57 @@ const NotificationPage = () => {
   const { hasNewNotification } = useSelector(
     (state: RootState) => state.notification
   );
+  const dispatch = useDispatch<AppDispatch>();
 
   const {
-    data: notifications = [],
+    data: notifications,
     isLoading,
     isError,
     isSuccess,
     refetch,
-  } = useGetNotificationsQuery(null);
+  } = useGetNotificationsQuery();
+  const [markAsRead] = useMarkNotificationsAsReadMutation();
 
   const [newNotificationIds, setNewNotificationIds] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const initialLoad = useRef(true);
   const previousData = useRef<Notification[]>([]);
 
-  // Refetch if hasNewNotification
+  // Get all unread notification IDs
+  const unreadNotificationIds =
+    notifications?.notifications
+      ?.filter((notification) => !notification.isNotificationRead)
+      ?.map((notification) => notification._id) || [];
+
   useEffect(() => {
-    if (hasNewNotification) {
-      console.log("Refetching...");
-      refetch();
-      setHasNewNotification(false);
-    }
-  }, [hasNewNotification]);
+    console.log("🎯 Effect RUNNING. hasNewNotification:", hasNewNotification);
+
+    if (!hasNewNotification) return;
+
+    const markNotificationsRead = async () => {
+      const unreadIds =
+        notifications?.notifications
+          ?.filter((n) => !n.isNotificationRead)
+          ?.map((n) => n._id) || [];
+
+      console.log("📝 Unread IDs:", unreadIds); // Log IDs being processed
+
+      if (unreadIds.length > 0) {
+        console.log("🔵 Marking as read...");
+        await markAsRead({ notificationIds: unreadIds }).unwrap();
+        dispatch(setHasNewNotification(false));
+        console.log("✅ Marked as read. hasNewNotification set to false");
+      }
+    };
+
+    markNotificationsRead();
+  }, [hasNewNotification, notifications]); // Keep deps minimal
 
   // Track new notifications
   useEffect(() => {
     if (isSuccess && !initialLoad.current) {
       // Find new notifications that weren't in previous data
-      const newNotifications = notifications.filter(
+      const newNotifications = notifications.notifications.filter(
         (notification: Notification) =>
           !previousData.current.some((n) => n._id === notification._id)
       );
@@ -81,7 +104,7 @@ const NotificationPage = () => {
     }
 
     if (isSuccess) {
-      previousData.current = notifications;
+      previousData.current = notifications.notifications;
       initialLoad.current = false;
     }
   }, [notifications, isSuccess]);
@@ -168,7 +191,7 @@ const NotificationPage = () => {
     }
   }, 1000);
 
-  const groupedNotifications = groupNotifications(notifications);
+  const groupedNotifications = groupNotifications(notifications?.notifications);
 
   return (
     <SafeAreaView className="flex-1 p-6 pb-16 bg-black">
@@ -230,7 +253,7 @@ const NotificationCluster = ({
   const notification = cluster.notifications[0];
   return (
     <NotificationCardLayout
-    _id={notification?._id}
+      _id={notification?._id}
       date={notification?.createdAt}
       type={notification?.type as NotificationType}
       sender={notification?.sender}

@@ -16,6 +16,8 @@ import { Video, ResizeMode, AVPlaybackStatusSuccess } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { RelativePathString } from "expo-router";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useEvent } from "expo";
 
 type VideoPlayerProps = {
   videoUri: string;
@@ -55,6 +57,15 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
     const [status, setStatus] = useState<AVPlaybackStatusSuccess | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const player = useVideoPlayer(videoUri, (player) => {
+      player.loop = true;
+      autoPlay && player.play();
+    });
+
+    const { isPlaying } = useEvent(player, "playingChange", {
+      isPlaying: player.playing,
+    });
+
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
       play: async () => {
@@ -76,30 +87,30 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
       getStatus: () => status,
     }));
 
-    useEffect(() => {
-      if (videoRef.current) {
-        if (autoPlay) {
-          videoRef.current.playAsync();
-          videoRef.current.setIsMutedAsync(true);
-        } else {
-          videoRef.current.pauseAsync();
-        }
-      }
-    }, [autoPlay]);
+    // useEffect(() => {
+    //   if (videoRef.current) {
+    //     if (autoPlay) {
+    //       videoRef.current.playAsync();
+    //       videoRef.current.setIsMutedAsync(true);
+    //     } else {
+    //       videoRef.current.pauseAsync();
+    //     }
+    //   }
+    // }, [autoPlay]);
 
-    const handlePlaybackStatusUpdate = (
-      playbackStatus: AVPlaybackStatusSuccess
-    ) => {
-      setStatus(playbackStatus);
+    // const handlePlaybackStatusUpdate = (
+    //   playbackStatus: AVPlaybackStatusSuccess
+    // ) => {
+    //   setStatus(playbackStatus);
 
-      const isBuffering =
-        playbackStatus.isBuffering || !playbackStatus.isLoaded;
-      setLoading(isBuffering);
+    //   const isBuffering =
+    //     playbackStatus.isBuffering || !playbackStatus.isLoaded;
+    //   setLoading(isBuffering);
 
-      if (onPlaybackStatusUpdate) {
-        onPlaybackStatusUpdate(playbackStatus);
-      }
-    };
+    //   if (onPlaybackStatusUpdate) {
+    //     onPlaybackStatusUpdate(playbackStatus);
+    //   }
+    // };
 
     const renderFeedControls = () => (
       <TouchableOpacity
@@ -135,20 +146,13 @@ const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
             });
         }}
       >
-        <Video
-          ref={videoRef}
-          source={{ uri: videoUri }}
+        <VideoView
+          player={player}
           style={[
             styles.video,
             isFeedPage && styles.feedVideoStyle,
             videoStyle,
           ]}
-          resizeMode={ResizeMode.COVER}
-          onPlaybackStatusUpdate={(status) =>
-            handlePlaybackStatusUpdate(status as AVPlaybackStatusSuccess)
-          }
-          useNativeControls={false}
-          isLooping
         />
 
         {loading && (

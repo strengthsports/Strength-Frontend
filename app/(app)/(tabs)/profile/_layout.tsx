@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -13,21 +13,22 @@ import {
   RefreshControl,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
-import PostButton from "~/components/PostButton";
 import flag from "@/assets/images/IN.png";
 import TextScallingFalse from "@/components/CentralText";
-import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  Entypo,
+  MaterialIcons,
+  Ionicons,
+} from "@expo/vector-icons";
 import {
   responsiveHeight,
   responsiveWidth,
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
-import { useRouter } from "expo-router";
+import { useRouter, Slot, useSegments } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { dateFormatter } from "~/utils/dateFormatter";
-import { MotiView } from "moti";
-import Overview from ".";
-import Activity from "./activity/_layout";
 import PicModal from "~/components/profilePage/PicModal";
 import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
@@ -38,87 +39,165 @@ import {
 } from "~/reduxStore/slices/user/profileSlice";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
-import Tags from "./tags";
-import Media from "./media";
 import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
+import { useBottomSheet } from "~/context/BottomSheetContext";
+import { RootState } from "~/reduxStore";
+import { Platform } from "react-native";
+import { Share } from "react-native";
+
+const ProfileOptionsBottomSheet = ({
+  onClose,
+  onNavigate,
+  onShare,
+}: {
+  onClose: () => void;
+  onNavigate: (path: string) => void;
+  onShare: () => void;
+}) => {
+  return (
+    <View style={styles.bottomSheetContainer}>
+      <TouchableOpacity
+        onPress={() => {
+          onNavigate("/(app)/(settings)/settings");
+          onClose();
+        }}
+        style={styles.bottomSheetOption}
+        activeOpacity={0.7}
+      >
+        <MaterialIcons name="settings" size={24} color="white" />
+        <TextScallingFalse style={styles.bottomSheetText}>
+          Settings
+        </TextScallingFalse>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => {
+          onShare();
+          onClose();
+        }}
+        style={styles.bottomSheetOption}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="share" size={24} color="white" />
+        <TextScallingFalse style={styles.bottomSheetText}>
+          Share Profile
+        </TextScallingFalse>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => {
+          // TODO: to be replaced with the actual path
+          onNavigate("/(app)/(profile)/manage-teams");
+          onClose();
+        }}
+        style={styles.bottomSheetOption}
+        activeOpacity={0.7}
+      >
+        <MaterialIcons name="group" size={24} color="white" />
+        <TextScallingFalse style={styles.bottomSheetText}>
+          Manage Teams
+        </TextScallingFalse>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const segments = useSegments();
+  const { openBottomSheet, closeBottomSheet } = useBottomSheet();
 
-  const [activeTab, setActiveTab] = useState("Overview");
+  const currentProfileSegment = useMemo(() => {
+    const profileIndex = segments.findIndex((s) => s === "profile");
+    if (profileIndex !== -1 && segments.length > profileIndex + 1) {
+      return segments[profileIndex + 1];
+    }
+    return "index";
+  }, [segments]);
+
   const [isPicEditModalVisible, setPicEditModalVisible] =
-    useState<PicModalType>({
-      status: false,
-      message: "",
-    });
+    useState<PicModalType>({ status: false, message: "" });
   const [refreshing, setRefreshing] = useState(false);
 
-  // On refresh Profile Page
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await dispatch(
-      fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
-    );
-
+    if (user?._id && user?.type) {
+      await dispatch(
+        fetchMyProfile({ targetUserId: user._id, targetUserType: user.type })
+      );
+    }
     setRefreshing(false);
-  };
+  }, [dispatch, user?._id, user?.type]);
 
-  // Define the available tabs.
   const tabs = useMemo(
     () => [
-      { name: "Overview" },
-      { name: "Activity" },
-      { name: "Tags" },
-      { name: "Media" },
+      { name: "Overview", segment: "index" },
+      { name: "Activity", segment: "activity" },
+      { name: "Tags", segment: "tags" },
+      { name: "Media", segment: "media" },
     ],
     []
   );
 
-  // Memoized function to render the current tab's content.
-  const renderContent = useCallback(() => {
-    switch (activeTab) {
-      case "Overview":
-        return <Overview />;
-      case "Activity":
-        return <Activity />;
-      case "Tags":
-        return <Tags />;
-      case "Media":
-        return <Media />;
-      default:
-        return <Overview />;
-    }
-  }, [activeTab]);
+  const handleTabPress = useCallback(
+    (segment: string) => {
+      const path = segment === "index" ? `/profile` : `/profile/${segment}`;
+      router.replace(path as any);
+    },
+    [router]
+  );
 
-  // Handle remove cover/profile pic
+  const handleShareProfile = async () => {
+    try {
+      // TODO: need modification of the profile url
+      const profileUrl = `strength://profile/${user?._id}`;
+      const result = await Share.share({
+        message: `Check out ${
+          user?.firstName || "this"
+        } profile on Strength! ${profileUrl}`,
+        url: Platform.OS === "ios" ? profileUrl : undefined,
+        title: "Share Profile",
+      });
+      // Optional: Handle result.action if needed
+    } catch (error: any) {
+      console.error("Error sharing profile:", error.message);
+    }
+  };
+
+  const handleOpenProfileOptions = () => {
+    openBottomSheet({
+      isVisible: true,
+      content: (
+        <ProfileOptionsBottomSheet
+          onClose={closeBottomSheet}
+          onNavigate={(path) => router.push(path as any)}
+          onShare={handleShareProfile}
+        />
+      ),
+      height: "28%",
+      bgcolor: "#151515",
+      border: false,
+      maxHeight: 250,
+      draggableDirection: "down",
+    });
+  };
+
   const handleRemovePic = async (picType: string) => {
     await dispatch(removePic(picType));
   };
 
-  // Handle open post container
   const handleOpenPostContainer = () => {
     dispatch(setAddPostContainerOpen(true));
   };
-
-  if (loading) {
-    <View>
-      <Text className="text-white">Loading...</Text>
-    </View>;
-  }
-  if (error) {
-    <View>
-      <Text className="text-red-500">{error}</Text>
-    </View>;
-  }
 
   return (
     <PageThemeView>
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[5]}
+        stickyHeaderIndices={[4]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -130,7 +209,6 @@ const ProfileLayout = () => {
             handlePostContainerOpen={handleOpenPostContainer}
           />
         </View>
-        {/* profile pic and cover image */}
         <View
           className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-yellow-300 relative"
           style={{ alignItems: "flex-end", height: 137 * scaleFactor }}
@@ -185,7 +263,6 @@ const ProfileLayout = () => {
           </View>
         </View>
 
-        {/* user info */}
         <View className="w-full lg:w-[600px] mx-auto items-center pt-[2%]">
           <View
             style={{
@@ -195,7 +272,6 @@ const ProfileLayout = () => {
               padding: 25,
             }}
           >
-            {/* first name, last name, country */}
             <View
               style={{
                 position: "relative",
@@ -241,7 +317,6 @@ const ProfileLayout = () => {
               </View>
             </View>
 
-            {/* headline */}
             <View style={{ width: "67.64%", position: "relative", top: -12 }}>
               <TextScallingFalse
                 style={{
@@ -256,7 +331,7 @@ const ProfileLayout = () => {
 
             <View style={{ paddingTop: 5 }}>
               {/* age, height, weight, teams for user profile */}
-              {user.type === "User" && (
+              {user?.type === "User" && (
                 <View style={{ position: "relative", left: -5 }}>
                   <View
                     style={{
@@ -337,7 +412,7 @@ const ProfileLayout = () => {
               )}
 
               {/* page type, established on, sports category for page profile */}
-              {user.type === "Page" && (
+              {user?.type === "Page" && (
                 <View style={{ position: "relative", left: -5 }}>
                   <View
                     style={{
@@ -347,7 +422,6 @@ const ProfileLayout = () => {
                       rowGap: 14,
                     }}
                   >
-                    {/* page category/type */}
                     <View style={{ flexDirection: "row" }}>
                       <Entypo
                         name="dot-single"
@@ -359,7 +433,6 @@ const ProfileLayout = () => {
                         {user?.category}
                       </TextScallingFalse>
                     </View>
-                    {/* sports category */}
                     <View style={{ flexDirection: "row" }}>
                       <Entypo
                         name="dot-single"
@@ -376,7 +449,6 @@ const ProfileLayout = () => {
                         </Text>
                       </TextScallingFalse>
                     </View>
-                    {/* website */}
                     {user?.websiteLink && (
                       <View style={{ flexDirection: "row" }}>
                         <Entypo
@@ -393,7 +465,6 @@ const ProfileLayout = () => {
                         </TextScallingFalse>
                       </View>
                     )}
-                    {/* established on */}
                     {user?.dateOfBirth && (
                       <View style={{ flexDirection: "row" }}>
                         <Entypo
@@ -414,7 +485,6 @@ const ProfileLayout = () => {
                 </View>
               )}
 
-              {/* address and followings */}
               <View
                 style={{
                   paddingHorizontal: 7,
@@ -442,7 +512,7 @@ const ProfileLayout = () => {
                     activeOpacity={0.5}
                     onPress={() => {
                       const serializedUser = encodeURIComponent(
-                        JSON.stringify({ userId: user._id, type: user.type })
+                        JSON.stringify({ userId: user?._id, type: user?.type })
                       );
                       return router.push(
                         `/(app)/(profile)/followers/${serializedUser}?pageType=followers`
@@ -462,7 +532,7 @@ const ProfileLayout = () => {
                     activeOpacity={0.5}
                     onPress={() => {
                       const serializedUser = encodeURIComponent(
-                        JSON.stringify({ userId: user._id, type: user.type })
+                        JSON.stringify({ userId: user?._id, type: user?.type })
                       );
                       return router.push(
                         `/(app)/(profile)/followers/${serializedUser}?pageType=followings`
@@ -485,7 +555,6 @@ const ProfileLayout = () => {
           </View>
         </View>
 
-        {/* edit profile and overview */}
         <View
           style={{
             width: "100%",
@@ -493,6 +562,7 @@ const ProfileLayout = () => {
             flexDirection: "row",
             gap: 10,
             paddingTop: "2.5%",
+            // paddingBottom: 15,
           }}
         >
           <TouchableOpacity
@@ -503,6 +573,7 @@ const ProfileLayout = () => {
               backgroundColor: "#12956B",
               justifyContent: "center",
               alignItems: "center",
+              paddingVertical: 8,
             }}
             onPress={() =>
               router.push({
@@ -546,6 +617,7 @@ const ProfileLayout = () => {
             </TextScallingFalse>
           </TouchableOpacity>
 
+          {/* three dots */}
           <TouchableOpacity
             activeOpacity={0.5}
             style={{
@@ -557,9 +629,7 @@ const ProfileLayout = () => {
               borderWidth: 1,
               borderColor: "#12956B",
             }}
-            onPress={() =>
-              router.push({ pathname: "/(app)/(settings)/settings" })
-            }
+            onPress={handleOpenProfileOptions}
           >
             <MaterialCommunityIcons
               name="dots-horizontal"
@@ -569,32 +639,22 @@ const ProfileLayout = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Removed Spacer View */}
+        {/* <View style={{ position: "relative", top: 45, width: "97%", alignSelf: "center" }}></View> */}
+
         <View
-          style={{
-            position: "relative",
-            top: 45,
-            width: "97%",
-            alignSelf: "center",
-          }}
-        ></View>
-        {/* Tabs Header */}
-        <View
-          className="flex-row justify-evenly mt-2 border-b-[1px] border-[#4E4E4E]"
-          style={{
-            backgroundColor: "black",
-            zIndex: 1,
-          }}
+          className="flex-row justify-evenly mt-2 border-b-[1px] border-[#4E4E4E] bg-black"
+          style={{ position: "absolute", zIndex: 50, backgroundColor: "black" }}
         >
           {tabs.map((tab) => {
-            // Check if this tab is active.
-            const isActive = activeTab === tab.name;
+            const isActive = currentProfileSegment === tab.segment;
             return (
               <Pressable
                 key={tab.name}
                 className={`py-2 px-5 ${
                   isActive ? "border-b-2 border-[#12956B]" : ""
                 }`}
-                onPress={() => setActiveTab(tab.name)}
+                onPress={() => handleTabPress(tab.segment)}
               >
                 <Text
                   className={`text-[1.1rem] ${
@@ -608,10 +668,10 @@ const ProfileLayout = () => {
           })}
         </View>
 
-        {/* Animated Tab Content */}
-        <MotiView className="flex-1 mt-2">{renderContent()}</MotiView>
+        <View className="flex-1 mt-2">
+          <Slot />
+        </View>
 
-        {/* Profile/Cover Pic modal */}
         <Modal
           visible={isPicEditModalVisible.status}
           animationType="slide"
@@ -666,13 +726,10 @@ const ProfileLayout = () => {
   );
 };
 
-const { width: screenWidth } = Dimensions.get("window"); // Get the screen width
-const containerWidth = 340; // Original container width
-const dotPercentageSize = 11 / containerWidth; // Dot size as a percentage of container width
-
+const { width: screenWidth } = Dimensions.get("window");
+const containerWidth = 340;
+const dotPercentageSize = 11 / containerWidth;
 const responsiveDotSize = screenWidth * dotPercentageSize;
-// const Tab = createMaterialTopTabNavigator();
-
 const { width: screenWidth2 } = Dimensions.get("window");
 const scaleFactor = screenWidth2 / 410;
 
@@ -681,6 +738,24 @@ const styles = StyleSheet.create({
     color: "#E1E1E1",
     fontSize: responsiveFontSize(1.4),
     fontWeight: "semibold",
+  },
+  bottomSheetContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: Platform.OS === "ios" ? 30 : 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  bottomSheetOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    gap: 15,
+  },
+  bottomSheetText: {
+    color: "white",
+    fontSize: responsiveFontSize(1.9),
+    fontWeight: "500",
   },
 });
 

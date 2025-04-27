@@ -96,7 +96,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     isFetching: isCricketNextFetching,
     refetch: refetchNextCricket,
   } = useGetCricketNextMatchesQuery({});
-  const { nextMatches: nextCricketMatches } = cricketNextData || {};
+  const { nextMatches: nextCricketMatches = [] } = cricketNextData || {};
 
   const {
     data: cricketRecentData,
@@ -112,7 +112,6 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       <CricketLiveMatch
         liveMatches={liveCricketMatches}
         isFetching={isCricketLiveFetching}
-        onRefetch={refetchLiveCricket}
       />
     );
   };
@@ -144,6 +143,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { liveMatches: liveFootballMatches } = footballLiveData || {};
 
   const {
+    data: footballNextData,
+    isFetching: isFootballNextFetching,
+    refetch: refetchNextFootball,
+  } = useGetFootballNextMatchesQuery({});
+  const { nextMatches: nextFootballMatches } = footballNextData || {};
+
+  const {
     data: footballRecentData,
     isFetching: isFootballRecentFetching,
     refetch: refetchRecentFootball,
@@ -155,7 +161,6 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       <FootballLiveMatch
         liveMatches={liveFootballMatches}
         isFetching={isFootballLiveFetching}
-        onRefetch={refetchLiveFootball}
       />
     );
   };
@@ -171,7 +176,12 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   };
 
   const renderFootballNextMatches = () => {
-    return <FootballNextMatch />;
+    return (
+      <FootballNextMatch
+        nextMatches={nextFootballMatches}
+        isFetching={isFootballNextFetching}
+      />
+    );
   };
 
   const {
@@ -193,7 +203,6 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       <BasketballLiveMatch
         liveMatches={liveBasketballMatches}
         isFetching={isBasketballLiveFetching}
-        onRefetch={refetchLiveBasketball}
       />
     );
   };

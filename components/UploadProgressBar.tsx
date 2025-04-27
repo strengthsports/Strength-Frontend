@@ -1,79 +1,125 @@
-import { Animated } from "react-native";
-import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+// components/UploadProgressBar.tsx
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, View, StyleSheet } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "~/reduxStore";
+import { resetUploadProgress } from "~/reduxStore/slices/post/postSlice";
+import TextScallingFalse from "./CentralText";
 
-const UploadProgressBar = () => {
-  const { progress, isLoading } = useSelector((state: RootState) => state.post);
+const UploadProgressBar: React.FC = () => {
+  const dispatch = useDispatch();
+  const { progress, isLoading } = useSelector((s: RootState) => s.post);
 
   const widthAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(false);
+  const startTime = useRef<number>(0);
 
+  // 1️⃣ Start / stop sequence
   useEffect(() => {
-    let minDisplayTimer: NodeJS.Timeout;
-
     if (isLoading) {
+      // show immediately
       setVisible(true);
+      startTime.current = Date.now();
+      widthAnim.setValue(0);
+      fadeAnim.setValue(1);
 
+      // animate up to whatever progress the thunk has already emitted
       Animated.timing(widthAnim, {
         toValue: progress,
         duration: 500,
         useNativeDriver: false,
       }).start();
+    } else if (visible) {
+      // ensure at least 800ms visible
+      const elapsed = Date.now() - startTime.current;
+      const wait = Math.max(0, 800 - elapsed);
 
-      // Keep progress bar visible for at least 800ms
-      minDisplayTimer = setTimeout(() => {}, 800);
-    } else {
-      // Force the progress bar to fill to 100% before fade out
-      Animated.timing(widthAnim, {
-        toValue: 100,
-        duration: 300,
-        useNativeDriver: false,
-      }).start(() => {
-        // Fade out after forced 100% complete
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }).start(() => {
-          setVisible(false); // Completely remove from view
-          widthAnim.setValue(0); // Reset for next upload
-          fadeAnim.setValue(1); // Reset fade
+      setTimeout(() => {
+        // fill → fade → hide
+        Animated.sequence([
+          Animated.timing(widthAnim, {
+            toValue: 100,
+            duration: 300,
+            useNativeDriver: false,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setVisible(false);
+          dispatch(resetUploadProgress());
         });
-      });
+      }, wait);
     }
+  }, [isLoading]);
 
-    return () => {
-      clearTimeout(minDisplayTimer);
-    };
-  }, [isLoading, progress]);
+  // 2️⃣ Bump the bar along if progress changes mid‑upload
+  useEffect(() => {
+    if (isLoading) {
+      Animated.timing(widthAnim, {
+        toValue: progress,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [progress]);
 
   if (!visible) return null;
 
   return (
-    <Animated.View
-      style={{
-        top: 60,
-        width: "100%",
-        height: 4,
-        opacity: fadeAnim,
-        backgroundColor: "#000",
-      }}
-    >
-      <Animated.View
-        style={{
-          height: "100%",
-          width: widthAnim.interpolate({
-            inputRange: [0, 100],
-            outputRange: ["0%", "100%"],
-          }),
-          backgroundColor: "#12956B",
-        }}
-      />
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <View style={styles.messageContainer}>
+        <TextScallingFalse style={styles.messageText}>
+          Keep Strength open to finish posting...
+        </TextScallingFalse>
+      </View>
+      <View style={styles.track}>
+        <Animated.View
+          style={[
+            styles.bar,
+            {
+              width: widthAnim.interpolate({
+                inputRange: [0, 100],
+                outputRange: ["0%", "100%"],
+              }),
+            },
+          ]}
+        />
+      </View>
     </Animated.View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    // position: "absolute",   // so top:60 actually works
+    top: 60,
+    width: "100%",
+    backgroundColor: "#000",
+    paddingVertical: 6,
+  },
+  messageContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  messageText: {
+    color: "#808080",
+    fontSize: 16,
+    fontWeight: "300",
+  },
+  track: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "#333",
+  },
+  bar: {
+    height: "100%",
+    backgroundColor: "#12956B",
+  },
+});
 
 export default UploadProgressBar;

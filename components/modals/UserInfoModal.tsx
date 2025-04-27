@@ -5,17 +5,21 @@ import { useRouter } from "expo-router";
 import ModalLayout1 from "./layout/ModalLayout1";
 import { MaterialIcons } from "@expo/vector-icons";
 import nopic from "@/assets/images/nopic.jpg";
+import Captain from "../SvgIcons/teams/Captain";
+import CaptainSq from "../SvgIcons/teams/CaptainSq";
+import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
 
 const btn = "rounded-xl border border-[#12956B] py-2 w-[40%]";
 const roleViews =
   "rounded-2xl bg-[#141414] w-full p-5 flex-row justify-between items-center";
+  const visiblePosition = ["Captain","Vice-Captain","Admin"]
 
-const UserInfoModal = ({ visible, onClose, member }: any) => {
+const UserInfoModal = ({ visible, onClose, member,isTeam }: any) => {
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(false);
 
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: member?._id, type: member?.type })
+    JSON.stringify({ id: member?._id, type: "User" })
   );
 
   const handleFollowToggle = () => {
@@ -31,19 +35,21 @@ const UserInfoModal = ({ visible, onClose, member }: any) => {
   if (!visible || !member) return null;
 
   return (
-    <ModalLayout1 onClose={onClose} visible={visible} heightValue={1.8}>
+    <ModalLayout1 onClose={onClose} visible={visible} heightValue={isTeam ? 2.1:1.8}>
       <View className="pt-10">
-        <View>
+        <View className="relative">
           <Image
             source={member?.profilePic ? { uri: member.profilePic } : nopic}
             style={styles.profileImage}
           />
-          <TextScallingFalse className="mt-2 text-white text-5xl font-semibold">
+          <TextScallingFalse className="mt-2 text-white text-5xl font-semibold ">
             {member?.firstName} {member?.lastName}
           </TextScallingFalse>
-          <TextScallingFalse className="text-[#EAEAEA] font-light">
-            {member?.headline || "No description available"}
+          <TextScallingFalse className="text-[#EAEAEA] font-light w-2/3">
+            @{member?.username} | {member?.headline || "No description available"}
           </TextScallingFalse>
+          <View className="absolute right-0">
+          {isTeam && member?.position === "Captain" ? <CaptainSq/>  : member?.position ? <ViceCaptainSq/> :<></>}</View>
         </View>
 
         {/* Buttons Container */}
@@ -79,12 +85,15 @@ const UserInfoModal = ({ visible, onClose, member }: any) => {
               {member.role}
             </TextScallingFalse>
           </View>
-          <TouchableOpacity className={roleViews}>
+
+         {!isTeam && <TouchableOpacity className={roleViews}>
             <TextScallingFalse className="text-[#D44044]">
               Remove '{member.firstName} {member.lastName}'
             </TextScallingFalse>
             <MaterialIcons name="do-not-disturb" size={17} color="#D44044" />
-          </TouchableOpacity>
+          </TouchableOpacity>}
+          
+          
         </View>
       </View>
     </ModalLayout1>

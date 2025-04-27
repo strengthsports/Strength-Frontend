@@ -13,22 +13,28 @@ const MembersList = ({
   members,
   isEditView,
   limit = 4,
+  isAdmin
 }: {
   members: Member[];
   isEditView?: boolean;
   limit?: number;
+  isAdmin?:boolean
 }) => {
   const data = members.slice(0, limit);
+  console.log("1st",isAdmin);
+
+  console.log("Users:",data);
 
   return (
     <FlatList
       data={data}
-      keyExtractor={(item) => item._id.toString()}
+      keyExtractor={(item) => item?._id?.toString()}
       renderItem={({ item, index }) => (
         <MemberEntry
           member={item}
           isLast={index === data.length - 1}
           isEditView={isEditView}
+          isAdmin={isAdmin}
         />
       )}
     />
@@ -41,14 +47,17 @@ const MembersSection = ({
   moreText,
   isOwnProfile,
   isEditView,
+  isAdmin
 }: {
   members: Member[];
   sectionHeader?: string;
   moreText?: string;
   isOwnProfile?: boolean;
   isEditView?: boolean;
+  isAdmin?:boolean
 }) => {
   const router = useRouter();
+  console.log(isAdmin);
   return (
     <View className="bg-[#121212] w-[93%] mx-auto px-5 py-4 rounded-xl mb-3">
       {/* Header */}
@@ -72,6 +81,7 @@ const MembersSection = ({
         members={members}
         isEditView={isEditView}
         limit={isEditView ? members.length : 4}
+        isAdmin={isAdmin}
       />
 
       {/* Show more button */}

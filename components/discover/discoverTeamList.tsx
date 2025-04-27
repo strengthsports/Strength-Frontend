@@ -42,23 +42,30 @@ const DiscoverTeams = ({ sport }: { sport?: string }) => {
   }, [allTeams, removedIds]);
 
   const renderVerticalItem = ({ item }: { item: any }) => (
-    <View className="mx-3">
+    <TouchableOpacity 
+      className="mx-3"
+      onPress={() => router.push(`/(app)/(team)/teams/${item._id}`)}
+    >
       <TeamSuggestionCard
         team={item}
         removeSuggestion={removeSuggestion}
         size="regular"
       />
-    </View>
+    </TouchableOpacity>
   );
+  
 
   const renderPopularTeams = ({ item }: { item: SuggestTeam }) => (
-    <View className="mx-3">
+    <TouchableOpacity 
+      className="mx-3"
+      onPress={() => router.push(`/(app)/(team)/teams/${item._id}`)}
+    >
       <TeamSuggestionCard
         team={item}
         removeSuggestion={removeSuggestion}
         size="regular"
       />
-    </View>
+    </TouchableOpacity>
   );
 
   const renderHorizontalSection = () => (
@@ -81,15 +88,19 @@ const DiscoverTeams = ({ sport }: { sport?: string }) => {
             <View className="bg-black justify-center items-center gap-y-2 rounded-xl pb-4 relative border w-[320px] h-[200px] border-[#80808085] overflow-hidden">
               <View className="flex-row justify-center items-center">
                 {overflowTeams.map((team, index) => (
-                  <Image
+                  <TouchableOpacity
                     key={team._id}
-                    source={team.logo.url ? { uri: team.logo.url } : nopic}
-                    className="size-12 rounded-full border-4 border-black"
-                    style={{
-                      marginLeft: index === 0 ? 0 : -20,
-                      zIndex: 3 - index,
-                    }}
-                  />
+                    onPress={() => router.push(`/(app)/(team)/teams/${team._id}`)}
+                  >
+                    <Image
+                      source={team.logo.url ? { uri: team.logo.url } : nopic}
+                      className="size-12 rounded-full border-4 border-black"
+                      style={{
+                        marginLeft: index === 0 ? 0 : -20,
+                        zIndex: 3 - index,
+                      }}
+                    />
+                  </TouchableOpacity>
                 ))}
               </View>
               <TouchableOpacity
@@ -103,13 +114,16 @@ const DiscoverTeams = ({ sport }: { sport?: string }) => {
           );
         }
         return (
-          <View style={{ width: 320 }}>
+          <TouchableOpacity 
+            style={{ width: 320 }}
+            onPress={() => router.push(`/(app)/(team)/teams/${item._id}`)}
+          >
             <TeamSuggestionCard
               team={item}
               removeSuggestion={removeSuggestion}
               size="regular"
             />
-          </View>
+          </TouchableOpacity>
         );
       }}
       snapToAlignment="start"

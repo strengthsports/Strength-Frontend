@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -9,11 +9,22 @@ import { AppDispatch, RootState } from "@/reduxStore";
 // import { useSelector } from "react-redux";
 import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
 // import { RootState } from "@/reduxStore";
-import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
 import nopic from "../../../../../../assets/images/nopic.jpg";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 import TextScallingFalse from "~/components/CentralText";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import Edit from "../../../../../../components/SvgIcons/teams/Edit"
+import { Colors } from "~/constants/Colors";
+import SearchBar from "~/components/search/searchbar";
+import { AntDesign } from "@expo/vector-icons";
+import InviteUser from "~/components/common/InviteUser";
+import MembersSection from "~/components/profilePage/MembersSection";
+import { Member } from "~/types/user";
+import UserInfoModal from "~/components/modals/UserInfoModal";
+import { AssociateProvider, useAssociate } from "~/context/UseAssociate";
+
 
 // Define TypeScript Interfaces
 interface User {
@@ -24,10 +35,10 @@ interface User {
   headline: string;
 }
 
-interface Member {
-  user: User;
-  role: string;
-}
+// interface Member {
+//   user: User;
+//   role: string;
+// }
 
 const Members: React.FC = () => {
   const router = useRouter();
@@ -37,13 +48,28 @@ const Members: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  // const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
+  const [searchText, setSearchText] = useState("");
+
+  const {
+      setSelectMode,
+      isSelectModeEnabled,
+      selectedMembers,
+      openInviteModal,
+      isModalOpen,
+      selectedMember,
+      isInviteModalOpen,
+      closeModal,
+      closeInviteModal,
+    } = useAssociate();
 
   const isAdmin = user?._id === team?.admin?.[0]?._id;
 
   // Normalize roles to categories
-  const normalizeRole = (role: string): string => {
+  const normalizeRole = (role: string | undefined): string => {
+    if (!role) return "All-Rounders"; // or whatever default you prefer
+    
     const lower = role.toLowerCase();
     if (lower.includes("bowl")) return "Bowlers";
     if (lower.includes("bat")) return "Batters";
@@ -63,11 +89,11 @@ const Members: React.FC = () => {
 
   useEffect(() => {
      dispatch(fetchTeamDetails(team?._id));
-         
+         console.log("Team:---->",team?.members);
     if (team?.members) {
       setFilteredMembers(team.members);
     }
-  }, [team]);
+  }, []);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -92,93 +118,95 @@ const Members: React.FC = () => {
   }
 
   const groupedMembers = groupMembersByRole(filteredMembers);
+  console.log("Gtjfugf",groupedMembers);
+  return (
+    <><PageThemeView>
+        {/* Header */}
+        <View className="flex-row justify-between items-center h-16 px-5 border-b border-[#2B2B2B]">
+          <View className="flex-row items-center">
+              <TouchableOpacity onPress={() => router.back()}>
+                <AntDesign name="arrowleft" size={24} color="white" />
+              </TouchableOpacity>
+          </View>
+          <TextScallingFalse className="text-white text-5xl">
+            Members
+          </TextScallingFalse>
+            <TouchableOpacity
+              // onPress={handleRemoveSelected}
+              // disabled={selectedMembers.length === 0}
+            >
+              <TextScallingFalse
+                className={`text-4xl`}
+              >
+                Edit
+              </TextScallingFalse>
+            </TouchableOpacity>
+        </View>
+
+        <View>
+          <SearchBar
+            mode="search"
+            placeholder="Search associated members..."
+            searchText={searchText}
+            onChangeSearchText={setSearchText}
+          />
+
+{filteredMembers.length > 0 && (
+  <>
+    {Object.entries(groupedMembers).map(([role, members]) => {
+      // Filter out null users and extract just the user objects
+      const users = members
+        .filter(member => member.user !== null)
+        .map(member => member.user);
+      
+      return (
+        <React.Fragment key={role}>
+          <TextScallingFalse
+            className="text-[#8A8A8A]"
+            style={{
+              fontFamily: "Montserrat",
+              fontWeight: "600",
+              fontSize: 16,
+              marginLeft: 20,
+              marginBottom: 10,
+            }}
+          >
+            {role}
+          </TextScallingFalse>
+          <MembersSection 
+            members={users} 
+            isEditView={true}
+            isAdmin={user._id === team.admin[0]._id}
+          />
+        </React.Fragment>
+      );
+    })}
+  </>
+)}        
+</View>
+
+      </PageThemeView><UserInfoModal
+        visible={isModalOpen}
+        onClose={closeModal}
+        member={selectedMember}
+      /></>
+  );
+};
+
+export const Associates = () => {
   return (
     <PageThemeView>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 bg-black">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Icon name="arrowleft" size={28} color="white" />
-        </TouchableOpacity>
-        <TextScallingFalse className="text-white text-2xl font-bold">Members</TextScallingFalse>
-        {isAdmin && (
-          <TouchableOpacity onPress={() => router.push("/teams/settings/edit-members")}>
-            <View className="flex-row items-center space-x-2">
-              <Image source={require("../../../../../../assets/images/edit.png")} style={{ width: 20, height: 20 }} />
-              <TextScallingFalse className="text-white text-lg">Edit</TextScallingFalse>
-            </View>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <Divider className="bg-gray-600" />
-
-      {/* Search */}
-      <View className="px-4 py-4">
-        <View className="flex-row items-center bg-[#262626] rounded-full px-4 py-2">
-          <SearchIcon className="w-5 h-5 text-gray-400" />
-          <TextInput
-            placeholder="Search members..."
-            placeholderTextColor="gray"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            className="text-white TextScallingFalse-lg flex-1 ml-2"
-          />
-        </View>
-      </View>
-
-      {/* Members List */}
-      <FlatList
-        data={Object.keys(groupedMembers)}
-        keyExtractor={(role) => role}
-        renderItem={({ item: role }) => (
-          <View className="py-1 rounded-sm mb-0 mx-1">
-            <TextScallingFalse className="text-gray-500 text-4xl font-bold mb-2">{role}</TextScallingFalse>
-            <View className="bg-[#121212] rounded-2xl py-2">
-              {groupedMembers[role].map((member) => (
-                <TouchableOpacity
-                  key={member.user._id}
-                  className="flex-row items-center py-3 px-3 border-gray-800 rounded-lg"
-                  onPress={() => {
-                    if (isAdmin && team?._id && member?.user?._id) {
-                      router.push({
-                        pathname: `/teams/${team._id}/members/${member.user._id}` as RelativePathString,
-                        params: {
-                          // memberId: member.user._id,
-                          member: JSON.stringify(member.user),
-                          role: JSON.stringify(member.role),
-                        },
-                      });
-                    } else {
-                      setSelectedMember(member);
-                      setShowDownwardDrawer(true);
-                    }
-                  }}
-                >
-                  <Avatar.Image size={50} source={member.user.profilePic ? { uri: member.user.profilePic } : nopic} />
-                  <View className="ml-4 mt-2 flex-1 border-b pb-3 bottom-2 border-[#3B3B3B]">
-                    <TextScallingFalse className="text-white text-2xl font-medium">
-                      {member.user.firstName} {member.user.lastName}
-                    </TextScallingFalse>
-                    <TextScallingFalse className="text-gray-400 text-sm mr-9">{"@"}{member?.user?.username}{" "}|{" "}{member.user.headline}</TextScallingFalse>
-                  </View>
-                  <Icon name="right" size={12} color="gray" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-      />
-
-      {/* Downward Drawer for Non-Admin */}
-      {showDownwardDrawer && selectedMember && (
-        <DownwardDrawer
-          visible={showDownwardDrawer}
-          member={selectedMember}
-          onClose={() => setShowDownwardDrawer(false)}
-        />
-      )}
+      <AssociateProvider>
+        <Members />
+      </AssociateProvider>
     </PageThemeView>
   );
 };
+
+const styles = StyleSheet.create({
+  listContent: {
+    paddingHorizontal: 10,
+  },
+});
 
 export default Members;

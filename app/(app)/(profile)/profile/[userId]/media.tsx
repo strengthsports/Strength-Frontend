@@ -21,16 +21,21 @@ import { useLocalSearchParams, router, Href } from "expo-router";
 import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
 import { ProfileContext } from "./_layout";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import ClipsIcon from "~/components/SvgIcons/addpost/ClipsIcon";
 import { Post } from "~/types/post";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
+import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
+import { BlurView } from "expo-blur";
 
 interface MediaItem {
   imageUrl: string;
   postId: string;
   isVideoAsset: boolean;
   thumbnailUrl?: string;
+  hasMultipleAssets: boolean;
 }
+
+const iconContainerSize = 22;
+const iconSizeInsideCircle = 18;
 
 const Media = () => {
   const params = useLocalSearchParams();
@@ -62,8 +67,6 @@ const Media = () => {
     },
   ] = useLazyGetSpecificUserPostQuery();
 
-  // console.log("Raw postsData from API:", JSON.stringify(postsData, null, 2));
-
   const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
 
@@ -81,7 +84,7 @@ const Media = () => {
   const initialImageData = useMemo<MediaItem[]>(() => {
     const posts: Post[] = postsData || [];
 
-    const mappedData =
+    return (
       posts.flatMap((post: Post): MediaItem[] => {
         if (!post?._id || !post.assets || post.assets.length === 0) {
           return [];
@@ -89,58 +92,110 @@ const Media = () => {
 
         const isVideoPost = post.isVideo === true;
 
-        return (
-          post.assets
-            ?.filter((asset) => asset && asset.url)
-            ?.map(
-              (asset): MediaItem => ({
-                imageUrl: asset.url,
-                postId: post._id,
-                isVideoAsset: isVideoPost,
-                thumbnailUrl: undefined,
-              })
-            ) || []
-        );
-      }) || [];
-    return mappedData;
+        if (isVideoPost) {
+          return (
+            post.assets
+              ?.filter((asset) => asset && asset.url)
+              ?.map(
+                (asset): MediaItem => ({
+                  imageUrl: asset.url,
+                  postId: post._id!,
+                  isVideoAsset: true,
+                  thumbnailUrl: undefined,
+                  hasMultipleAssets: false,
+                })
+              ) || []
+          );
+        } else {
+          const firstAsset = post.assets[0];
+          if (!firstAsset?.url) {
+            return [];
+          }
+          const hasMultipleImages = post.assets.length > 1;
+          return [
+            {
+              imageUrl: firstAsset.url,
+              postId: post._id!,
+              isVideoAsset: false,
+              thumbnailUrl: undefined,
+              hasMultipleAssets: hasMultipleImages,
+            },
+          ];
+        }
+      }) || []
+    );
   }, [postsData]);
 
   useEffect(() => {
     const generateThumbnails = async (mediaItems: MediaItem[]) => {
       setThumbnailsLoading(true);
       let updated = false;
-      const thumbnailPromises = mediaItems.map(async (item, index) => {
-        if (item.isVideoAsset && item.imageUrl && !item.thumbnailUrl) {
-          try {
-            const { uri } = await VideoThumbnails.getThumbnailAsync(
-              item.imageUrl,
-              { time: 1000, quality: 0.5 }
-            );
-            return { index, thumbnailUrl: uri };
-          } catch (error) {
-            console.warn(
-              `Failed to generate thumbnail for ${item.imageUrl}:`,
-              error
-            );
-            return { index, thumbnailUrl: null };
-          }
+
+      const videoItemsToProcess = mediaItems
+        .map((item, index) => ({ ...item, originalIndex: index }))
+        .filter(
+          (item) => item.isVideoAsset && item.imageUrl && !item.thumbnailUrl
+        );
+
+      const thumbnailPromises = videoItemsToProcess.map(async (item) => {
+        try {
+          const { uri } = await VideoThumbnails.getThumbnailAsync(
+            item.imageUrl,
+            { time: 1000, quality: 0.5 }
+          );
+          return { index: item.originalIndex, thumbnailUrl: uri };
+        } catch (error) {
+          console.warn(
+            `Failed to generate thumbnail for ${item.imageUrl}:`,
+            error
+          );
+          return { index: item.originalIndex, thumbnailUrl: null };
         }
-        return null;
       });
+
       const results = await Promise.all(thumbnailPromises);
+
       setProcessedImageData((currentData) => {
+        if (currentData.length !== mediaItems.length) {
+          console.warn(
+            "State inconsistency detected before applying thumbnails. Using latest data structure."
+          );
+          const alignedData = mediaItems.map((item) => ({ ...item }));
+          results.forEach((result) => {
+            if (result && result.thumbnailUrl !== undefined) {
+              if (result.index >= 0 && result.index < alignedData.length) {
+                if (
+                  alignedData[result.index].thumbnailUrl !== result.thumbnailUrl
+                ) {
+                  alignedData[result.index].thumbnailUrl =
+                    result.thumbnailUrl ?? undefined;
+                  updated = true;
+                }
+              } else {
+                console.warn(
+                  `Thumbnail result index ${result.index} out of bounds during alignment.`
+                );
+              }
+            }
+          });
+          return updated ? alignedData : currentData;
+        }
+
         const newData = [...currentData];
         results.forEach((result) => {
           if (result && result.thumbnailUrl !== undefined) {
-            if (
-              newData[result.index] &&
-              newData[result.index].thumbnailUrl !== result.thumbnailUrl
-            ) {
-              newData[result.index] = {
-                ...newData[result.index],
-                thumbnailUrl: result.thumbnailUrl ?? undefined,
-              };
-              updated = true;
+            if (result.index >= 0 && result.index < newData.length) {
+              if (newData[result.index].thumbnailUrl !== result.thumbnailUrl) {
+                newData[result.index] = {
+                  ...newData[result.index],
+                  thumbnailUrl: result.thumbnailUrl ?? undefined,
+                };
+                updated = true;
+              }
+            } else {
+              console.warn(
+                `Thumbnail result index ${result.index} out of bounds for current data.`
+              );
             }
           }
         });
@@ -150,9 +205,11 @@ const Media = () => {
     };
 
     setProcessedImageData(initialImageData);
+
     const videosToProcess = initialImageData.filter(
-      (item) => item.isVideoAsset && !item.thumbnailUrl
+      (item) => item.isVideoAsset && item.imageUrl && !item.thumbnailUrl
     );
+
     if (videosToProcess.length > 0) {
       generateThumbnails(initialImageData);
     } else {
@@ -169,7 +226,10 @@ const Media = () => {
   const renderGridItem = useCallback(
     ({ item }: { item: MediaItem }) => {
       const displayUri = item.isVideoAsset ? item.thumbnailUrl : item.imageUrl;
-      const sourceUri = displayUri || null;
+
+      const sourceUri =
+        displayUri || (item.isVideoAsset ? item.imageUrl : null);
+
       const handlePress = () => {
         if (item.postId) {
           router.push({
@@ -183,7 +243,8 @@ const Media = () => {
           );
         }
       };
-      const iconSize = 20;
+
+      const currentIconSize = iconSizeInsideCircle;
 
       return (
         <TouchableOpacity
@@ -199,18 +260,31 @@ const Media = () => {
             />
           ) : (
             <View style={[styles.image, styles.placeholder]}>
-              {(item.isVideoAsset || thumbnailsLoading) && (
+              {(item.isVideoAsset ||
+                (item.isVideoAsset && thumbnailsLoading)) && (
                 <ActivityIndicator size="small" color="#ccc" />
               )}
             </View>
           )}
+
           {item.isVideoAsset && (
-            <>
-              <View style={styles.videoOverlay} />
-              <View style={styles.iconContainer}>
-                <ClipsIconMedia size={iconSize} />
-              </View>
-            </>
+            <BlurView
+              intensity={30}
+              tint="dark"
+              style={styles.videoIconContainer}
+            >
+              <ClipsIconMedia size={currentIconSize} />
+            </BlurView>
+          )}
+
+          {item.hasMultipleAssets && !item.isVideoAsset && (
+            <BlurView
+              intensity={30}
+              tint="dark"
+              style={styles.multipleIconContainer}
+            >
+              <MultipleImageIcon size={16} />
+            </BlurView>
           )}
         </TouchableOpacity>
       );
@@ -220,11 +294,12 @@ const Media = () => {
 
   const keyExtractor = useCallback(
     (item: MediaItem, index: number) =>
-      `${item.postId}-${item.imageUrl}-${index}`,
+      `${item.postId}-${item.imageUrl}-${index}-${item.isVideoAsset}-${item.hasMultipleAssets}`,
     []
   );
 
-  const isLoading = profileIsLoading || postsIsLoading || postsIsFetching;
+  const isLoading =
+    profileIsLoading || postsIsLoading || (postsIsFetching && !postsData);
   const hasError = profileHasError || postsIsError;
   const error = profileHasError || postsError;
 
@@ -237,10 +312,15 @@ const Media = () => {
   }
 
   if (hasError && !processedImageData.length) {
+    const errorMessage = error
+      ? typeof error === "string"
+        ? error
+        : JSON.stringify(error)
+      : "An unknown error occurred";
     return (
       <View style={styles.centerContent}>
-        <TextScallingFalse className="text-red-500">
-          Error loading media. {JSON.stringify(error)}
+        <TextScallingFalse className="text-red-500 text-center">
+          Error loading media: {errorMessage}
         </TextScallingFalse>
       </View>
     );
@@ -253,12 +333,24 @@ const Media = () => {
         keyExtractor={keyExtractor}
         numColumns={3}
         renderItem={renderGridItem}
-        ListEmptyComponent={MemoizedEmptyComponent}
-        contentContainerStyle={styles.listContentContainer}
+        ListEmptyComponent={!isLoading ? MemoizedEmptyComponent : null}
+        contentContainerStyle={[
+          styles.listContentContainer,
+          processedImageData.length === 0 && styles.emptyListContainer,
+        ]}
         windowSize={11}
-        initialNumToRender={12}
-        maxToRenderPerBatch={12}
+        initialNumToRender={15}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        removeClippedSubviews={true}
       />
+      {thumbnailsLoading && (
+        <ActivityIndicator
+          style={styles.bottomLoader}
+          color="#555"
+          size="small"
+        />
+      )}
     </View>
   );
 };
@@ -266,23 +358,27 @@ const Media = () => {
 export default Media;
 
 const { width } = Dimensions.get("window");
-const itemMargin = 2;
+const itemMargin = 1;
 const numColumns = 3;
-const itemSize = (width - itemMargin * (numColumns * 2)) / numColumns;
+const itemSize = (width - itemMargin * (numColumns - 1) * 2) / numColumns;
 
 const styles = StyleSheet.create({
   centerContent: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
     width: "100%",
     height: "100%",
   },
   placeholder: {
-    backgroundColor: "#333",
+    backgroundColor: "#282828",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -292,19 +388,42 @@ const styles = StyleSheet.create({
     margin: itemMargin,
     position: "relative",
     backgroundColor: "#222",
+    overflow: "hidden",
   },
-  videoOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    // backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 1,
-  },
-  iconContainer: {
+  videoIconContainer: {
     position: "absolute",
     top: 5,
     right: 5,
     zIndex: 2,
+    width: iconContainerSize,
+    height: iconContainerSize,
+    borderRadius: iconContainerSize / 2,
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  multipleIconContainer: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    zIndex: 2,
+    width: iconContainerSize,
+    height: iconContainerSize,
+    borderRadius: iconContainerSize / 2,
+    // backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   listContentContainer: {
-    paddingBottom: 4,
+    paddingBottom: itemMargin,
+  },
+  bottomLoader: {
+    position: "absolute",
+    bottom: 10,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
 });

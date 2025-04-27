@@ -12,6 +12,7 @@ import {
 import TextScallingFalse from "~/components/CentralText";
 // import { ExploreImageBanner, hashtagData } from "~/constants/hardCodedFiles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import Hashtag from "~/components/explorePage/hashtag";
 import { useGetTrendingHashtagQuery } from "~/reduxStore/api/explore/hashtagApi";
 import {
@@ -43,6 +44,7 @@ import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoa
 const TrendingAll = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   const renderSwiper = () => {
     const { data: articles, error, isLoading } = useGetSportArticleQuery();
@@ -77,6 +79,7 @@ const TrendingAll = () => {
     } = useGetTrendingHashtagQuery({});
 
     if (isLoading) return <HastagSkeletonLoader />;
+    // console.log("Hashtag error:", error);
     if (error)
       return (
         <View
@@ -160,7 +163,7 @@ const TrendingAll = () => {
     isFetching: isCricketNextFetching,
     refetch: refetchNextCricket,
   } = useGetCricketNextMatchesQuery({});
-  const { nextMatches: nextCricketMatches } = cricketNextData || {};
+  const { nextMatches: nextCricketMatches = [] } = cricketNextData || {};
 
   const {
     data: footballLiveData,
@@ -168,6 +171,13 @@ const TrendingAll = () => {
     refetch: refetchLiveFootball,
   } = useGetFootballLiveMatchesQuery({});
   const { liveMatches: liveFootballMatches } = footballLiveData || {};
+
+  const {
+    data: footballNextData,
+    isFetching: isFootballNextFetching,
+    refetch: refetchNextFootball,
+  } = useGetFootballNextMatchesQuery({});
+  const { nextMatches: nextFootballMatches } = footballNextData || {};
 
   const {
     data: basketballLiveData,
@@ -205,17 +215,51 @@ const TrendingAll = () => {
     );
   };
 
+  const topThreeNextMatches =
+    nextCricketMatches.length > 0
+      ? [
+          {
+            series: nextCricketMatches[0].series,
+            matches: nextCricketMatches[0].matches.slice(0, 3),
+          },
+        ]
+      : [];
+
   const renderCricketNextMatches = () => {
     return (
       <CricketNextMatch
-        nextMatches={nextCricketMatches}
+        nextMatches={topThreeNextMatches}
         isFetching={isCricketNextFetching}
       />
+      // <>
+      //   <TouchableOpacity
+      //     className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
+      //     activeOpacity={0.6}
+      //     onPress={() =>
+      //       router.push(`/(app)/(tabs)/explore/allCategory/SelectedSport`)
+      //     }
+      //   >
+      //     <View className="flex-row items-center justify-center">
+      //       <Text className="text-white">See more</Text>
+      //       <MaterialCommunityIcons
+      //         name="chevron-right"
+      //         size={18}
+      //         color="#E9E9E9"
+      //         className="mt-0.5 ml-1.5"
+      //       />
+      //     </View>
+      //   </TouchableOpacity>
+      // </>
     );
   };
 
   const renderFootballNextMatches = () => {
-    return <FootballNextMatch />;
+    return (
+      <FootballNextMatch
+        nextMatches={nextFootballMatches}
+        isFetching={isFootballNextFetching}
+      />
+    );
   };
 
   const sections = [

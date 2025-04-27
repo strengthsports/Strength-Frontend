@@ -14,7 +14,7 @@ import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import { Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { AppDispatch, RootState } from "~/reduxStore";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import EditIcon from "~/components/SvgIcons/profilePage/EditIcon";
@@ -190,7 +190,7 @@ const Overview = () => {
                           </Text>
                         </View>
                       ))}
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                       activeOpacity={0.7}
                       className="absolute bottom-8 right-5"
                       onPress={() =>
@@ -198,7 +198,7 @@ const Overview = () => {
                       }
                     >
                       <EditIcon />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                   </View>
                 )}
 
@@ -339,7 +339,7 @@ const Overview = () => {
         <RecentPostsSection
           posts={postsWithImages}
           onSeeAllPress={() =>
-            router.push("/(app)/(tabs)/profile/activity/posts")
+            router.push("/(app)/(tabs)/profile/activity" as Href)
           }
           scaleFactor={scaleFactor}
         />

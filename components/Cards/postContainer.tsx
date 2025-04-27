@@ -1,4 +1,11 @@
-import React, { useState, useRef, forwardRef, useMemo, memo } from "react";
+import React, {
+  useState,
+  useRef,
+  forwardRef,
+  useMemo,
+  memo,
+  useEffect,
+} from "react";
 import {
   View,
   Animated,
@@ -6,6 +13,7 @@ import {
   NativeSyntheticEvent,
   TextLayoutEventData,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -20,22 +28,18 @@ import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import { RelativePathString } from "expo-router";
 import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
-import {
-  postComment,
-  toggleLike,
-  voteInPoll,
-} from "~/reduxStore/slices/feed/feedSlice";
+import { toggleLike, voteInPoll } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import CommentModal from "../feedPage/CommentModal";
-import StickyInput from "../ui/StickyInput";
-// import { useFetchCommentsQuery } from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
-import CustomVideoPlayer from "../PostContainer/VideoPlayer";
 import { Platform } from "react-native";
+import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
+import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
+import * as VideoThumbnails from "expo-video-thumbnails";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -96,56 +100,28 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
     // State for individual post
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showSeeMore, setShowSeeMore] = useState(false);
     const [activeIndex, setActiveIndex] = useState<any>(0);
-    // Comment for individual post
-    const [commentText, setCommentText] = useState("");
-    const [isPosting, setIsPosting] = useState(false);
-    const [replyingTo, setReplyingTo] = useState<{
-      commentId: string;
-      name: string;
-    } | null>(null);
 
-    const progress = useRef(new Animated.Value(0)).current;
+    const [containerWidth, setContainerWidth] = useState(
+      Dimensions.get("window").width
+    );
 
-    // const { refetch: refetchComments } = useFetchCommentsQuery({
-    //   targetId: item._id,
-    //   targetType: "Post",
-    // });
-
-    const handleTextChange = (text: string) => {
-      setCommentText(text);
-      if (text === "" && replyingTo) {
-        setReplyingTo(null);
-      }
-    };
-
-    const handlePostComment = async () => {
-      if (!commentText.trim()) return;
-      setIsPosting(true);
-      const isReply = replyingTo !== null;
-      const textToPost = commentText;
-      // Clear the input and reply context.
-      setCommentText("");
-      if (isReply) setReplyingTo(null);
-      try {
-        await dispatch(
-          postComment({
-            targetId: isReply ? replyingTo!.commentId : item._id,
-            targetType: isReply ? "Comment" : "Post",
-            text: textToPost,
-          })
-        ).unwrap();
-        await refetchComments();
-      } catch (error) {
-        console.log("Failed to post comment:", error);
-      }
-      setCommentText("");
-      setIsPosting(false);
-    };
+    useEffect(() => {
+      const updateLayout = () => {
+        setContainerWidth(Dimensions.get("window").width);
+      };
+      const dimensionsHandler = Dimensions.addEventListener(
+        "change",
+        updateLayout
+      );
+      updateLayout();
+      return () => {
+        dimensionsHandler?.remove();
+      };
+    }, []);
 
     // Get the openBottomSheet function from context
-    const { openBottomSheet, closeBottomSheet } = useBottomSheet();
+    const { openBottomSheet } = useBottomSheet();
 
     // Define the menu items for this specific post
     const handleOpenBottomSheet = ({ type }: { type: string }) => {
@@ -271,14 +247,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       setActiveIndex(index);
     };
 
-    // Caption expanding
-    const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
-      const { lines } = e.nativeEvent;
-      const shouldShowSeeMore =
-        lines.length > 2 || (lines as any).some((line: any) => line.truncated);
-      setShowSeeMore(shouldShowSeeMore);
-    };
-
     // Function to render caption with clickable hashtags and mention tags
     const renderCaptionWithTags = (
       caption: string,
@@ -386,6 +354,27 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         ),
       [item.caption, item.taggedUsers, isExpanded]
     );
+
+    const [thumbnail, setThumbnail] = useState(null);
+
+    useEffect(() => {
+      const generateThumbnail = async () => {
+        if (!item?.assets || item.assets.length === 0 || !item.assets[0].url)
+          return;
+
+        try {
+          const { uri } = await VideoThumbnails.getThumbnailAsync(
+            item.assets[0].url,
+            { time: 15000 }
+          );
+          setThumbnail(uri);
+        } catch (e) {
+          console.warn(e);
+        }
+      };
+
+      generateThumbnail();
+    }, [item?.assets]);
 
     return (
       <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
@@ -502,12 +491,59 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
           {/* Assets section */}
           {item.isVideo ? (
-            <CustomVideoPlayer
-              videoUri={item.assets[0].url}
-              autoPlay={isVisible as boolean}
-              isFeedPage={true}
-              postId={item._id}
-            />
+            <View
+              style={{
+                aspectRatio: 16 / 9,
+                width: containerWidth,
+              }}
+              className="overflow-hidden bg-transparent"
+            >
+              <TouchableWithDoublePress
+                className="flex-1 relative overflow-hidden ml-2"
+                activeOpacity={0.95}
+                onSinglePress={() => {
+                  if (isFeedPage && item) {
+                    router.push({
+                      pathname: `/post-view/${item._id}` as RelativePathString,
+                    });
+                  }
+                }}
+                onDoublePress={handleDoubleTap}
+              >
+                <Image
+                  source={thumbnail}
+                  contentFit="cover"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    inset: 0,
+                    borderTopLeftRadius: 16,
+                    borderBottomLeftRadius: 16,
+                    borderTopWidth: 0.5,
+                    borderBottomWidth: 0.5,
+                    borderLeftWidth: 0.5,
+                    borderColor: "#2F2F2F",
+                  }}
+                  placeholder={require("../../assets/images/nocover.png")}
+                  placeholderContentFit="cover"
+                  transition={500}
+                  cachePolicy="memory-disk"
+                />
+                <View style={styles.videoOverlay} />
+                <View
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    zIndex: 2,
+                    transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
+                  }}
+                >
+                  <ClipsIconMedia size={40} />
+                </View>
+              </TouchableWithDoublePress>
+            </View>
           ) : (
             item.assets &&
             item.assets.length > 0 &&
@@ -576,4 +612,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
 export default PostContainer;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  videoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    zIndex: 1,
+  },
+});

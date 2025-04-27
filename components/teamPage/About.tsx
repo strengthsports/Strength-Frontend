@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Animated, Easing } from "react-native";
+import { View, Text, ScrollView, Animated, Easing, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import Supporters from "~/components/SvgIcons/teams/Supporters";
@@ -15,7 +15,9 @@ import {
   checkSupportStatus,
   clearSupportError
 } from "../../reduxStore/slices/team/teamSlice";
-import { selectIsSupporting, selectSupporterCount, selectSupportLoading, selectSupportError } from "../../reduxStore/slices/team/teamSlice";
+import { selectIsSupporting, selectSupporterCount, selectSupportError } from "../../reduxStore/slices/team/teamSlice";
+import { useFollow } from "~/hooks/useFollow";
+import { FollowUser } from "~/types/user";
 
 interface AboutProps {
   teamDetails: any;
@@ -26,55 +28,114 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const { user } = useSelector((state: RootState) => state.profile);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [descriptionLines, setDescriptionLines] = useState(0);
+  const { followUser, unFollowUser } = useFollow();
   
-  // Get support state from Redux
+  // Redux state
   const isSupporting = useSelector(selectIsSupporting);
   const supporterCount = useSelector(selectSupporterCount);
-  const supportLoading = useSelector(selectSupportLoading);
   const supportError = useSelector(selectSupportError);
+  
+  // Local UI state for instant updates
+  const [instantSupportState, setInstantSupportState] = useState({
+    isSupporting: teamDetails?.isSupporting,
+    count: supporterCount
+  });
+
+  //handle follow
+    const handleFollow = async () => {
+      try {
+        const followData: FollowUser = {
+          followingId: teamDetails._id,
+          followingType: "Team",
+        };
+  
+        await followUser(followData,true);
+      } catch (err) {
+        console.error("Follow error:", err);
+      }
+    };
+  
+    //handle unfollow
+    const handleUnfollow = async () => {
+      try {
+        const unfollowData: FollowUser = {
+          followingId: teamDetails._id,
+          followingType: "Team",
+        };
+  
+        await unFollowUser(unfollowData,true);
+      } catch (err) {
+        console.error("Unfollow error:", err);
+      }
+    };
 
   useEffect(() => {
-    // Check support status when component mounts or teamId changes
     if (teamDetails?._id && user?._id) {
       dispatch(checkSupportStatus(teamDetails._id));
     }
   }, [teamDetails?._id, user?._id, dispatch]);
 
   useEffect(() => {
-    // Handle support errors
+    // Sync with Redux when data changes
+    setInstantSupportState({
+      isSupporting: teamDetails?.isSupporting,
+      count: supporterCount
+    });
+  }, [teamDetails?.isSupporting, supporterCount]);
+
+  useEffect(() => {
     if (supportError) {
       console.error("Support Error:", supportError);
+      // Revert if error occurs
+      setInstantSupportState({
+        isSupporting: !instantSupportState.isSupporting,
+        count: instantSupportState.isSupporting ? 
+          instantSupportState.count - 1 : 
+          instantSupportState.count + 1
+      });
       dispatch(clearSupportError());
     }
   }, [supportError, dispatch]);
 
   const handleSupportPress = () => {
-    if (!teamDetails?._id || supportLoading || !user?._id) return;
+    if (!teamDetails?._id || !user?._id) return;
     
-    if (isSupporting) {
-      dispatch(unsupportTeam(teamDetails._id));
-    } else {
-      dispatch(supportTeam(teamDetails._id));
-    }
+    // Instant UI update
+    const newSupportState = !instantSupportState.isSupporting;
+    setInstantSupportState({
+      isSupporting: newSupportState,
+      count: newSupportState ? 
+        instantSupportState.count + 1 : 
+        instantSupportState.count - 1
+    });
+
+    teamDetails.isSupporting ? handleUnfollow() : handleFollow();
+  };
+
+  const toggleDescription = () => {
+    setShowFullDescription(!showFullDescription);
+  };
+
+  const onTextLayout = (e: any) => {
+    setDescriptionLines(e.nativeEvent.lines.length);
   };
 
   const handleEstablished = () => {
     if (!teamDetails?.establishedOn) return "Not specified";
     
     const date = new Date(teamDetails.establishedOn);
-    const formattedDate = date.toLocaleDateString("en-GB", {
+    return date.toLocaleDateString("en-GB", {
       month: "long",
       year: "numeric",
     });
-    return formattedDate; 
   };
 
   const handleTeamUniqueId = () => {
     const name = teamDetails?.name || ""; 
     const id = teamDetails?._id || ""; 
-    const firstTwoLetters = name.substring(0, 2).toUpperCase(); 
-    const lastFourDigits = id.slice(-4).toUpperCase(); 
-    return `${firstTwoLetters}${lastFourDigits}`;
+    return `${name.substring(0, 2).toUpperCase()}${id.slice(-4).toUpperCase()}`;
   };
 
   const handleCopySuccess = () => {
@@ -110,53 +171,58 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
         </Animated.View>
       )}
 
-      <View className="p-4 bg-[#0B0B0B] rounded-lg">
+      <View className="p-6 bg-[#0B0B0B] rounded-lg">
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center">
             <Supporters />
             <Text className="text-white text-3xl ml-3 font-bold">
-              {supporterCount || 0}
+              {instantSupportState.count || 0}
             </Text>
-            <Text className="text-[#565656] text-4xl font-semibold ml-1">
+            <Text className="text-[#9C9C9C] text-4xl font-medium ml-1">
               Supporters
             </Text>
           </View>
           
-          {supportLoading ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <CustomButton
-              buttonName={isSupporting ? "✓ Supporting" : "+ Support"}
-              onPress={handleSupportPress}
-              disabled={supportLoading || !user?._id}
-              buttonClass={isSupporting ? "bg-green-500" : "bg-blue-500"}
-            />
-          )}
+          <CustomButton
+            buttonName={instantSupportState.isSupporting || teamDetails?.isSupporting ? "✓ Supporting" : "+ Support"}
+            onPress={handleSupportPress}
+          />
         </View>
 
-        <TextScallingFalse className="text-white bg-[#0B0B0B] pt-8 text-5xl font-bold mb-2">
+        <TextScallingFalse className="text-[#CECECE] pt-8 text-5xl font-bold mb-2">
           Description
         </TextScallingFalse>
-        <TextScallingFalse className="text-white text-xl mr-3">
-          {teamDetails?.description || "No description available"}
-        </TextScallingFalse>
+        <View>
+          <TextScallingFalse 
+            className="text-[#CECECE] text-[14px] mr-3"
+            numberOfLines={showFullDescription ? undefined : 4}
+            onTextLayout={onTextLayout}
+          >
+            {teamDetails?.description || "No description available"}
+          </TextScallingFalse>
+          {!showFullDescription && descriptionLines > 3 && (
+            <TouchableOpacity onPress={toggleDescription}>
+              <Text className="text-[#818181] text-xl mt-1">See More</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <Members />
-        <Text className="text-white text-4xl ml-1">Members - {teamDetails?.members?.length || 0}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-3">Members - {teamDetails?.members?.length || 0}</Text>
       </View>
 
       <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <EstabilishedOn />
-        <Text className="text-white text-4xl ml-2">
+        <Text className="text-[#CECECE] text-3xl ml-3">
           Established On - {handleEstablished()}
         </Text>
       </View>
 
       <View className="p-2 ml-3 flex flex-row items-center">
         <TeamId />
-        <Text className="text-white ml-2"> Team unique ID - {handleTeamUniqueId()}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-2"> Team unique ID - {handleTeamUniqueId()}</Text>
         <CopyCode code={handleTeamUniqueId()} onCopy={handleCopySuccess} />
       </View>
     </ScrollView>

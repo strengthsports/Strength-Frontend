@@ -81,8 +81,10 @@ const SuggestedSupportScreen: React.FC = () => {
     setUsers(prevUsers => prevUsers.filter(user => user._id !== id));
   };
 
+  const [finalLoading,setFinalLoading] = useState(false)
   const handleContinue = async () => {
     console.log("Selected Sports:", selectedSports);
+    setFinalLoading(true);
 
     const onboardingData = {
       headline: headline,
@@ -115,6 +117,7 @@ const SuggestedSupportScreen: React.FC = () => {
       // console.log(response);
 
       dispatch(fetchMyProfile(user?._id));
+      setFinalLoading(false);
 
       // Alert the successful response
       Toast.show({
@@ -145,7 +148,9 @@ const SuggestedSupportScreen: React.FC = () => {
     );
   };
 
+
   const handleSkip = async () => {
+    setFinalLoading(true);
     const onboardingData = {
       headline: headline,
       profilePic: profilePic?.fileObject,
@@ -164,7 +169,7 @@ const SuggestedSupportScreen: React.FC = () => {
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
       // console.log(response);
-
+      setFinalLoading(false);
       // Alert the successful response
       Toast.show({
         type: "success",
@@ -260,7 +265,11 @@ const SuggestedSupportScreen: React.FC = () => {
 
       {/* Fixed Skip/Continue Button */}
       <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 70, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', paddingBottom: 20}}>
-        <TouchableOpacity activeOpacity={0.7}
+        {
+          finalLoading ?
+          <ActivityIndicator size={'small'} color={'#606060'}/>
+          :
+          <TouchableOpacity activeOpacity={0.7}
           className={`py-2 rounded-full ${selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
             }`}
           style={{
@@ -276,6 +285,7 @@ const SuggestedSupportScreen: React.FC = () => {
             {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
           </TextScallingFalse>
         </TouchableOpacity>
+        }
       </View>
       <Toast />
     </SafeAreaView>

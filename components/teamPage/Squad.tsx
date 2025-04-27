@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
 import Nopic from "../../assets/images/nopic.jpg";
+import UserInfoModal from "../modals/UserInfoModal";
 
 interface SquadProps {
   teamDetails: any;
@@ -84,8 +85,9 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         style={{
           fontFamily: "Sansation-Regular",
           color: "#CECECE",
-          fontSize: 26,
+          fontSize: 24,
           marginTop: 16,
+          marginLeft:14,
         }}
       >
         {title}
@@ -93,17 +95,18 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       <View className="flex mt-6 mb-5 flex-row flex-wrap">
         {members.length > 0 ? (
           members.map((member) => {
-            const user = member.user;
+            const user = {...member.user,role:member.role,position:member.position};
+            console.log(user);
             const memberKey = member._id || `member-${Math.random().toString(36).substr(2, 9)}`;
             const profilePic = user?.profilePic ? { uri: user.profilePic } : Nopic;
             return (
               <View
                 key={memberKey}
-                className="w-1/2 p-1"
+                className="w-1/2 px-2 pb-4"
               >
                 <TouchableOpacity
                   onPress={() => {
-                    setSelectedMember(member);
+                    setSelectedMember(user);
                     setShowDownwardDrawer(true);
                   }}
                 >
@@ -172,8 +175,11 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
             onPress={() => router.push(`/(app)/(team)/teams/${teamId}/members`)}
             activeOpacity={0.7}
             style={{
-              padding: 10,
+              zIndex:90,
+              
+              padding: 2,
               alignItems: "center",
+              // backgroundColor:"red",
               justifyContent: "center",
             }}
           >
@@ -189,11 +195,11 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           )
         )}
 
-        <DownwardDrawer
+        <UserInfoModal
           visible={showDownwardDrawer}
           onClose={() => setShowDownwardDrawer(false)}
           member={selectedMember}
-          team = {teamDetails}
+          isTeam={true}
         />
       </ScrollView>
     </View>

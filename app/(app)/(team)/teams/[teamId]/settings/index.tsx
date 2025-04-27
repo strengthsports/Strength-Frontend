@@ -32,6 +32,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import InviteMem from "~/assets/images/InviteMem.png";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import AddMember from "~/components/SvgIcons/teams/AddMember";
+import RightArrow from "~/components/SvgIcons/teams/RightArrow";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import Calendar from "~/components/SvgIcons/teams/Calendar";
 
 const DEFAULT_PROFILE_PIC = "https://via.placeholder.com/50";
 
@@ -313,16 +317,16 @@ const Settings = () => {
   const renderMember = ({ item: member }: { item: TeamMember }) => (
     <View style={styles.memberItem}>
       <Avatar.Image
-        size={50}
-        source={{ uri: member.user.profilePic || DEFAULT_PROFILE_PIC }}
+        size={40}
+        source={{ uri: member?.user?.profilePic || DEFAULT_PROFILE_PIC }}
         style={styles.memberAvatar}
       />
       <View style={styles.memberInfo}>
         <TextScallingFalse style={styles.memberName}>
-          {member.user.firstName} {member.user.lastName}
+          {member?.user?.firstName} {member?.user?.lastName}
         </TextScallingFalse>
         <TextScallingFalse style={styles.memberRole}>
-          {getMemberPosition(member)} | {member.user.headline || "No headline"}
+         @{member?.user?.username} | {member?.user?.headline || "No headline"}
         </TextScallingFalse>
       </View>
       {isUserAdmin && (
@@ -345,9 +349,9 @@ const Settings = () => {
           }}
         >
           <TextScallingFalse style={styles.memberPositionText}>
-            {member.position?.toUpperCase() || "MEMBER"}
+            {member.position }
           </TextScallingFalse>
-          <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
+         <RightArrow/>
         </TouchableOpacity>
       )}
     </View>
@@ -416,7 +420,7 @@ const Settings = () => {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#808080" />
+              <BackIcon/>
             </TouchableOpacity>
             
             <TextScallingFalse style={styles.headerTitle}>Team Settings</TextScallingFalse>
@@ -456,7 +460,7 @@ const Settings = () => {
                   <Image source={{ uri: formData.logo }} style={styles.logo} />
                 ) : (
                   <View style={styles.logoPlaceholder}>
-                    <MaterialCommunityIcons name="account-group" size={48} color="white" />
+                    <MaterialCommunityIcons name="camera" size={48} color="white" />
                   </View>
                 )}
                 {isUserAdmin && (
@@ -544,25 +548,40 @@ const Settings = () => {
                     {formData.established || "Add established date"}
                   </TextScallingFalse>
                   {isUserAdmin && (
-                  <MaterialCommunityIcons name="calendar-blank" size={20} color="#999" />
+                    <View className="mr-1">
+                   <Calendar/>
+                   </View>
                   )}
                 </TouchableOpacity>
               </View>
 
               {/* Description */}
-              <View className="flex-row justify-between border-b-[0.2px] border-[#626262] mb-7 pb-6">
-                <TextScallingFalse className="text-white mt-3 " style={styles.fieldLabel}>Description</TextScallingFalse>
-                <TouchableOpacity
+              <TouchableOpacity
                   onPress={() => handleFieldPress("description")}
                  
                 >
-                 {isUserAdmin && (
-                    <MaterialCommunityIcons name="chevron-right" size={20} color="#999" />
-                  )}
-                 
-                </TouchableOpacity>
+              <View className=" justify-between border-b-[1px] border-[#202020] mb-7 pb-4">
+                <View  className="flex-row justify-between  border-[#626262]">
+                <TextScallingFalse className="text-white mt-3 " style={styles.fieldLabel}>Description</TextScallingFalse>
                 
+                   
+                
+                 
+               
+                </View>
+                <TextScallingFalse className="mt-3 text-white" numberOfLines={1}>
+                    {formData.description || "Add established date"}
+                  </TextScallingFalse>
               </View>
+            
+              </TouchableOpacity>
+
+
+
+
+
+
+
             </View>
 
             {/* Members Section */}
@@ -575,11 +594,12 @@ const Settings = () => {
                 onPress={() => inviteModalRef.current?.open()}
                 style={styles.inviteButton}
               >
-                 <Image 
-                  source={InviteMem}
-                  style={styles.image}
-                  resizeMode="contain"
-                />
+                <View className="bg-[#363636] w-12 h-12 rounded-full flex items-center justify-center">
+                 <View className="w-6 h-6"> 
+                <AddMember />
+               </View>
+               </View>
+                
                 <TextScallingFalse style={styles.inviteText}>Invite Members</TextScallingFalse>
               </TouchableOpacity>
             )}
@@ -822,11 +842,11 @@ const styles = StyleSheet.create({
     marginVertical: 25,
   },
   logoWrapper: {
-    width: 110,
-    height: 110,
+    width: 120,
+    height: 120,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#444',
+    borderWidth: 4,
+    borderColor: '#131313',
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -848,7 +868,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     // bottom: 0,
     right: 0,
-    backgroundColor: '#333',
+    // backgroundColor: '#333',
     borderRadius: 15,
     padding: 8,
    top:0
@@ -956,6 +976,7 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 10,
     marginTop: 3,
+    width:180,
   },
   memberAction: {
     flexDirection: 'row',
@@ -963,8 +984,8 @@ const styles = StyleSheet.create({
   },
   memberPositionText: {
     color: '#7A7A7A',
-    fontSize: 12,
-    marginRight: 5,
+    fontSize: 10,
+    marginRight: 14,
     textTransform: 'uppercase',
   },
   noMembers: {

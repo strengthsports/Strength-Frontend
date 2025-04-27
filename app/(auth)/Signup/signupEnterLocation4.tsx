@@ -23,7 +23,7 @@ import useGetAddress from "@/hooks/useGetAddress";
 import { Vibration, ToastAndroid, Platform } from "react-native";
 import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
-import debounce from "lodash";
+import debounce from "lodash/debounce";
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
 

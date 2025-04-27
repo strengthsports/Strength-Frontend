@@ -5,7 +5,7 @@ import {
   Platform,
   Vibration,
 } from "react-native";
-import React from "react";
+import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import Logo from "@/components/logo";
@@ -19,6 +19,8 @@ import Toast from "react-native-toast-message";
 import { usernameSchema } from "~/schemas/profileSchema";
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import { checkUsernameAvailability } from "~/utils/usernameCheck";
+import { ActivityIndicator } from "react-native-paper";
+import { ScrollView } from "react-native-gesture-handler";
 
 const signupEnterUsername3 = () => {
   const router = useRouter();
@@ -48,9 +50,10 @@ const signupEnterUsername3 = () => {
     dispatch(setUsername(value)); // Update Redux store with the username
   };
 
+  const [isLoading, setIsLoading] = useState(false);
   const handleNext = async () => {
+    setIsLoading(true);
     const validation = usernameSchema.safeParse({ username });
-  
     if (!validation.success) {
       const errorMessage =
         validation.error.errors[0]?.message ||
@@ -62,6 +65,7 @@ const signupEnterUsername3 = () => {
       );
   
       feedback(errorMessage);
+      setIsLoading(false);
       return;
     }
   
@@ -70,29 +74,33 @@ const signupEnterUsername3 = () => {
   
     if (!result.ok || result.data?.exists) {
       feedback("This username is already taken. Try another one.");
+      setIsLoading(false);
       return;
     }
-  
     // Navigate to the next screen if validation passes
+    setIsLoading(false);
     router.push("/Signup/signupEnterLocation4");
   };
   
 
   return (
     <PageThemeView>
+      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
       <View style={{ marginTop: 80 }}>
         <View>
           <Logo />
         </View>
       </View>
       <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ marginTop: 55 }}>
+
+        <View style={{ gap: 30}}>
+        <View style={{ marginTop: 55}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 23, fontWeight: "500" }}
           >
             What should we call you?
           </TextScallingFalse>
-          <View style={{ width: "83%" }}>
+          <View>
             <TextScallingFalse
               style={{ color: "white", fontSize: 12, fontWeight: "400" }}
             >
@@ -100,7 +108,7 @@ const signupEnterUsername3 = () => {
             </TextScallingFalse>
           </View>
         </View>
-        <View style={{ marginTop: 20 }}>
+        <View>
           <TextScallingFalse
             style={{ color: "white", fontSize: 14, fontWeight: "400" }}
           >
@@ -119,17 +127,25 @@ const signupEnterUsername3 = () => {
           <TextScallingFalse className="text-gray-500 text-sm mt-1 p-1">
             {username.length} / 20
           </TextScallingFalse>
+          </View>
         </View>
+
         <View style={{ marginTop: 55 }}>
-          <SignupButton disabled={false} onPress={handleNext}>
+          {
+            isLoading ? 
+            <ActivityIndicator size={'small'}/>
+            :
+            <SignupButton disabled={false} onPress={handleNext}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 15, fontWeight: "500" }}
             >
               Next
             </TextScallingFalse>
           </SignupButton>
+          }
         </View>
       </View>
+      </ScrollView>
     </PageThemeView>
   );
 };

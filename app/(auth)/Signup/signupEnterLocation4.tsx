@@ -4,7 +4,7 @@ import {
   View,
   Text,
   Alert,
-  ActivityIndicator,
+  ActivityIndicator, ScrollView
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
@@ -76,22 +76,31 @@ const signupEnterLocation4 = () => {
     }
   }, [error]);
 
+  const [isLoading, setIsLoading] = useState(false)
   const handleNext = () => {
+    setIsLoading(true);
+  
     if (!addressPickup) {
       feedback("Please enter a location or use the current location.", "error");
+      setIsLoading(false); // 👈 Important! Stop loading when error happens
       return;
     }
+  
     feedback("Address Successfully Set", "success");
+    setIsLoading(false); // 👈 Important! Stop loading when success happens
     router.push("/Signup/signupSetPassword5");
   };
+  
 
   return (
     <PageThemeView>
+      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
       <View style={{ marginTop: 80 }}>
         <Logo />
       </View>
       <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ marginTop: 55 }}>
+        <View style={{ gap: 25}}>
+        <View style={{ marginTop: 55}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 23, fontWeight: "500" }}
           >
@@ -106,7 +115,7 @@ const signupEnterLocation4 = () => {
             </TextScallingFalse>
           </View>
         </View>
-        <View style={{ marginTop: 20 }}>
+        <View>
           <TextScallingFalse
             style={{ color: "white", fontSize: 14, fontWeight: "400" }}
           >
@@ -118,6 +127,7 @@ const signupEnterLocation4 = () => {
             onChangeText={(value) => setAddressPickup(value)}
             autoCapitalize="none"
           />
+          </View>
         </View>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -156,15 +166,21 @@ const signupEnterLocation4 = () => {
           )}
         </TouchableOpacity>
         <View style={{ marginTop: 45 }}>
-          <SignupButton onPress={handleNext}>
+          {
+            isLoading ? 
+            <ActivityIndicator size={'small'}/>
+            :
+            <SignupButton onPress={handleNext}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 15, fontWeight: "500" }}
             >
               Next
             </TextScallingFalse>
           </SignupButton>
+          }
         </View>
       </View>
+      </ScrollView>
     </PageThemeView>
   );
 };

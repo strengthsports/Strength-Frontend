@@ -2,7 +2,7 @@ import { Text, View, TouchableOpacity, Image } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import User from "@/assets/images/card.png";
-import page from "@/assets/images/page.png";
+import page from "@/assets/images/pages.png";
 import PageThemeView from "@/components/PageThemeView";
 import TextScallingFalse from "@/components/CentralText";
 import Logo from "@/components/logo";
@@ -10,10 +10,6 @@ import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 
 const option = () => {
   const router = useRouter();
-
-  const handleNavigation = () => {
-    router.push("/Signup/signupEmail1"); // Navigate to the next page on button press
-  };
 
   return (
     <PageThemeView>
@@ -38,9 +34,9 @@ const option = () => {
         {/* Main Buttons */}
         <View className="w-full items-center gap-[50px]">
           <TouchableOpacity
-            onPress={handleNavigation}
+            onPress={() => router.push("/Signup/signupEmail1")}
             activeOpacity={0.5}
-            className="bg-white w-[71%] h-[90px] rounded-md flex-row items-center justify-center gap-[45px]"
+            className="bg-white w-[71%] h-[90px] rounded-md flex-row items-center justify-center gap-[48px]"
           >
             <Image source={User} className="w-[45px] h-[45px]" />
             <TextScallingFalse className="text-black text-[18px]">
@@ -53,7 +49,7 @@ const option = () => {
             activeOpacity={0.5}
             className="bg-white w-[71%] h-[90px] rounded-md flex-row items-center justify-center gap-[45px]"
           >
-            <Image source={User} className="w-[45px] h-[45px]" />
+            <Image source={page} className="w-[45px] h-[45px]" />
             <View>
               <TextScallingFalse className="text-black text-[18px]">
                 Create a page

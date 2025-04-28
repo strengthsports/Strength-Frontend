@@ -49,6 +49,7 @@ export const cricketApi = createApi({
         const nextMatches = nextMatchesAll.filter(
           (match: any) => match.series === "Indian Premier League 2025"
         );
+
         // ✅ Group matches by series
         const groupedBySeries: { series: string; matches: any[] }[] = [];
 

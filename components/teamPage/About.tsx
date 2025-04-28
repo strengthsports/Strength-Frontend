@@ -18,6 +18,10 @@ import CopyCode from "./CopyCode";
 import TextScallingFalse from "../CentralText";
 import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
+import {
+  toggleIsSupporting,
+  toggleSupporterCount,
+} from "~/reduxStore/slices/team/teamSlice";
 
 interface AboutProps {
   teamDetails: any;
@@ -28,13 +32,22 @@ const About: React.FC<AboutProps> = () => {
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const { user } = useSelector((state: RootState) => state.profile);
-  const teamDetails = useSelector((state: RootState) => state.team.team);
+  const {
+    team: teamDetails,
+    supporterCount,
+    isSupporting,
+  } = useSelector((state: RootState) => state.team);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [descriptionLines, setDescriptionLines] = useState(0);
+  const [isSupportingTeam, setIsSupportingTeam] = useState(isSupporting);
+  const [teamSupporterCount, setTeamSupporterCount] =
+    useState<number>(supporterCount);
   const { followUser, unFollowUser } = useFollow();
 
   //handle follow
   const handleFollow = async () => {
+    dispatch(toggleIsSupporting(true));
+    dispatch(toggleSupporterCount(1));
     try {
       const followData: FollowUser = {
         followingId: teamDetails?._id as string,
@@ -43,12 +56,16 @@ const About: React.FC<AboutProps> = () => {
 
       await followUser(followData, true);
     } catch (err) {
+      dispatch(toggleIsSupporting(false));
+      dispatch(toggleSupporterCount(-1));
       console.error("Follow error:", err);
     }
   };
 
   //handle unfollow
   const handleUnfollow = async () => {
+    dispatch(toggleIsSupporting(false));
+    dispatch(toggleSupporterCount(-1));
     try {
       const unfollowData: FollowUser = {
         followingId: teamDetails?._id as string,
@@ -57,6 +74,8 @@ const About: React.FC<AboutProps> = () => {
 
       await unFollowUser(unfollowData, true);
     } catch (err) {
+      dispatch(toggleIsSupporting(true));
+      dispatch(toggleSupporterCount(1));
       console.error("Unfollow error:", err);
     }
   };
@@ -129,7 +148,7 @@ const About: React.FC<AboutProps> = () => {
           <View className="flex flex-row items-center">
             <Supporters />
             <Text className="text-white text-3xl ml-3 font-bold">
-              {teamDetails?.supporterCount || 0}
+              {supporterCount || 0}
             </Text>
             <Text className="text-[#9C9C9C] text-4xl font-medium ml-1">
               Supporters
@@ -137,9 +156,7 @@ const About: React.FC<AboutProps> = () => {
           </View>
 
           <CustomButton
-            buttonName={
-              teamDetails?.isSupporting ? "✓ Supporting" : "+ Support"
-            }
+            buttonName={isSupporting ? "✓ Supporting" : "+ Support"}
             onPress={handleSupportPress}
           />
         </View>

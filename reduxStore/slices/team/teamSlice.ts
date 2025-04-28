@@ -47,6 +47,8 @@ interface TeamState {
   positionUpdateError?: string | null;
   teams: TeamsList[];
   supporters: Supporter[];
+  supporterCount: number;
+  isSupporting: boolean;
 }
 
 export type TeamPayload = {
@@ -312,6 +314,7 @@ export const sendInvitations = createAsyncThunk<
 const initialState: TeamState = {
   currentTeam: null,
   team: null,
+  teams: [],
   currentTeamDescription: "",
   invited: null,
   error: null,
@@ -319,8 +322,6 @@ const initialState: TeamState = {
   user: null,
   supporterCount: 0,
   isSupporting: false,
-  supportLoading: false,
-  supportError: null,
   supporters: [],
   memberSuggestionsState: {
     members: [],
@@ -550,12 +551,19 @@ const teamSlice = createSlice({
   reducers: {
     resetTeamState(state) {
       state.team = null;
-      state.error = null;
-      state.loading = false;
+      state.currentTeam = null;
       state.user = null;
+      state.supporterCount = 0;
+      state.isSupporting = false;
     },
     setTeamDescription: (state, action: PayloadAction<string>) => {
       state.currentTeamDescription = action.payload;
+    },
+    toggleSupporterCount: (state, action) => {
+      state.supporterCount += action.payload;
+    },
+    toggleIsSupporting: (state, action) => {
+      state.isSupporting = action.payload;
     },
   },
 
@@ -574,6 +582,8 @@ const teamSlice = createSlice({
       })
       .addCase(fetchTeamDetails.fulfilled, (state, action) => {
         state.team = action.payload;
+        state.supporterCount = action.payload.supporterCount;
+        state.isSupporting = action.payload.isSupporting;
       })
       .addCase(fetchMemberSuggestions.pending, (state) => {
         state.memberSuggestionsState.loading = true;
@@ -736,7 +746,12 @@ const teamSlice = createSlice({
   },
 });
 
-export const { resetTeamState, setTeamDescription } = teamSlice.actions;
+export const {
+  resetTeamState,
+  setTeamDescription,
+  toggleIsSupporting,
+  toggleSupporterCount,
+} = teamSlice.actions;
 export const selectSupporters = (state: { team: TeamState }) =>
   state.team.supporters;
 export default teamSlice.reducer;

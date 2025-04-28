@@ -143,7 +143,9 @@ const RequestSport: React.FC = () => {
       </View>
 
       {/* Alert Modal for Back Button Confirmation */}
-      <AlertModal
+      {
+        isModalVisible && (
+          <AlertModal
         alertConfig={{
           title: "Discard Request?",
           message:
@@ -155,6 +157,8 @@ const RequestSport: React.FC = () => {
         }}
         isVisible={isModalVisible}
       />
+        )
+      }
     </SafeAreaView>
   );
 };

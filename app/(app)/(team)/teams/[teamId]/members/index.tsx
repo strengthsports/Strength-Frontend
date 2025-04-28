@@ -47,11 +47,6 @@ interface User {
   headline: string;
 }
 
-// interface Member {
-//   user: User;
-//   role: string;
-// }
-
 const Members: React.FC = () => {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.profile);

@@ -90,26 +90,6 @@ const Forgot_Password_SetPassword = () => {
         <Logo />
         <View style={{ width: 45 }} />
       </View>
-      <View
-        style={{
-          width: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <View style={{ width: "81.5%", marginTop: 55 }}>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 23, fontWeight: "500" }}
-          >
-            You'll need a password
-          </TextScallingFalse>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 12, fontWeight: "400" }}
-          >
-            Make sure it's 8 characters or more.
-          </TextScallingFalse>
-        </View>
-      </View>
 
       <View
         style={{
@@ -127,6 +107,19 @@ const Forgot_Password_SetPassword = () => {
           }}
         >
           {/* Create Password Input */}
+          <View style={{gap: 30}}>
+          <View style={{ marginTop: 35}}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 23, fontWeight: "500" }}
+            >
+              You'll need a password
+            </TextScallingFalse>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+            >
+              Make sure it's 8 characters or more.
+            </TextScallingFalse>
+          </View>
           <View>
             <TextScallingFalse
               style={{ color: "white", fontSize: 14, fontWeight: "400" }}
@@ -140,6 +133,7 @@ const Forgot_Password_SetPassword = () => {
               onChangeText={setCreatePassword}
               autoCapitalize="none"
             />
+            </View>
           </View>
 
           {/* Confirm Password Input */}

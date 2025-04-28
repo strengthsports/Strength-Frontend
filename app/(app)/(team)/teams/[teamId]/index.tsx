@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useCallback, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
 import {
   View,
   ScrollView,
@@ -62,29 +68,100 @@ const TeamPage: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Memoized team data
+  const teamData = useMemo(
+    () => ({
+      name: teamDetails?.name || "Loading...",
+      sportName: teamDetails?.sport?.name || "Loading...",
+      logo: teamDetails?.logo?.url || "https://picsum.photos/200/200",
+      sportLogo: teamDetails?.sport?.logo || "https://picsum.photos/200/200",
+      membersCount: teamDetails?.members?.length || 0,
+      isRequested: teamDetails?.isRequested || false,
+    }),
+    [teamDetails]
+  );
+
+  // Memoized captain and vice captain data
+  const { captain, viceCapt } = useMemo(() => {
+    const captainMember = teamDetails?.members?.find(
+      (member: any) => member?.position?.toLowerCase() === "captain"
+    );
+    const viceCaptainMember = teamDetails?.members?.find(
+      (member: any) => member?.position?.toLowerCase() === "vicecaptain"
+    );
+
+    return {
+      captain: captainMember
+        ? `${captainMember.user?.firstName || ""} ${
+            captainMember.user?.lastName || ""
+          }`.trim()
+        : `${teamDetails?.admin?.[0]?.firstName || ""} ${
+            teamDetails?.admin?.[0]?.lastName || ""
+          }`.trim() || "Loading...",
+      viceCapt: viceCaptainMember
+        ? `${viceCaptainMember.user?.firstName || ""} ${
+            viceCaptainMember.user?.lastName || ""
+          }`.trim()
+        : "Not assigned",
+    };
+  }, [teamDetails]);
+
+  // Memoized location
+  const location = useMemo(
+    () =>
+      teamDetails?.address
+        ? `${teamDetails.address.city}, ${teamDetails.address.country}`
+        : "Unknown",
+    [teamDetails?.address]
+  );
+
+  // Memoized roles
+  const roles = useMemo(
+    () =>
+      teamDetails?.sport?.playerTypes?.map(
+        (playerType: any) => playerType.name
+      ) || [],
+    [teamDetails?.sport?.playerTypes]
+  );
+
+  // Memoized isMember check
+  const isMember = useMemo(
+    () =>
+      teamDetails?.members?.some(
+        (member: any) => member.user?._id === user?._id
+      ),
+    [teamDetails?.members, user?._id]
+  );
+
+  // Memoized isAdmin check
+  const isAdmin = useMemo(
+    () => user?._id === teamDetails?.admin?.[0]?._id,
+    [user?._id, teamDetails?.admin]
+  );
+
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
-  }, [teamId]);
+  }, [teamId, dispatch]);
 
   // Reset join status when component unmounts
   useEffect(() => {
     return () => {
       dispatch(resetJoinStatus());
     };
-  }, []);
+  }, [dispatch]);
 
   // Handle join success or error with alerts
   useEffect(() => {
     if (joinSuccess) {
       setRequestSent(true);
+      setJoining(false);
       Alert.alert("Success", "Join request sent successfully!");
       dispatch(resetJoinStatus());
     }
 
     if (joinError) {
-      // Check if error message indicates request was already sent
+      setJoining(false);
       if (joinError.includes("already sent")) {
-        // Set requestSent to true to disable the button
         setRequestSent(true);
         Alert.alert(
           "Information",
@@ -95,43 +172,9 @@ const TeamPage: React.FC = () => {
       }
       dispatch(resetJoinStatus());
     }
-  }, [joinSuccess, joinError]);
+  }, [joinSuccess, joinError, dispatch]);
 
-  const isMember = teamDetails?.members?.some(
-    (member: any) => member.user?._id === user?._id
-  );
-
-  const roles =
-    teamDetails?.sport?.playerTypes?.map(
-      (playerType: any) => playerType.name
-    ) || [];
-
-  const captainMember = teamDetails?.members?.find(
-    (member: any) => member?.position?.toLowerCase() === "captain"
-  );
-  const viceCaptainMember = teamDetails?.members?.find(
-    (member: any) => member?.position?.toLowerCase() === "vicecaptain"
-  );
-
-  const captain = captainMember
-    ? `${captainMember.user?.firstName || ""} ${
-        captainMember.user?.lastName || ""
-      }`.trim()
-    : `${teamDetails?.admin?.[0]?.firstName || ""} ${
-        teamDetails?.admin?.[0]?.lastName || ""
-      }`.trim() || "Loading...";
-
-  const viceCapt = viceCaptainMember
-    ? `${viceCaptainMember.user?.firstName || ""} ${
-        viceCaptainMember.user?.lastName || ""
-      }`.trim()
-    : "Not assigned";
-
-  const location = teamDetails?.address
-    ? `${teamDetails.address.city}, ${teamDetails.address.country}`
-    : "Unknown";
-
-  const handleDeleteTeam = async () => {
+  const handleDeleteTeam = useCallback(async () => {
     try {
       const message = await dispatch(deleteTeam(teamId)).unwrap();
       alert("Success: " + message);
@@ -139,20 +182,22 @@ const TeamPage: React.FC = () => {
     } catch (error) {
       alert("Error deleting team");
     }
-  };
+  }, [dispatch, teamId, router]);
 
-  const handleJoinTeam = async () => {
+  const handleJoinTeam = useCallback(async () => {
     setJoining(true);
     if (requestSent) {
       Alert.alert(
         "Information",
         "You have already sent a join request to this team."
       );
+      setJoining(false);
       return;
     }
 
     if (!user?._id || !teamId) {
       Alert.alert("Error", "Missing user or team information");
+      setJoining(false);
       return;
     }
 
@@ -163,8 +208,9 @@ const TeamPage: React.FC = () => {
       await dispatch(sendTeamJoinRequest({ UserId, teamId }));
     } catch (err) {
       console.error("Failed to send request:", err);
+      setJoining(false);
     }
-  };
+  }, [dispatch, requestSent, teamId, user?._id]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -176,77 +222,79 @@ const TeamPage: React.FC = () => {
     }
   }, [teamId, dispatch]);
 
-  const handleInvitePress = (role: string) => {
-    modalRef.current?.close();
-    router.push(
-      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
-    );
-  };
-
-  const isAdmin = user?._id === teamDetails?.admin?.[0]?._id;
-
-  const baseMenuItems = [
-    {
-      id: "members",
-      label: `Members                  [${teamDetails?.members?.length || 0}]`,
-      logo: () => null,
-      color: "white",
-      onPress: () =>
-        router.push(
-          `/(app)/(team)/teams/${teamId}/members` as RelativePathString
-        ),
+  const handleInvitePress = useCallback(
+    (role: string) => {
+      modalRef.current?.close();
+      router.push(
+        `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
+      );
     },
-    {
-      id: "leave",
-      label: "Leave Team",
-      logo: LeaveTeam,
-      color: "red",
-      onPress: handleDeleteTeam,
-    },
-  ];
+    [router, teamId]
+  );
 
-  const adminMenuItems = [
-    {
-      id: "settings",
-      label: "Settings",
-      logo: SettingsIcon,
-      color: "white",
-      onPress: () =>
-        router.push(
-          `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
-        ),
-    },
-    {
-      id: "invite",
-      label: "Invite Members",
-      logo: InviteMembers,
-      color: "white",
-      onPress: () => modalRef.current?.open(),
-    },
-  ];
+  // Memoized menu items
+  const menuItems = useMemo(() => {
+    const baseMenuItems = [
+      {
+        id: "members",
+        label: `Members                  [${teamData.membersCount}]`,
+        logo: () => null,
+        color: "white",
+        onPress: () =>
+          router.push(
+            `/(app)/(team)/teams/${teamId}/members` as RelativePathString
+          ),
+      },
+      {
+        id: "leave",
+        label: "Leave Team",
+        logo: LeaveTeam,
+        color: "red",
+        onPress: handleDeleteTeam,
+      },
+    ];
 
-  const menuItems = isAdmin
-    ? [...adminMenuItems, ...baseMenuItems]
-    : baseMenuItems;
+    if (isAdmin) {
+      return [
+        {
+          id: "settings",
+          label: "Settings",
+          logo: SettingsIcon,
+          color: "white",
+          onPress: () =>
+            router.push(
+              `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
+            ),
+        },
+        {
+          id: "invite",
+          label: "Invite Members",
+          logo: InviteMembers,
+          color: "white",
+          onPress: () => modalRef.current?.open(),
+        },
+        ...baseMenuItems,
+      ];
+    }
+
+    return baseMenuItems;
+  }, [isAdmin, teamData.membersCount, teamId, router, handleDeleteTeam]);
 
   return (
     <View style={styles.container}>
       <CombinedDrawer menuItems={menuItems} teamId={teamId}>
         <TeamCard
-          requestSent={teamDetails?.isRequested}
-          teamName={teamDetails?.name || "Loading..."}
-          sportCategory={teamDetails?.sport?.name || "Loading..."}
+          requestSent={teamData.isRequested}
+          teamName={teamData.name}
+          sportCategory={teamData.sportName}
           captain={captain}
           viceCapt={viceCapt}
           location={location}
-          teamLogo={teamDetails?.logo?.url || "https://picsum.photos/200/200"}
-          sportLogo={
-            teamDetails?.sport?.logo || "https://picsum.photos/200/200"
-          }
+          teamLogo={teamData.logo}
+          sportLogo={teamData.sportLogo}
           showJoinButton={!isMember && !isAdmin}
           onJoinPress={handleJoinTeam}
           joining={joining}
-          // requestSent={requestSent}
         />
 
         <ScrollView
@@ -327,4 +375,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TeamPage;
+export default React.memo(TeamPage);

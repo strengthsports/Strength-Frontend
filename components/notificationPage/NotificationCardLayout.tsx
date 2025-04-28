@@ -1,5 +1,12 @@
-import { View, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from "react-native";
-import React, { useState , useCallback, useMemo } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState, useCallback, useMemo } from "react";
 import { Dialog, Portal, Button } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
@@ -11,9 +18,13 @@ import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "../CentralText";
 import { NotificationType } from "~/types/others";
 import { AppDispatch } from "~/reduxStore";
+import {
+  acceptTeamInvitation,
+  rejectTeamInvitation,
+} from "~/reduxStore/slices/team/teamSlice";
 
 type NotificationCardProps = {
-  _id?:string;
+  _id?: string;
   type: NotificationType;
   date?: Date;
   sender: any;
@@ -26,26 +37,31 @@ type NotificationCardProps = {
 const NOTIFICATION_TEXTS: Record<NotificationType, string> = {
   Like: "liked your post",
   Comment: "commented on your post",
+  Reply: "replied to your comment",
   Follow: "started following you",
   TeamInvitation: "is inviting you to join",
-  JoinTeamRequest: "is requesting to join team",
+  JoinTeamRequest: "has requested to join team",
   Report: "You are reported",
   Tag: "tagged you",
 };
 
-const POST_PREVIEW_TYPES = new Set([
-  "Like",
-  "Comment",
-  "JoinTeamRequest",
-  "TeamInvitation",
-]);
+const POST_PREVIEW_TYPES = new Set(["Like", "Comment", "Tag"]);
+const TEAM_PREVIEW_TYPES = new Set(["JoinTeamRequest", "TeamInvitation"]);
 
 const NotificationCardLayout = React.memo(
-  ({ _id,type, date, sender, target, isNew, count }: NotificationCardProps) => {
+  ({
+    _id,
+    type,
+    date,
+    sender,
+    target,
+    isNew,
+    count,
+  }: NotificationCardProps) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: any) => state.profile.user._id);
-    const [isLoading,setLoading] = useState<boolean>(false);
+    const [isLoading, setLoading] = useState<boolean>(false);
 
     // Memoized values
     const serializedUser = useMemo(
@@ -64,6 +80,7 @@ const NotificationCardLayout = React.memo(
     const timeAgo = useMemo(() => (date ? formatTimeAgo(date) : ""), [date]);
 
     const hasPostPreview = useMemo(() => POST_PREVIEW_TYPES.has(type), [type]);
+    const hasTeamPreview = useMemo(() => TEAM_PREVIEW_TYPES.has(type), [type]);
 
     // Handlers
     const handleProfilePress = useCallback(() => {
@@ -78,92 +95,22 @@ const NotificationCardLayout = React.memo(
       router.push(`/(app)/(post)/(modal)/post-details/${target._id}`);
     }, [target?._id]);
 
-    const handleAcceptTeamInvitaion = useCallback(()=>{
-      const handleAccept = async () => {
-        setLoading(true);
-        try {
-          const token = await getToken("accessToken");
-          if (!token) throw new Error("Authentication token missing");
-      
-          const response = await fetch(
-            `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/accept-teamInvitation`,
-            {
-              method: "POST",
-              headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                teamId: target._id,
-                notificationId: _id,
-                senderId: sender._id,
-                userId: userId,
-              }),
-            }
-          );
-      
-          if (!response.ok) {
-            throw new Error("Failed to accept invitation");
-          }
-      
-          // Handle success response
-          const data = await response.json();
-          console.log("Invitation accepted successfully", data);
-        } catch (error) {
-          console.error("Error accepting invitation:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      handleAccept();
-    },[])
+    const handleAcceptTeamInvitaion = useCallback(() => {
+      dispatch(
+        acceptTeamInvitation({
+          teamId: target._id,
+          notificationId: _id as string,
+          senderId: sender._id,
+          userId: userId,
+        })
+      );
+    }, [dispatch]);
 
-    const handleRejectTeamInvitaion = useCallback(()=>{
-      const handleReject = async () => {
-        if (!_id) {
-          Alert.alert("Error", "Missing notification ID");
-          return;
-        }
-        
-        setLoading(true);
-        try {
-          const token = await getToken("accessToken");
-          if (!token) {
-            throw new Error("Authentication token missing");
-          }
-    
-          const response = await fetch(
-            `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/reject-invitation`,
-            {
-              method: "POST",
-              headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                notificationId: _id,
-                userId: userId,
-              }),
-            }
-          );
-    
-          const data = await response.json();
-          
-          if (!response.ok) {
-            throw new Error(data.message || "Failed to reject invitation");
-          }
-    
-          Alert.alert("Success", "Team invitation rejected");
-          // setModalVisible(false);
-        } catch (error: any) {
-          console.error("Reject invitation error:", error);
-          Alert.alert("Error", error.message || "An error occurred while rejecting the invitation");
-        } finally {
-          setLoading(false);
-        }
-      };
-      handleReject();
-    },[])
+    const handleRejectTeamInvitaion = useCallback(() => {
+      dispatch(
+        rejectTeamInvitation({ notificationId: _id as string, userId: userId })
+      );
+    }, [dispatch]);
 
     // Rendered components
     const OptionsButton = useMemo(
@@ -177,27 +124,30 @@ const NotificationCardLayout = React.memo(
               Follow
             </TextScallingFalse>
           </TouchableOpacity>
-        ) : type === "TeamInvitation" ? (<>
-          <TouchableOpacity
-            className="px-3 py-1 rounded-md bg-[#12956B]"
-            activeOpacity={0.7}
-            onPress={handleAcceptTeamInvitaion}
-            disabled={isLoading}
-          >
-            <TextScallingFalse className="text-white text-base">
-              {isLoading ? "Accepting....":"Accept"}
-            </TextScallingFalse>
-          </TouchableOpacity>
-                    <TouchableOpacity
-                    className="px-3 py-1 rounded-md bg-[#000] border-[0.5px] border-white"
-                    activeOpacity={0.7}
-                    onPress={handleRejectTeamInvitaion}
-                    disabled={isLoading}
-                  >
-                    <TextScallingFalse className="text-white text-base">
-                      {isLoading ? "Rejecting....":"Reject"}
-                    </TextScallingFalse>
-                  </TouchableOpacity></>): (
+        ) : type === "TeamInvitation" || type === "JoinTeamRequest" ? (
+          <View className="flex-row gap-x-4">
+            <TouchableOpacity
+              className="px-3 py-1 rounded-md bg-[#12956B]"
+              activeOpacity={0.7}
+              onPress={handleAcceptTeamInvitaion}
+              disabled={isLoading}
+            >
+              <TextScallingFalse className="text-white text-base">
+                {isLoading ? "Accepting...." : "Accept"}
+              </TextScallingFalse>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="px-3 py-1 rounded-md bg-[#000] border-[0.5px] border-white"
+              activeOpacity={0.7}
+              onPress={handleRejectTeamInvitaion}
+              disabled={isLoading}
+            >
+              <TextScallingFalse className="text-white text-base">
+                {isLoading ? "Rejecting...." : "Reject"}
+              </TextScallingFalse>
+            </TouchableOpacity>
+          </View>
+        ) : (
           <MaterialCommunityIcons
             name="dots-horizontal"
             size={18}
@@ -223,6 +173,14 @@ const NotificationCardLayout = React.memo(
                 style={postStyle}
               />
             )}
+            {target?.type === "Team" && (
+              <Image
+                source={{ uri: target.logo.url }}
+                resizeMode="cover"
+                className="rounded-l-lg flex-shrink-0"
+                style={postStyle}
+              />
+            )}
             <View className="flex-1 ml-3 p-3">
               <Text
                 className="text-[#808080] text-sm"
@@ -237,6 +195,27 @@ const NotificationCardLayout = React.memo(
       [hasPostPreview, target, handlePostPress]
     );
 
+    const TeamPreview = useMemo(
+      () =>
+        hasTeamPreview && (
+          <View className="flex-row mt-1.5 items-center h-auto bg-[#121212] rounded-lg overflow-hidden w-full p-2">
+            <Image
+              source={{ uri: target.logo.url }}
+              resizeMode="cover"
+              className="rounded-l-lg flex-shrink-0"
+              style={postStyle}
+            />
+            <View className="items-center flex-1 gap-y-4">
+              <TextScallingFalse className="text-white">
+                {target.name}
+              </TextScallingFalse>
+              {OptionsButton}
+            </View>
+          </View>
+        ),
+      [hasTeamPreview, target]
+    );
+
     return (
       <View style={{ backgroundColor: isNew ? "rgba(29, 155, 240, 0.1)" : "" }}>
         <View className="flex-row w-full min-w-[320px] lg:min-w-[400px] max-w-[600px] rounded-lg py-3">
@@ -249,13 +228,17 @@ const NotificationCardLayout = React.memo(
             <View className="flex-row justify-between items-center">
               <NotificationText
                 sender={sender}
+                target={target}
                 count={count}
-                typeText={NOTIFICATION_TEXTS[type]}
+                typeText={
+                  target.type === "Comment"
+                    ? NOTIFICATION_TEXTS["Reply"]
+                    : NOTIFICATION_TEXTS[type]
+                }
                 timeAgo={timeAgo}
               />
-              {OptionsButton}
             </View>
-            {PostPreview}
+            {TEAM_PREVIEW_TYPES.has(type) ? TeamPreview : PostPreview}
           </View>
         </View>
       </View>
@@ -282,8 +265,10 @@ const NotificationText = React.memo(
     count,
     typeText,
     timeAgo,
+    target,
   }: {
     sender: any;
+    target?: any;
     count?: number;
     typeText: string;
     timeAgo: string;
@@ -298,7 +283,7 @@ const NotificationText = React.memo(
         {sender.firstName} {sender.lastName}
         {countText}
         <TextScallingFalse className="font-bold">
-          {typeText}
+          {typeText} {target.type === "Team" && `"` + target.name + `"`}
         </TextScallingFalse>{" "}
         {timeAgo}
       </TextScallingFalse>

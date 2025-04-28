@@ -14,6 +14,8 @@ const GroupedNotificationCard = ({
   const count = notifications.length;
   const latestSender = latestNotification.sender;
 
+  console.log(notifications.filter((noti) => noti.type === "Like"));
+
   return (
     <NotificationCardLayout
       isNew={isNew}

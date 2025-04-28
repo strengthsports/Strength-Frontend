@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, StyleSheet, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { useRouter } from "expo-router";
 import ModalLayout1 from "./layout/ModalLayout1";
@@ -8,25 +8,65 @@ import nopic from "@/assets/images/nopic.jpg";
 import Captain from "../SvgIcons/teams/Captain";
 import CaptainSq from "../SvgIcons/teams/CaptainSq";
 import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
+import { useFollow } from "~/hooks/useFollow";
+import { FollowUser } from "~/types/user";
 
 const btn = "rounded-xl border border-[#12956B] py-2 w-[40%]";
 const roleViews =
   "rounded-2xl bg-[#141414] w-full p-5 flex-row justify-between items-center";
-  const visiblePosition = ["Captain","Vice-Captain","Admin"]
+const visiblePosition = ["Captain", "Vice-Captain", "Admin"];
 
-const UserInfoModal = ({ visible, onClose, member,isTeam }: any) => {
+const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
   const router = useRouter();
-  const [isFollowing, setIsFollowing] = useState(false);
+  // Initialize with member.isFollowing or false if member is null/undefined
+  const [followingStatus, setFollowingStatus] = useState<boolean>(
+    member?.isFollowing ?? false
+  );
+
+  // Update state when member changes (e.g., when modal reopens with different member)
+  useEffect(() => {
+    setFollowingStatus(member?.isFollowing ?? false);
+  }, [member]);
 
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: member?._id, type: "User" })
   );
 
-  const handleFollowToggle = () => {
-    setIsFollowing((prev) => !prev);
+  const { followUser, unFollowUser } = useFollow();
+
+  const handleFollowToggle = async () => {
+    // Return early if member is not available
+    if (!member) {
+      console.warn("Member is null/undefined");
+      return;
+    }
+
+    const wasFollowing = followingStatus; // Use local state instead of member.isFollowing
+    const followData: FollowUser = {
+      followingId: member._id,
+      followingType: "User",
+    };
+
+    try {
+      // Optimistic UI update
+      setFollowingStatus(!wasFollowing);
+
+      // Execute the appropriate action
+      if (wasFollowing) {
+        await unFollowUser(followData);
+      } else {
+        await followUser(followData);
+      }
+    } catch (err) {
+      // Revert on error
+      setFollowingStatus(wasFollowing);
+      console.error(wasFollowing ? "Unfollow error:" : "Follow error:", err);
+      Alert.alert("Error", `Failed to ${wasFollowing ? "unfollow" : "follow"}`);
+    }
   };
 
   const handleViewProfile = () => {
+    if (!member) return;
     console.log("Handle view profile");
     onClose();
     router.push(`/(app)/(profile)/profile/${serializedUser}`);
@@ -35,21 +75,32 @@ const UserInfoModal = ({ visible, onClose, member,isTeam }: any) => {
   if (!visible || !member) return null;
 
   return (
-    <ModalLayout1 onClose={onClose} visible={visible} heightValue={isTeam ? 2.1:1.8}>
+    <ModalLayout1
+      onClose={onClose}
+      visible={visible}
+      heightValue={isTeam ? 2.1 : 1.8}
+    >
       <View className="pt-10">
         <View className="relative">
           <Image
-            source={member?.profilePic ? { uri: member.profilePic } : nopic}
+            source={member.profilePic ? { uri: member.profilePic } : nopic}
             style={styles.profileImage}
           />
-          <TextScallingFalse className="mt-2 text-white text-5xl font-semibold ">
-            {member?.firstName} {member?.lastName}
+          <View className="mt-4 flex-row items-center">
+            <TextScallingFalse className="text-white text-5xl font-semibold">
+              {member.firstName} {member.lastName}
+            </TextScallingFalse>
+            <View className="ml-1.5">
+              {isTeam && member.position === "Captain" ? (
+                <CaptainSq />
+              ) : member.position ? (
+                <ViceCaptainSq />
+              ) : null}
+            </View>
+          </View>
+          <TextScallingFalse className="text-[#EAEAEA] font-light w-3/4">
+            @{member.username} | {member.headline || "No description available"}
           </TextScallingFalse>
-          <TextScallingFalse className="text-[#EAEAEA] font-light w-2/3">
-            @{member?.username} | {member?.headline || "No description available"}
-          </TextScallingFalse>
-          <View className="absolute right-0">
-          {isTeam && member?.position === "Captain" ? <CaptainSq/>  : member?.position ? <ViceCaptainSq/> :<></>}</View>
         </View>
 
         {/* Buttons Container */}
@@ -59,20 +110,24 @@ const UserInfoModal = ({ visible, onClose, member,isTeam }: any) => {
             onPress={handleFollowToggle}
             className={`${btn} bg-[#12956B]`}
           >
-            {isFollowing ? (
-              <TextScallingFalse className="text-white text-center">
-                &#10004; Following
+            {followingStatus ? (
+              <TextScallingFalse className="text-white font-medium text-center">
+                ✓ Following
               </TextScallingFalse>
             ) : (
-              <TextScallingFalse className="text-white text-center">
+              <TextScallingFalse className="text-white font-medium text-center">
                 Follow
               </TextScallingFalse>
             )}
           </TouchableOpacity>
 
           {/* View Profile Button */}
-          <TouchableOpacity className={btn} onPress={handleViewProfile}>
-            <TextScallingFalse className="text-white text-center">
+          <TouchableOpacity
+            className={btn}
+            onPress={handleViewProfile}
+            disabled={!member}
+          >
+            <TextScallingFalse className="text-white font-medium text-center">
               View Profile
             </TextScallingFalse>
           </TouchableOpacity>
@@ -81,19 +136,19 @@ const UserInfoModal = ({ visible, onClose, member,isTeam }: any) => {
         {/* Role views */}
         <View className="mt-8 gap-y-4">
           <View className={roleViews}>
-            <TextScallingFalse className="text-[#CFCFCF]">
+            <TextScallingFalse className="font-medium text-[#CFCFCF]">
               {member.role}
             </TextScallingFalse>
           </View>
 
-         {!isTeam && <TouchableOpacity className={roleViews}>
-            <TextScallingFalse className="text-[#D44044]">
-              Remove '{member.firstName} {member.lastName}'
-            </TextScallingFalse>
-            <MaterialIcons name="do-not-disturb" size={17} color="#D44044" />
-          </TouchableOpacity>}
-          
-          
+          {!isTeam && (
+            <TouchableOpacity className={roleViews}>
+              <TextScallingFalse className="text-[#D44044]">
+                Remove '{member.firstName} {member.lastName}'
+              </TextScallingFalse>
+              <MaterialIcons name="do-not-disturb" size={17} color="#D44044" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </ModalLayout1>

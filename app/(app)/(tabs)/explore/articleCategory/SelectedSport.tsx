@@ -1,7 +1,6 @@
-import { View, Text, FlatList } from "react-native";
-import React from "react";
+import { View, Text, FlatList, RefreshControl } from "react-native";
+import React, { useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
-import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import SwiperTop from "~/components/explorePage/SwiperTop";
 import ArticleContent from "~/components/explorePage/article/ArticleContent";
@@ -11,10 +10,12 @@ interface SelectedSportProps {
 }
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
+  const [refreshing, setRefreshing] = useState(false);
   const {
     data: articles,
     error,
     isLoading,
+    refetch: refetchSportArticles,
   } = useGetSportArticleQuery(sportsName);
   const renderSwiper = () => {
     if (isLoading) {
@@ -59,6 +60,17 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     { type: "article", content: renderArticles() },
   ];
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchSportArticles()]);
+    } catch (error) {
+      console.error("Refresh failed", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <View className="flex-1">
       <FlatList
@@ -67,6 +79,16 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
         renderItem={({ item }) => item.content}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#12956B", "#6E7A81"]}
+            tintColor="#6E7A81"
+            progressViewOffset={60}
+            progressBackgroundColor="#181A1B"
+          />
+        }
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

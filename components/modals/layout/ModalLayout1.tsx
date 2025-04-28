@@ -77,7 +77,7 @@ const ModalLayout1 = ({
           >
             <Divider
               color="#545454"
-              marginVertical={2}
+              marginVertical={1}
               thickness={4.5}
               style={{
                 width: "20%",
@@ -108,7 +108,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#1C1D23",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    padding: 20,
+    paddingHorizontal: 25,
+    paddingVertical: 20,
   },
   // New style: drag area for the pan responder
   dragHandleContainer: {

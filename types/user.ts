@@ -101,4 +101,5 @@ export type Member = {
   headline: string;
   profilePic: string;
   role: string;
+  [key: string]: any;
 };

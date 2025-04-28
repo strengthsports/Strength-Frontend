@@ -45,10 +45,32 @@ export const basketballApi = createApi({
         const matches = response.response || [];
 
         // Extract next matches
-        const nextMatches = matches.filter(
+        const nextMatchesAll = matches.filter(
           (match: any) => match.status.short === "NS"
         );
-        return { nextMatches };
+
+        const nextMatches = nextMatchesAll.filter(
+          (match: any) => match.league.name === "Liga A"
+        );
+
+        // ✅ Group matches by league name
+        const groupedByLeague: { league: string; matches: any[] }[] = [];
+
+        nextMatches.forEach((match: any) => {
+          const leagueIndex = groupedByLeague.findIndex(
+            (item) => item.league === match.league.name
+          );
+          if (leagueIndex > -1) {
+            groupedByLeague[leagueIndex].matches.push(match);
+          } else {
+            groupedByLeague.push({
+              league: match.league.name,
+              matches: [match],
+            });
+          }
+        });
+
+        return { nextMatches: groupedByLeague };
       },
     }),
 

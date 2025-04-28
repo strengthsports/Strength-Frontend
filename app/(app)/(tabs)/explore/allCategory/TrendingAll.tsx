@@ -39,6 +39,7 @@ import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMa
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
 import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoader";
+import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
 // import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 
 const TrendingAll = () => {
@@ -46,8 +47,13 @@ const TrendingAll = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
 
+  const {
+    data: articles,
+    error,
+    isLoading,
+    refetch: refetchSportArticles,
+  } = useGetSportArticleQuery();
   const renderSwiper = () => {
-    const { data: articles, error, isLoading } = useGetSportArticleQuery();
     if (isLoading) {
       return <SwipperSkeletonLoader />;
     }
@@ -177,7 +183,7 @@ const TrendingAll = () => {
     isFetching: isFootballNextFetching,
     refetch: refetchNextFootball,
   } = useGetFootballNextMatchesQuery({});
-  const { nextMatches: nextFootballMatches } = footballNextData || {};
+  const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
 
   const {
     data: basketballLiveData,
@@ -186,6 +192,14 @@ const TrendingAll = () => {
   } = useGetBasketballLiveMatchesQuery({});
   const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
 
+  const {
+    data: basketballNextData,
+    isFetching: isBasketballNextFetching,
+    refetch: refetchNextBasketball,
+  } = useGetBasketballNextMatchesQuery({});
+  const { nextMatches: nextBasketballMatches = [] } = basketballNextData || {};
+
+  // Top two live matches for each sport
   const singleLiveCricketMatch = liveCricketMatches?.slice(0, 2);
   const singleLiveFootballMatch = liveFootballMatches?.slice(0, 2);
   const singleLiveBasketballMatch = liveBasketballMatches?.slice(0, 2);
@@ -215,7 +229,7 @@ const TrendingAll = () => {
     );
   };
 
-  const topThreeNextMatches =
+  const topThreeCricketNextMatches =
     nextCricketMatches.length > 0
       ? [
           {
@@ -228,36 +242,46 @@ const TrendingAll = () => {
   const renderCricketNextMatches = () => {
     return (
       <CricketNextMatch
-        nextMatches={topThreeNextMatches}
+        nextMatches={topThreeCricketNextMatches}
         isFetching={isCricketNextFetching}
       />
-      // <>
-      //   <TouchableOpacity
-      //     className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
-      //     activeOpacity={0.6}
-      //     onPress={() =>
-      //       router.push(`/(app)/(tabs)/explore/allCategory/SelectedSport`)
-      //     }
-      //   >
-      //     <View className="flex-row items-center justify-center">
-      //       <Text className="text-white">See more</Text>
-      //       <MaterialCommunityIcons
-      //         name="chevron-right"
-      //         size={18}
-      //         color="#E9E9E9"
-      //         className="mt-0.5 ml-1.5"
-      //       />
-      //     </View>
-      //   </TouchableOpacity>
-      // </>
     );
   };
+
+  const topThreeFootballNextMatches =
+    nextFootballMatches.length > 0
+      ? [
+          {
+            league: nextFootballMatches[0].league,
+            matches: nextFootballMatches[0].matches.slice(0, 3),
+          },
+        ]
+      : [];
 
   const renderFootballNextMatches = () => {
     return (
       <FootballNextMatch
-        nextMatches={nextFootballMatches}
+        nextMatches={topThreeFootballNextMatches}
         isFetching={isFootballNextFetching}
+      />
+    );
+  };
+
+  const topThreeBasketballNextMatches =
+    nextBasketballMatches.length > 0
+      ? [
+          {
+            league: nextBasketballMatches[0].league,
+            matches: nextBasketballMatches[0].matches.slice(0, 3),
+          },
+        ]
+      : [];
+
+  const renderBasketballNextMatches = () => {
+    return (
+      <BasketballNextMatch
+        nextMatches={topThreeBasketballNextMatches}
+        isFetching={isBasketballNextFetching}
       />
     );
   };
@@ -272,6 +296,7 @@ const TrendingAll = () => {
     { type: "dontMiss", content: renderDontMiss() },
     { type: "cricketNextMatches", content: renderCricketNextMatches() },
     { type: "footballNextMatches", content: renderFootballNextMatches() },
+    { type: "basketballNextMatches", content: renderBasketballNextMatches() },
   ];
 
   const handleRefresh = async () => {
@@ -281,9 +306,10 @@ const TrendingAll = () => {
         refetchLiveCricket(),
         refetchNextCricket(),
         refetchLiveFootball(),
+        refetchNextFootball(),
         refetchLiveBasketball(),
-        // Optionally refetch article data if needed:
-        // refetchSportArticles?.(),
+        refetchNextBasketball(),
+        refetchSportArticles(),
       ]);
     } catch (error) {
       console.error("Refresh failed", error);

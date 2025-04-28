@@ -9,17 +9,18 @@ import { useAssociate } from "~/context/UseAssociate";
 import Icon from "react-native-vector-icons/AntDesign";
 import { RelativePathString, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
 
 const MemberEntry = ({
   member,
   isLast,
   isEditView,
-  isAdmin
+  isAdmin,
 }: {
   member: Member;
   isLast: boolean;
   isEditView?: boolean;
-  isAdmin?:boolean
+  isAdmin?: boolean;
 }) => {
   const {
     openModal,
@@ -28,13 +29,12 @@ const MemberEntry = ({
     selectedMembers,
   } = useAssociate();
 
-
-  console.log("2nd",isAdmin);
+  console.log("2nd", isAdmin);
   const router = useRouter();
-  const teamId = useSelector((state)=>state.team.team._id);
+  const teamId = useSelector((state: RootState) => state.team.team?._id);
 
-  const handleTeamClick = ()=>{
-    console.log("Hit")
+  const handleTeamClick = () => {
+    console.log("Hit");
     router.push({
       pathname: `/teams/${teamId}/members/${member._id}` as RelativePathString,
       params: {
@@ -42,12 +42,11 @@ const MemberEntry = ({
         member: JSON.stringify(member),
         role: JSON.stringify(member.role),
       },
-    })
-  }
+    });
+  };
 
   // Handle select member
   const handleSelectMember = () => {
-    
     toggleMemberSelection({
       memberId: member._id,
       memberUsername: member.username,
@@ -56,7 +55,9 @@ const MemberEntry = ({
 
   return (
     <>
-      <View
+      <TouchableOpacity
+        onPress={() => (isAdmin ? handleTeamClick() : openModal(member))}
+        activeOpacity={0.8}
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -101,11 +102,7 @@ const MemberEntry = ({
               {member.headline}
             </TextScallingFalse>
           </View>
-          {isEditView && !isSelectModeEnabled && (
-            <TouchableOpacity onPress={() => isAdmin ? handleTeamClick() : openModal(member)}>
-              <RightArrow />
-            </TouchableOpacity>
-          )}
+          {isEditView && !isSelectModeEnabled && <RightArrow />}
 
           {isSelectModeEnabled && (
             <TouchableOpacity
@@ -122,7 +119,7 @@ const MemberEntry = ({
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     </>
   );
 };

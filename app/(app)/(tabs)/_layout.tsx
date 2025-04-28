@@ -12,20 +12,12 @@ import {
   incrementCount,
   setHasNewNotification,
 } from "~/reduxStore/slices/notification/notificationSlice";
+import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 
 export default function AppLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
-
-  // Called when an edge swipe is detected
-  // const handleEdgeSwipe = () => {
-  //   drawerRef.current?.open();
-  // };
-
-  // const handleCloseDrawer = () => {
-  //   drawerRef.current?.close();
-  //   setDrawerOpen(false);
-  // };
+  const { data: notificationsData, refetch } = useGetNotificationsQuery();
 
   useEffect(() => {
     console.log("Socket function mounted");
@@ -50,6 +42,16 @@ export default function AppLayout() {
 
     initSocket();
   }, []);
+
+  // Update notification count when notifications data changes
+  useEffect(() => {
+    if (notificationsData) {
+      const unreadCount = notificationsData.unreadCount || 0;
+      console.log(unreadCount);
+      dispatch(incrementCount(unreadCount));
+      dispatch(setHasNewNotification(unreadCount > 0));
+    }
+  }, [notificationsData, dispatch]);
 
   if (!isLoggedIn) {
     return <Redirect href="/(auth)/login" />;

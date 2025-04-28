@@ -2,10 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import {
-  fetchNotifications,
-  setHasNewNotification,
-} from "~/reduxStore/slices/notification/notificationSlice";
+import { setHasNewNotification } from "~/reduxStore/slices/notification/notificationSlice";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import GroupedNotificationCard from "~/components/notificationPage/GroupedNotificationCard";
 import moment from "moment";
@@ -14,7 +11,11 @@ import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
 import { RefreshControl } from "react-native";
 import { Notification, NotificationType } from "~/types/others";
-import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationsAsReadMutation,
+} from "~/reduxStore/api/notificationApi";
+import { TouchableOpacity } from "react-native";
 
 type GroupedSection = {
   title: string;
@@ -28,38 +29,97 @@ export type Cluster = {
   latestNotification: Notification;
 };
 
+// Tab configuration
+const tabs = [
+  { id: "All", label: "All" },
+  { id: "Teams", label: "Teams" },
+  { id: "Tags", label: "Mentions" },
+  { id: "Other", label: "Other" },
+];
+
+// Add this helper function to map tabs to notification types
+const getTypesForTab = (tab: typeof activeTab): string[] => {
+  switch (tab) {
+    case "Teams":
+      return ["JoinTeamRequest", "TeamInvitation"];
+    case "Tags":
+      return ["Tag"];
+    case "Other":
+      return [
+        "Follow",
+        "Like",
+        "Comment",
+        "Report",
+        "PageInvitation",
+        "JoinPageRequest",
+      ];
+    default: // "All"
+      return [
+        "JoinTeamRequest",
+        "TeamInvitation",
+        "Follow",
+        "Like",
+        "Comment",
+        "Report",
+        "PageInvitation",
+        "JoinPageRequest",
+        "Tag",
+      ];
+  }
+};
+
 const NotificationPage = () => {
   const { hasNewNotification } = useSelector(
     (state: RootState) => state.notification
   );
+  const dispatch = useDispatch<AppDispatch>();
 
   const {
-    data: notifications = [],
+    data: notifications,
     isLoading,
     isError,
     isSuccess,
     refetch,
-  } = useGetNotificationsQuery(null);
+  } = useGetNotificationsQuery();
+  const [markAsRead] = useMarkNotificationsAsReadMutation();
 
   const [newNotificationIds, setNewNotificationIds] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<
+    "All" | "Teams" | "Mentions" | "Other"
+  >("All");
   const [refreshing, setRefreshing] = useState(false);
   const initialLoad = useRef(true);
   const previousData = useRef<Notification[]>([]);
 
-  // Refetch if hasNewNotification
   useEffect(() => {
-    if (hasNewNotification) {
-      console.log("Refetching...");
-      refetch();
-      setHasNewNotification(false);
-    }
-  }, [hasNewNotification]);
+    console.log("🎯 Effect RUNNING. hasNewNotification:", hasNewNotification);
+
+    if (!hasNewNotification) return;
+
+    const markNotificationsRead = async () => {
+      const unreadIds =
+        notifications?.notifications
+          ?.filter((n) => !n.isNotificationRead)
+          ?.map((n) => n._id) || [];
+
+      console.log("📝 Unread IDs:", unreadIds); // Log IDs being processed
+
+      if (unreadIds.length > 0) {
+        console.log("🔵 Marking as read...");
+        await markAsRead({ notificationIds: unreadIds }).unwrap();
+        dispatch(setHasNewNotification(false));
+        console.log("✅ Marked as read. hasNewNotification set to false");
+      }
+    };
+
+    markNotificationsRead();
+  }, [hasNewNotification, notifications]); // Keep deps minimal
 
   // Track new notifications
   useEffect(() => {
     if (isSuccess && !initialLoad.current) {
       // Find new notifications that weren't in previous data
-      const newNotifications = notifications.filter(
+      const newNotifications = notifications.notifications.filter(
         (notification: Notification) =>
           !previousData.current.some((n) => n._id === notification._id)
       );
@@ -81,7 +141,7 @@ const NotificationPage = () => {
     }
 
     if (isSuccess) {
-      previousData.current = notifications;
+      previousData.current = notifications.notifications;
       initialLoad.current = false;
     }
   }, [notifications, isSuccess]);
@@ -139,7 +199,11 @@ const NotificationPage = () => {
     notifications.forEach((notification) => {
       if (!notification?.type || !notification?.target?._id) return;
 
-      const key = `${notification.type}-${notification.target._id}`;
+      const key =
+        notification.type === "TeamInvitation" ||
+        notification.type === "JoinTeamRequest"
+          ? `${notification.type}-${notification.target._id}-${notification.sender._id}`
+          : `${notification.type}-${notification.target._id}`;
       const cluster = clusterMap.get(key) || [];
       clusterMap.set(key, [...cluster, notification]);
     });
@@ -168,13 +232,45 @@ const NotificationPage = () => {
     }
   }, 1000);
 
-  const groupedNotifications = groupNotifications(notifications);
+  const groupedNotifications = groupNotifications(
+    notifications?.notifications || []
+  )
+    .map((section) => ({
+      ...section,
+      data: section.data.filter((cluster) =>
+        getTypesForTab(activeTab).includes(cluster.type)
+      ),
+    }))
+    .filter((section) => section.data.length > 0);
 
   return (
     <SafeAreaView className="flex-1 p-6 pb-16 bg-black">
-      <Text className="text-6xl font-normal text-white mb-4">
-        Notifications
-      </Text>
+      <View className="mb-4">
+        <Text className="text-6xl font-normal text-white mb-4">
+          Notifications
+        </Text>
+        {/* Category Navbar */}
+        <View className="flex-row justify-start gap-x-2 border-b border-[#121212] pb-2">
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              className={`px-5 py-2 rounded-full border border-neutral-800 ${
+                activeTab === tab.id ? "bg-neutral-800" : ""
+              }`}
+              activeOpacity={0.7}
+            >
+              <Text
+                className={`text-lg font-medium ${
+                  activeTab === tab.id ? "text-white" : "text-gray-400"
+                }`}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       {isLoading && <LoadingIndicator />}
       {isError && <ErrorIndicator />}
@@ -230,7 +326,7 @@ const NotificationCluster = ({
   const notification = cluster.notifications[0];
   return (
     <NotificationCardLayout
-    _id={notification?._id}
+      _id={notification?._id}
       date={notification?.createdAt}
       type={notification?.type as NotificationType}
       sender={notification?.sender}

@@ -23,6 +23,7 @@ import {
   fetchMemberSuggestions,
 } from "~/reduxStore/slices/team/teamSlice";
 import TextScallingFalse from "~/components/CentralText";
+import nopic from "@/assets/images/nopic.jpg";
 import PageThemeView from "~/components/PageThemeView";
 import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
 
@@ -46,14 +47,12 @@ const colors = {
   inputBackground: "#262626",
 };
 
-
 const InviteMember: React.FC = () => {
   // Hooks & Params
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation();
   const { teamId = "" } = useLocalSearchParams<{ teamId: string }>();
   const { role } = useLocalSearchParams();
-
 
   // Redux State
   const { user } = useSelector((state: RootState) => state.profile);
@@ -155,13 +154,14 @@ const InviteMember: React.FC = () => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (teamId && user?._id) {
-        dispatch(fetchMemberSuggestions({ teamId, userId: user._id, page, limit }));
+        dispatch(
+          fetchMemberSuggestions({ teamId, userId: user._id, page, limit })
+        );
       }
     }, 300);
 
     return () => clearTimeout(timeout);
   }, [searchQuery, dispatch, teamId, user, page, limit]);
-
 
   const getPluralRole = (role: string) => {
     switch (role?.toLowerCase()) {
@@ -175,14 +175,15 @@ const InviteMember: React.FC = () => {
         return role?.charAt(0).toUpperCase() + role?.slice(1);
     }
   };
-  
 
   // Filtered List
   const filteredMembers = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return members?.filter((m) =>
-      `${m.firstName} ${m.lastName}`.toLowerCase().includes(query)
-    ) || [];
+    return (
+      members?.filter((m) =>
+        `${m.firstName} ${m.lastName}`.toLowerCase().includes(query)
+      ) || []
+    );
   }, [members, searchQuery]);
 
   // Render Member
@@ -192,38 +193,42 @@ const InviteMember: React.FC = () => {
       const isSelected = selectedMemberIds.includes(item._id);
 
       return (
-       <>
-       
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => toggleMemberSelection(item._id)}
-          activeOpacity={0.8}
-        >
-          <Image
-            source={{ uri: item.profilePic || "https://via.placeholder.com/100" }}
-            style={styles.avatar}
-          />
-          <View style={{ flex: 1 }}>
-            <TextScallingFalse style={styles.name}>{fullName}</TextScallingFalse>
-            {item.headline && item.username && (
-             <TextScallingFalse 
-             style={styles.headline}
-             numberOfLines={1} 
-             ellipsizeMode="tail"
-           >
-             @{item.username}{" | "}{item.headline}
-           </TextScallingFalse>
-            )}
-            <View style={styles.dividerLine} />
-          </View>
-          <Ionicons
-            name={isSelected ? "checkbox" : "square-outline"}
-            size={30}
-            color={isSelected ? colors.primary : colors.mutedText}
-          />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => toggleMemberSelection(item._id)}
+            activeOpacity={0.8}
+          >
+            <Image
+              source={{
+                uri: item.profilePic || "https://via.placeholder.com/100",
+              }}
+              style={styles.avatar}
+            />
+            <View style={{ flex: 1 }}>
+              <TextScallingFalse style={styles.name}>
+                {fullName}
+              </TextScallingFalse>
+              {item.headline && item.username && (
+                <TextScallingFalse
+                  style={styles.headline}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  @{item.username}
+                  {" | "}
+                  {item.headline}
+                </TextScallingFalse>
+              )}
+              <View style={styles.dividerLine} />
+            </View>
+            <Ionicons
+              name={isSelected ? "checkbox" : "square-outline"}
+              size={30}
+              color={isSelected ? colors.primary : colors.mutedText}
+            />
+          </TouchableOpacity>
         </>
-        
       );
     },
     [selectedMemberIds, toggleMemberSelection]
@@ -236,10 +241,14 @@ const InviteMember: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={28} color={colors.text} />
         </TouchableOpacity>
-        <TextScallingFalse style={styles.headerTitle}>Invite {getPluralRole(role)}</TextScallingFalse>
+        <TextScallingFalse style={styles.headerTitle}>
+          Invite {getPluralRole(role)}
+        </TextScallingFalse>
 
         <TouchableOpacity onPress={handleSendInvites} disabled={sending}>
-          <TextScallingFalse style={[styles.sendBtn, sending && { opacity: 0.5 }]}>
+          <TextScallingFalse
+            style={[styles.sendBtn, sending && { opacity: 0.5 }]}
+          >
             {sending ? "Sending..." : "Send"}
           </TextScallingFalse>
         </TouchableOpacity>
@@ -249,7 +258,7 @@ const InviteMember: React.FC = () => {
 
       {/* Search Bar */}
       <View style={styles.searchWrapper}>
-       <SearchIcon/>
+        <SearchIcon />
         <TextInput
           style={styles.searchInput}
           placeholder="Search members..."
@@ -263,25 +272,23 @@ const InviteMember: React.FC = () => {
       {loading ? (
         <TextScallingFalse style={styles.status}>Loading...</TextScallingFalse>
       ) : error ? (
-        <TextScallingFalse style={[styles.status, { color: "red" }]}>{error}</TextScallingFalse>
+        <TextScallingFalse style={[styles.status, { color: "red" }]}>
+          {error}
+        </TextScallingFalse>
       ) : (
         <>
           <FlatList
-           
             data={filteredMembers}
             keyExtractor={(item) => item._id}
             renderItem={renderMember}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
           />
-
-         
         </>
       )}
     </View>
   );
 };
-
 
 export default InviteMember;
 
@@ -320,7 +327,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.inputBackground,
     borderRadius: 50,
-    marginHorizontal:2,
+    marginHorizontal: 2,
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginBottom: 16,
@@ -345,7 +352,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-  
+
     // padding: 10,
     backgroundColor: colors.cardBackground,
     borderRadius: 12,
@@ -359,7 +366,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   name: {
-    marginTop:14,
+    marginTop: 14,
     color: colors.text,
     fontSize: 16,
     fontWeight: "500",
@@ -368,7 +375,7 @@ const styles = StyleSheet.create({
     color: colors.mutedText,
     fontSize: 12,
     // marginTop: 2,
-    marginRight:15,
+    marginRight: 15,
   },
   dividerLine: {
     height: 0.5,
@@ -376,5 +383,4 @@ const styles = StyleSheet.create({
     marginTop: 16,
     width: "100%",
   },
-
 });

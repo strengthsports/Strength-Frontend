@@ -80,25 +80,62 @@ const CricketNextMatchCard = ({
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
-    const todayFormatted = today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-    const tomorrowFormatted = tomorrow.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    // Parse the match date properly
+    // match_date example: "19-Apr"
+    const currentYear = today.getFullYear();
+    const matchDateParts = match_date.split("-");
+    const matchDay = parseInt(matchDateParts[0], 10);
+    const matchMonthStr = matchDateParts[1];
+
+    const monthMap: { [key: string]: number } = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+
+    const matchMonth = monthMap[matchMonthStr];
+    if (matchMonth === undefined) {
+      console.error("Invalid month:", matchMonthStr);
+      return null;
+    }
+
+    const matchDateObj = new Date(currentYear, matchMonth, matchDay);
+
+    // Compare only dates, ignore time
+    const isToday =
+      matchDateObj.getFullYear() === today.getFullYear() &&
+      matchDateObj.getMonth() === today.getMonth() &&
+      matchDateObj.getDate() === today.getDate();
+
+    const isTomorrow =
+      matchDateObj.getFullYear() === tomorrow.getFullYear() &&
+      matchDateObj.getMonth() === tomorrow.getMonth() &&
+      matchDateObj.getDate() === tomorrow.getDate();
 
     const parts = match_dateWise.split(", ");
-    const fullDay = parts[1]; // "Wednesday"
-    let shortDay = fullDay.slice(0, 3); // "Wed"
+    const fullDay = parts[1] || ""; // "Saturday"
+    let shortDay = fullDay.slice(0, 3); // "Sat"
     shortDay += ", ";
-    let matchDate = match_date.replace("-", " ");
-    // matchDate = "," + matchDate;
-    const trimMatchDate = matchDate.split(" ")[0].slice(1, matchDate.length);
-    if (todayFormatted.includes(trimMatchDate)) {
-      matchDate = "Today,";
+    let formattedMatchDate = match_date.replace("-", " ");
+
+    if (isToday) {
+      formattedMatchDate = "Today,";
+      shortDay = "";
+    } else if (isTomorrow) {
+      formattedMatchDate = "Tomorrow,";
       shortDay = "";
     }
-    if (tomorrowFormatted.includes(trimMatchDate)) {
-      matchDate = "Tomorrow,";
-      shortDay = "";
-    }
-    return `${shortDay}${matchDate}`;
+
+    return `${shortDay}${formattedMatchDate}`;
   };
 
   return (
@@ -137,6 +174,7 @@ const CricketNextMatchCard = ({
       {groupedMatches.map((match) => (
         <View key={match.match_id}>
           <View className="h-[0.8] bg-neutral-700" />
+
           <View className="pl-10 pt-5">
             <TextScallingFalse className="text-[#9E9E9E] text-base">
               {match.match_type}
@@ -146,20 +184,20 @@ const CricketNextMatchCard = ({
           </View>
           <View className="flex-row items-center justify-between px-10 p-7">
             <View className="flex-column gap-y-3">
-              {/* view 1 */}
+              {/* Team 1 */}
               <NameFlagSubCard
                 flag={match.team_a_img}
                 teamName={match.team_a_short}
               />
 
-              {/* view 3 */}
+              {/* Team 2 */}
               <NameFlagSubCard
                 flag={match.team_b_img}
                 teamName={match.team_b_short}
               />
             </View>
             <View className="w-[1px] h-12 bg-neutral-700 ml-28" />
-            {/* view 2 */}
+            {/* Match Date and time */}
             <View className="items-center">
               <TextScallingFalse className="text-neutral-300 text-center text-base">
                 {extractDayAndDate(match.date_wise, match.match_date)}

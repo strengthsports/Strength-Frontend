@@ -283,21 +283,10 @@ const TeamPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <CombinedDrawer menuItems={menuItems} teamId={teamId}>
-        <TeamCard
-          requestSent={teamData.isRequested}
-          teamName={teamData.name}
-          sportCategory={teamData.sportName}
-          captain={captain}
-          viceCapt={viceCapt}
-          location={location}
-          teamLogo={teamData.logo}
-          sportLogo={teamData.sportLogo}
-          showJoinButton={!isMember && !isAdmin}
-          onJoinPress={handleJoinTeam}
-          joining={joining}
-        />
+       
 
         <ScrollView
+       
           ref={scrollViewRef}
           style={styles.squadContainer}
           contentContainerStyle={styles.scrollContent}
@@ -319,11 +308,27 @@ const TeamPage: React.FC = () => {
               style={styles.loader}
             />
           ) : (
-            <SubCategories teamDetails={teamDetails as any} />
+            <>
+            <TeamCard
+          requestSent={teamData.isRequested}
+          teamName={teamData.name}
+          sportCategory={teamData.sportName}
+          captain={captain}
+          viceCapt={viceCapt}
+          location={location}
+          teamLogo={teamData.logo}
+          sportLogo={teamData.sportLogo}
+          showJoinButton={!isMember && !isAdmin}
+          onJoinPress={handleJoinTeam}
+          joining={joining}
+        />
+            <SubCategories teamDetails={teamDetails} />
+            </>
           )}
+         
         </ScrollView>
       </CombinedDrawer>
-
+      
       <InviteModal
         modalRef={modalRef}
         roles={roles}

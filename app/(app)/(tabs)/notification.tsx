@@ -199,7 +199,11 @@ const NotificationPage = () => {
     notifications.forEach((notification) => {
       if (!notification?.type || !notification?.target?._id) return;
 
-      const key = `${notification.type}-${notification.target._id}`;
+      const key =
+        notification.type === "TeamInvitation" ||
+        notification.type === "JoinTeamRequest"
+          ? `${notification.type}-${notification.target._id}-${notification.sender._id}`
+          : `${notification.type}-${notification.target._id}`;
       const cluster = clusterMap.get(key) || [];
       clusterMap.set(key, [...cluster, notification]);
     });

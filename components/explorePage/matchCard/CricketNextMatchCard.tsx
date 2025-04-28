@@ -53,6 +53,8 @@ interface GroupedMatchProps {
   groupedMatches: MatchCardProps["match"][];
 }
 
+const iplImg = require("~/assets/images/ipl.png");
+
 const CricketNextMatchCard = ({
   series,
   groupedMatches,
@@ -62,16 +64,41 @@ const CricketNextMatchCard = ({
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
 
+  const extractMatchNum = (matchNum: string): string | null => {
+    const match = matchNum.match(/\d+/);
+    const number = match ? match[0] : null;
+
+    return `${number} of 74`;
+  };
+
   //Extracting match day and match date
   const extractDayAndDate = (
     match_dateWise: string,
     match_date: string
   ): string | null => {
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    const todayFormatted = today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    const tomorrowFormatted = tomorrow.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+
     const parts = match_dateWise.split(", ");
     const fullDay = parts[1]; // "Wednesday"
-    const shortDay = fullDay.slice(0, 3); // "Wed"
-    const matchDate = match_date.replace("-", " ");
-    return `${shortDay} ${matchDate}`;
+    let shortDay = fullDay.slice(0, 3); // "Wed"
+    shortDay += ", ";
+    let matchDate = match_date.replace("-", " ");
+    // matchDate = "," + matchDate;
+    const trimMatchDate = matchDate.split(" ")[0].slice(1, matchDate.length);
+    if (todayFormatted.includes(trimMatchDate)) {
+      matchDate = "Today,";
+      shortDay = "";
+    }
+    if (tomorrowFormatted.includes(trimMatchDate)) {
+      matchDate = "Tomorrow,";
+      shortDay = "";
+    }
+    return `${shortDay}${matchDate}`;
   };
 
   return (
@@ -84,14 +111,12 @@ const CricketNextMatchCard = ({
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}
         >
-          {/* {match?.tournamentImg && (
-            <View className="p-1 rounded-md">
-              <Image
-                source={{ uri: match?.tournamentImg }}
-                className="w-8 h-8 rounded-md self-center"
-              />
-            </View>
-          )} */}
+          <View className="py-1 pl-1">
+            <Image
+              source={iplImg}
+              className="w-[24px] h-[14px] rounded-[2px] self-center"
+            />
+          </View>
           <TextScallingFalse
             className="text-white text-3xl w-4/5"
             numberOfLines={numberOfLinesTitle}
@@ -109,16 +134,17 @@ const CricketNextMatchCard = ({
         </View>
       </View>
 
-      <View className="h-[0.8] bg-neutral-700" />
-
       {groupedMatches.map((match) => (
         <View key={match.match_id}>
+          <View className="h-[0.8] bg-neutral-700" />
           <View className="pl-10 pt-5">
-            <TextScallingFalse className="text-[#9E9E9E] text-base uppercase">
-              {" \u2022 "} {match.match_type}
+            <TextScallingFalse className="text-[#9E9E9E] text-base">
+              {match.match_type}
+              {" \u2022 "}
+              {extractMatchNum(match.matchs)}
             </TextScallingFalse>
           </View>
-          <View className="flex-row items-center justify-between px-10 pt-5">
+          <View className="flex-row items-center justify-between px-10 p-7">
             <View className="flex-column gap-y-3">
               {/* view 1 */}
               <NameFlagSubCard

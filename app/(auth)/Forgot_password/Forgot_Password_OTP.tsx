@@ -109,57 +109,60 @@ const Forgot_Password_OTP = () => {
       <View>
         <View style={{ marginTop: 80, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 25 }}>
           <TouchableOpacity onPress={() => router.push("/(auth)/login")} activeOpacity={0.4} style={{ width: 50, height: 30 }}>
-            <View style={{width: 45}}/>
+            <View style={{ width: 45 }} />
           </TouchableOpacity>
           <Logo />
           <View style={{ width: 45 }} />
         </View>
+
         <View
           style={{
-            marginTop: 55,
             width: "100%",
             justifyContent: "center",
             alignItems: "center",
+            marginTop: 20, 
           }}
         >
-          <View style={{ width: '100%', paddingHorizontal: 36 }}>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 23, fontWeight: "500" }}
+          <View style={{ gap: 27, paddingHorizontal: 20}}>
+            <View
+              style={{
+                marginTop: 50,
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-              Enter the verification code
-            </TextScallingFalse>
-            <View>
-              <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
-                We sent the verification code to- {email}{" "}
-                <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/(auth)/Forgot_password/Forgot_Password_Enter_Email")} style={{ width: 80 }}>
-                  <TextScallingFalse style={{ fontSize: 13, color: "#12956B" }}>
-                    Edit Email
+              <View>
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 23, fontWeight: "500" }}
+                >
+                  Enter the verification code
+                </TextScallingFalse>
+                <View style={{}}>
+                  <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
+                    We sent the verification code to- {email}{" "}
                   </TextScallingFalse>
-                </TouchableOpacity>
-              </TextScallingFalse>
+                  <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/(auth)/Forgot_password/Forgot_Password_Enter_Email")} style={{ width: 80 }}>
+                    <TextScallingFalse style={{ fontSize: 13, color: "#12956B" }}>
+                      Edit Email
+                    </TextScallingFalse>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
-        <View
-          style={{
-            width: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 25,
-          }}
-        >
-          <View>
-            <TextScallingFalse
-              style={{ fontSize: 13, fontWeight: "400", color: "white" }}
-            >
-              6 digit code
-            </TextScallingFalse>
-            <TextInputSection
-              placeholder="Email"
-              value={otp}
-              onChangeText={setOtp}
-              autoCapitalize="none"
-            />
+            <View>
+              <TextScallingFalse
+                style={{ fontSize: 13, fontWeight: "400", color: "white" }}
+              >
+                6 digit code
+              </TextScallingFalse>
+              <TextInputSection
+                placeholder="Email"
+                value={otp}
+                onChangeText={setOtp}
+                autoCapitalize="none"
+              />
+            </View>
           </View>
           {
             isLoading ?

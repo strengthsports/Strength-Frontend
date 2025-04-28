@@ -90,14 +90,14 @@ const ProfilePictureScreen: React.FC = () => {
 
   return (
     <SafeAreaView
-      className={`flex-1 bg-black px-8 py-12 pt-${
+      className={`flex-1 bg-black py-12 pt-${
         Platform.OS === "android" ? StatusBar.currentHeight : 0
       }`}
     >
       <StatusBar barStyle="light-content" />
 
+      <View style={{paddingHorizontal: 30, paddingTop: 20}}>
       <Logo />
-
       <TextScallingFalse className="text-gray-400 text-[1rem] mt-10">
         Step 1 of 2
       </TextScallingFalse>
@@ -111,6 +111,7 @@ const ProfilePictureScreen: React.FC = () => {
 
       <View className="items-center mt-16">
         <View className="w-40 h-40 rounded-full bg-gray-700 justify-center items-center relative">
+          <TouchableOpacity activeOpacity={0.8} onPress={pickImage}>
           {profilePic ? (
             <Image
               source={{ uri: profilePic?.newUri as string }}
@@ -127,6 +128,7 @@ const ProfilePictureScreen: React.FC = () => {
               resizeMode="cover"
             />
           )}
+          </TouchableOpacity>
           <TouchableOpacity
             className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-[#00A67E] justify-center items-center"
             onPress={pickImage}
@@ -150,18 +152,10 @@ const ProfilePictureScreen: React.FC = () => {
       </TouchableOpacity>
 
       {profilePic ? (
-        <TouchableOpacity
-          className="mt-4"
-          onPress={handleRemovePic}
-          activeOpacity={0.8}
-        >
-          <TextScallingFalse className="text-[#00A67E] text-center text-[1rem] font-semibold">
-            Remove Picture
-          </TextScallingFalse>
-        </TouchableOpacity>
+          null
       ) : (
         <TouchableOpacity
-          className="mt-2"
+          className="mt-4"
           onPress={handleSkip}
           activeOpacity={0.8}
         >
@@ -170,6 +164,7 @@ const ProfilePictureScreen: React.FC = () => {
           </TextScallingFalse>
         </TouchableOpacity>
       )}
+      </View>
     </SafeAreaView>
   );
 };

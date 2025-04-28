@@ -126,11 +126,18 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 alignItems: "center",
               }}
             > */}
-            <Image
-              source={{ uri: slide.imageUrl }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
+            <View className="flex-1 justify-center items-center">
+              {/* Image container */}
+              <Image
+                source={{ uri: slide.imageUrl }}
+                style={{
+                  width: "100%",
+                  height: undefined,
+                  aspectRatio: 16 / 9, // Dynamically adjust based on the aspect ratio
+                }}
+                resizeMode="cover"
+              />
+            </View>
             {/* <LinearGradient
                 colors={[
                   "rgba(0,0,0,0.95)",

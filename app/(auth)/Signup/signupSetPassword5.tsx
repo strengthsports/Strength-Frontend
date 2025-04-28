@@ -6,7 +6,7 @@ import {
   Platform,
   Vibration,
   ToastAndroid,
-  ActivityIndicator,
+  ActivityIndicator, ScrollView
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -51,11 +51,11 @@ const signupSetPassword5 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-            type,
-            text1: message,
-            visibilityTime: 3000,
-            autoHide: true,
-          });
+          type,
+          text1: message,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
     } else {
       Toast.show({
         type,
@@ -73,6 +73,11 @@ const signupSetPassword5 = () => {
     }
     if (password !== confirmPassword) {
       feedback("Passwords do not match. Please try again.", "error");
+      return;
+    }
+    // Check if password length is at least 8 characters
+    if (password.length < 8) {
+      feedback("Password must be at least 8 characters long.", "error");
       return;
     }
     const completeSignupPayload: completeSignupPayload = {
@@ -96,6 +101,7 @@ const signupSetPassword5 = () => {
 
   return (
     <PageThemeView>
+      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
       <View style={{ marginTop: 80 }}>
         <Logo />
       </View>
@@ -106,18 +112,6 @@ const signupSetPassword5 = () => {
           alignItems: "center",
         }}
       >
-        <View style={{ width: "81.5%", marginTop: 55 }}>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 23, fontWeight: "500" }}
-          >
-            You'll need a password
-          </TextScallingFalse>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 12, fontWeight: "400" }}
-          >
-            Make sure it's 8 characters or more.
-          </TextScallingFalse>
-        </View>
       </View>
       <View
         style={{
@@ -128,12 +122,21 @@ const signupSetPassword5 = () => {
       >
         <View
           style={{
-            marginTop: 21,
-            justifyContent: "center",
-            alignItems: "center",
             gap: 20,
           }}
         >
+          <View style={{ marginTop: 55 }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 23, fontWeight: "500" }}
+            >
+              You'll need a password
+            </TextScallingFalse>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+            >
+              Make sure it's 8 characters or more.
+            </TextScallingFalse>
+          </View>
           <View>
             <TextScallingFalse
               style={{ color: "white", fontSize: 14, fontWeight: "400" }}
@@ -175,19 +178,21 @@ const signupSetPassword5 = () => {
         </View>
 
         <View style={{ marginTop: 40 }}>
-          <SignupButton onPress={handleNext}>
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
+          {
+            loading ? 
+            <ActivityIndicator size={'small'}/>
+            :
+            <SignupButton onPress={handleNext}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 15, fontWeight: "600" }}
               >
                 Next
               </TextScallingFalse>
-            )}
           </SignupButton>
+          }
         </View>
       </View>
+      </ScrollView>
     </PageThemeView>
   );
 };

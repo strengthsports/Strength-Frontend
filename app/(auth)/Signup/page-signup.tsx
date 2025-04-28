@@ -182,7 +182,7 @@ const PageSignup = () => {
           </View>
         </View>
 
-        <View className="mt-20 gap-y-3">
+        <View className="mt-20 gap-y-3" style={{alignItems:'center'}}>
           <View className="justify-center items-center mb-8">
             <TextScallingFalse style={{ fontSize: 11, color: "white" }}>
               {" "}
@@ -195,17 +195,18 @@ const PageSignup = () => {
             </TouchableOpacity>
           </View>
 
-          <SignupButton onPress={handleSignup} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <TextScallingFalse
-                style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
-              >
-                Continue
-              </TextScallingFalse>
-            )}
-          </SignupButton>
+          {
+            loading ?
+              <ActivityIndicator style={{ paddingVertical: 9 }} color="white" size={'small'} />
+              :
+              <SignupButton onPress={handleSignup} disabled={loading}>
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
+                >
+                  Continue
+                </TextScallingFalse>
+              </SignupButton>
+          }
 
           <View
             style={{

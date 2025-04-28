@@ -204,7 +204,9 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 </TouchableOpacity>
               )}
 
-              <View className="flex-row mb-2 mt-2">
+              {
+                teamList.length === 0 && (
+                  <View className="flex-row mb-2 mt-2">
                 <TouchableOpacity
                   onPress={() => {
                     router.push("/(app)/(team)/teams");
@@ -230,6 +232,8 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   </TextScallingFalse>
                 </TouchableOpacity>
               </View>
+                )
+              }
             </View>
           </ScrollView>
           {/* Settings and Logout */}
@@ -240,6 +244,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 borderTopColor: "#303030",
                 borderWidth: 0.5,
                 width: "85%",
+                paddingVertical: 16,
               }}
             >
               <TouchableOpacity

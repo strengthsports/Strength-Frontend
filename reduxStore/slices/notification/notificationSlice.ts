@@ -1,6 +1,6 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { Notification } from "~/types/others";
-import { getToken } from "~/utils/secureStore";
+import { logoutUser } from "../user/authSlice";
 
 type NotificationState = {
   notificationCount: number;
@@ -19,37 +19,6 @@ const initialState = <NotificationState>{
   error: null,
 };
 
-// Fetch Notifications
-export const fetchNotifications = createAsyncThunk<
-  any,
-  any,
-  { rejectValue: string }
->("notification/fetchNotifications", async (_, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/notification`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Something went wrong!");
-    }
-
-    console.log("Notification : ", data);
-
-    return data.data;
-  } catch (error: any) {
-    return rejectWithValue(error.message || "Network error!");
-  }
-});
-
 const notificationSlice = createSlice({
   name: "notification",
   initialState,
@@ -65,21 +34,15 @@ const notificationSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchNotifications.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchNotifications.fulfilled, (state, action) => {
-        state.loading = false;
-        state.notifications = action.payload;
-        state.hasNewNotification = false;
-        state.error = null;
-      })
-      .addCase(fetchNotifications.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+    // Logout
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.hasNewNotification = false;
+      state.notificationCount = 0;
+      state.notifications = [];
+    });
+    builder.addCase(logoutUser.rejected, (state, action) => {
+      state.error = action.payload as string;
+    });
   },
 });
 

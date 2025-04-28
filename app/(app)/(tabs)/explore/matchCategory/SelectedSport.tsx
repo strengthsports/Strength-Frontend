@@ -14,6 +14,7 @@ import {
 } from "~/reduxStore/api/explore/footballApi";
 import {
   useGetBasketballLiveMatchesQuery,
+  useGetBasketballNextMatchesQuery,
   useGetBasketballRecentMatchesQuery,
 } from "~/reduxStore/api/explore/basketballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
@@ -24,6 +25,7 @@ import BasketballRecentMatch from "~/components/explorePage/recentMatch/Basketba
 import BasketballLiveMatch from "~/components/explorePage/liveMatch/BasketballLiveMatch";
 import CricketRecentMatch from "~/components/explorePage/recentMatch/CricketRecentMatch";
 import FootballRecentMatch from "~/components/explorePage/recentMatch/FootballRecentMatch";
+import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
 
 interface SelectedSportProps {
   sportsName: string;
@@ -51,7 +53,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     return (
       <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
         <TextScallingFalse className="text-white text-5xl font-bold">
-          Don’t Miss
+          Upcoming Matches
         </TextScallingFalse>
       </View>
     );
@@ -114,6 +116,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { liveMatches: liveFootballMatches } = footballLiveData || {};
 
   const {
+    data: footballNextData,
+    isFetching: isFootballNextFetching,
+    refetch: refetchNextFootball,
+  } = useGetFootballNextMatchesQuery({});
+  const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
+
+  const {
     data: footballRecentData,
     isFetching: isFootballRecentFetching,
     refetch: refetchRecentFootball,
@@ -128,13 +137,6 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       />
     );
   };
-
-  const {
-    data: footballNextData,
-    isFetching: isFootballNextFetching,
-    refetch: refetchNextFootball,
-  } = useGetFootballNextMatchesQuery({});
-  const { nextMatches: nextFootballMatches } = footballNextData || {};
 
   const renderFootballRecentMatches = () => {
     return (
@@ -163,6 +165,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
 
   const {
+    data: basketballNextData,
+    isFetching: isBasketballNextFetching,
+    refetch: refetchNextBasketball,
+  } = useGetBasketballNextMatchesQuery({});
+  const { nextMatches: nextBasketballMatches = [] } = basketballNextData || {};
+
+  const {
     data: basketballRecentData,
     isFetching: isBasketballRecentFetching,
     refetch: refetchRecentBasketball,
@@ -184,6 +193,15 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
         recentMatches={recentBasketballMatches}
         isFetching={isBasketballRecentFetching}
         onRefetch={refetchRecentBasketball}
+      />
+    );
+  };
+
+  const renderBasketballNextMatches = () => {
+    return (
+      <BasketballNextMatch
+        nextMatches={nextBasketballMatches}
+        isFetching={isBasketballNextFetching}
       />
     );
   };
@@ -231,6 +249,11 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       type: "FootballNextMatches",
       content: renderFootballNextMatches(),
     });
+  else if (sportsName === "Basketball")
+    sections.push({
+      type: "BasketballNextMatches",
+      content: renderBasketballNextMatches(),
+    });
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -238,10 +261,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       await Promise.all([
         refetchLiveCricket(),
         refetchNextCricket(),
+        // refetchRecentCricket(),
         refetchLiveFootball(),
+        refetchNextFootball(),
+        // refetchRecentFootball(),
         refetchLiveBasketball(),
-        // Optionally refetch article data if needed:
-        // refetchSportArticles?.(),
+        refetchNextBasketball(),
+        // refetchRecentBasketball(),
       ]);
     } catch (error) {
       console.error("Refresh failed", error);

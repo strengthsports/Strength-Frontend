@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Animated, Easing, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Animated,
+  Easing,
+  TouchableOpacity,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import Supporters from "~/components/SvgIcons/teams/Supporters";
@@ -9,107 +16,72 @@ import EstabilishedOn from "~/components/SvgIcons/teams/EstabilishedOn";
 import TeamId from "~/components/SvgIcons/teams/TeamId";
 import CopyCode from "./CopyCode";
 import TextScallingFalse from "../CentralText";
-import { 
-  supportTeam, 
-  unsupportTeam, 
-  checkSupportStatus,
-  clearSupportError
-} from "../../reduxStore/slices/team/teamSlice";
-import { selectIsSupporting, selectSupporterCount, selectSupportError } from "../../reduxStore/slices/team/teamSlice";
 import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
+import {
+  toggleIsSupporting,
+  toggleSupporterCount,
+} from "~/reduxStore/slices/team/teamSlice";
 
 interface AboutProps {
   teamDetails: any;
 }
 
-const About: React.FC<AboutProps> = ({ teamDetails }) => {
+const About: React.FC<AboutProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const { user } = useSelector((state: RootState) => state.profile);
+  const {
+    team: teamDetails,
+    supporterCount,
+    isSupporting,
+  } = useSelector((state: RootState) => state.team);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [descriptionLines, setDescriptionLines] = useState(0);
+  const [isSupportingTeam, setIsSupportingTeam] = useState(isSupporting);
+  const [teamSupporterCount, setTeamSupporterCount] =
+    useState<number>(supporterCount);
   const { followUser, unFollowUser } = useFollow();
-  
-  // Redux state
-  const isSupporting = useSelector(selectIsSupporting);
-  const supporterCount = useSelector(selectSupporterCount);
-  const supportError = useSelector(selectSupportError);
-  
-  // Local UI state for instant updates
-  const [instantSupportState, setInstantSupportState] = useState({
-    isSupporting: teamDetails?.isSupporting,
-    count: supporterCount
-  });
 
   //handle follow
-    const handleFollow = async () => {
-      try {
-        const followData: FollowUser = {
-          followingId: teamDetails._id,
-          followingType: "Team",
-        };
-  
-        await followUser(followData,true);
-      } catch (err) {
-        console.error("Follow error:", err);
-      }
-    };
-  
-    //handle unfollow
-    const handleUnfollow = async () => {
-      try {
-        const unfollowData: FollowUser = {
-          followingId: teamDetails._id,
-          followingType: "Team",
-        };
-  
-        await unFollowUser(unfollowData,true);
-      } catch (err) {
-        console.error("Unfollow error:", err);
-      }
-    };
+  const handleFollow = async () => {
+    dispatch(toggleIsSupporting(true));
+    dispatch(toggleSupporterCount(1));
+    try {
+      const followData: FollowUser = {
+        followingId: teamDetails?._id as string,
+        followingType: "Team",
+      };
 
-  useEffect(() => {
-    if (teamDetails?._id && user?._id) {
-      dispatch(checkSupportStatus(teamDetails._id));
+      await followUser(followData, true);
+    } catch (err) {
+      dispatch(toggleIsSupporting(false));
+      dispatch(toggleSupporterCount(-1));
+      console.error("Follow error:", err);
     }
-  }, [teamDetails?._id, user?._id, dispatch]);
+  };
 
-  useEffect(() => {
-    // Sync with Redux when data changes
-    setInstantSupportState({
-      isSupporting: teamDetails?.isSupporting,
-      count: supporterCount
-    });
-  }, [teamDetails?.isSupporting, supporterCount]);
+  //handle unfollow
+  const handleUnfollow = async () => {
+    dispatch(toggleIsSupporting(false));
+    dispatch(toggleSupporterCount(-1));
+    try {
+      const unfollowData: FollowUser = {
+        followingId: teamDetails?._id as string,
+        followingType: "Team",
+      };
 
-  useEffect(() => {
-    if (supportError) {
-      console.error("Support Error:", supportError);
-      // Revert if error occurs
-      setInstantSupportState({
-        isSupporting: !instantSupportState.isSupporting,
-        count: instantSupportState.isSupporting ? 
-          instantSupportState.count - 1 : 
-          instantSupportState.count + 1
-      });
-      dispatch(clearSupportError());
+      await unFollowUser(unfollowData, true);
+    } catch (err) {
+      dispatch(toggleIsSupporting(true));
+      dispatch(toggleSupporterCount(1));
+      console.error("Unfollow error:", err);
     }
-  }, [supportError, dispatch]);
+  };
 
   const handleSupportPress = () => {
     if (!teamDetails?._id || !user?._id) return;
-    
-    // Instant UI update
-    const newSupportState = !instantSupportState.isSupporting;
-    setInstantSupportState({
-      isSupporting: newSupportState,
-      count: newSupportState ? 
-        instantSupportState.count + 1 : 
-        instantSupportState.count - 1
-    });
 
     teamDetails.isSupporting ? handleUnfollow() : handleFollow();
   };
@@ -124,7 +96,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
 
   const handleEstablished = () => {
     if (!teamDetails?.establishedOn) return "Not specified";
-    
+
     const date = new Date(teamDetails.establishedOn);
     return date.toLocaleDateString("en-GB", {
       month: "long",
@@ -133,8 +105,8 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
   };
 
   const handleTeamUniqueId = () => {
-    const name = teamDetails?.name || ""; 
-    const id = teamDetails?._id || ""; 
+    const name = teamDetails?.name || "";
+    const id = teamDetails?._id || "";
     return `${name.substring(0, 2).toUpperCase()}${id.slice(-4).toUpperCase()}`;
   };
 
@@ -161,7 +133,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
     <ScrollView className="pb-[500px] bg-[#0B0B0B]">
       {/* Copied Message Animation */}
       {showCopiedMessage && (
-        <Animated.View 
+        <Animated.View
           className="absolute top-20 left-0 right-0 items-center z-50"
           style={{ opacity: fadeAnim }}
         >
@@ -176,15 +148,15 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
           <View className="flex flex-row items-center">
             <Supporters />
             <Text className="text-white text-3xl ml-3 font-bold">
-              {instantSupportState.count || 0}
+              {supporterCount || 0}
             </Text>
             <Text className="text-[#9C9C9C] text-4xl font-medium ml-1">
               Supporters
             </Text>
           </View>
-          
+
           <CustomButton
-            buttonName={instantSupportState.isSupporting || teamDetails?.isSupporting ? "✓ Supporting" : "+ Support"}
+            buttonName={isSupporting ? "✓ Supporting" : "+ Support"}
             onPress={handleSupportPress}
           />
         </View>
@@ -193,7 +165,7 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
           Description
         </TextScallingFalse>
         <View>
-          <TextScallingFalse 
+          <TextScallingFalse
             className="text-[#CECECE] text-[14px] mr-3"
             numberOfLines={showFullDescription ? undefined : 4}
             onTextLayout={onTextLayout}
@@ -210,7 +182,9 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
 
       <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
         <Members />
-        <Text className="text-[#CECECE] text-3xl ml-3">Members - {teamDetails?.members?.length || 0}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-3">
+          Members - {teamDetails?.members?.length || 0}
+        </Text>
       </View>
 
       <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
@@ -222,7 +196,10 @@ const About: React.FC<AboutProps> = ({ teamDetails }) => {
 
       <View className="p-2 ml-3 flex flex-row items-center">
         <TeamId />
-        <Text className="text-[#CECECE] text-3xl ml-2"> Team unique ID - {handleTeamUniqueId()}</Text>
+        <Text className="text-[#CECECE] text-3xl ml-2">
+          {" "}
+          Team unique ID - {handleTeamUniqueId()}
+        </Text>
         <CopyCode code={handleTeamUniqueId()} onCopy={handleCopySuccess} />
       </View>
     </ScrollView>

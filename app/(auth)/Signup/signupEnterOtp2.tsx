@@ -101,7 +101,6 @@ const SignupEnterOtp2 = () => {
     }
   };
 
-  console.log("otp-", OTP)
 
   return (
     <PageThemeView>

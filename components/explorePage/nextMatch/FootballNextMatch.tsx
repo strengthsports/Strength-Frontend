@@ -20,10 +20,34 @@ const FootballNextMatch: React.FC<NextFootballMatchProps> = ({
   isFetching,
 }) => {
   return (
-    <View className="mt-7 items-center">
-      <TextScallingFalse className="text-white">
-        FootballNextMatch
-      </TextScallingFalse>
+    <View className="mt-7">
+      <FlatList
+        data={nextMatches}
+        keyExtractor={(item, index) => `${item.league}_${index}`}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20 }}
+        renderItem={({ item }) => (
+          <View className="min-h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545] mb-10">
+            {isFetching ? (
+              <View className="h-full flex justify-center self-center items-center">
+                <ActivityIndicator size="large" color={Colors.themeColor} />
+              </View>
+            ) : (
+              <FootballNextMatchCard
+                league={item.league}
+                groupedMatches={item.matches}
+              />
+            )}
+          </View>
+        )}
+        ListEmptyComponent={
+          <View className="w-screen justify-center mt-10">
+            <TextScallingFalse className="text-white self-center text-center pr-7">
+              No upcoming matches available
+            </TextScallingFalse>
+          </View>
+        }
+      />
     </View>
   );
 };

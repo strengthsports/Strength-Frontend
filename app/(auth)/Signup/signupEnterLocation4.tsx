@@ -36,6 +36,9 @@ const signupEnterLocation4 = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { loading, error, address, getAddress } = useGetAddress();
+  useEffect(() => {
+    getAddress();
+  }, []);
 
   const isAndroid = Platform.OS === "android";
 

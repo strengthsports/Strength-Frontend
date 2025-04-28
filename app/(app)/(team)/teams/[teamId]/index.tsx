@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useCallback, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
 import {
   View,
   ScrollView,
@@ -6,7 +12,8 @@ import {
   Dimensions,
   RefreshControl,
   ActivityIndicator,
-  Alert
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import {
   useRouter,
@@ -18,7 +25,10 @@ import {
   deleteTeam,
   fetchTeamDetails,
 } from "~/reduxStore/slices/team/teamSlice";
-import { sendTeamJoinRequest, resetJoinStatus } from '~/reduxStore/slices/team/teamJoinSlice';
+import {
+  sendTeamJoinRequest,
+  resetJoinStatus,
+} from "~/reduxStore/slices/team/teamJoinSlice";
 import { AppDispatch, RootState } from "~/reduxStore";
 import TeamCard from "~/components/teamPage/TeamCard";
 import SubCategories from "~/components/teamPage/SubCategories";
@@ -28,7 +38,8 @@ import InviteMembers from "~/components/SvgIcons/teams/InviteMembers";
 import LeaveTeam from "~/components/SvgIcons/teams/LeaveTeam";
 import TextScallingFalse from "~/components/CentralText";
 import { Modalize } from "react-native-modalize";
-import InviteModal from "~/components/teamPage/InviteModel"; 
+import InviteModal from "~/components/teamPage/InviteModel";
+import { Team } from "~/types/team";
 
 const { height } = Dimensions.get("window");
 
@@ -36,74 +47,97 @@ const TeamPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const params = useLocalSearchParams();
-  
+
   const teamId = params.teamId ? String(params.teamId) : "";
   const { user } = useSelector((state: RootState) => state.profile);
   const teamDetails = useSelector((state: RootState) => state.team.team);
+  console.log("Team ------>: ", teamDetails);
   const loading = useSelector((state: RootState) => state.team.loading);
   const [joining, setJoining] = useState(false);
-  
+  // const userId = useSelector((state: RootState) => state.auth.user?._id);
+
+  // Safely access teamJoin state with fallback values
   const teamJoin = useSelector((state: RootState) => state.teamJoin);
-  const joinLoading = teamJoin?.loading || false;
   const joinError = teamJoin?.error || null;
   const joinSuccess = teamJoin?.success || false;
-  
+
+  // State to track if a request has been sent
   const [requestSent, setRequestSent] = useState(false);
-  
+
   const modalRef = useRef<Modalize>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   // Memoized team data
-  const teamData = useMemo(() => ({
-    name: teamDetails?.name || "Loading...",
-    sportName: teamDetails?.sport?.name || "Loading...",
-    logo: teamDetails?.logo?.url || "https://picsum.photos/200/200",
-    sportLogo: teamDetails?.sport?.logo || "https://picsum.photos/200/200",
-    membersCount: teamDetails?.members?.length || 0,
-    isRequested: teamDetails?.isRequested || false
-  }), [teamDetails]);
+  const teamData = useMemo(
+    () => ({
+      name: teamDetails?.name || "Loading...",
+      sportName: teamDetails?.sport?.name || "Loading...",
+      logo: teamDetails?.logo?.url || "https://picsum.photos/200/200",
+      sportLogo: teamDetails?.sport?.logo || "https://picsum.photos/200/200",
+      membersCount: teamDetails?.members?.length || 0,
+      isRequested: teamDetails?.isRequested || false,
+    }),
+    [teamDetails]
+  );
 
   // Memoized captain and vice captain data
   const { captain, viceCapt } = useMemo(() => {
     const captainMember = teamDetails?.members?.find(
-      (member:any) => member?.position?.toLowerCase() === "captain"
+      (member: any) => member?.position?.toLowerCase() === "captain"
     );
     const viceCaptainMember = teamDetails?.members?.find(
-      (member:any) => member?.position?.toLowerCase() === "vicecaptain"
+      (member: any) => member?.position?.toLowerCase() === "vicecaptain"
     );
 
     return {
-      captain: captainMember 
-        ? `${captainMember.user?.firstName || ''} ${captainMember.user?.lastName || ''}`.trim()
-        : `${teamDetails?.admin?.[0]?.firstName || ''} ${teamDetails?.admin?.[0]?.lastName || ''}`.trim() || "Loading...",
+      captain: captainMember
+        ? `${captainMember.user?.firstName || ""} ${
+            captainMember.user?.lastName || ""
+          }`.trim()
+        : `${teamDetails?.admin?.[0]?.firstName || ""} ${
+            teamDetails?.admin?.[0]?.lastName || ""
+          }`.trim() || "Loading...",
       viceCapt: viceCaptainMember
-        ? `${viceCaptainMember.user?.firstName || ''} ${viceCaptainMember.user?.lastName || ''}`.trim()
-        : "Not assigned"
+        ? `${viceCaptainMember.user?.firstName || ""} ${
+            viceCaptainMember.user?.lastName || ""
+          }`.trim()
+        : "Not assigned",
     };
   }, [teamDetails]);
 
   // Memoized location
-  const location = useMemo(() => (
-    teamDetails?.address
-      ? `${teamDetails.address.city}, ${teamDetails.address.country}`
-      : "Unknown"
-  ), [teamDetails?.address]);
+  const location = useMemo(
+    () =>
+      teamDetails?.address
+        ? `${teamDetails.address.city}, ${teamDetails.address.country}`
+        : "Unknown",
+    [teamDetails?.address]
+  );
 
   // Memoized roles
-  const roles = useMemo(() => (
-    teamDetails?.sport?.playerTypes?.map((playerType: any) => playerType.name) || []
-  ), [teamDetails?.sport?.playerTypes]);
+  const roles = useMemo(
+    () =>
+      teamDetails?.sport?.playerTypes?.map(
+        (playerType: any) => playerType.name
+      ) || [],
+    [teamDetails?.sport?.playerTypes]
+  );
 
   // Memoized isMember check
-  const isMember = useMemo(() => (
-    teamDetails?.members?.some((member: any) => member.user?._id === user?._id)
-  ), [teamDetails?.members, user?._id]);
+  const isMember = useMemo(
+    () =>
+      teamDetails?.members?.some(
+        (member: any) => member.user?._id === user?._id
+      ),
+    [teamDetails?.members, user?._id]
+  );
 
   // Memoized isAdmin check
-  const isAdmin = useMemo(() => (
-    user?._id === teamDetails?.admin?.[0]?._id
-  ), [user?._id, teamDetails?.admin]);
+  const isAdmin = useMemo(
+    () => user?._id === teamDetails?.admin?.[0]?._id,
+    [user?._id, teamDetails?.admin]
+  );
 
   useEffect(() => {
     if (teamId) dispatch(fetchTeamDetails(teamId));
@@ -121,17 +155,20 @@ const TeamPage: React.FC = () => {
     if (joinSuccess) {
       setRequestSent(true);
       setJoining(false);
-      Alert.alert('Success', 'Join request sent successfully!');
+      Alert.alert("Success", "Join request sent successfully!");
       dispatch(resetJoinStatus());
     }
-    
+
     if (joinError) {
       setJoining(false);
       if (joinError.includes("already sent")) {
         setRequestSent(true);
-        Alert.alert('Information', 'You have already sent a join request to this team.');
+        Alert.alert(
+          "Information",
+          "You have already sent a join request to this team."
+        );
       } else {
-        Alert.alert('Error', joinError);
+        Alert.alert("Error", joinError);
       }
       dispatch(resetJoinStatus());
     }
@@ -150,22 +187,27 @@ const TeamPage: React.FC = () => {
   const handleJoinTeam = useCallback(async () => {
     setJoining(true);
     if (requestSent) {
-      Alert.alert('Information', 'You have already sent a join request to this team.');
+      Alert.alert(
+        "Information",
+        "You have already sent a join request to this team."
+      );
       setJoining(false);
       return;
     }
-    
-    if (!user._id || !teamId) {
-      Alert.alert('Error', 'Missing user or team information');
+
+    if (!user?._id || !teamId) {
+      Alert.alert("Error", "Missing user or team information");
       setJoining(false);
       return;
     }
-    
+
     try {
       const UserId = user?._id || "";
+      console.log("sending join request----->", UserId, teamId);
+      setJoining(true);
       await dispatch(sendTeamJoinRequest({ UserId, teamId }));
     } catch (err) {
-      console.error('Failed to send request:', err);
+      console.error("Failed to send request:", err);
       setJoining(false);
     }
   }, [dispatch, requestSent, teamId, user?._id]);
@@ -180,22 +222,28 @@ const TeamPage: React.FC = () => {
     }
   }, [teamId, dispatch]);
 
-  const handleInvitePress = useCallback((role: string) => {
-    modalRef.current?.close();
-    router.push(
-      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
-    );
-  }, [router, teamId]);
+  const handleInvitePress = useCallback(
+    (role: string) => {
+      modalRef.current?.close();
+      router.push(
+        `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
+      );
+    },
+    [router, teamId]
+  );
 
   // Memoized menu items
   const menuItems = useMemo(() => {
     const baseMenuItems = [
       {
-        id: "members", 
+        id: "members",
         label: `Members                  [${teamData.membersCount}]`,
         logo: () => null,
         color: "white",
-        onPress: () => router.push(`/(app)/(team)/teams/${teamId}/members` as RelativePathString),
+        onPress: () =>
+          router.push(
+            `/(app)/(team)/teams/${teamId}/members` as RelativePathString
+          ),
       },
       {
         id: "leave",
@@ -213,7 +261,10 @@ const TeamPage: React.FC = () => {
           label: "Settings",
           logo: SettingsIcon,
           color: "white",
-          onPress: () => router.push(`/(app)/(team)/teams/${teamId}/settings` as RelativePathString),
+          onPress: () =>
+            router.push(
+              `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
+            ),
         },
         {
           id: "invite",
@@ -222,10 +273,10 @@ const TeamPage: React.FC = () => {
           color: "white",
           onPress: () => modalRef.current?.open(),
         },
-        ...baseMenuItems
+        ...baseMenuItems,
       ];
     }
-    
+
     return baseMenuItems;
   }, [isAdmin, teamData.membersCount, teamId, router, handleDeleteTeam]);
 
@@ -251,7 +302,11 @@ const TeamPage: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           {loading && !refreshing ? (
-            <ActivityIndicator size="large" color="white" style={styles.loader} />
+            <ActivityIndicator
+              size="large"
+              color="white"
+              style={styles.loader}
+            />
           ) : (
             <>
             <TeamCard

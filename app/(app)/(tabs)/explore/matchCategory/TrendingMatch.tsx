@@ -20,6 +20,7 @@ import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMa
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
 import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
+import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
 const TrendingMatch = () => {
@@ -76,7 +77,7 @@ const TrendingMatch = () => {
     isFetching: isFootballNextFetching,
     refetch: refetchNextFootball,
   } = useGetFootballNextMatchesQuery({});
-  const { nextMatches: nextFootballMatches } = footballNextData || {};
+  const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
 
   const {
     data: basketballLiveData,
@@ -85,8 +86,16 @@ const TrendingMatch = () => {
   } = useGetBasketballLiveMatchesQuery({});
   const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
 
-  const singleLiveCricketMatch = liveCricketMatches?.slice(0, 1);
-  const singleLiveFootballMatch = liveFootballMatches?.slice(0, 1);
+  const {
+    data: basketballNextData,
+    isFetching: isBasketballNextFetching,
+    refetch: refetchNextBasketball,
+  } = useGetBasketballNextMatchesQuery({});
+  const { nextMatches: nextBasketballMatches = [] } = basketballNextData || {};
+
+  // Top 2 live matches for each sport
+  const singleLiveCricketMatch = liveCricketMatches?.slice(0, 2);
+  const singleLiveFootballMatch = liveFootballMatches?.slice(0, 2);
   const singleLiveBasketballMatch = liveBasketballMatches?.slice(0, 2);
 
   const renderTrendingLiveMatches = () => {
@@ -111,20 +120,59 @@ const TrendingMatch = () => {
     );
   };
 
+  const topThreeCricketNextMatches =
+    nextCricketMatches.length > 0
+      ? [
+          {
+            series: nextCricketMatches[0].series,
+            matches: nextCricketMatches[0].matches.slice(0, 3),
+          },
+        ]
+      : [];
+
   const renderCricketNextMatches = () => {
     return (
       <CricketNextMatch
-        nextMatches={nextCricketMatches}
+        nextMatches={topThreeCricketNextMatches}
         isFetching={isCricketNextFetching}
       />
     );
   };
 
+  const topThreeFootballNextMatches =
+    nextFootballMatches.length > 0
+      ? [
+          {
+            league: nextFootballMatches[0].league,
+            matches: nextFootballMatches[0].matches.slice(0, 3),
+          },
+        ]
+      : [];
+
   const renderFootballNextMatches = () => {
     return (
       <FootballNextMatch
-        nextMatches={nextFootballMatches}
+        nextMatches={topThreeFootballNextMatches}
         isFetching={isFootballNextFetching}
+      />
+    );
+  };
+
+  const topThreeBasketballNextMatches =
+    nextBasketballMatches.length > 0
+      ? [
+          {
+            league: nextBasketballMatches[0].league,
+            matches: nextBasketballMatches[0].matches.slice(0, 3),
+          },
+        ]
+      : [];
+
+  const renderBasketballNextMatches = () => {
+    return (
+      <BasketballNextMatch
+        nextMatches={topThreeBasketballNextMatches}
+        isFetching={isBasketballNextFetching}
       />
     );
   };
@@ -135,6 +183,7 @@ const TrendingMatch = () => {
     { type: "dontMiss", content: renderDontMiss() },
     { type: "cricketNextMatches", content: renderCricketNextMatches() },
     { type: "footballNextMatches", content: renderFootballNextMatches() },
+    { type: "basketballNextMatches", content: renderBasketballNextMatches() },
   ];
 
   const handleRefresh = async () => {
@@ -144,9 +193,9 @@ const TrendingMatch = () => {
         refetchLiveCricket(),
         refetchNextCricket(),
         refetchLiveFootball(),
+        refetchNextFootball(),
         refetchLiveBasketball(),
-        // Optionally refetch article data if needed:
-        // refetchSportArticles?.(),
+        refetchNextBasketball(),
       ]);
     } catch (error) {
       console.error("Refresh failed", error);

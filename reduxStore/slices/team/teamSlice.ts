@@ -3,7 +3,6 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { Team, TeamMember } from "~/types/team";
 import { getToken } from "~/utils/secureStore";
 
-
 interface Supporter {
   user: string;
   name: string;
@@ -24,14 +23,19 @@ interface MemberSuggestionsState {
 }
 
 type TeamsList = {
-  name:string;
-    logo:{
-      url:string;
-    }
-}
+  team: {
+    logo: {
+      url: string;
+      public_id: string;
+    };
+    name: string;
+    _id: string;
+  };
+  [key: string]: any;
+};
 
 interface TeamState {
-  currentTeam: null,
+  currentTeam: null;
   currentTeamDescription: string;
   team: Team | null;
   invited: TeamMember[] | null;
@@ -41,12 +45,10 @@ interface TeamState {
   memberSuggestionsState: MemberSuggestionsState;
   positionUpdateLoading?: boolean;
   positionUpdateError?: string | null;
-  teams:any;
+  teams: TeamsList[];
+  supporters: Supporter[];
   supporterCount: number;
   isSupporting: boolean;
-  supportLoading: boolean;
-  supportError: string | null;
-  supporters: Supporter[];
 }
 
 export type TeamPayload = {
@@ -71,6 +73,18 @@ export type TeamPayload = {
   [key: string]: any;
 };
 
+export type AcceptPayload = {
+  teamId: string;
+  notificationId: string;
+  senderId: string;
+  userId: string;
+};
+
+export type RejectPayload = {
+  notificationId: string;
+  userId: string;
+};
+
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 // --- Utils ---
@@ -81,13 +95,12 @@ const convertToDate = (dateString: string): string => {
   return date.toISOString().split("T")[0];
 };
 
-
 // Create a new team
 export const createTeam = createAsyncThunk<
   Team,
   TeamPayload,
   { rejectValue: string }
-  >("team/createTeam", async (teamData: TeamPayload, { rejectWithValue }) => {
+>("team/createTeam", async (teamData: TeamPayload, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
 
@@ -124,23 +137,24 @@ export const createTeam = createAsyncThunk<
   }
 });
 
-export const fetchTeamDetails = createAsyncThunk<Team, string, { rejectValue: string }>(
-  "team/fetchTeamDetails",
-  async (teamId, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
+export const fetchTeamDetails = createAsyncThunk<
+  Team,
+  string,
+  { rejectValue: string }
+>("team/fetchTeamDetails", async (teamId, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    if (!response.ok) return rejectWithValue(data.message);
+    return data.data;
+  } catch (err: any) {
+    return rejectWithValue(err.message);
   }
-);
+});
 
 export const fetchTeams = createAsyncThunk<any, void, { rejectValue: string }>(
   "team/fetchTeams",
@@ -157,7 +171,7 @@ export const fetchTeams = createAsyncThunk<any, void, { rejectValue: string }>(
       });
       const data = await response.json();
       if (!response.ok) return rejectWithValue(data.message);
-      console.log("Teams data : ",data);
+      console.log("Teams data : ", data);
       return data.data;
     } catch (err: any) {
       return rejectWithValue(err.message);
@@ -165,80 +179,48 @@ export const fetchTeams = createAsyncThunk<any, void, { rejectValue: string }>(
   }
 );
 
-export const deleteTeam = createAsyncThunk<string, string, { rejectValue: string }>(
-  "team/deleteTeam",
-  async (teamId, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.message;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
-  }
-);
-
-export const getTeams = createAsyncThunk<
-  Team,
-  { teamId: string; formData: FormData },
+export const deleteTeam = createAsyncThunk<
+  string,
+  string,
   { rejectValue: string }
->(
-  "team/updateTeam",
-  async ({ teamId, formData }, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      
-      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
-        method: "PATCH",
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
+>("team/deleteTeam", async (teamId, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+    const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    if (!response.ok) return rejectWithValue(data.message);
+    return data.message;
+  } catch (err: any) {
+    return rejectWithValue(err.message);
   }
-);
-
+});
 
 export const updateTeam = createAsyncThunk<
   Team,
   { teamId: string; formData: FormData },
   { rejectValue: string }
->(
-  "team/updateTeam",
-  async ({ teamId, formData }, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      
-      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
-        method: "PATCH",
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        },
-        body: formData,
-      });
+>("team/updateTeam", async ({ teamId, formData }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
 
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
+    const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) return rejectWithValue(data.message);
+    return data.data;
+  } catch (err: any) {
+    return rejectWithValue(err.message);
   }
-);
-
-
+});
 
 export const fetchMemberSuggestions = createAsyncThunk<
   MemberSuggestionsState,
@@ -249,14 +231,17 @@ export const fetchMemberSuggestions = createAsyncThunk<
   async ({ teamId, userId, page, limit }, { rejectWithValue }) => {
     try {
       const token = await getToken("accessToken");
-      const response = await fetch(`${BASE_URL}/api/v1/team/player-suggestions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ teamId, userId, page, limit }),
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/v1/team/player-suggestions`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ teamId, userId, page, limit }),
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) return rejectWithValue(data.message);
@@ -274,71 +259,62 @@ export const fetchMemberSuggestions = createAsyncThunk<
   }
 );
 
-
 // --- Async Action for Sending Invitations ---
 export const sendInvitations = createAsyncThunk<
-  TeamMember[], 
+  TeamMember[],
   {
     teamId: string;
     receiverIds: [];
     role: string;
   },
   { rejectValue: string }
->(
-  "team/sendInvitations",
-  async (payload, { rejectWithValue }) => {
-    const { teamId, receiverIds, role } = payload;
-    console.log(teamId);
-    console.log(receiverIds);
-    console.log(role);
+>("team/sendInvitations", async (payload, { rejectWithValue }) => {
+  const { teamId, receiverIds, role } = payload;
+  console.log(teamId);
+  console.log(receiverIds);
+  console.log(role);
 
-    // --- Early validation ---
-    // if (!teamId || !receiver || !role) {
-    //   return rejectWithValue("All fields (Team ID, Receiver IDs, and Role) are required!");
-    // }
+  // --- Early validation ---
+  // if (!teamId || !receiver || !role) {
+  //   return rejectWithValue("All fields (Team ID, Receiver IDs, and Role) are required!");
+  // }
 
-    try {
-      const token = await getToken("accessToken");
+  try {
+    const token = await getToken("accessToken");
 
-      const response = await fetch(`${BASE_URL}/api/v1/team/send-invitation`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          teamId,
-          receiverIds,
-          role,
-        }),
-      });
+    const response = await fetch(`${BASE_URL}/api/v1/team/send-invitation`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        teamId,
+        receiverIds,
+        role,
+      }),
+    });
 
-      const result = await response.json();
-      console.log(result);
+    const result = await response.json();
+    console.log(result);
 
-      if (!response.ok) {
-        console.error("Invitation Error:", result.message);
-        return rejectWithValue(result.message || "Failed to send invitations.");
-      }
-
-      return result.data;
-    } catch (error: any) {
-      console.error("Invitation Catch Error:", error.message);
-      return rejectWithValue(error.message || "Something went wrong.");
+    if (!response.ok) {
+      console.error("Invitation Error:", result.message);
+      return rejectWithValue(result.message || "Failed to send invitations.");
     }
+
+    return result.data;
+  } catch (error: any) {
+    console.error("Invitation Catch Error:", error.message);
+    return rejectWithValue(error.message || "Something went wrong.");
   }
-);
-
-
-
-
-
-
+});
 
 // --- Initial State ---
 const initialState: TeamState = {
   currentTeam: null,
   team: null,
+  teams: [],
   currentTeamDescription: "",
   invited: null,
   error: null,
@@ -346,8 +322,6 @@ const initialState: TeamState = {
   user: null,
   supporterCount: 0,
   isSupporting: false,
-  supportLoading: false,
-  supportError: null,
   supporters: [],
   memberSuggestionsState: {
     members: [],
@@ -357,11 +331,9 @@ const initialState: TeamState = {
     loading: false,
     error: null,
   },
-  
 };
 
-
-//change user position 
+//change user position
 export const changeUserPosition = createAsyncThunk<
   TeamMember,
   { teamId: string; userId: string; newPosition: string }, // Changed parameter name to match usage
@@ -383,7 +355,8 @@ export const changeUserPosition = createAsyncThunk<
 
       const data = await response.json();
 
-      if (!response.ok) return rejectWithValue(data.message || "Failed to change position");
+      if (!response.ok)
+        return rejectWithValue(data.message || "Failed to change position");
 
       return data.data; // Expected to return updated member
     } catch (err: any) {
@@ -392,10 +365,9 @@ export const changeUserPosition = createAsyncThunk<
   }
 );
 
-
 export const changeUserRole = createAsyncThunk<
   TeamMember,
-  { teamId: string; userId: string; newRole: string }, 
+  { teamId: string; userId: string; newRole: string },
   { rejectValue: string }
 >(
   "team/changeUserRole",
@@ -425,215 +397,153 @@ export const changeUserRole = createAsyncThunk<
   }
 );
 
-// export const updateTeamDescription = createAsyncThunk(
-//   'team/updateDescription',
-//   async ({ teamId, description }: { teamId: string; description: string }, { rejectWithValue }) => {
-//     try {
-//       const response = await updateTeamAPI(teamId, { description });
-//       return response.data;
-//     } catch (error: any) {
-//       return rejectWithValue(error.response?.data?.message || error.message);
-//     }
-//   }
-// );
-
 export const removeTeamMember = createAsyncThunk<
   { success: boolean; message: string },
   { teamId: string; userId: string },
   { rejectValue: string }
->(
-  "team/removeTeamMember",
-  async ({ teamId, userId }, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
+>("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
 
-      const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ teamId, userId }),
-      });
+    const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ teamId, userId }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        return rejectWithValue(data.message || "Failed to remove team member");
-      }
-
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Network error");
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to remove team member");
     }
+
+    return data;
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Network error");
   }
-);
-
-// Support a team
-export const supportTeam = createAsyncThunk<
-  { supporterCount: number; supporter: Supporter },
-  string, // teamId
-  { rejectValue: string }
->(
-  'team/supportTeam',
-  async (teamId, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      
-      const response = await fetch(`${BASE_URL}/api/v1/team/support`, {
-        method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ teamId }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
-  }
-);
-
-// Unsupport a team
-export const unsupportTeam = createAsyncThunk<
-  { supporterCount: number },
-  string, // teamId
-  { rejectValue: string }
->(
-  'team/unsupportTeam',
-  async (teamId, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      
-      const response = await fetch(`${BASE_URL}/api/v1/team/unsupport`, {
-        method: "DELETE",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ teamId }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
-  }
-);
-
-export const checkSupportStatus = createAsyncThunk<
-  { isSupporting: boolean; supporterCount: number },
-  string,
-  { rejectValue: string; state: { profile: any } }
->(
-  'team/checkSupportStatus',
-  async (teamId, { rejectWithValue, getState }) => {
-    try {
-      const token = await getToken("accessToken");
-      const currentUser = getState().profile.user;
-      
-      if (!currentUser?._id) {
-        return { isSupporting: false, supporterCount: 0 };
-      }
-      
-      // Get team details to check supporter status
-      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}`, {
-        method: "GET",
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        },
-      });
-      
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      
-      // Check if current user is a supporter
-      const isSupporting = data.data.supporter?.some(
-        (supporter: any) => supporter.user === currentUser._id
-      ) || false;
-      
-      // Get supporter count from team details
-      const supporterCount = data.data.supporterCount || data.data.supporter?.length || 0;
-      
-      return {
-        isSupporting,
-        supporterCount
-      };
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
-  }
-);
-
-export const fetchSupporters = createAsyncThunk<
-  { supporters: Supporter[]; supporterCount: number },
-  string, // teamId
-  { rejectValue: string }
->(
-  'team/fetchSupporters',
-  async (teamId, { rejectWithValue }) => {
-    try {
-      const token = await getToken("accessToken");
-      
-      const response = await fetch(`${BASE_URL}/api/v1/team/${teamId}/supporters`, {
-        method: "GET",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) return rejectWithValue(data.message);
-      return data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
-    }
-  }
-);
+});
 
 //join team request by user who not present in the team
 export const joinTeam = createAsyncThunk<
   { team: Team; message: string }, // Return type
   { teamId: string; userId: string }, // Only requires teamId and userId
   { rejectValue: string }
->(
-  'team/joinTeam',
-  async ({ teamId, userId }, { rejectWithValue }) => {
+>("team/joinTeam", async ({ teamId, userId }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+
+    const response = await fetch(`${BASE_URL}/api/v1/send-teamJoinRequest`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ teamId, userId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to join team");
+    }
+
+    return {
+      team: data.data.team,
+      message: data.message || "Successfully joined team",
+    };
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Network error");
+  }
+});
+
+//accept team invitation
+export const acceptTeamInvitation = createAsyncThunk(
+  "teams/acceptInvitation",
+  async (
+    { teamId, notificationId, senderId, userId }: AcceptPayload,
+    { rejectWithValue }
+  ) => {
     try {
       const token = await getToken("accessToken");
-      
-      const response = await fetch(`${BASE_URL}/api/v1/send-teamJoinRequest`, {
-        method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ teamId, userId }), 
-      });
+      if (!token) throw new Error("Authentication token missing");
 
-      const data = await response.json();
-      
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/accept-teamInvitation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            teamId,
+            notificationId,
+            senderId,
+            userId,
+          }),
+        }
+      );
+
       if (!response.ok) {
-        return rejectWithValue(data.message || "Failed to join team");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to accept invitation");
       }
 
-      return {
-        team: data.data.team,
-        message: data.message || "Successfully joined team"
-      };
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Network error");
+      console.log(response);
+      const data = await response.json();
+      console.log(data);
+
+      return data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
+//reject team invitation
+export const rejectTeamInvitation = createAsyncThunk(
+  "teams/rejectInvitation",
+  async ({ notificationId, userId }: RejectPayload, { rejectWithValue }) => {
+    try {
+      if (!notificationId) {
+        throw new Error("Missing notification ID");
+      }
 
+      const token = await getToken("accessToken");
+      if (!token) {
+        throw new Error("Authentication token missing");
+      }
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team/reject-invitation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            notificationId,
+            userId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to reject invitation");
+      }
+
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const teamSlice = createSlice({
   name: "team",
@@ -641,20 +551,22 @@ const teamSlice = createSlice({
   reducers: {
     resetTeamState(state) {
       state.team = null;
-      state.error = null;
-      state.loading = false;
+      state.currentTeam = null;
       state.user = null;
+      state.supporterCount = 0;
+      state.isSupporting = false;
     },
     setTeamDescription: (state, action: PayloadAction<string>) => {
       state.currentTeamDescription = action.payload;
     },
-
-    clearSupportError: (state) => {
-      state.supportError = null;
+    toggleSupporterCount: (state, action) => {
+      state.supporterCount += action.payload;
+    },
+    toggleIsSupporting: (state, action) => {
+      state.isSupporting = action.payload;
     },
   },
-  
-  
+
   extraReducers: (builder) => {
     builder
       .addCase(createTeam.pending, (state) => {
@@ -670,6 +582,8 @@ const teamSlice = createSlice({
       })
       .addCase(fetchTeamDetails.fulfilled, (state, action) => {
         state.team = action.payload;
+        state.supporterCount = action.payload.supporterCount;
+        state.isSupporting = action.payload.isSupporting;
       })
       .addCase(fetchMemberSuggestions.pending, (state) => {
         state.memberSuggestionsState.loading = true;
@@ -680,14 +594,14 @@ const teamSlice = createSlice({
       })
       .addCase(fetchMemberSuggestions.rejected, (state, action) => {
         state.memberSuggestionsState.loading = false;
-        state.memberSuggestionsState.error = action.payload ?? "Error fetching suggestions";
+        state.memberSuggestionsState.error =
+          action.payload ?? "Error fetching suggestions";
       })
 
       .addCase(sendInvitations.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-
       .addCase(sendInvitations.fulfilled, (state, action) => {
         state.loading = false;
         state.invited = action.payload;
@@ -696,190 +610,148 @@ const teamSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? "Error sending invitations";
       })
-    // 👇 Update Team Slice Handlers
-    .addCase(getTeams.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(getTeams.fulfilled, (state, action) => {
-      state.loading = false;
-      state.teams = action.payload;
-    })
-    .addCase(getTeams.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload ?? "Error updating team details";
-    })
 
-    // --- changeUserPosition ---
-.addCase(changeUserPosition.pending, (state) => {
-  state.positionUpdateLoading = true;
-  state.positionUpdateError = null;
-})
+      // --- changeUserPosition ---
+      .addCase(changeUserPosition.pending, (state) => {
+        state.positionUpdateLoading = true;
+        state.positionUpdateError = null;
+      })
 
+      .addCase(changeUserPosition.fulfilled, (state, action) => {
+        state.positionUpdateLoading = false;
+        const updatedMember = action.payload;
 
-.addCase(changeUserPosition.fulfilled, (state, action) => {
-  state.positionUpdateLoading = false;
-  const updatedMember = action.payload;
-
-  if (state.team && state.team.members && updatedMember) {
-    // Make sure we have a valid ID before attempting to update
-    if (updatedMember._id) {
-      state.team.members = state.team.members.map((member:any) => {
-        // Additional null checks
-        if (member && member._id === updatedMember._id) {
-          return updatedMember;
+        if (state.team && state.team.members && updatedMember) {
+          // Make sure we have a valid ID before attempting to update
+          if (updatedMember._id) {
+            state.team.members = state.team.members.map((member: any) => {
+              // Additional null checks
+              if (member && member._id === updatedMember._id) {
+                return updatedMember;
+              }
+              return member;
+            });
+          } else {
+            // If the updated member has no ID, simply refresh the team details
+            // This is a fallback in case the API returns unexpected data
+            console.warn("Updated member is missing an ID field");
+          }
         }
-        return member;
+      })
+
+      .addCase(changeUserPosition.rejected, (state, action) => {
+        state.positionUpdateLoading = false;
+        state.positionUpdateError =
+          action.payload || "Could not update position";
+      })
+
+      // 👇 Update Team Slice Handlers
+      .addCase(fetchTeams.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeams.fulfilled, (state, action) => {
+        state.loading = false;
+        state.teams = action.payload;
+      })
+      .addCase(fetchTeams.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Error updating team details";
+      })
+
+      .addCase(changeUserRole.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        changeUserRole.fulfilled,
+        (state, action: PayloadAction<TeamMember>) => {
+          state.loading = false;
+          if (state.currentTeam) {
+            const memberIndex = state.currentTeam.members.findIndex(
+              (m) => m.user._id === action.payload.user._id
+            );
+            if (memberIndex !== -1) {
+              state.currentTeam.members[memberIndex].role = action.payload.role;
+            }
+          }
+        }
+      )
+      .addCase(changeUserRole.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to change user role";
+      })
+
+      .addCase(removeTeamMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeTeamMember.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the user from the team members if team exists
+        if (state.team) {
+          state.team.members = state.team.members.filter(
+            (member: any) => member.user._id !== action.meta.arg.userId
+          );
+          // Also remove from admin and coach arrays if present
+          state.team.admin = state.team.admin.filter(
+            (adminId: any) => adminId.toString() !== action.meta.arg.userId
+          );
+          state.team.coach = state.team.coach.filter(
+            (coachId: any) => coachId.toString() !== action.meta.arg.userId
+          );
+        }
+      })
+      .addCase(removeTeamMember.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to remove team member";
+      })
+
+      .addCase(joinTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(joinTeam.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the team in state with the new member
+        if (action.payload.team) {
+          state.team = action.payload.team;
+        }
+      })
+      .addCase(joinTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to join team";
+      })
+
+      // Accept Invitation
+      .addCase(acceptTeamInvitation.fulfilled, (state, action) => {
+        state.loading = false;
+        console.log("Accept Response : ", action.payload);
+        state.teams.push(action.payload); // Add the new team to state
+      })
+      .addCase(acceptTeamInvitation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Reject Invitation
+      .addCase(rejectTeamInvitation.fulfilled, (state) => {
+        state.loading = false;
+        // No team to add for rejection, just update loading state
+      })
+      .addCase(rejectTeamInvitation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
-    } else {
-      // If the updated member has no ID, simply refresh the team details
-      // This is a fallback in case the API returns unexpected data
-      console.warn("Updated member is missing an ID field");
-    }
-  }
-})
-
-
-.addCase(changeUserPosition.rejected, (state, action) => {
-  state.positionUpdateLoading = false;
-  state.positionUpdateError = action.payload || "Could not update position";
-})
-
-// 👇 Update Team Slice Handlers
-.addCase(fetchTeams.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(fetchTeams.fulfilled, (state, action) => {
-  state.loading = false;
-  state.teams = action.payload;
-})
-.addCase(fetchTeams.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload ?? "Error updating team details";
-})
-
-
-.addCase(changeUserRole.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(changeUserRole.fulfilled, (state, action: PayloadAction<TeamMember>) => {
-  state.loading = false;
-  if (state.currentTeam) {
-    const memberIndex = state.currentTeam.members.findIndex(
-      m => m.user._id === action.payload.user._id
-    );
-    if (memberIndex !== -1) {
-      state.currentTeam.members[memberIndex].role = action.payload.role;
-    }
-  }
-})
-.addCase(changeUserRole.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload || "Failed to change user role";
-})
-
-.addCase(removeTeamMember.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(removeTeamMember.fulfilled, (state, action) => {
-  state.loading = false;
-  // Remove the user from the team members if team exists
-  if (state.team) {
-    state.team.members = state.team.members.filter(
-      (member:any) => member.user._id !== action.meta.arg.userId
-    );
-    // Also remove from admin and coach arrays if present
-    state.team.admin = state.team.admin.filter(
-      (adminId:any) => adminId.toString() !== action.meta.arg.userId
-    );
-    state.team.coach = state.team.coach.filter(
-      (coachId:any) => coachId.toString() !== action.meta.arg.userId
-    );
-  }
-})
-.addCase(removeTeamMember.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload || "Failed to remove team member";
-})
-
- // Support Team
- .addCase(supportTeam.pending, (state) => {
-  state.supportLoading = true;
-  state.supportError = null;
-})
-.addCase(supportTeam.fulfilled, (state, action) => {
-  state.supportLoading = false;
-  state.isSupporting = true;
-  state.supporterCount = action.payload.supporterCount;
-  if (action.payload.supporter) {
-    state.supporters.push(action.payload.supporter);
-  }
-})
-.addCase(supportTeam.rejected, (state, action) => {
-  state.supportLoading = false;
-  state.supportError = action.payload ?? "Failed to support team";
-})
-
-// Unsupport Team
-.addCase(unsupportTeam.pending, (state) => {
-  state.supportLoading = true;
-  state.supportError = null;
-})
-.addCase(unsupportTeam.fulfilled, (state, action) => {
-  state.supportLoading = false;
-  state.isSupporting = false;
-  state.supporterCount = action.payload.supporterCount;
-})
-.addCase(unsupportTeam.rejected, (state, action) => {
-  state.supportLoading = false;
-  state.supportError = action.payload ?? "Failed to unsupport team";
-})
-
-// Check Support Status
-.addCase(checkSupportStatus.pending, (state) => {
-  state.supportLoading = true;
-  state.supportError = null;
-})
-.addCase(checkSupportStatus.fulfilled, (state, action) => {
-  state.supportLoading = false;
-  state.isSupporting = action.payload.isSupporting;
-  state.supporterCount = action.payload.supporterCount;
-})
-.addCase(checkSupportStatus.rejected, (state, action) => {
-  state.supportLoading = false;
-  state.supportError = action.payload ?? "Failed to check support status";
-})
-
-.addCase(joinTeam.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(joinTeam.fulfilled, (state, action) => {
-  state.loading = false;
-  // Update the team in state with the new member
-  if (action.payload.team) {
-    state.team = action.payload.team;
-  }
-})
-.addCase(joinTeam.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload || "Failed to join team";
-});
-
-
-
   },
-  
-  
 });
 
-export const { resetTeamState,setTeamDescription,clearSupportError } = teamSlice.actions;
-export const selectIsSupporting = (state: { team: TeamState }) => state.team.isSupporting;
-export const selectSupporterCount = (state: { team: TeamState }) => state.team.supporterCount;
-export const selectSupportLoading = (state: { team: TeamState }) => state.team.supportLoading;
-export const selectSupportError = (state: { team: TeamState }) => state.team.supportError;
-export const selectSupporters = (state: { team: TeamState }) => state.team.supporters;
+export const {
+  resetTeamState,
+  setTeamDescription,
+  toggleIsSupporting,
+  toggleSupporterCount,
+} = teamSlice.actions;
+export const selectSupporters = (state: { team: TeamState }) =>
+  state.team.supporters;
 export default teamSlice.reducer;

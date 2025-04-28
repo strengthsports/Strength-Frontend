@@ -27,6 +27,7 @@ import SwiperTop from "~/components/explorePage/SwiperTop";
 import FootballRecentMatch from "~/components/explorePage/recentMatch/FootballRecentMatch";
 import BasketballRecentMatch from "~/components/explorePage/recentMatch/BasketballRecentMatch";
 import BasketballLiveMatch from "~/components/explorePage/liveMatch/BasketballLiveMatch";
+import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
 
 interface SelectedSportProps {
   sportsName: string;
@@ -34,12 +35,13 @@ interface SelectedSportProps {
 
 const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const [refreshing, setRefreshing] = useState(false);
+  const {
+    data: articles,
+    error,
+    isLoading,
+    refetch: refetchSportArticles,
+  } = useGetSportArticleQuery(sportsName);
   const renderSwiper = () => {
-    const {
-      data: articles,
-      error,
-      isLoading,
-    } = useGetSportArticleQuery(sportsName);
     if (isLoading) {
       return (
         <TextScallingFalse className="text-white self-center text-center pr-7">
@@ -78,7 +80,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     return (
       <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
         <TextScallingFalse className="text-white text-5xl font-bold">
-          Don’t Miss
+          Upcomming Matches
         </TextScallingFalse>
       </View>
     );
@@ -147,7 +149,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     isFetching: isFootballNextFetching,
     refetch: refetchNextFootball,
   } = useGetFootballNextMatchesQuery({});
-  const { nextMatches: nextFootballMatches } = footballNextData || {};
+  const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
 
   const {
     data: footballRecentData,
@@ -192,6 +194,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
 
   const {
+    data: basketballNextData,
+    isFetching: isBasketballNextFetching,
+    refetch: refetchNextBasketball,
+  } = useGetBasketballNextMatchesQuery({});
+  const { nextMatches: nextBasketballMatches = [] } = basketballNextData || {};
+
+  const {
     data: basketballRecentData,
     isFetching: isBasketballRecentFetching,
     refetch: refetchRecentBasketball,
@@ -213,6 +222,15 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
         recentMatches={recentBasketballMatches}
         isFetching={isBasketballRecentFetching}
         onRefetch={refetchRecentBasketball}
+      />
+    );
+  };
+
+  const renderBasketballNextMatches = () => {
+    return (
+      <BasketballNextMatch
+        nextMatches={nextBasketballMatches}
+        isFetching={isBasketballNextFetching}
       />
     );
   };
@@ -264,6 +282,11 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       type: "FootballNextMatches",
       content: renderFootballNextMatches(),
     });
+  else if (sportsName === "Basketball")
+    sections.push({
+      type: "BasketballNextMatches",
+      content: renderBasketballNextMatches(),
+    });
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -271,10 +294,14 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       await Promise.all([
         refetchLiveCricket(),
         refetchNextCricket(),
+        // refetchRecentCricket(),
         refetchLiveFootball(),
+        refetchNextFootball(),
+        // refetchRecentFootball(),
         refetchLiveBasketball(),
-        // Optionally refetch article data if needed:
-        // refetchSportArticles?.(),
+        refetchNextBasketball(),
+        // refetchRecentBasketball(),
+        refetchSportArticles(),
       ]);
     } catch (error) {
       console.error("Refresh failed", error);

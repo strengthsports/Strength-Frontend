@@ -35,10 +35,6 @@ interface User {
   headline: string;
 }
 
-// interface Member {
-//   user: User;
-//   role: string;
-// }
 
 const Members: React.FC = () => {
   const router = useRouter();
@@ -89,7 +85,7 @@ const Members: React.FC = () => {
 
   useEffect(() => {
      dispatch(fetchTeamDetails(team?._id));
-         console.log("Team:---->",team?.members);
+        //  console.log("Team:---->",team?.members);
     if (team?.members) {
       setFilteredMembers(team.members);
     }
@@ -118,7 +114,7 @@ const Members: React.FC = () => {
   }
 
   const groupedMembers = groupMembersByRole(filteredMembers);
-  console.log("Gtjfugf",groupedMembers);
+  // console.log("Gtjfugf",groupedMembers);
   return (
     <><PageThemeView>
         {/* Header */}
@@ -169,6 +165,7 @@ const Members: React.FC = () => {
               fontSize: 16,
               marginLeft: 20,
               marginBottom: 10,
+
             }}
           >
             {role}
@@ -185,11 +182,13 @@ const Members: React.FC = () => {
 )}        
 </View>
 
-      </PageThemeView><UserInfoModal
+      </PageThemeView>
+      <UserInfoModal
         visible={isModalOpen}
         onClose={closeModal}
         member={selectedMember}
-      /></>
+      />
+      </>
   );
 };
 

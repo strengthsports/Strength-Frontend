@@ -119,6 +119,7 @@ const RoleDropdownComponent = ({
   </Modal>
 );
 
+
 // Apply React.memo with a display name
 const RoleDropdown = React.memo(RoleDropdownComponent);
 
@@ -519,6 +520,11 @@ const MemberDetails = () => {
     [team, parsedMember, memberPosition, dispatch]
   );
 
+  const isMemberAdmin = useMemo(() => {
+    if (!team || !team.admin || !parsedMember) return false;
+    return team.admin.some(admin => admin._id === parsedMember._id);
+  }, [team?.admin, parsedMember?._id]);
+
   const handlePositionChange = useCallback(
     (newPosition: string) => {
       if (!team || !team.members || !parsedMember) {
@@ -547,10 +553,10 @@ const MemberDetails = () => {
         showAlert(
           "Change Position",
           `Are you sure you want to ${
-            memberPosition ? "Promote" : "assign"
+            memberPosition ? "Promote" : "Promote"
           } position to ${newPosition}?`,
           () => executePositionChange(newPosition),
-          "Change"
+          "Promote"
         );
       }
     },
@@ -826,12 +832,12 @@ const MemberDetails = () => {
           />
         )}
 
-        {isCurrentUserAdmin && (
+        {isCurrentUserAdmin && !isMemberAdmin && (
           <ActionButtonRole
             label="Transfer Admin"
             onPress={handleTransferAdmin}
             backgroundColor="#141414"
-            textColor="#CFCFCF"
+            textColor="#D44044"
             icon={<TransferAdmin />}
           />
         )}

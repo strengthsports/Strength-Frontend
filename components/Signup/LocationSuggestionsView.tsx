@@ -94,7 +94,7 @@ const LocationSuggestionView: React.FC<LocationSuggestionViewProps> = ({
                             style={{
                                 paddingHorizontal: 22, paddingVertical: 14,
                                 borderBottomWidth: index === predictions.length - 1 ? 0 : 0.5,
-                                borderBottomColor: "#383838",
+                                borderBottomColor: "#404040",
                             }}
                         >
                             <TextScallingFalse style={{ color: "white" }}>

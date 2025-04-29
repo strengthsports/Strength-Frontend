@@ -36,6 +36,7 @@ type TeamsList = {
 
 interface TeamState {
   currentTeam: null;
+  members:[];
   currentTeamDescription: string;
   team: Team | null;
   invited: TeamMember[] | null;

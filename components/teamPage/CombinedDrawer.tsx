@@ -21,7 +21,10 @@ interface MenuItem {
   label: string;
   onPress: () => void;
   color?: string;
+  isMember: boolean;
+  isAdmin:boolean;
   logo?: React.ComponentType<any>;
+
 }
 
 interface DrawerProps {
@@ -35,6 +38,8 @@ const HEADER_HEIGHT = 40;
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
   menuItems,
+  isMember, 
+  isAdmin,
   teamId,
 }) => {
   const SIDEBAR_WIDTH = 200;
@@ -119,6 +124,8 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         <TouchableOpacity onPress={handleBackFromTeamPage}>
           <BackIcon />
         </TouchableOpacity>
+        {
+          isMember || isAdmin?
         <View className="flex-row items-center gap-x-5">
           <TouchableOpacity
             onPress={() =>
@@ -139,6 +146,8 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
             </Animated.View>
           </TouchableOpacity>
         </View>
+        :<></>
+}
       </View>
 
       {/* Main Content */}

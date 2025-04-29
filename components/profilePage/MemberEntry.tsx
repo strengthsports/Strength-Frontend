@@ -29,12 +29,12 @@ const MemberEntry = ({
     selectedMembers,
   } = useAssociate();
 
-  console.log("2nd", isAdmin);
+  // console.log("2nd", isAdmin);
   const router = useRouter();
   const teamId = useSelector((state: RootState) => state.team.team?._id);
 
   const handleTeamClick = () => {
-    console.log("Hit");
+    // console.log("Hit");
     router.push({
       pathname: `/teams/${teamId}/members/${member._id}` as RelativePathString,
       params: {
@@ -96,10 +96,11 @@ const MemberEntry = ({
               style={{
                 color: "#B2B2B2",
                 fontSize: 12,
+                width:230,
                 fontWeight: "300", // Regular
               }}
             >
-              {member.headline}
+              {member.username}{" | "}{member.headline}
             </TextScallingFalse>
           </View>
           {isEditView && !isSelectModeEnabled && <RightArrow />}

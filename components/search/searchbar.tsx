@@ -10,6 +10,8 @@ type SearchBarProps = {
   searchText?: string;
   placeholder?: string;
   onChangeSearchText?: (text: string) => void;
+  marginTop?: any;
+  marginBottom?: any;
 };
 
 const SearchBar = ({
@@ -17,11 +19,19 @@ const SearchBar = ({
   searchText,
   placeholder,
   onChangeSearchText,
+  marginTop,
+  marginBottom,
 }: SearchBarProps) => {
   const router = useRouter();
 
   return (
-    <View className="flex-row my-3 px-5">
+    <View
+      className="flex-row px-5 bg-black"
+      style={{
+        marginTop: marginTop ?? 12,
+        marginBottom: marginBottom ?? 12,
+      }}
+    >
       {mode === "show" ? (
         <TouchableOpacity
           activeOpacity={0.8}

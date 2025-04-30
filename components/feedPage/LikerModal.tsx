@@ -1,8 +1,6 @@
 import React, { memo, useEffect } from "react";
 import {
   View,
-  Text,
-  Image,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
@@ -11,6 +9,8 @@ import { Divider } from "react-native-elements";
 import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
 import nopic from "@/assets/images/nopic.jpg";
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+import TextScallingFalse from "../CentralText";
 
 interface LikersListProps {
   targetId: string;
@@ -26,7 +26,7 @@ export const LikerCard = ({ liker }: { liker: any }) => {
   );
   return (
     <>
-      <View className="flex-row items-center p-2 my-1 h-[60px]">
+      <View className="flex-row items-center p-2 mt-1 h-[60px]">
         <TouchableOpacity
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
@@ -34,20 +34,29 @@ export const LikerCard = ({ liker }: { liker: any }) => {
         >
           <Image
             source={liker.profilePic ? { uri: liker.profilePic } : nopic}
-            className="w-12 h-12 rounded-full mr-4"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 100,
+              marginRight: 16,
+            }}
+            placeholder={require("../../assets/images/nopic.jpg")}
+            placeholderContentFit="cover"
+            transition={500}
+            cachePolicy="memory-disk"
           />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-white font-semibold text-base">
+          <TextScallingFalse className="text-white font-semibold text-xl">
             {liker.firstName} {liker.lastName}
-          </Text>
-          <Text
-            className="text-neutral-400 text-sm mt-1 w-5/6"
+          </TextScallingFalse>
+          <TextScallingFalse
+            className="text-neutral-400 text-base mt-[2px] w-5/6"
             ellipsizeMode="tail"
             numberOfLines={1}
           >
-            {liker.headline}
-          </Text>
+            {liker.username} | {liker.headline}
+          </TextScallingFalse>
         </View>
       </View>
     </>
@@ -83,7 +92,9 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
         className="w-16 self-center rounded-full bg-neutral-700 my-1"
         width={4}
       />
-      <Text className="text-white self-center text-4xl my-4">Likes</Text>
+      <TextScallingFalse className="text-white self-center text-4xl my-4">
+        Likes
+      </TextScallingFalse>
 
       {isLoading ? (
         <ActivityIndicator size="large" color="#12956B" />
@@ -98,7 +109,9 @@ const LikerModal = memo(({ targetId, targetType }: LikersListProps) => {
           maxToRenderPerBatch={10}
           windowSize={5}
           ListEmptyComponent={
-            <Text className="text-white text-center">No Likes Found!</Text>
+            <TextScallingFalse className="text-white text-center">
+              No Likes Found!
+            </TextScallingFalse>
           }
         />
       )}

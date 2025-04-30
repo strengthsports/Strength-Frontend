@@ -67,12 +67,13 @@ const InteractionBar = ({
           : "w-[100%] bg-transparent"
       } min-h-12 h-auto`}
     >
+      {/* counts */}
       <View
         className={`w-full ${
           isPostContainer ? "pl-8 pr-12" : "px-8"
         } py-3 flex flex-row justify-between items-center`}
       >
-        {/* like */}
+        {/* like count */}
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
           onPress={() => {
@@ -155,6 +156,7 @@ const InteractionBar = ({
         </TouchableOpacity>
       </View>
 
+      {/* actions */}
       <View
         className={`w-[80%] mx-auto py-5 mb-1 flex flex-row ${
           isPostContainer ? "justify-end" : "justify-center"

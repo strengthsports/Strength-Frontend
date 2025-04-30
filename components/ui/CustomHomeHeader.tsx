@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React, { useMemo } from "react";
-import { Image } from "react-native";
+import { Image } from "expo-image";
 import AnimatedAddPostBar from "../feedPage/AnimatedAddPostBar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";

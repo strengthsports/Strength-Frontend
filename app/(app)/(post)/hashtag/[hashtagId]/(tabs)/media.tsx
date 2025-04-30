@@ -15,8 +15,8 @@ import { Colors } from "~/constants/Colors";
 
 const Photos = () => {
   const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
-  console.log(hashtagId);
-  const hashtag = hashtagId.toString();
+  const hashtag =
+    typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
   const { data, isLoading, isError } = useGetImagesByHashtagQuery({ hashtag });
   const memoizedEmptyComponent = memo(() => (
     <Text className="text-white text-center p-4">No images available</Text>

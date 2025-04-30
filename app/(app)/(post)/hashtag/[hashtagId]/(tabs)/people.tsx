@@ -20,8 +20,9 @@ import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
 
 const People = () => {
-  const { hashtagId } = useLocalSearchParams();
-  const hashtag = hashtagId.toString();
+  const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
+  const hashtag =
+    typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
   const router = useRouter();
   const { user } = useSelector((state: any) => state?.profile || {});
   const { data, isLoading, isError } = useGetPeopleByHashtagQuery({ hashtag });
@@ -163,7 +164,7 @@ const People = () => {
       <FlatList
         data={data?.data}
         renderItem={renderFollowerItem}
-        keyExtractor={(item) => item?._id.toString()}
+        keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={styles.listContent}
         ListFooterComponent={<View className="mt-20"></View>}
       />

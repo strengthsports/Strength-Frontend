@@ -17,6 +17,7 @@ type TeamMemberProps = {
   description: string;
   isCaptain?: boolean;
   isViceCaptain?: boolean;
+  username?:string;
   isAdmin?: boolean;
   onRemove?: () => void;
 };
@@ -25,6 +26,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
   imageUrl,
   name,
   description,
+  username,
   isCaptain = false,
   isViceCaptain = false,
   isAdmin = false,
@@ -67,10 +69,10 @@ const TeamMember: React.FC<TeamMemberProps> = ({
       {/* Description */}
       <Text
      style={styles.description}
-      numberOfLines={2}        // Limits to 3 lines
-     ellipsizeMode="tail"    // Adds "..." at the end when truncated
+      numberOfLines={2}      
+     ellipsizeMode="tail"   
 >
-  {description}
+  {"@"}{username}{" | "}{description}
 </Text>
      </View>
      </View>

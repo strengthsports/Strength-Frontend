@@ -46,7 +46,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       teamDetails?.members?.some(
         (member: any) => member.user?._id === user?._id
       ),
-    [teamDetails?.members, user?._id]
+    [user?._id]
   );
 
   if (!fontsLoaded) {

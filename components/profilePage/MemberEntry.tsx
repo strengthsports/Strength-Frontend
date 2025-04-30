@@ -10,6 +10,10 @@ import Icon from "react-native-vector-icons/AntDesign";
 import { RelativePathString, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
+import ViceCaptain from "../SvgIcons/teams/ViceCaptain";
+import Captain from "../SvgIcons/teams/Captain";
+import CaptainSq from "../SvgIcons/teams/CaptainSq";
+import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
 
 const MemberEntry = ({
   member,
@@ -29,29 +33,28 @@ const MemberEntry = ({
     selectedMembers,
   } = useAssociate();
 
-  // console.log("2nd", isAdmin);
   const router = useRouter();
   const teamId = useSelector((state: RootState) => state.team.team?._id);
 
   const handleTeamClick = () => {
-    // console.log("Hit");
     router.push({
       pathname: `/teams/${teamId}/members/${member._id}` as RelativePathString,
       params: {
-        // memberId: member.user._id,
         member: JSON.stringify(member),
         role: JSON.stringify(member.role),
       },
     });
   };
 
-  // Handle select member
   const handleSelectMember = () => {
     toggleMemberSelection({
       memberId: member._id,
       memberUsername: member.username,
     });
   };
+
+  const isCaptain = member.position?.toLowerCase() === "captain";
+  const isViceCaptain = member.position?.toLowerCase() === "vicecaptain";
 
   return (
     <>
@@ -81,26 +84,30 @@ const MemberEntry = ({
           className={`flex-1 flex-row ml-2 items-center justify-between gap-2 ${
             !isLast && "border-b-[0.5px] border-[#3B3B3B]"
           } py-5`}
-        >
+        >r
           <View className="flex flex-col">
-            <TextScallingFalse
-              style={{
-                color: "#FFFFFF",
-                fontSize: 16,
-                fontWeight: "600", // Bold
-              }}
-            >
-              {member.firstName} {member.lastName}
-            </TextScallingFalse>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TextScallingFalse
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                {member.firstName} {member.lastName}
+              </TextScallingFalse>
+              {isCaptain &&<View className="ml-5"><CaptainSq size={20} /></View> }
+              {isViceCaptain &&<View className="ml-2"><ViceCaptainSq  /></View>}
+            </View>
             <TextScallingFalse
               style={{
                 color: "#B2B2B2",
                 fontSize: 12,
-                width:230,
-                fontWeight: "300", // Regular
+                width: 230,
+                fontWeight: "300",
               }}
             >
-              {member.username}{" | "}{member.headline}
+              {"@"}{member.username}{" | "}{member.headline}
             </TextScallingFalse>
           </View>
           {isEditView && !isSelectModeEnabled && <RightArrow />}

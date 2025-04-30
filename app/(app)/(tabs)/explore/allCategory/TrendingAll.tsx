@@ -104,7 +104,7 @@ const TrendingAll = () => {
 
     return (
       <View className="mt-10">
-        <Hashtag data={hashtagData.slice(0, 3)} />
+        <Hashtag setModalVisible={setModalVisible} data={hashtagData.slice(0, 3)} />
         <TouchableOpacity
           className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
           activeOpacity={0.6}

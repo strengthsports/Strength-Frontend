@@ -35,7 +35,8 @@ import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatc
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
-import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
+// import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
+import TrendingLiveMatch from "~/components/explorePage/match/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import SwipperSkeletonLoader from "~/components/skeletonLoaders/SwipperSkeletonLoader";
 import HastagSkeletonLoader from "~/components/skeletonLoaders/HastagSkeletonLoader";
@@ -53,6 +54,7 @@ const TrendingAll = () => {
     isLoading,
     refetch: refetchSportArticles,
   } = useGetSportArticleQuery();
+  const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
       return <SwipperSkeletonLoader />;
@@ -74,7 +76,7 @@ const TrendingAll = () => {
         </View>
       );
     }
-    return <SwiperTop swiperData={articles ?? []} />;
+    return <SwiperTop swiperData={topFiveArticles ?? []} />;
   };
 
   const renderHashtags = () => {
@@ -133,7 +135,7 @@ const TrendingAll = () => {
 
   const renderMatches = () => {
     return (
-      <View className="flex-row items-center pl-7 mt-3">
+      <View className="flex-row items-center pl-3 mt-10">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Matches
         </TextScallingFalse>
@@ -149,8 +151,8 @@ const TrendingAll = () => {
 
   const renderDontMiss = () => {
     return (
-      <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
-        <TextScallingFalse className="text-white text-5xl font-bold">
+      <View className="flex-row items-center justify-between pl-4 mt-7 mb-6">
+        <TextScallingFalse className="text-white text-3xl font-bold">
           Don’t Miss
         </TextScallingFalse>
       </View>

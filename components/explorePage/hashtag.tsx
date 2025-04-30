@@ -29,7 +29,7 @@ const Hashtag: React.FC<HashtagProps> = ({ data }) => {
             router.push(`/(app)/(post)/hashtag/${hashData.hashtag}`)
           }
         >
-          <View className="px-5 flex-row">
+          <View className="px-3 flex-row">
             {/* Index */}
             <TextScallingFalse className="text-theme text-5xl font-semibold mr-5 mt-0.5">
               {count++}

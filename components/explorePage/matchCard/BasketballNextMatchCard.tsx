@@ -117,7 +117,7 @@ const BasketballNextMatchCard = ({
   return (
     <>
       {/* Title Section */}
-      <View className="px-6 pt-3 mt-[0.7] pb-2 w-full h-16 rounded-t-2xl bg-[#262626]">
+      <View className="px-4 pt-3 mt-[0.7] pb-2 w-full h-16 rounded-t-xl bg-[#262626]">
         <TouchableOpacity
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}
@@ -133,7 +133,7 @@ const BasketballNextMatchCard = ({
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >
-            {league}
+            {groupedMatches[0].country.name} - {league}
           </TextScallingFalse>
         </TouchableOpacity>
 
@@ -148,13 +148,13 @@ const BasketballNextMatchCard = ({
         <View key={match.id}>
           <View className="h-[0.8] bg-neutral-700" />
 
-          <View className="pl-10 pt-5">
+          <View className="pl-6 pt-5">
             <TextScallingFalse className="text-[#9E9E9E] text-base">
               {" \u2022 "}
               {match.country.name}
             </TextScallingFalse>
           </View>
-          <View className="flex-row items-center justify-between px-10 p-7">
+          <View className="flex-row items-center justify-between p-6">
             <View className="flex-column gap-y-3">
               {/* Team 1 */}
               <NameFlagSubCard
@@ -168,14 +168,14 @@ const BasketballNextMatchCard = ({
                 teamName={match.teams.away.name}
               />
             </View>
-            <View className="w-[1px] h-12 bg-neutral-700 ml-28" />
+            <View className="w-[1px] h-12 bg-neutral-700 absolute right-[124px] top-[26px]" />
             {/* Match Date and time */}
-            <View className="items-center">
-              <TextScallingFalse className="text-neutral-300 text-center text-base">
+            <View className="items-center w-[84px]">
+              <TextScallingFalse className="text-[#C7C7C7] text-center text-[11.5px]">
                 {formatFixtureDateTime(match.date).dayString}
                 {/* Day here */}
               </TextScallingFalse>
-              <TextScallingFalse className="text-neutral-300 text-center text-base">
+              <TextScallingFalse className="text-[#C7C7C7] text-center text-[11.5px]">
                 {formatFixtureDateTime(match.date).timeString}
                 {/* Time here */}
               </TextScallingFalse>

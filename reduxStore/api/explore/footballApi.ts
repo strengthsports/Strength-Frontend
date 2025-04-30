@@ -45,7 +45,9 @@ export const footballApi = createApi({
         );
 
         const nextMatches = nextMatchesAll.filter(
-          (match: any) => match.league.name === "UEFA Champions League"
+          (match: any) =>
+            match.league.name === "Premier League" &&
+            match.league.country === "England"
         );
 
         // ✅ Group matches by league name

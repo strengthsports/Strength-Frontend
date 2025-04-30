@@ -18,7 +18,8 @@ import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatc
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
-import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
+// import TrendingLiveMatch from "~/components/explorePage/liveMatch/TrendingLiveMatch";
+import TrendingLiveMatch from "~/components/explorePage/match/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
@@ -27,7 +28,7 @@ const TrendingMatch = () => {
   const [refreshing, setRefreshing] = useState(false);
   const renderMatches = () => {
     return (
-      <View className="flex-row items-center pl-7 mt-3">
+      <View className="flex-row items-center pl-3 mt-3">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Matches
         </TextScallingFalse>
@@ -43,7 +44,7 @@ const TrendingMatch = () => {
 
   const renderDontMiss = () => {
     return (
-      <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
+      <View className="flex-row items-center justify-between pl-4 mt-7 mb-6">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Don’t Miss
         </TextScallingFalse>

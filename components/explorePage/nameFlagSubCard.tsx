@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
   },
   countryFlag: { borderRadius: 2 },
   logoContainer: {
-    width: 27,
-    height: 20,
+    width: 28,
+    height: 21,
     borderRadius: 2,
   },
   teamLogo: {
@@ -52,12 +52,13 @@ const styles = StyleSheet.create({
   },
   teamName: {
     color: "white",
-    fontSize: 11,
+    fontSize: 13,
     textAlign: "center",
   },
   nameCard: {
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
+    marginBottom: 2,
   },
 });

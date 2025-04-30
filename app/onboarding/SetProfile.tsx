@@ -77,7 +77,7 @@ const ProfilePictureScreen: React.FC = () => {
 
   const handleContinue = (): void => {
     if (profilePic) {
-      console.log("Selected profile picture: " + profilePic);
+      console.log("Selected profile picture:", profilePic);
       router.push({
         pathname: "/onboarding/SuggestedFollowers",
       });

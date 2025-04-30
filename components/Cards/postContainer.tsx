@@ -271,7 +271,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               <TextScallingFalse
                 key={i}
                 onPress={() =>
-                  router.push(`/(app)/(post)/hashtag/${part.slice(1)}`)
+                  router.push({
+                    pathname: "/(app)/(post)/hashtag/[hashtagId]/(tabs)/top",
+                    params: { hashtagId: part.slice(1) },
+                  })
                 }
                 className={`text-2xl text-[#12956B] ${
                   highlightedHashtag === part && "font-semibold"
@@ -296,7 +299,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 key={i}
                 onPress={() =>
                   serializedUser &&
-                  router.push(`/(app)/(profile)/profile/${serializedUser}`)
+                  router.push({
+                    pathname: "/(app)/(profile)/profile/[userId]",
+                    params: { userId: serializedUser },
+                  })
                 }
                 className="text-2xl text-[#12956B] active:bg-gray-600"
               >

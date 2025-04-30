@@ -147,7 +147,7 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
   return (
     <>
       {/* Tittle Section */}
-      <View className="px-4 pt-3 pb-2">
+      <View className="px-4 pt-3 pb-1">
         <TouchableOpacity
           className="flex-row items-center w-[280px] gap-2"
           onPress={toggleNumberOfLines}

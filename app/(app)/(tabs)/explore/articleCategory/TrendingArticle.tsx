@@ -15,6 +15,7 @@ const TrendingArticle = () => {
     isLoading,
     refetch: refetchSportArticles,
   } = useGetSportArticleQuery();
+  const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
       return (
@@ -31,7 +32,8 @@ const TrendingArticle = () => {
         </TextScallingFalse>
       );
     }
-    return <SwiperTop swiperData={articles ?? []} />;
+
+    return <SwiperTop swiperData={topFiveArticles ?? []} />;
   };
 
   const renderArticles = () => {

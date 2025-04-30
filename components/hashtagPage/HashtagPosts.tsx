@@ -18,8 +18,8 @@ import { ScrollView } from "react-native";
 
 export default function HashtagPosts({ sort }: { sort?: number }) {
   const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
-  console.log(hashtagId);
-  const hashtag = hashtagId.toString();
+  const hashtag =
+    typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
   const { data, error, isLoading, refetch } = useGetPostsByHashtagQuery({
     hashtag,
     sort,
@@ -47,6 +47,7 @@ export default function HashtagPosts({ sort }: { sort?: number }) {
   }, []);
 
   if (error) {
+    console.log(error);
     return (
       <View className="justify-center items-center">
         <Text className="text-red-400">Error</Text>
@@ -77,7 +78,7 @@ export default function HashtagPosts({ sort }: { sort?: number }) {
   ) : (
     <FlatList
       data={data?.data?.posts}
-      keyExtractor={(item, index) => index.toString()}
+      keyExtractor={(item) => item._id.toString()}
       renderItem={renderItem}
       refreshControl={
         <RefreshControl

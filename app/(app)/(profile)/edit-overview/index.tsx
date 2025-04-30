@@ -235,8 +235,7 @@ function EditOverview() {
       discardAction: () => void,
       confirmMessage: string,
       cancelMessage: string,
-      discardButtonColor?: { bg: string; text: string },
-      cancelButtonColor?: { bg: string; text: string }
+      buttonColors?: { confirmButtonColor?: { bg: string; text: string }; cancelButtonColor?: { bg: string; text: string }; discardButtonColor?: { bg: string; text: string } }
     ) => {
       if (hasSkippedAlert) return;
       setAlertConfig({
@@ -245,8 +244,9 @@ function EditOverview() {
         discardAction,
         confirmMessage,
         cancelMessage,
-        discardButtonColor,
-        cancelButtonColor,
+        confirmButtonColor: buttonColors?.confirmButtonColor,
+        cancelButtonColor: buttonColors?.cancelButtonColor,
+        discardButtonColor: buttonColors?.discardButtonColor
       });
       setAlertModal(true);
     },
@@ -300,7 +300,9 @@ function EditOverview() {
           () => setAlertModal(false),
           "Add more",
           "  Skip  ",
-          { bg: "#12956B", text: "white" }
+          {
+            confirmButtonColor: { bg: "#12956B", text: "white" } // Pass it all in one object
+          }
         );
         return; // Don't proceed
       }

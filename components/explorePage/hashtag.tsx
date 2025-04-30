@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { Pressable, TouchableOpacity, View } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { hashtagData } from "~/constants/hardCodedFiles";
 import PageThemeView from "../PageThemeView";
@@ -14,41 +14,43 @@ interface HashtagItem {
 // Define props type for Hashtag component
 interface HashtagProps {
   data: HashtagItem[];
+  setModalVisible: (visible: boolean) => void;
 }
 
-const Hashtag: React.FC<HashtagProps> = ({ data }) => {
+const Hashtag: React.FC<HashtagProps> = ({ data, setModalVisible }) => {
   const router = useRouter();
   const hashtagDataLength = data.length;
   let count = 1;
   return (
     <>
       {data.map((hashData) => (
-        <Pressable
-          key={hashData._id}
-          onPress={() =>
-            router.push(`/(app)/(post)/hashtag/${hashData.hashtag}`)
-          }
+        <TouchableOpacity activeOpacity={0.7}
+          key={hashData._id} 
+          onPress={() => { 
+            router.push(`/(app)/(post)/hashtag/${hashData.hashtag}`);
+            setModalVisible(false);
+          }}
         >
-          <View className="px-5 flex-row">
+          <View className="px-3 flex-row">
             {/* Index */}
-            <TextScallingFalse className="text-theme text-5xl font-semibold mr-5 mt-0.5">
+            <TextScallingFalse className="text-theme text-5xl font-semibold mr-6 mt-0.5">
               {count++}
             </TextScallingFalse>
 
             {/* Hashtag and Posts Count */}
             <View className="flex-col justify-center">
-              <TextScallingFalse className="text-[#CECECE] text-3xl font-semibold ">
+              <TextScallingFalse className="text-white text-4xl" style={{fontWeight:'500'}}>
                 #{hashData.hashtag}
               </TextScallingFalse>
-              <TextScallingFalse className="text-[#6E6E6E] text-2xl mt-1.5">
+              <TextScallingFalse className="text-[#6E6E6E] text-2xl">
                 {hashData.postCount} posts
               </TextScallingFalse>
             </View>
           </View>
 
           {/* Divider */}
-          <View className=" h-[0.6px] bg-[#474747] my-3 ml-12 mr-6" />
-        </Pressable>
+          <View className=" h-[0.6px] bg-[#303030] my-4 ml-12 mr-6" />
+        </TouchableOpacity>
       ))}
     </>
   );

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { View, TouchableOpacity, Modal, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import React from "react";
 import TextScallingFalse from "../CentralText";
 import { LinearGradient } from "expo-linear-gradient";
@@ -11,6 +11,9 @@ interface AlertConfig {
   confirmMessage: string;
   cancelMessage: string;
   isDestructive?: boolean;
+  confirmButtonColor?: { bg: string; text: string };  // Add this
+  cancelButtonColor?: { bg: string; text: string };  // Add this
+  discardButtonColor?: { bg: string; text: string };
 }
 
 const AlertModal = ({
@@ -25,9 +28,13 @@ const AlertModal = ({
     alertConfig.confirmMessage.includes(action)
   );
   
-  const confirmButtonColors = isPositiveAction 
-    ? ["#12956B", "#0D7A55"]  // Green gradient for positive actions
-    : ["#E14A4B", "#A23637"]; // Red gradient for destructive actions
+  const confirmButtonColors = alertConfig.confirmButtonColor
+  ? [alertConfig.confirmButtonColor.bg, alertConfig.confirmButtonColor.bg] // use same color for solid background
+  : isPositiveAction
+    ? ["#12956B", "#0D7A55"]
+    : ["#E14A4B", "#A23637"];
+
+    console.log("Confirm Button Color:", alertConfig.confirmButtonColor);
 
   return (
     <Modal
@@ -68,9 +75,9 @@ const AlertModal = ({
                   alignItems: "center",
                 }}
               >
-                <Text className="text-white text-2xl">
+                <TextScallingFalse className="text-white text-2xl">
                   {alertConfig.cancelMessage}
-                </Text>
+                </TextScallingFalse>
               </TouchableOpacity>
             </LinearGradient>
             <LinearGradient
@@ -91,9 +98,10 @@ const AlertModal = ({
                   alignItems: "center",
                 }}
               >
-                <Text className="text-white font-semibold text-2xl">
+                <TextScallingFalse className="font-semibold text-2xl"
+                 style={{ color: alertConfig.confirmButtonColor?.text || "white" }}>
                   {alertConfig.confirmMessage}
-                </Text>
+                </TextScallingFalse>
               </TouchableOpacity>
             </LinearGradient>
           </View>

@@ -81,7 +81,7 @@ const SuggestedSupportScreen: React.FC = () => {
     setUsers(prevUsers => prevUsers.filter(user => user._id !== id));
   };
 
-  const [finalLoading,setFinalLoading] = useState(false)
+  const [finalLoading, setFinalLoading] = useState(false)
   const handleContinue = async () => {
     console.log("Selected Sports:", selectedSports);
     setFinalLoading(true);
@@ -96,13 +96,11 @@ const SuggestedSupportScreen: React.FC = () => {
       // console.log("Data to be submitted : ", onboardingData);
       const finalOnboardingData = new FormData();
       finalOnboardingData.append("headline", onboardingData.headline);
-          // Only add 'assets' if profilePic is available
-    if (profilePic?.fileObject) {
-      finalOnboardingData.append(
-        "assets",
-        JSON.stringify([{ url: profilePic.fileObject }])
-      );
-    }
+      // Only add 'assets' if profilePic is available
+      if (profilePic?.fileObject) {
+        finalOnboardingData.append("assets", profilePic.fileObject as any);
+      }
+
       onboardingData.favSports.forEach((sportId) => {
         finalOnboardingData.append("favSports", sportId);
       });
@@ -111,6 +109,11 @@ const SuggestedSupportScreen: React.FC = () => {
       finalOnboardingData.forEach((value, key) => {
         console.log(`${key}: ${value}`);
       });
+
+      console.log("FormData object before dispatch:");
+      for (let pair of (finalOnboardingData as any).entries()) {
+        console.log(`${pair[0]}: ${typeof pair[1] === 'object' ? JSON.stringify(pair[1]) : pair[1]}`);
+      }      
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
@@ -242,17 +245,17 @@ const SuggestedSupportScreen: React.FC = () => {
         }
         ListEmptyComponent={() => (
           <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-          {Array.from({ length: 8 }).map((_, index) => (
-            <UserCardSkeleton key={index} size="large" />
-          ))}
-        </View>
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 12,
+            }}
+          >
+            {Array.from({ length: 8 }).map((_, index) => (
+              <UserCardSkeleton key={index} size="large" />
+            ))}
+          </View>
         )}
         onEndReached={loadMoreUsers}
         onEndReachedThreshold={0.9}
@@ -265,27 +268,27 @@ const SuggestedSupportScreen: React.FC = () => {
       />
 
       {/* Fixed Skip/Continue Button */}
-      <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 70, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', paddingBottom: 20}}>
+      <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 70, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
         {
           finalLoading ?
-          <ActivityIndicator size={'small'} color={'#606060'}/>
-          :
-          <TouchableOpacity activeOpacity={0.7}
-          className={`py-2 rounded-full ${selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
-            }`}
-          style={{
-            width: "60%",
-            height: 36, justifyContent:'center', alignItems:'center',
-          }}
-          onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
-        >
-          <TextScallingFalse
-            className={`${selectedPlayers.length > 0 ? "text-white font-semibold" : "text-gray-400"
-              } text-center`}
-          >
-            {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
-          </TextScallingFalse>
-        </TouchableOpacity>
+            <ActivityIndicator size={'small'} color={'#606060'} />
+            :
+            <TouchableOpacity activeOpacity={0.7}
+              className={`py-2 rounded-full ${selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
+                }`}
+              style={{
+                width: "60%",
+                height: 36, justifyContent: 'center', alignItems: 'center',
+              }}
+              onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
+            >
+              <TextScallingFalse
+                className={`${selectedPlayers.length > 0 ? "text-white font-semibold" : "text-gray-400"
+                  } text-center`}
+              >
+                {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
+              </TextScallingFalse>
+            </TouchableOpacity>
         }
       </View>
       <Toast />

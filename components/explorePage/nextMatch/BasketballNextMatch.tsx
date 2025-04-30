@@ -20,23 +20,25 @@ const BasketballNextMatch: React.FC<NextBasketballMatchProps> = ({
   isFetching,
 }) => {
   return (
-    <View className="mt-7">
+    <View className="">
       <FlatList
         data={nextMatches}
         keyExtractor={(item, index) => `${item.league}_${index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="min-h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545] mb-10">
+          <View className="min-h-56 w-full mr-5 mb-5 px-3">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ActivityIndicator size="large" color={Colors.themeColor} />
               </View>
             ) : (
-              <BasketballNextMatchCard
-                league={item.league}
-                groupedMatches={item.matches}
-              />
+              <View className="border border-[#454545] rounded-xl">
+                <BasketballNextMatchCard
+                  league={item.league}
+                  groupedMatches={item.matches}
+                />
+              </View>
             )}
           </View>
         )}

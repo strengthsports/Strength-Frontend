@@ -16,6 +16,7 @@ import {
   useMarkNotificationsAsReadMutation,
 } from "~/reduxStore/api/notificationApi";
 import { TouchableOpacity } from "react-native";
+import NotificationNotFound from "~/components/notfound/notificationNotFound";
 
 type GroupedSection = {
   title: string;
@@ -302,7 +303,7 @@ const NotificationPage = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       ) : (
-        <EmptyState />
+        <EmptyState type={activeTab} />
       )}
     </SafeAreaView>
   );
@@ -352,10 +353,10 @@ const SectionHeader = ({ title }: { title: string }) => (
   <Text className="text-[#808080] text-2xl font-bold my-2">{title}</Text>
 );
 
-const EmptyState = () => (
-  <Text className="text-gray-500 text-center text-base">
-    No notifications found
-  </Text>
+const EmptyState = ({ type }: { type: string }) => (
+  <View className="flex-1 justify-center items-center">
+    <NotificationNotFound type={type} />
+  </View>
 );
 
 export default NotificationPage;

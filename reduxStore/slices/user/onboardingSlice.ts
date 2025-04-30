@@ -125,6 +125,9 @@ export const onboardingUser = createAsyncThunk<
     if (!token) throw new Error("Token not found");
     console.log("Onboard data : ", data);
 
+    const fullURL = `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`;
+    console.log("Posting to URL:", fullURL);
+    
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`,
       {

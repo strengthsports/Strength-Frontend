@@ -96,8 +96,8 @@ const MemberEntry = ({
               >
                 {member.firstName} {member.lastName}
               </TextScallingFalse>
-              {isCaptain &&<View className="ml-5"><CaptainSq size={20} /></View> }
-              {isViceCaptain &&<View className="ml-2"><ViceCaptainSq  /></View>}
+              {isCaptain &&<View className="ml-2 mt-1"><CaptainSq /></View> }
+              {isViceCaptain &&<View className="ml-2 mt-1"><ViceCaptainSq  /></View>}
             </View>
             <TextScallingFalse
               style={{

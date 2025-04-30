@@ -35,6 +35,7 @@ import RemoveFromTeam from "~/components/SvgIcons/teams/RemoveFromTeam";
 import TransferAdmin from "~/components/SvgIcons/teams/TransferAdmin";
 import AlertModal from "~/components/modals/AlertModal"; 
 import { showSuccess, showError, showInfo, showWarning } from '../../../../../../utils/feedbackToast';
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 // Types
 interface Role {
@@ -85,7 +86,7 @@ const RoleDropdownComponent = ({
   <Modal
     visible={visible}
     transparent
-    animationType="fade"
+    animationType="none"
     onRequestClose={onClose}
   >
     <TouchableWithoutFeedback onPress={onClose}>
@@ -261,6 +262,7 @@ const MemberDetails = () => {
   } = useLocalSearchParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  console.log(member);
 
   const { team, loading } = useSelector((state: RootState) => state.team);
   const { user } = useSelector((state: RootState) => state.profile);
@@ -768,14 +770,14 @@ const MemberDetails = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <AntIcon name="arrowleft" size={28} color="white" />
+          <BackIcon/>
         </TouchableOpacity>
 
         <TextScallingFalse style={styles.headerText}>
           {parsedMember?.firstName || ""} {parsedMember?.lastName || ""}
         </TextScallingFalse>
 
-        <View style={{ width: 28 }} />
+        <View style={{ width: 28,borderColor:"#2B2B2B" }} />
       </View>
 
       <Divider />
@@ -824,7 +826,7 @@ const MemberDetails = () => {
 
         {isAdmin && (
           <ActionButtonRole
-            label="Remove from Team"
+            label={team?.admin[0]._id ===  member?._id ? "Leave Team" : "Remove from team"}
             onPress={handleRemoveFromTeam}
             backgroundColor="#141414"
             textColor="#D44044"
@@ -869,8 +871,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: "white",
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "400",
     flex: 1,
     textAlign: "center",
   },
@@ -906,12 +908,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
     paddingVertical: 0,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 15,
   },
   smallButton: {
-    paddingVertical: 0,
+    paddingVertical: -5,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 7.48,
     backgroundColor: "#12956B",
   },
   smallButtonRight: {
@@ -922,20 +924,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
   },
   whiteText: {
-    color: "white",
+    color: "#CFCFCF",
   },
   actionsContainer: {
     paddingHorizontal: 20,
-    marginTop: 20,
+    borderRadius:15,
+    // marginTop: 20,
   },
   actionButton: {
     marginBottom: 12,
-    borderRadius: 6,
+    borderRadius: 15,
     paddingVertical: 10,
   },
   actionButtonText: {
     fontSize: 16,
-    fontWeight: "500",
+    // fontWeight: "300",
   },
   icon: {
     marginRight: 6,
@@ -944,6 +947,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+
   },
   textWithIcon: {
     flexDirection: "row",
@@ -953,18 +957,18 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.7)",
   },
   dropdownContainer: {
     position: "absolute",
     left: "5%",
     right: "5%",
-    backgroundColor: "#1E1E1E",
-    borderRadius: 8,
+    backgroundColor: "#141414",
+    borderRadius: 15,
     padding: 10,
     maxHeight: "40%",
-    top: "40%",
-    zIndex: 1000,
+    top: "51%",
+    zIndex: 10,
   },
   roleItem: {
     padding: 15,
@@ -972,7 +976,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: "#292929",
   },
   selectedRole: {
     backgroundColor: "#252525",

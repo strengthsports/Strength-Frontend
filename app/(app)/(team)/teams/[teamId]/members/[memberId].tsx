@@ -20,6 +20,8 @@ import {
   changeUserPosition,
   changeUserRole,
 } from "~/reduxStore/slices/team/teamSlice";
+import Toast from 'react-native-toast-message';
+import { toastConfig } from "~/configs/toastConfig";
 import PageThemeView from "~/components/PageThemeView";
 import AntIcon from "react-native-vector-icons/AntDesign";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -31,6 +33,8 @@ import ViceCaptain from "~/components/SvgIcons/teams/ViceCaptain";
 import Captain from "~/components/SvgIcons/teams/Captain";
 import RemoveFromTeam from "~/components/SvgIcons/teams/RemoveFromTeam";
 import TransferAdmin from "~/components/SvgIcons/teams/TransferAdmin";
+import AlertModal from "~/components/modals/AlertModal"; 
+import { showSuccess, showError, showInfo, showWarning } from '../../../../../../utils/feedbackToast';
 
 // Types
 interface Role {
@@ -38,14 +42,21 @@ interface Role {
   name: any;
 }
 
-interface ConfirmationDialogProps {
-  visible: boolean;
+interface AlertConfig {
   title: string;
   message: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-  confirmText?: string;
-  destructive?: boolean;
+  confirmAction: () => void;
+  discardAction: () => void;
+  confirmMessage: string;
+  cancelMessage: string;
+  discardButtonColor?: {
+    bg: string;
+    text: string;
+  };
+  cancelButtonColor?: {
+    bg: string;
+    text: string;
+  };
 }
 
 interface ActionButtonProps {
@@ -85,7 +96,7 @@ const RoleDropdownComponent = ({
       {/* Use FlatList instead of ScrollView for better key handling */}
       <FlatList
         data={roles}
-        key={(item) => item._id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item: role }) => (
           <TouchableOpacity
             style={[
@@ -108,8 +119,8 @@ const RoleDropdownComponent = ({
   </Modal>
 );
 
-// Apply React.memo with a display name
 
+// Apply React.memo with a display name
 const RoleDropdown = React.memo(RoleDropdownComponent);
 
 // Set a display name for easier debugging
@@ -236,60 +247,10 @@ const ProfileSection = React.memo(({ member }: { member: any }) => (
       {member?.firstName} {member?.lastName}
     </Text>
     <View className="flex-row">
-      <Text style={styles.roleText}>
-        {"@"}
-        {member?.username} |{" "}
-      </Text>
-      <Text style={styles.roleText}>{member?.headline}</Text>
+      <Text style={styles.roleText}>{"@"}{member?.username} |{" "}{member?.headline}</Text>
     </View>
   </View>
 ));
-
-// Confirmation Dialog Component
-const ConfirmationDialog = React.memo(
-  ({
-    visible,
-    title,
-    message,
-    onCancel,
-    onConfirm,
-    confirmText = "Confirm",
-    destructive = false,
-  }: ConfirmationDialogProps) => (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.confirmationOverlay}>
-        <View style={styles.confirmationContainer}>
-          <Text style={styles.confirmationTitle}>{title}</Text>
-          <Text style={styles.confirmationMessage}>{message}</Text>
-          <View style={styles.confirmationButtons}>
-            <TouchableOpacity
-              style={styles.confirmationButton}
-              onPress={onCancel}
-            >
-              <Text style={styles.confirmationButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.confirmationButton,
-                destructive && styles.destructiveButton,
-              ]}
-              onPress={onConfirm}
-            >
-              <Text
-                style={[
-                  styles.confirmationButtonText,
-                  destructive && styles.destructiveText,
-                ]}
-              >
-                {confirmText}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  )
-);
 
 // Main component
 const MemberDetails = () => {
@@ -323,14 +284,15 @@ const MemberDetails = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isFollowingLoading, setIsFollowingLoading] = useState(false);
 
-  const [confirmDialog, setConfirmDialog] = useState<ConfirmationDialogProps>({
-    visible: false,
+  // Alert modal state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<AlertConfig>({
     title: "",
     message: "",
-    onConfirm: () => {},
-    onCancel: () => {},
-    confirmText: "Confirm",
-    destructive: false,
+    confirmAction: () => {},
+    discardAction: () => {},
+    confirmMessage: "Confirm",
+    cancelMessage: "Cancel",
   });
 
   // Memoized values to prevent recalculations
@@ -351,32 +313,6 @@ const MemberDetails = () => {
     );
     return (currentMember && currentMember.position === "Admin") || isTeamOwner;
   }, [team?.members, user, isTeamOwner]);
-
-  // Functions
-  const hideConfirmation = useCallback(() => {
-    setConfirmDialog((prev) => ({ ...prev, visible: false }));
-  }, []);
-
-  const showConfirmation = useCallback(
-    (
-      title: string,
-      message: string,
-      onConfirm: () => void,
-      confirmText = "Confirm",
-      destructive = false
-    ) => {
-      setConfirmDialog({
-        visible: true,
-        title,
-        message,
-        onConfirm,
-        onCancel: hideConfirmation,
-        confirmText,
-        destructive,
-      });
-    },
-    [hideConfirmation]
-  );
 
   // Initialize data once
   useEffect(() => {
@@ -407,7 +343,7 @@ const MemberDetails = () => {
     }
   }, [team?.members, parsedMember?._id]);
 
-  // Check for changes only when relevant values change
+  // Check for changes when relevant values change
   useEffect(() => {
     const hasPositionChanged =
       memberPosition !== (parsedMember?.position || "");
@@ -415,28 +351,60 @@ const MemberDetails = () => {
     setHasChanges(hasPositionChanged || hasRoleChanged);
   }, [memberPosition, role, originalRole, parsedMember?.position]);
 
-  // // Handlers
-  // const handleSave = useCallback(async () => {
-  //   if (!hasChanges) return;
+  // Unified toast message functions
+  const showToastMessage = (message: string, type = 'success') => {
+    // Using the imported toast utility functions
+    switch(type) {
+      case 'success':
+        showSuccess(message);
+        break;
+      case 'error':
+        showError(message);
+        break;
+      case 'info':
+        showInfo(message);
+        break;
+      case 'warning':
+        showWarning(message);
+        break;
+      default:
+        showSuccess(message);
+    }
+  };
 
-  //   setIsUpdating(true);
-  //   try {
-  //     await new Promise(resolve => setTimeout(resolve, 500));
-  //     Alert.alert("Changes Saved", `Role updated to "${role}"`);
-  //     setHasChanges(false);
-  //   } catch (error) {
-  //     console.error("Failed to save changes:", error);
-  //     Alert.alert("Error", "Could not save changes. Please try again.");
-  //   } finally {
-  //     setIsUpdating(false);
-  //   }
-  // }, [hasChanges, role]);
+  // Functions for the Alert Modal
+  const showAlert = (
+    title: string,
+    message: string,
+    confirmAction: () => void,
+    confirmMessage = "Confirm",
+    isDestructive = false
+  ) => {
+    const config: AlertConfig = {
+      title,
+      message,
+      confirmAction: () => {
+        setAlertVisible(false); // Close the alert modal first
+        confirmAction(); // Then execute the action
+      },
+      discardAction: () => setAlertVisible(false),
+      confirmMessage,
+      cancelMessage: "Cancel",
+    };
+    
+    setAlertConfig(config);
+    setAlertVisible(true);
+  };
+
+  const hideAlert = () => {
+    setAlertVisible(false);
+  };
 
   const handleRoleSelect = useCallback(
     (selectedRole: string) => {
       if (selectedRole === role) return;
 
-      showConfirmation(
+      showAlert(
         "Change Role",
         `Are you sure you want to change this member's role to "${selectedRole}"?`,
         async () => {
@@ -457,16 +425,18 @@ const MemberDetails = () => {
 
             setRole(selectedRole);
             setHasChanges(false);
+            showToastMessage(`Role successfully changed to ${selectedRole}`);
           } catch (error) {
             console.error("Failed to change role:", error);
-            Alert.alert("Error", "Could not update role. Please try again.");
+            showToastMessage("Could not update role. Please try again.", "error");
           } finally {
             setIsUpdating(false);
           }
-        }
+        },
+        "Change"
       );
     },
-    [role, showConfirmation, teamId, parsedMember, dispatch]
+    [role, teamId, parsedMember, dispatch]
   );
 
   const handleFollowToggle = useCallback(async () => {
@@ -474,22 +444,23 @@ const MemberDetails = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       setIsFollowing((prev) => !prev);
+      showToastMessage(isFollowing ? "Unfollowed successfully" : "Following now");
     } finally {
       setIsFollowingLoading(false);
     }
-  }, []);
+  }, [isFollowing]);
 
   const executePositionChange = useCallback(
     async (newPosition: string) => {
       // Validate required data before proceeding
       if (!team || !team._id || !parsedMember) {
-        Alert.alert("Error", "Missing team or member data");
+        showToastMessage("Missing team or member data", "error");
         return;
       }
 
       // Ensure the member ID exists
       if (!parsedMember._id) {
-        Alert.alert("Error", "Invalid member data - missing ID");
+        showToastMessage("Invalid member data - missing ID", "error");
         return;
       }
 
@@ -506,6 +477,7 @@ const MemberDetails = () => {
           ).unwrap();
 
           setMemberPosition("");
+          showToastMessage("Position has been removed successfully");
           return;
         }
 
@@ -537,9 +509,10 @@ const MemberDetails = () => {
         ).unwrap();
 
         setMemberPosition(newPosition);
+        showToastMessage(`Position successfully changed to ${newPosition}`);
       } catch (error) {
         console.error("Failed to change position:", error);
-        Alert.alert("Error", "Could not update position. Please try again.");
+        showToastMessage("Could not update position. Please try again.", "error");
       } finally {
         setIsUpdating(false);
       }
@@ -547,10 +520,15 @@ const MemberDetails = () => {
     [team, parsedMember, memberPosition, dispatch]
   );
 
+  const isMemberAdmin = useMemo(() => {
+    if (!team || !team.admin || !parsedMember) return false;
+    return team.admin.some(admin => admin._id === parsedMember._id);
+  }, [team?.admin, parsedMember?._id]);
+
   const handlePositionChange = useCallback(
     (newPosition: string) => {
       if (!team || !team.members || !parsedMember) {
-        Alert.alert("Error", "Missing team or member data");
+        showToastMessage("Missing team or member data", "error");
         return;
       }
 
@@ -563,7 +541,7 @@ const MemberDetails = () => {
 
       if (conflictingMembers.length > 0 && conflictingMembers[0].user) {
         const conflictMember = conflictingMembers[0];
-        showConfirmation(
+        showAlert(
           "Position Conflict",
           `${conflictMember.user.firstName || "User"} ${
             conflictMember.user.lastName || ""
@@ -572,12 +550,13 @@ const MemberDetails = () => {
           "Replace"
         );
       } else {
-        showConfirmation(
+        showAlert(
           "Change Position",
           `Are you sure you want to ${
-            memberPosition ? "change" : "assign"
+            memberPosition ? "Promote" : "Promote"
           } position to ${newPosition}?`,
-          () => executePositionChange(newPosition)
+          () => executePositionChange(newPosition),
+          "Promote"
         );
       }
     },
@@ -585,19 +564,18 @@ const MemberDetails = () => {
       team,
       parsedMember,
       memberPosition,
-      showConfirmation,
       executePositionChange,
     ]
   );
 
   const handleRemovePosition = useCallback(async () => {
     if (!team || !team._id) {
-      Alert.alert("Error", "Missing team data");
+      showToastMessage("Missing team data", "error");
       return;
     }
 
     if (!parsedMember || !parsedMember._id) {
-      Alert.alert("Error", "Missing or invalid member data");
+      showToastMessage("Missing or invalid member data", "error");
       return;
     }
 
@@ -612,10 +590,10 @@ const MemberDetails = () => {
       ).unwrap();
 
       setMemberPosition("");
-      Alert.alert("Success", "Position has been removed");
+      showToastMessage("Position has been removed successfully");
     } catch (error) {
       console.error("Failed to remove position:", error);
-      Alert.alert("Error", "Could not update position. Please try again.");
+      showToastMessage("Could not update position. Please try again.", "error");
     } finally {
       setIsUpdating(false);
     }
@@ -623,7 +601,7 @@ const MemberDetails = () => {
 
   // Handle removing member from team
   const handleRemoveFromTeam = useCallback(() => {
-    showConfirmation(
+    showAlert(
       "Remove Member",
       "Are you sure you want to remove this member from the team?",
       async () => {
@@ -631,32 +609,33 @@ const MemberDetails = () => {
         try {
           // Implement the actual member removal logic here
           await new Promise((resolve) => setTimeout(resolve, 500));
+          showToastMessage("Member has been removed from the team");
           router.back();
         } catch (error) {
           console.error("Failed to remove member:", error);
-          Alert.alert("Error", "Could not remove member. Please try again.");
+          showToastMessage("Could not remove member. Please try again.", "error");
         } finally {
           setIsUpdating(false);
         }
       },
-      "Remove",
-      true
+      "Remove"
     );
-  }, [showConfirmation, router]);
+  }, [router]);
 
   // Handle admin transfer
   const handleTransferAdmin = useCallback(() => {
     if (!team || !parsedMember) {
-      Alert.alert("Error", "Missing team or member data");
+      showToastMessage("Missing team or member data", "error");
       return;
     }
 
-    showConfirmation(
+    showAlert(
       "Transfer Admin",
       "Are you sure you want to transfer admin rights to this member?",
-      () => executePositionChange("Admin")
+      () => executePositionChange("Admin"),
+      "Transfer"
     );
-  }, [showConfirmation, executePositionChange, team, parsedMember]);
+  }, [executePositionChange, team, parsedMember]);
 
   // Render position-specific buttons - memoized to prevent re-renders
   const renderPositionButtons = useMemo(() => {
@@ -673,7 +652,7 @@ const MemberDetails = () => {
           <ActionButtonRole
             label="Remove from Captain"
             onPress={() =>
-              showConfirmation(
+              showAlert(
                 "Remove Position",
                 "Are you sure you want to remove the Captain position?",
                 handleRemovePosition,
@@ -702,7 +681,7 @@ const MemberDetails = () => {
           <ActionButtonRole
             label="Remove from Vice Captain"
             onPress={() =>
-              showConfirmation(
+              showAlert(
                 "Remove Position",
                 "Are you sure you want to remove the Vice Captain position?",
                 handleRemovePosition,
@@ -720,18 +699,16 @@ const MemberDetails = () => {
         <ActionButton
           label="Remove Admin Rights"
           onPress={() =>
-            showConfirmation(
+            showAlert(
               "Remove Admin",
               "Are you sure you want to remove admin rights from this member?",
               handleRemovePosition,
-              "Remove",
-              true
+              "Remove"
             )
           }
           backgroundColor="#141414"
           textColor="#D44044"
           iconName="account-remove"
-          // isLoading={isUpdating}
         />
       );
     } else {
@@ -743,7 +720,6 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#CFCFCF"
             icon={<Captain />}
-            // isLoading={isUpdating}
           />
           <ActionButtonRole
             label="Promote to Vice Captain"
@@ -751,7 +727,6 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#CFCFCF"
             icon={<ViceCaptain />}
-            // isLoading={isUpdating}
           />
         </>
       );
@@ -759,7 +734,6 @@ const MemberDetails = () => {
   }, [
     memberPosition,
     handlePositionChange,
-    showConfirmation,
     handleRemovePosition,
   ]);
 
@@ -777,6 +751,20 @@ const MemberDetails = () => {
 
   return (
     <PageThemeView>
+      {/* Semi-transparent overlay when alert is visible */}
+      {alertVisible && (
+        <View style={styles.backdropOverlay} />
+      )}
+      
+      {/* Alert Modal */}
+      {alertVisible && (
+        <AlertModal 
+          alertConfig={alertConfig}
+          isVisible={alertVisible}
+          onClose={hideAlert}
+        />
+      )}
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -841,18 +829,16 @@ const MemberDetails = () => {
             backgroundColor="#141414"
             textColor="#D44044"
             icon={<RemoveFromTeam />}
-            // isLoading={isUpdating}
           />
         )}
 
-        {isCurrentUserAdmin && (
+        {isCurrentUserAdmin && !isMemberAdmin && (
           <ActionButtonRole
             label="Transfer Admin"
             onPress={handleTransferAdmin}
             backgroundColor="#141414"
-            textColor="#CFCFCF"
+            textColor="#D44044"
             icon={<TransferAdmin />}
-            // isLoading={isUpdating}
           />
         )}
       </View>
@@ -866,19 +852,8 @@ const MemberDetails = () => {
         currentRole={role}
       />
 
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        visible={confirmDialog.visible}
-        title={confirmDialog.title}
-        message={confirmDialog.message}
-        onCancel={hideConfirmation}
-        onConfirm={() => {
-          hideConfirmation();
-          confirmDialog.onConfirm();
-        }}
-        confirmText={confirmDialog.confirmText}
-        destructive={confirmDialog.destructive}
-      />
+      {/* Toast Component */}
+      <Toast config={toastConfig} />
     </PageThemeView>
   );
 };
@@ -918,11 +893,12 @@ const styles = StyleSheet.create({
     color: "#949494",
     fontSize: 13,
     marginTop: 4,
+    maxWidth: 300,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "flex-start",
-    marginVertical: 20,
+    marginVertical: 25,
     paddingHorizontal: 12,
   },
   buttonGray: {
@@ -939,7 +915,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#12956B",
   },
   smallButtonRight: {
-    paddingVertical: 0,
     paddingHorizontal: 12,
     borderRadius: 10,
     borderColor: "#12956B",
@@ -1002,50 +977,6 @@ const styles = StyleSheet.create({
   selectedRole: {
     backgroundColor: "#252525",
   },
-  confirmationOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  confirmationContainer: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 8,
-    padding: 20,
-    width: "80%",
-    maxWidth: 400,
-  },
-  confirmationTitle: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  confirmationMessage: {
-    color: "#CFCFCF",
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  confirmationButtons: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  confirmationButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginLeft: 10,
-  },
-  confirmationButtonText: {
-    color: "#12956B",
-    fontSize: 16,
-  },
-  destructiveButton: {
-    backgroundColor: "rgba(212, 64, 68, 0.1)",
-    borderRadius: 4,
-  },
-  destructiveText: {
-    color: "#D44044",
-  },
   sectionLabel: {
     color: "#949494",
     fontSize: 14,
@@ -1063,6 +994,14 @@ const styles = StyleSheet.create({
     color: "white",
     marginTop: 12,
     fontSize: 16,
+  },
+  // Backdrop overlay for alert modal
+  backdropOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    zIndex: 10,
   },
 });
 

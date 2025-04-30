@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import TextScallingFalse from "../CentralText";
 import SearchIcon from "../SvgIcons/Common_Icons/SearchIcon";
 import { Colors } from "~/constants/Colors";
+import BackIcon2 from "../SvgIcons/Common_Icons/BackIcon2";
 
 type SearchBarProps = {
   mode?: "show" | "search";
@@ -33,9 +34,14 @@ const SearchBar = ({
       }}
     >
       {mode === "show" ? (
+        <>
+        <TouchableOpacity onPress={()=> router.push("/(app)/(tabs)/explore/allCategory")}
+        activeOpacity={0.5} style={{ width: 35, justifyContent:'center'}}>
+          <BackIcon2 />
+        </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.8}
-          className="flex-row bg-[#1E1E1E] rounded-3xl px-4 py-[10.2px] items-center flex-1"
+          className="flex-row bg-[#212121] border-[0.5px] border-[#343434] h-[40px] rounded-3xl px-4 py-[10.2px] items-center flex-1"
           onPress={() => router.push("/(app)/searchPage")}
         >
           <SearchIcon />
@@ -48,8 +54,9 @@ const SearchBar = ({
             {searchText || placeholder || "Search..."}
           </TextScallingFalse>
         </TouchableOpacity>
+        </>
       ) : (
-        <View className="flex-row bg-[#1E1E1E] rounded-3xl px-4 items-center flex-1">
+        <View className="flex-row bg-[#212121] border-[0.5px] border-[#343434] h-[40px] rounded-3xl px-4 items-center flex-1">
           <SearchIcon />
           <TextInput
             value={searchText}

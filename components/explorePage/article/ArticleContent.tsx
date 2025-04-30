@@ -74,9 +74,9 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
               },
             });
           }}
-          className="flex-row pt-2 h-28 gap-5 px-2 mt-2"
+          className="flex-row pt-2 h-28 gap-4 px-2 mt-2"
         >
-          <View className="w-[125px] h-[80px] overflow-hidden rounded-xl border border-[#181818]">
+          <View className="w-[125px] h-[80px] overflow-hidden rounded-xl border border-[#181818] bg-[#c7c7c7]">
             <Image
               source={{ uri: item.imageUrl }}
               className="w-full h-full"
@@ -84,12 +84,17 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
             />
           </View>
 
-          <View className="">
-            <TextScallingFalse className="text-white text-2xl">
+          <View className="flex-column justify-between">
+            <TextScallingFalse
+              className="text-white text-2xl font-semibold"
+              numberOfLines={3}
+              ellipsizeMode="tail"
+              style={{ maxWidth: 235 }}
+            >
               {item.title}
             </TextScallingFalse>
 
-            <View className="flex-row items-center">
+            <View className="flex-row items-center pb-3">
               <TextScallingFalse className="text-[#12956B] font-bold text-start text-base">
                 {item.sportsName}
               </TextScallingFalse>

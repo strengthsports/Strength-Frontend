@@ -4,6 +4,8 @@ import { ThemedText } from "~/components/ThemedText";
 import img from "@/assets/images/teams/Vector 64.png";
 import PageThemeView from "../PageThemeView";
 import TextScallingFalse from "../CentralText";
+import Captain from "../SvgIcons/teams/Captain";
+import Pending from "../SvgIcons/teams/Pending";
 
 type TeamCardProps = {
   teamName: string;
@@ -46,30 +48,36 @@ const TeamCard: React.FC<TeamCardProps> = ({
               
               {/* Join Team Button */}
               {showJoinButton && (
-                <TouchableOpacity 
-                  className={`mt-3 py-2 px-4 rounded-lg items-center justify-center ${
-                    joining || requestSent ? "bg-gray-500" : "bg-black border-[0.5px] border-[#6F6F6F]"
-                  }`}
-                  onPress={onJoinPress}
-                  disabled={joining || requestSent}
-                >
-                  <TextScallingFalse className="text-white font-bold text-lg">
-                  {joining || requestSent ?
-                      "Pending" : "Join Team"}
-                    </TextScallingFalse>
-                </TouchableOpacity>
-              )}
+  <TouchableOpacity
+    className={`mt-3 py-2 px-4 rounded-lg items-center justify-center ${
+      joining || requestSent
+        ? "bg-black border-[0.5px] border-[#6F6F6F]"
+        : "bg-black border-[0.5px] border-[#6F6F6F]"
+    }`}
+    onPress={onJoinPress}
+    disabled={joining || requestSent}
+  >
+    {joining || requestSent ? (
+      <View className="flex-row items-center">
+        <Pending />
+        <TextScallingFalse className="text-white ml-2 text-lg font-bold">Pending</TextScallingFalse>
+      </View>
+    ) : (
+      <TextScallingFalse className="text-white text-lg font-bold">Join Team</TextScallingFalse>
+    )}
+  </TouchableOpacity>
+)}
             </View>
           </View>
         </View>
         
         {/* Team Details */}
         <View>
-          <View className="flex flex-row items-center h-12 bg-[#191919] text-white px-1 mt-1 rounded-t-[10px]">
+          <View className="flex flex-row items-center h-12 bg-[#191919] TextScallingFalse-white px-1 mt-1 rounded-t-[10px]">
             <View className="flex-1">
-              <Text className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+              <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
                 SPORT CATEGORY
-              </Text>
+              </TextScallingFalse>
             </View>
             <View className="flex-1 justify-center items-center">
               <View className="w-[14px] border-t-2 border-white"></View>
@@ -79,18 +87,18 @@ const TeamCard: React.FC<TeamCardProps> = ({
                 source={{ uri: sportLogo || "https://via.placeholder.com/150" }}
                 className="h-6 w-6 mr-2"
               />
-              <Text className="text-white text-right mr-5 text-3xl">
+              <TextScallingFalse className="text-white text-right mr-5 text-3xl">
                 {sportCategory}
-              </Text>
+              </TextScallingFalse>
             </View>
           </View>
 
           {/* Captain */}
           <View className="flex flex-row items-center justify-between h-12 bg-[#191919] px-1 mt-1 text-white">
             <View className="flex-1">
-              <Text className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+              <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
                 CAPTAIN
-              </Text>
+              </TextScallingFalse>
             </View>
             <View className="flex-1 justify-center items-center">
               <View className="w-[14px] border-t-2 border-white"></View>
@@ -103,9 +111,9 @@ const TeamCard: React.FC<TeamCardProps> = ({
           {/* Vice Captain */}
           <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-1 mt-1">
             <View className="flex-1">
-              <Text className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+              <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
                 VICE CAPTAIN
-              </Text>
+              </TextScallingFalse>
             </View>
             <View className="flex-1 justify-center items-center">
               <View className="w-[14px] border-t-2 border-white"></View>
@@ -118,9 +126,9 @@ const TeamCard: React.FC<TeamCardProps> = ({
           {/* Location */}
           <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-1 mt-1 rounded-b-[10px]">
             <View className="flex-1">
-              <Text className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+              <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
                 LOCATION
-              </Text>
+              </TextScallingFalse>
             </View>
             <View className="flex-1 justify-center items-center">
               <View className="w-[14px] border-t-2 border-white"></View>

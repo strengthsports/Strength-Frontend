@@ -24,6 +24,7 @@ import { Vibration, ToastAndroid, Platform } from "react-native";
 import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import debounce from "lodash/debounce";
+import LocationSuggestionView from "~/components/Signup/LocationSuggestionsView";
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
 
@@ -36,6 +37,9 @@ const signupEnterLocation4 = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { loading, error, address, getAddress } = useGetAddress();
+  useEffect(() => {
+    getAddress();
+  }, []);
 
   const isAndroid = Platform.OS === "android";
 
@@ -45,11 +49,11 @@ const signupEnterLocation4 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-            type,
-            text1: message,
-            visibilityTime: 3000,
-            autoHide: true,
-          });
+          type,
+          text1: message,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
     } else {
       Toast.show({
         type,
@@ -188,12 +192,12 @@ const signupEnterLocation4 = () => {
       );
       return;
     }
-  
+
     feedback("Address Successfully Set", "success");
     setIsLoading(false); // 👈 Important! Stop loading when success happens
     router.push("/Signup/signupSetPassword5");
   };
-  
+
 
   interface Prediction {
     place_id: string; // or number, depending on your actual data
@@ -203,133 +207,106 @@ const signupEnterLocation4 = () => {
 
   return (
     <PageThemeView>
-      <View style={{flex: 1}}>
-      <View style={{ marginTop: 80 }}>
-        <Logo />
-      </View>
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ gap: 25 }}>
-        <View style={{ marginTop: 55}}>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 23, fontWeight: "500" }}
-          >
-            What's your location?
-          </TextScallingFalse>
-          <View style={{ width: "83%" }}>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 12, fontWeight: "400" }}
-            >
-              See sports players, events, tournaments, clubs, and news as per
-              your location.
-            </TextScallingFalse>
-          </View>
+      <View style={{ flex: 1 }}>
+        <View style={{ marginTop: 80 }}>
+          <Logo />
         </View>
-        <View style={{ width: "80%", zIndex: 2}}>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 14, fontWeight: "400" }}
-          >
-            Location
-          </TextScallingFalse>
-          <TextInputSection
-            placeholder="Enter location"
-            value={addressPickup}
-            onChangeText={handleAddressChange}
-            autoCapitalize="none"
-            onFocus={() => setShowSuggestions(true)}
-          />
-          {showSuggestions && predictions.length > 0 && (
-            <View style={{ width: 335}}>
-            <View
-              style={{
-                backgroundColor: "#202020",
-                borderRadius: 12,
-                width: '100%',
-                maxHeight: 100,
-                marginTop: 8,
-                paddingVertical: 6,
-                paddingHorizontal: 1,
-              }}
-            >
-              <FlatList
-                data={predictions}
-                keyExtractor={(item) => item.place_id}
-                renderItem={({ item, index}) => (
-                  <TouchableOpacity activeOpacity={0.7}
-                    onPress={() => handlePlaceSelect(item)}
-                    style={{
-                      padding: 11,
-                      paddingVertical: 10,
-                      borderBottomWidth: index === predictions.length - 1 ? 0 : 0.8,
-                      borderBottomColor: "#383838",
-                    }}
-                  >
-                    <TextScallingFalse style={{color:'white'}}>{item.description}</TextScallingFalse>
-                  </TouchableOpacity>
-                )}
-                scrollEnabled={true}
-                keyboardShouldPersistTaps="always"
-                showsVerticalScrollIndicator={true}
-                indicatorStyle="white"
+        <View style={{ alignItems: "center", justifyContent: "center" }}>
+          <View style={{ gap: 25 }}>
+            <View style={{ marginTop: 55 }}>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 23, fontWeight: "500" }}
+              >
+                What's your location?
+              </TextScallingFalse>
+              <View style={{ width: "83%" }}>
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+                >
+                  See sports players, events, tournaments, clubs, and news as per
+                  your location.
+                </TextScallingFalse>
+              </View>
+            </View>
+            <View style={{ width: "80%", zIndex: 2 }}>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+              >
+                Location
+              </TextScallingFalse>
+              <TextInputSection
+                placeholder="Enter location"
+                value={addressPickup}
+                onChangeText={handleAddressChange}
+                autoCapitalize="none"
+                onFocus={() => setShowSuggestions(true)}
               />
             </View>
-            </View>
-          )}
-        </View>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            setShowSuggestions(false);
-            getAddress();
-          }}
-          style={{
-            width: 200,
-            borderWidth: 0.5,
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 5,
-            borderColor: "grey",
-            height: 35,
-            borderRadius: 20,
-            flexDirection: "row",
-            alignSelf:'center'
-          }}
-        >
-          {loading ? (
-            <>
-              <TextScallingFalse
-                style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
-              >
-                Fetching location...
-              </TextScallingFalse>
-              <ActivityIndicator size="small" color="grey" />
-            </>
-          ) : (
-            <>
-              <TextScallingFalse
-                style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
-              >
-                Use my current location
-              </TextScallingFalse>
-              <MaterialIcons name="location-pin" size={17} color="grey" />
-            </>
-          )}
-        </TouchableOpacity>
-        <View style={{ marginTop: 45 }}>
-          {
-            isLoading ? 
-            <ActivityIndicator size={'small'}/>
-            :
-            <SignupButton onPress={handleNext}>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 15, fontWeight: "500" }}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                setShowSuggestions(false);
+                getAddress();
+              }}
+              style={{
+                width: 200,
+                borderWidth: 0.5,
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 5,
+                borderColor: "grey",
+                height: 35,
+                borderRadius: 20,
+                flexDirection: "row",
+                alignSelf: 'center'
+              }}
             >
-              Next
-            </TextScallingFalse>
-          </SignupButton>
-          }
+              {loading ? (
+                <>
+                  <TextScallingFalse
+                    style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
+                  >
+                    Fetching location...
+                  </TextScallingFalse>
+                  <ActivityIndicator size="small" color="grey" />
+                </>
+              ) : (
+                <>
+                  <TextScallingFalse
+                    style={{ color: "grey", fontSize: 12, fontWeight: "400" }}
+                  >
+                    Use my current location
+                  </TextScallingFalse>
+                  <MaterialIcons name="location-pin" size={17} color="grey" />
+                </>
+              )}
+            </TouchableOpacity>
+            <View style={{ marginTop: 45 }}>
+              {
+                isLoading ?
+                  <ActivityIndicator size={'small'} />
+                  :
+                  <SignupButton onPress={handleNext}>
+                    <TextScallingFalse
+                      style={{ color: "white", fontSize: 15, fontWeight: "500" }}
+                    >
+                      Next
+                    </TextScallingFalse>
+                  </SignupButton>
+              }
+            </View>
+          </View>
         </View>
-      </View>
-      </View>
+        {/* Full Screen Suggestion View */}
+        {showSuggestions && predictions.length > 0 && (
+          <LocationSuggestionView
+            addressPickup={addressPickup}
+            handleAddressChange={handleAddressChange}
+            handlePlaceSelect={handlePlaceSelect}
+            predictions={predictions}
+            setShowSuggestions={setShowSuggestions}
+          />
+        )}
       </View>
     </PageThemeView>
   );

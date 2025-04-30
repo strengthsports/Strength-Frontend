@@ -119,6 +119,9 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    setAuthState:(state)=>{
+      state.isLoggedIn = true;
+    },
     resetAuthState: (state) => {
       state.error = null;
       state.msgBackend = null;
@@ -143,5 +146,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetAuthState } = authSlice.actions;
+export const { resetAuthState,setAuthState } = authSlice.actions;
 export default authSlice.reducer;

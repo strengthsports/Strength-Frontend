@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { View, TouchableOpacity, Modal, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import React from "react";
 import TextScallingFalse from "../CentralText";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,14 +10,10 @@ interface AlertConfig {
   discardAction: () => void;
   confirmMessage: string;
   cancelMessage: string;
-  discardButtonColor?: {
-    bg: string;
-    text: string;
-  };
-  cancelButtonColor?: {
-    bg: string;
-    text: string;
-  };
+  isDestructive?: boolean;
+  confirmButtonColor?: { bg: string; text: string };  // Add this
+  cancelButtonColor?: { bg: string; text: string };  // Add this
+  discardButtonColor?: { bg: string; text: string };
 }
 
 const AlertModal = ({
@@ -27,9 +23,30 @@ const AlertModal = ({
   alertConfig: AlertConfig;
   isVisible: boolean;
 }) => {
+  // Determine button colors based on action type
+  const isPositiveAction = ["Promote", "Change", "Confirm", "Update", "Save"].some(action => 
+    alertConfig.confirmMessage.includes(action)
+  );
+  
+  const confirmButtonColors = alertConfig.confirmButtonColor
+  ? [alertConfig.confirmButtonColor.bg, alertConfig.confirmButtonColor.bg] // use same color for solid background
+  : isPositiveAction
+    ? ["#12956B", "#0D7A55"]
+    : ["#E14A4B", "#A23637"];
+
+    console.log("Confirm Button Color:", alertConfig.confirmButtonColor);
+
   return (
-      <KeyboardAvoidingView style={styles.AlertModalView} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        {/* it was h-[22%] below */}
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={alertConfig.discardAction}
+    >
+      <KeyboardAvoidingView 
+        style={styles.AlertModalView} 
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <View className="bg-[#161616] border border-[#242424] rounded-xl pt-6 h-[200px] w-[80%]"> 
           <View className="flex-1 items-center justify-center">
             <TextScallingFalse className="text-center text-6xl font-semibold text-[#FFFCFC] mb-4">
@@ -48,9 +65,7 @@ const AlertModal = ({
             >
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => {
-                  alertConfig.discardAction();
-                }}
+                onPress={alertConfig.discardAction}
                 style={{
                   paddingHorizontal: 36,
                   paddingVertical: 8,
@@ -60,40 +75,39 @@ const AlertModal = ({
                   alignItems: "center",
                 }}
               >
-                <Text className="text-white text-2xl">
+                <TextScallingFalse className="text-white text-2xl">
                   {alertConfig.cancelMessage}
-                </Text>
+                </TextScallingFalse>
               </TouchableOpacity>
             </LinearGradient>
             <LinearGradient
-              colors={["#E14A4B", "#A23637"]}
+              colors={confirmButtonColors}
               start={{ x: 0.5, y: 0 }}
               end={{ x: 0.5, y: 1 }}
               style={{ borderRadius: 10 }}
             >
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => {
-                  alertConfig.confirmAction();
-                }}
+                onPress={alertConfig.confirmAction}
                 style={{
                   paddingHorizontal: 36,
                   paddingVertical: 8,
                   borderWidth: 1,
-                  borderColor: "#646464",
-                  backgroundColor: alertConfig.discardButtonColor?.bg || "transparent",
+                  borderColor: isPositiveAction ? "#0D7A55" : "#646464",
                   borderRadius: 10,
                   alignItems: "center",
                 }}
               >
-                <Text className="text-white font-semibold text-2xl">
+                <TextScallingFalse className="font-semibold text-2xl"
+                 style={{ color: alertConfig.confirmButtonColor?.text || "white" }}>
                   {alertConfig.confirmMessage}
-                </Text>
+                </TextScallingFalse>
               </TouchableOpacity>
             </LinearGradient>
           </View>
         </View>
       </KeyboardAvoidingView>
+    </Modal>
   );
 };
 
@@ -104,56 +118,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    position:'absolute',
+    position: 'absolute',
     zIndex: 100,
-  },
-  AlertModalContainer: {
-    width: "85%",
-    backgroundColor: "#161616",
-    borderRadius: 10,
-    overflow: "hidden",
-    borderColor: "#242424",
-  },
-  titleText: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "600",
-    textAlign: "center",
-    paddingTop: 20,
-    paddingBottom: 10,
-  },
-  messageText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    borderTopWidth: 0.5,
-    borderTopColor: "gray",
-  },
-  confirmButton: {
-    flex: 1,
-    paddingVertical: 15,
-    alignItems: "center",
-    borderRightWidth: 0.5,
-    borderRightColor: "gray",
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 15,
-    alignItems: "center",
-  },
-  confirmButtonText: {
-    color: "red",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cancelButtonText: {
-    color: "white",
-    fontSize: 16,
   },
 });
 

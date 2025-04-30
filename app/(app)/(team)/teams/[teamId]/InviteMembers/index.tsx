@@ -147,7 +147,7 @@ const InviteMember: React.FC = () => {
   // Search Effect
   useEffect(() => {
     // setPage(searchQuery.trim().length > 0 ? 0 : 1);
-    setLimit(searchQuery.trim().length > 0 ? 1000 : 10);
+    setLimit(searchQuery.trim().length > 0 ? 1000 : 100);
   }, [searchQuery]);
 
   // Fetch Suggestions
@@ -185,6 +185,10 @@ const InviteMember: React.FC = () => {
       ) || []
     );
   }, [members, searchQuery]);
+
+
+
+  
 
   // Render Member
   const renderMember = useCallback(

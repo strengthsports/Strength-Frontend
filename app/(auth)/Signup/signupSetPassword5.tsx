@@ -24,6 +24,7 @@ import {
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import Toast from "react-native-toast-message";
 import { string } from "zod";
+import { setAuthState } from "~/reduxStore/slices/user/authSlice";
 // import completeSignupPayload from "~/reduxStore/slices/profileSlice"
 
 const signupSetPassword5 = () => {
@@ -91,6 +92,8 @@ const signupSetPassword5 = () => {
       const result = await dispatch(
         completeSignup(completeSignupPayload)
       ).unwrap();
+      
+    dispatch(setAuthState());
       feedback(result.message, "success");
       router.push("/Signup/signupAccountCreated6");
     } catch (error) {

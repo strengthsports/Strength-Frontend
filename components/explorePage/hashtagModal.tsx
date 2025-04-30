@@ -1,7 +1,8 @@
-import { View, Text, Modal, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, Modal, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
 import React from "react";
 import Hashtag from "./hashtag";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import BackIcon from "../SvgIcons/Common_Icons/BackIcon";
 
 interface HashtagModalProps {
   modalVisible: boolean;
@@ -14,6 +15,7 @@ const HashtagModal: React.FC<HashtagModalProps> = ({
   setModalVisible,
   hashtagData,
 }) => {
+  console.log(setModalVisible);
   return (
     <Modal
       animationType="fade"
@@ -21,28 +23,24 @@ const HashtagModal: React.FC<HashtagModalProps> = ({
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <View className="flex-1 bg-[#1C1C1C]">
+      <SafeAreaView className="flex-1 bg-black">
         {/* Modal Header */}
-        <View className="flex-row items-center px-5 py-3 mb-5 border-b border-[#474747]">
+        <View className="flex-row items-center px-5 py-6 mb-5 border-b border-[#303030]">
           <TouchableOpacity onPress={() => setModalVisible(false)}>
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={22}
-              color="#E9E9E9"
-            />
+           <BackIcon />
           </TouchableOpacity>
           <View className="flex-1 items-center">
-            <Text className="text-[#E9E9E9] self-center text-4xl font-bold">
+            <Text className="text-[#E9E9E9] self-center text-5xl" style={{fontWeight:'400'}}>
               Trending #'s
             </Text>
           </View>
         </View>
 
         {/* Scrollable Hashtag List */}
-        <ScrollView className="flex-1 px-4 py-2">
-          <Hashtag data={hashtagData} />
+        <ScrollView className="flex-1 py-2">
+          <Hashtag data={hashtagData} setModalVisible={setModalVisible}/>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };

@@ -51,7 +51,7 @@ const TeamPage: React.FC = () => {
   const teamId = params.teamId ? String(params.teamId) : "";
   const { user } = useSelector((state: RootState) => state.profile);
   const teamDetails = useSelector((state: RootState) => state.team.team);
-  console.log("Team ------>: ", teamDetails);
+  // console.log("Team ------>: ", teamDetails);
   const loading = useSelector((state: RootState) => state.team.loading);
   const [joining, setJoining] = useState(false);
   // const userId = useSelector((state: RootState) => state.auth.user?._id);
@@ -63,6 +63,7 @@ const TeamPage: React.FC = () => {
 
   // State to track if a request has been sent
   const [requestSent, setRequestSent] = useState(false);
+  const [isTeamMember,setIsteamMember] = useState(false);
 
   const modalRef = useRef<Modalize>(null);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -78,7 +79,7 @@ const TeamPage: React.FC = () => {
       membersCount: teamDetails?.members?.length || 0,
       isRequested: teamDetails?.isRequested || false,
     }),
-    [teamDetails]
+    [teamDetails,teamId]
   );
 
   // Memoized captain and vice captain data
@@ -124,14 +125,7 @@ const TeamPage: React.FC = () => {
     [teamDetails?.sport?.playerTypes]
   );
 
-  // Memoized isMember check
-  const isMember = useMemo(
-    () =>
-      teamDetails?.members?.some(
-        (member: any) => member.user?._id === user?._id
-      ),
-    [teamDetails?.members, user?._id]
-  );
+  
 
   // Memoized isAdmin check
   const isAdmin = useMemo(
@@ -203,7 +197,7 @@ const TeamPage: React.FC = () => {
 
     try {
       const UserId = user?._id || "";
-      console.log("sending join request----->", UserId, teamId);
+      // console.log("sending join request----->", UserId, teamId);
       setJoining(true);
       await dispatch(sendTeamJoinRequest({ UserId, teamId }));
     } catch (err) {
@@ -230,6 +224,14 @@ const TeamPage: React.FC = () => {
       );
     },
     [router, teamId]
+  );
+
+  const isMember = useMemo(
+    () =>
+      teamDetails?.members?.some(
+        (member: any) => member.user?._id === user?._id
+      ),
+    [teamDetails?.members, user?._id]
   );
 
   // Memoized menu items
@@ -282,7 +284,7 @@ const TeamPage: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <CombinedDrawer menuItems={menuItems} teamId={teamId}>
+      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId}>
        
 
         <ScrollView

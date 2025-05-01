@@ -28,11 +28,7 @@ export type Post = {
 };
 
 export interface FeedResponse {
-  data: {
-    posts: Post[];
-    lastTimestamp: string | null;
-    nextPage: number;
-  };
+  data: { posts: Post[]; nextCursor: string; hasMore: boolean };
   message: string;
   statusCode: number;
   success: boolean;

@@ -21,8 +21,7 @@ interface FeedState {
   posts: ReturnType<typeof postsAdapter.getInitialState>;
   loading: boolean;
   error: string | null;
-  lastTimestamp: string | null;
-  currentPage: number;
+  cursor: string;
   hasMore: boolean;
 }
 
@@ -30,30 +29,25 @@ const initialState: FeedState = {
   posts: postsAdapter.getInitialState(),
   loading: false,
   error: null,
-  lastTimestamp: null,
-  currentPage: 1,
-  hasMore: true,
+  cursor: "",
+  hasMore: false,
 };
 
 // Fetch feed posts
 export const fetchFeedPosts = createAsyncThunk<
-  { posts: Post[]; lastTimestamp: string | null; nextPage: number },
-  { limit?: number; page?: number; lastTimeStamp?: string | null },
+  { posts: Post[]; nextCursor: string; hasMore: boolean }, // <-- Note: Now nextCursor included
+  { limit?: number; cursor?: string }, // <-- Accept cursor also
   { state: RootState; dispatch: AppDispatch }
 >("feed/fetchPosts", async (params, { rejectWithValue }) => {
   try {
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
-    console.log("Token : ", token);
 
     const limit = String(params.limit || 10);
-    const page = String(params.page || 1);
-    const lastTimeStamp = params.lastTimeStamp;
-
-    console.log("Page : ", page);
+    const cursor = String(params.cursor || 0); // <-- Add cursor param
 
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/get-feed?page=${page}&limit=${limit}`,
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/get-feed?limit=${limit}&cursor=${cursor}`, // <-- Attach cursor
       {
         method: "GET",
         headers: {
@@ -62,12 +56,13 @@ export const fetchFeedPosts = createAsyncThunk<
         },
       }
     );
+
     const data: FeedResponse = await response.json();
-    // console.log(data);
+
     return {
       posts: data.data.posts || [],
-      lastTimestamp: data.data.lastTimestamp,
-      nextPage: data.data.nextPage,
+      nextCursor: data.data.nextCursor ?? null,
+      hasMore: data.data.hasMore, // <-- Read next cursor from backend
     };
   } catch (err: any) {
     return rejectWithValue(err.message || "Failed to fetch feed");
@@ -379,16 +374,15 @@ const feedSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchFeedPosts.fulfilled, (state, action) => {
-        const { posts, lastTimestamp, nextPage } = action.payload;
+        const { posts, nextCursor, hasMore } = action.payload;
         console.log("\n\nPosts : ", posts);
-        console.log("\n\nNextPage : ", nextPage);
-        console.log("\n\nLastTimeStamp : ", lastTimestamp);
+        console.log("\n\nNextCursor : ", nextCursor);
+        console.log("\n\nHasmore : ", hasMore);
 
         postsAdapter.upsertMany(state.posts, posts);
 
-        state.lastTimestamp = lastTimestamp;
-        state.currentPage = nextPage;
-        state.hasMore = !!lastTimestamp;
+        state.hasMore = hasMore;
+        state.cursor = nextCursor; // <-- Set nextCursor for future fetches
         state.loading = false;
       })
       .addCase(fetchFeedPosts.rejected, (state, action) => {
@@ -401,14 +395,10 @@ const feedSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchUserPosts.fulfilled, (state, action) => {
-        const { posts, lastTimestamp, nextPage } = action.payload;
+        const { posts } = action.payload;
         console.log("\n\nPosts : ", posts);
 
         postsAdapter.upsertMany(state.posts, posts);
-
-        state.lastTimestamp = lastTimestamp;
-        // state.currentPage = nextPage;
-        // state.hasMore = !!lastTimestamp;
         state.loading = false;
       })
       .addCase(fetchUserPosts.rejected, (state, action) => {
@@ -444,15 +434,13 @@ export const selectFeedState = createSelector(
   [
     (state: RootState) => state.feed.loading,
     (state: RootState) => state.feed.error,
-    (state: RootState) => state.feed.lastTimestamp,
-    (state: RootState) => state.feed.currentPage,
+    (state: RootState) => state.feed.cursor,
     (state: RootState) => state.feed.hasMore,
   ],
-  (loading, error, lastTimestamp, currentPage, hasMore) => ({
+  (loading, error, cursor, hasMore) => ({
     loading,
     error,
-    lastTimestamp,
-    currentPage,
+    cursor,
     hasMore,
   })
 );

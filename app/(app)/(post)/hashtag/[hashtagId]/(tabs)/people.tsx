@@ -1,6 +1,5 @@
 import { Entypo } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,62 +9,70 @@ import {
   View,
   Image,
 } from "react-native";
-import nopic from "@/assets/images/nopic.jpg";
-import { useGetPeopleByHashtagQuery } from "~/reduxStore/api/posts/postsApi.hashtag";
-import { Colors } from "~/constants/Colors";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import TextScallingFalse from "~/components/CentralText";
-import { RootState } from "~/reduxStore";
+import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedApi.hashtag";
 import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
+import { Colors } from "~/constants/Colors";
+import TextScallingFalse from "~/components/CentralText";
+import nopic from "@/assets/images/nopic.jpg";
+import { RootState } from "~/reduxStore";
 
 const People = () => {
-  const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
+  const { hashtagId } = useLocalSearchParams();
   const hashtag =
     typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
   const router = useRouter();
-  const { user } = useSelector((state: any) => state?.profile || {});
-  const { data, isLoading, isError } = useGetPeopleByHashtagQuery({ hashtag });
+  const user = useSelector((state: RootState) => state.profile.user);
+  const { data, isLoading, isError } = useGetHashtagContentsQuery({
+    hashtag,
+    limit: 10,
+    type: "people",
+  });
 
-  const isFollowing = useSelector((state: RootState) =>
-    state.profile?.followings?.includes(user._id)
-  );
-  const [followingStatus, setFollowingStatus] = useState(isFollowing);
-
-  useEffect(() => {
-    setFollowingStatus(isFollowing);
-  }, [isFollowing]); // Sync when Redux state changes
   const { followUser, unFollowUser } = useFollow();
 
-  //handle follow
-  const handleFollow = async () => {
-    try {
-      setFollowingStatus(true);
-      const followData: FollowUser = {
-        followingId: user._id,
-        followingType: user.type || "User",
-      };
+  const [followingMap, setFollowingMap] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
-      await followUser(followData);
-    } catch (err) {
-      setFollowingStatus(false);
-      console.error("Follow error:", err);
+  useEffect(() => {
+    if (data?.data) {
+      const map: { [key: string]: boolean } = {};
+      data.data.forEach((item: any) => {
+        map[item._id] = item.isFollowing;
+      });
+      setFollowingMap(map);
     }
-  };
+  }, [data]);
 
-  //handle unfollow
-  const handleUnfollow = async () => {
+  const handleFollowToggle = async (item: any) => {
+    const currentlyFollowing = followingMap[item._id];
+    const followData: FollowUser = {
+      followingId: item._id,
+      followingType: item.type || "User",
+    };
+
     try {
-      setFollowingStatus(false);
-      const unfollowData: FollowUser = {
-        followingId: user._id,
-        followingType: user.type || "User",
-      };
+      // Optimistic update
+      setFollowingMap((prev) => ({
+        ...prev,
+        [item._id]: !currentlyFollowing,
+      }));
 
-      await unFollowUser(unfollowData);
+      if (currentlyFollowing) {
+        await unFollowUser(followData, true);
+      } else {
+        await followUser(followData, true);
+      }
     } catch (err) {
-      setFollowingStatus(true);
-      console.error("Unfollow error:", err);
+      // Revert on error
+      setFollowingMap((prev) => ({
+        ...prev,
+        [item._id]: currentlyFollowing,
+      }));
+      console.error("Follow toggle error:", err);
     }
   };
 
@@ -73,67 +80,57 @@ const People = () => {
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item._id, type: item.type })
     );
+    const isFollowing = followingMap[item._id];
+
     console.log(item);
+
     return (
       <View className="flex-row mb-5 items-center justify-start">
         <TouchableOpacity
           onPress={() =>
-            item._id === user._id
+            item._id === user?._id
               ? router.push("/(app)/(tabs)/profile")
               : router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
-          className="w-14 h-14 rounded-full overflow-hidden"
+          className="w-12 h-12 rounded-full overflow-hidden"
         >
-          {item.profilePic ? (
-            <Image
-              source={{ uri: item.profilePic }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <Image
-              source={nopic}
-              className="w-full h-full rounded-full"
-              resizeMode="cover"
-            />
-          )}
+          <Image
+            source={item.profilePic ? { uri: item.profilePic } : nopic}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
         </TouchableOpacity>
+
         <View className="ml-3">
-          <Text
-            className="text-white text-2xl font-medium"
-            numberOfLines={1}
-            allowFontScaling={false}
-          >
+          <Text className="text-white text-2xl font-medium" numberOfLines={1}>
             {item.firstName} {item.lastName}
           </Text>
-          <Text
-            className="text-white text-sm font-light"
-            numberOfLines={1}
-            allowFontScaling={false}
-          >
-            {item.headline}
+          <Text className="text-white text-sm font-light" numberOfLines={1}>
+            @{item.username} | {item.headline}
           </Text>
         </View>
-        <View className="flex-1 items-end">
-          <TouchableOpacity
-            className={`border rounded-lg px-8 py-1.5 ${
-              followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
-            } `}
-            activeOpacity={0.6}
-            onPress={followingStatus ? handleFollow : handleUnfollow}
-          >
-            {followingStatus ? (
+
+        {item._id !== user?._id && (
+          <View className="flex-1 items-end">
+            <TouchableOpacity
+              className={`border rounded-lg px-8 py-1.5 ${
+                isFollowing ? "border border-[#ffffff]" : "bg-[#12956B]"
+              }`}
+              activeOpacity={0.6}
+              onPress={() => handleFollowToggle(item)}
+            >
               <TextScallingFalse className="text-center text-lg text-white">
-                <Entypo className="mr-4" name="check" size={14} color="white" />
-                Following
+                {isFollowing ? (
+                  <>
+                    <Entypo name="check" size={14} color="white" /> Following
+                  </>
+                ) : (
+                  "Follow"
+                )}
               </TextScallingFalse>
-            ) : (
-              <TextScallingFalse className="text-center text-lg text-white">
-                Follow
-              </TextScallingFalse>
-            )}
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -150,23 +147,21 @@ const People = () => {
           style={styles.loader}
         />
       )}
-
       {isError && (
         <Text style={styles.errorText}>
           Failed to load people. Please try again.
         </Text>
       )}
-
-      {!isLoading && !isError && data?.length === 0 && (
+      {!isLoading && !isError && data?.data?.length === 0 && (
         <Text style={styles.emptyText}>No people found.</Text>
       )}
 
       <FlatList
         data={data?.data}
         renderItem={renderFollowerItem}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item, index) => item._id || index.toString()}
         contentContainerStyle={styles.listContent}
-        ListFooterComponent={<View className="mt-20"></View>}
+        ListFooterComponent={<View className="mt-20" />}
       />
     </View>
   );

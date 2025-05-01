@@ -32,7 +32,6 @@ import userSuggestionsReducer from "./slices/team/userSuggestionSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { feedApi } from "./api/feed/services/feedApi";
 import { sportsApi } from "./api/sportsApi";
-import { postsApi } from "./api/posts/postsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
 import { searchApi } from "./api/explore/searchApi";
@@ -43,7 +42,7 @@ import { footballApi } from "./api/explore/footballApi";
 import { basketballApi } from "./api/explore/basketballApi";
 // import { badmintonApi } from "./api/explore/badmintonApi";
 import { articleApi } from "./api/explore/article/articleApi";
-import userCommentsReducer from './slices/comments/userCommentsSlice';
+import userCommentsReducer from "./slices/comments/userCommentsSlice";
 
 // Persist configuration
 const persistConfig = {
@@ -88,7 +87,6 @@ const rootReducer = combineReducers({
   [basketballApi.reducerPath]: basketballApi.reducer,
   // [badmintonApi.reducerPath]: badmintonApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
-  [postsApi.reducerPath]: postsApi.reducer,
   [searchApi.reducerPath]: searchApi.reducer,
   [articleApi.reducerPath]: articleApi.reducer,
   [hashtagApi.reducerPath]: hashtagApi.reducer,
@@ -114,7 +112,6 @@ export const store = configureStore({
       basketballApi.middleware,
       // badmintonApi.middleware,
       feedApi.middleware,
-      postsApi.middleware,
       searchApi.middleware,
       articleApi.middleware,
       hashtagApi.middleware

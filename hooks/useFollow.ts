@@ -17,24 +17,26 @@ export const useFollow = () => {
 
   // Function to follow a user
   const followUser = useCallback(
-    async (followData: FollowUser,isTeam?:boolean) => {
+    async (followData: FollowUser, isOther?: boolean) => {
       try {
-        !isTeam && dispatch(setFollowingCount("follow"));
-        !isTeam && dispatch(
-          updateAllPostsFollowStatus({
-            userId: followData.followingId,
-            isFollowing: true,
-          })
-        );
+        !isOther && dispatch(setFollowingCount("follow"));
+        !isOther &&
+          dispatch(
+            updateAllPostsFollowStatus({
+              userId: followData.followingId,
+              isFollowing: true,
+            })
+          );
         await followUserMutation(followData).unwrap();
       } catch (error) {
-        !isTeam && dispatch(setFollowingCount("unfollow"));
-        !isTeam && dispatch(
-          updateAllPostsFollowStatus({
-            userId: followData.followingId,
-            isFollowing: false,
-          })
-        );
+        !isOther && dispatch(setFollowingCount("unfollow"));
+        !isOther &&
+          dispatch(
+            updateAllPostsFollowStatus({
+              userId: followData.followingId,
+              isFollowing: false,
+            })
+          );
         console.error("Failed to follow user:", error);
       }
     },
@@ -43,24 +45,26 @@ export const useFollow = () => {
 
   // Function to undo a unfollow a user
   const unFollowUser = useCallback(
-    async (unfollowData: FollowUser,isTeam?:boolean) => {
+    async (unfollowData: FollowUser, isOther?: boolean) => {
       try {
-        !isTeam && dispatch(setFollowingCount("unfollow"));
-        !isTeam && dispatch(
-          updateAllPostsFollowStatus({
-            userId: unfollowData.followingId,
-            isFollowing: false,
-          })
-        );
+        !isOther && dispatch(setFollowingCount("unfollow"));
+        !isOther &&
+          dispatch(
+            updateAllPostsFollowStatus({
+              userId: unfollowData.followingId,
+              isFollowing: false,
+            })
+          );
         await unFollowUserMutation(unfollowData).unwrap();
       } catch (error) {
-        !isTeam && dispatch(setFollowingCount("follow"));
-        !isTeam && dispatch(
-          updateAllPostsFollowStatus({
-            userId: unfollowData.followingId,
-            isFollowing: true,
-          })
-        );
+        !isOther && dispatch(setFollowingCount("follow"));
+        !isOther &&
+          dispatch(
+            updateAllPostsFollowStatus({
+              userId: unfollowData.followingId,
+              isFollowing: true,
+            })
+          );
         console.error("Failed to unfollow user:", error);
       }
     },

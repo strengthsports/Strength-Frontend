@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { View, Text, FlatList, Image, TextInput, ActivityIndicator, RefreshControl, StyleSheet } from "react-native";
+import { View, Text, FlatList, Image, TextInput, ActivityIndicator, RefreshControl, StyleSheet, TouchableOpacity } from "react-native";
 import { Avatar, Divider, IconButton } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,7 @@ import { AppDispatch, RootState } from "@/reduxStore";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 import { fetchTeamMessages, sendMessage } from "~/reduxStore/slices/team/teamForumSlice";
 import { LinearGradient } from "expo-linear-gradient";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 // Type definitions
 type TeamRole = 'Admin' | 'Captain' | 'ViceCaptain' | 'member';
@@ -114,7 +115,7 @@ const TeamForum: React.FC = () => {
       _id: 'welcome-message',
       userId: 'system',
       userName: 'System',
-      text: `👋 Welcome to the ${team.name} forum! This is a space for team communication and updates. ${canSendMessages ? 'As a team leader, you can post messages here.' : 'Only team leaders can post messages here.'}`,
+      text: `👋  Welcome to the ${team.name} forum! This is a space for team communication and updates. ${canSendMessages ? 'As a team leader, you can post messages here.' : 'Only team leaders can post messages here.'}`,
       timestamp: team ? new Date(0).toISOString() : new Date().toISOString(),
       isSystemMessage: true
     };
@@ -191,19 +192,19 @@ const TeamForum: React.FC = () => {
       case 'Admin': 
         return (
           <View style={[styles.badgeContainer, styles.adminBadge]}>
-            <Text style={styles.badgeText}>Admin</Text>
+            <TextScallingFalse style={styles.badgeText}>Admin</TextScallingFalse>
           </View>
         );
       case 'Captain': 
         return (
           <View style={[styles.badgeContainer, styles.captainBadge]}>
-            <Text style={styles.badgeText}>{"[C]"}</Text>
+            <TextScallingFalse style={styles.badgeText}>{"[C]"}</TextScallingFalse>
           </View>
         );
       case 'ViceCaptain': 
         return (
           <View style={[styles.badgeContainer, styles.viceCaptainBadge]}>
-            <Text style={styles.badgeText}>{"[VC]"}</Text>
+            <TextScallingFalse style={styles.badgeText}>{"[VC]"}</TextScallingFalse>
           </View>
         );
       default: 
@@ -239,7 +240,7 @@ const TeamForum: React.FC = () => {
       return (
         <View style={styles.systemMessageContainer}>
           <View style={styles.systemMessageWrapper}>
-            <Text style={styles.systemMessageText}>{item.text}</Text>
+            <TextScallingFalse style={styles.systemMessageText}>{item.text}</TextScallingFalse>
           </View>
         </View>
       );
@@ -288,23 +289,23 @@ const TeamForum: React.FC = () => {
     
         <View style={styles.messageContentContainer}>
           <View style={styles.messageHeader}>
-            <Text style={[
+            <TextScallingFalse style={[
               styles.senderName, 
               isCurrentUser ? styles.currentUserName : null
             ]}>
               {item.userName}
-            </Text>
+            </TextScallingFalse>
             {roleBadge}
-            <Text style={styles.messageTime}>
+            <TextScallingFalse style={styles.messageTime}>
               {formatTime(item.timestamp)}
-            </Text>
+            </TextScallingFalse>
           </View>
           
           <View style={[
             styles.messageBubble,
             isCurrentUser && styles.currentUserBubble
           ]}>
-            <Text style={styles.messageText}>{item.text}</Text>
+            <TextScallingFalse style={styles.messageText}>{item.text}</TextScallingFalse>
           </View>
         </View>
       </View>
@@ -322,7 +323,7 @@ const TeamForum: React.FC = () => {
     return (
       <View style={styles.dateHeaderContainer}>
         <View style={styles.dateHeaderLine} />
-        <Text style={styles.dateHeaderText}>{formattedDate}</Text>
+        <TextScallingFalse style={styles.dateHeaderText}>{formattedDate}</TextScallingFalse>
         <View style={styles.dateHeaderLine} />
       </View>
     );
@@ -355,9 +356,9 @@ const TeamForum: React.FC = () => {
         contentContainerStyle={styles.messagesContainer}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
+            <TextScallingFalse style={styles.emptyText}>
               No messages yet. {canSendMessages ? "Start the conversation!" : "Only team leaders can post messages."}
-            </Text>
+            </TextScallingFalse>
           </View>
         }
         inverted={false}
@@ -378,19 +379,16 @@ const TeamForum: React.FC = () => {
   }
 
   return (
-    <PageThemeView style={styles.container}>
+    <PageThemeView>
       {/* Header Section */}
       <View
         
         style={styles.header}
       >
-        <IconButton 
-          icon="arrow-left" 
-          color="white" 
-          size={24} 
-          onPress={() => router.back()} 
-          accessibilityLabel="Go back"
-        />
+        <TouchableOpacity activeOpacity={0.7} 
+        style={{ width: 30, height: 40, justifyContent:'center'}} onPress={() => router.back()}>
+        <BackIcon />
+        </TouchableOpacity>
         <View style={styles.headerContent}>
           {team?.logo ? (
             <Image 
@@ -409,9 +407,9 @@ const TeamForum: React.FC = () => {
             <TextScallingFalse style={styles.teamName}>
               {team?.name || "Team Chat"}
             </TextScallingFalse>
-            <Text style={styles.onlineStatus}>
+            <TextScallingFalse style={styles.onlineStatus}>
               {team?.members?.length || 0} members • {canSendMessages ? "Team Leader" : "Member"}
-            </Text>
+            </TextScallingFalse>
           </View>
         </View>
         <IconButton 
@@ -427,11 +425,11 @@ const TeamForum: React.FC = () => {
       {forumLoading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="white" />
-          <Text style={styles.loadingText}>Loading messages...</Text>
+          <TextScallingFalse style={styles.loadingText}>Loading messages...</TextScallingFalse>
         </View>
       ) : forumError ? (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error loading messages</Text>
+          <TextScallingFalse style={styles.errorText}>Error loading messages</TextScallingFalse>
         </View>
       ) : (
         renderMessagesList()
@@ -477,9 +475,9 @@ const TeamForum: React.FC = () => {
         </View>
       ) : (
         <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>
+          <TextScallingFalse style={styles.infoText}>
             Only team leaders (Admin, Captain, Vice-Captain) can post messages
-          </Text>
+          </TextScallingFalse>
         </View>
       )}
     </PageThemeView>
@@ -498,14 +496,11 @@ const styles = StyleSheet.create({
   },
   badgeContainer: {
     borderRadius: 4,
-    // paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginLeft: 8,
-    marginRight: 8,
+    paddingHorizontal: 10,
   },
   badgeText: {
     color: 'green',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   adminBadge: {
@@ -554,13 +549,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 15,
+    gap: 10
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 3,
     flex: 1,
-    marginLeft: 16,
   },
   teamLogo: {
     width: 40,
@@ -580,8 +576,8 @@ const styles = StyleSheet.create({
   },
   onlineStatus: {
     color: '#b9bbbe',
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 10,
+    marginTop: 1,
   },
   divider: {
     backgroundColor: '#151515',
@@ -595,13 +591,14 @@ const styles = StyleSheet.create({
   systemMessageWrapper: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     maxWidth: '80%',
   },
   systemMessageText: {
     color: '#b9bbbe',
     fontSize: 14,
+    lineHeight: 18,
     textAlign: 'center',
   },
   messageContainer: {
@@ -627,9 +624,11 @@ const styles = StyleSheet.create({
     opacity:100,
     marginRight:40,
     padding:10,
-    borderRadius:5,
-    backgroundColor:"#272727",
-    flex: 1,
+    paddingHorizontal: 14,
+    borderRadius:10,
+    backgroundColor:"#181818",
+    // flex: 1,
+    maxWidth: '80%',
     alignItems: 'flex-start',
     zIndex:3,
   },
@@ -640,8 +639,8 @@ const styles = StyleSheet.create({
   },
   senderName: {
     color: 'white',
-    fontSize: 15,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '400',
   },
   currentUserName: {
     color: 'white', // Discord blue
@@ -649,12 +648,12 @@ const styles = StyleSheet.create({
   messageTime: {
     color: '#72767d',
     fontSize: 11,
-    marginLeft: 4,
+    paddingHorizontal: 5,
   },
   messageBubble: {
     borderRadius: 4,
     paddingRight: 12,
-    maxWidth: '70%',
+    paddingBottom: 3,
   },
   currentUserBubble: {
     backgroundColor: 'transparent',
@@ -724,8 +723,8 @@ const styles = StyleSheet.create({
   },
   dateHeaderText: {
     color: '#b9bbbe',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '400',
     marginHorizontal: 12,
     textTransform: 'uppercase',
   }

@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { ScrollView, TouchableOpacity, View, Text } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "~/reduxStore"; // Your RootState type
 import {
   setSelectedExploreCategory,
   setSelectedExploreSportsCategory,
 } from "~/reduxStore/slices/explore/exploreSlice";
+import TextScallingFalse from "../CentralText";
 
 const exploreCategories = [
   "All",
@@ -45,7 +46,7 @@ export const ExploreCategoryHeader = () => {
           activeOpacity={0.5}
         >
           <View>
-            <Text
+            <TextScallingFalse
               className={`px-4 py-2.5 rounded-[8px] mx-1.5 text-xl text-center overflow-hidden ${
                 category === selectedExploreCategory
                   ? "text-black bg-white font-semibold"
@@ -53,7 +54,7 @@ export const ExploreCategoryHeader = () => {
               }`}
             >
               {category}
-            </Text>
+            </TextScallingFalse>
           </View>
         </TouchableOpacity>
       ))}
@@ -127,7 +128,7 @@ export const ExploreAllSportsCategoryHeader = () => {
             activeOpacity={0.7}
           >
             <View className="items-center">
-              <Text
+              <TextScallingFalse
                 className={`text-xl px-3.5 py-1 text-center rounded-xl overflow-hidden text-[#ABABAB] ${
                   sportsCategory === selectedExploreSportsCategory
                     ? "text-white"
@@ -135,7 +136,7 @@ export const ExploreAllSportsCategoryHeader = () => {
                 }`}
               >
                 {sportsCategory}
-              </Text>
+              </TextScallingFalse>
               {sportsCategory === selectedExploreSportsCategory && (
                 <View className="w-3/4 h-1 bg-[#12956B] rounded-full mt-1" />
               )}

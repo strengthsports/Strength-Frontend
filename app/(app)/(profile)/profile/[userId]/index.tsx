@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  Text,
 } from "react-native";
 import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import TextScallingFalse from "~/components/CentralText";
@@ -218,18 +217,18 @@ const Overview = () => {
                         )
                         .map(([key, value]) => (
                           <View key={key}>
-                            <Text
+                            <TextScallingFalse
                               className="text-white font-bold"
                               style={styles.HeadingText}
                             >
                               {key.toUpperCase()}
-                            </Text>
-                            <Text
+                            </TextScallingFalse>
+                            <TextScallingFalse
                               className="text-white font-light pt-1"
                               style={styles.DetailText}
                             >
                               {value as string}
-                            </Text>
+                            </TextScallingFalse>
                           </View>
                         ))}
                     </View>
@@ -256,42 +255,17 @@ const Overview = () => {
                     {sport.teams.map((team: any, index: any) => (
                       <View key={index} style={{ marginVertical: 1 }}>
                         <TeamEntry team={team} />
-                        <View
-                          style={{
-                            height: 0.5,
-                            backgroundColor: "#3B3B3B",
-                            marginVertical: 16,
-                          }}
-                        />
+                        {index !== sport.teams.length - 1 && (
+                          <View
+                            style={{
+                              height: 0.5,
+                              backgroundColor: "#3B3B3B",
+                              marginVertical: 16,
+                            }}
+                          />
+                        )}
                       </View>
                     ))}
-                    <TouchableOpacity
-                      activeOpacity={0.3}
-                      onPress={() => console.log("Navigate to Full Insights")}
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginVertical: 6,
-                      }}
-                    >
-                      <TextScallingFalse
-                        style={{
-                          color: "#808080",
-                          fontSize: 15,
-                          fontWeight: "700", // Bold
-                        }}
-                      >
-                        Full Insights
-                      </TextScallingFalse>
-                      <Feather
-                        name="arrow-right"
-                        size={20}
-                        color={"#808080"}
-                        style={{ marginLeft: 5 }}
-                      />
-                    </TouchableOpacity>
                   </View>
                 )}
               </View>

@@ -37,6 +37,7 @@ const Overview = () => {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const sports = user?.selectedSports ? [...user.selectedSports] : [];
+  console.log("----->", sports);
 
   // Dynamic scaling for responsiveness
   const containerWidth = width > 768 ? "50%" : "96%";
@@ -109,25 +110,25 @@ const Overview = () => {
   // Filter teams to only show joined teams (not created or admin teams)
   const getFilteredTeams = (sport) => {
     if (!sport.teams || !Array.isArray(sport.teams)) return [];
-    
+
     // Filter out admin roles and created teams
-    const joinedTeams = sport.teams.filter(team => {
+    const joinedTeams = sport.teams.filter((team) => {
       // Skip teams where role is "Admin" or user is creator
       const isAdmin = team.role && team.role.toLowerCase() === "admin";
       const isCreator = team.isCreator === true || team.createdBy === user?._id;
-      
+
       return !isAdmin && !isCreator;
     });
-    
+
     // Remove duplicates by team ID
     const uniqueTeamsMap = new Map();
-    joinedTeams.forEach(team => {
+    joinedTeams.forEach((team) => {
       const teamId = team._id || team.id || JSON.stringify(team);
       if (!uniqueTeamsMap.has(teamId)) {
         uniqueTeamsMap.set(teamId, team);
       }
     });
-    
+
     return Array.from(uniqueTeamsMap.values());
   };
 
@@ -188,8 +189,8 @@ const Overview = () => {
 
           {/* Tab Contents */}
           {user?.selectedSports?.map((sport: any) => (
-            <TabsContent 
-              key={`sport-content-${sport.sport?._id}`} 
+            <TabsContent
+              key={`sport-content-${sport.sport?._id}`}
               value={sport.sport?.name}
             >
               {/* Sports Overview */}
@@ -221,73 +222,62 @@ const Overview = () => {
                   </View>
                 )}
 
-                {sport.teams?.length > 0 && getFilteredTeams(sport).length > 0 && (
-                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-xl mt-2">
-                    {/* Two-Column Header */}
-                    <View className="flex-row justify-between items-center mb-3">
-                      <TextScallingFalse
-                        className="text-[#8A8A8A] "
-                        style={{
-                          fontFamily: "Montserrat",
-                          fontWeight: 700,
-                          fontSize: responsiveFontSize(1.8),
-                        }}
-                      >
-                        JOINED TEAMS
-                      </TextScallingFalse>
-                      <View className="flex items-center justify-center flex-row gap-2">
-                        <TouchableOpacity
-                          onPress={() =>
-                            router.push("/(app)/(profile)/edit-overview")
-                          }
-                        >
-                          <AddIcon />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    {/* Teams Mapping with Filtered Teams */}
-                    {getFilteredTeams(sport).map((team: any, index: number) => (
-                      <View key={`team-${sport.sport?._id}-${team._id || index}`} style={{ marginVertical: 1 }}>
-                        <TeamEntry team={team} />
-                        <View
+                {sport.teams?.length > 0 &&
+                  getFilteredTeams(sport).length > 0 && (
+                    <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-xl mt-2">
+                      {/* Two-Column Header */}
+                      <View className="flex-row justify-between items-center mb-3">
+                        <TextScallingFalse
+                          className="text-[#8A8A8A] "
                           style={{
-                            height: 0.5,
-                            backgroundColor: "#3B3B3B",
-                            marginVertical: 16,
+                            fontFamily: "Montserrat",
+                            fontWeight: 700,
+                            fontSize: responsiveFontSize(1.8),
                           }}
-                        />
+                        >
+                          CURRENT TEAMS
+                        </TextScallingFalse>
+                        <View className="flex items-center justify-center flex-row gap-4">
+                          <TouchableOpacity
+                            onPress={() => router.push("/(app)/(team)/teams")}
+                          >
+                            <AddIcon />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() =>
+                              router.push("/(app)/(profile)/edit-overview")
+                            }
+                          >
+                            <EditIcon />
+                          </TouchableOpacity>
+                        </View>
                       </View>
-                    ))}
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => console.log("Navigate to Full Insights")}
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginVertical: 6,
-                      }}
-                    >
-                      <TextScallingFalse
-                        style={{
-                          color: "#808080",
-                          fontSize: 15,
-                          fontWeight: "700", // Bold
-                        }}
-                      >
-                        Full Insights
-                      </TextScallingFalse>
-                      <Feather
-                        name="arrow-right"
-                        size={20}
-                        color={"#808080"}
-                        style={{ marginLeft: 5 }}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                )}
+
+                      {/* Teams Mapping with Filtered Teams */}
+                      {getFilteredTeams(sport).map(
+                        (team: any, index: number) => (
+                          <View
+                            key={`team-${sport.sport?._id}-${
+                              team._id || index
+                            }`}
+                            style={{ marginVertical: 1 }}
+                          >
+                            <TeamEntry team={team} />
+                            {index !== sport.teams.length - 1 && (
+                              <View
+                                style={{
+                                  height: 0.5,
+                                  backgroundColor: "#3B3B3B",
+                                  marginVertical: 16,
+                                }}
+                              />
+                            )}
+                          </View>
+                        )
+                      )}
+                    </View>
+                  )}
               </View>
             </TabsContent>
           ))}

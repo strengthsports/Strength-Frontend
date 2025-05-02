@@ -6,7 +6,6 @@ import {
 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Text } from "react-native";
 import {
   ActivityIndicator,
   Image,
@@ -75,7 +74,6 @@ function EditOverview() {
   const filteredSports = sports?.filter((sport) =>
     sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("sports-", sports)
 
   const [isLocalLoading, setLocalLoading] = useState<boolean>(false);
   const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -146,8 +144,6 @@ function EditOverview() {
           Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
           ? existingSport.keyDetails
           : keyDetails;
-
-      console.log("\n\n\nKey details test", mergedKeyDetails);
 
       setSelectedSport({
         sportsId,
@@ -317,7 +313,6 @@ function EditOverview() {
         existingIndex !== -1
           ? prev.filter((_, index) => index !== existingIndex)
           : prev;
-      console.log("\n\n\nNewly selected array of sports", selectedSport);
       // Add the updated selectedSport at the end (or add new if didn't exist)
       return selectedSport ? [...filteredArray, selectedSport] : filteredArray;
     });
@@ -357,7 +352,6 @@ function EditOverview() {
           sportsId: sp.sportsId,
         }));
         const sportsData = { sports: dataToSubmit };
-        console.log("sportsData-", sportsData);
         await dispatch(editUserSportsOverview(sportsData));
         await dispatch(
           fetchMyProfile({ targetUserId: user?._id, targetUserType: user.type })
@@ -800,10 +794,6 @@ function EditOverview() {
                 .flatMap((sport) =>
                   sport.defaultProperties.map((prop, index) => {
                     const propName = prop.name;
-                    console.log(
-                      "Selected sports key details : ",
-                      selectedSport?.keyDetails
-                    );
                     const propValue =
                       selectedSport?.keyDetails?.[propName] || "";
 
@@ -1024,13 +1014,12 @@ function EditOverview() {
           transparent
           onRequestClose={handleCloseAboutModal}
         >
-          <View>
-            <View className="bg-black h-full">
+            <SafeAreaView className="bg-black h-full">
               {/* Modal Header */}
               <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
                 <View className="flex-row items-center">
-                  <TouchableOpacity onPress={handleCloseAboutModal}>
-                    <AntDesign name="arrowleft" size={24} color="white" />
+                  <TouchableOpacity style={{height:'20', width: '30'}} onPress={handleCloseAboutModal}>
+                    <BackIcon/>
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={handleSaveAbout}>
@@ -1043,15 +1032,14 @@ function EditOverview() {
               </View>
               {/* Modal Content */}
               <View className="p-5">
-                <Text className="text-white font-bold text-5xl">
+                <TextScallingFalse
+                 className="text-white font-bold text-5xl">
                   Edit About
-                </Text>
-                <Text className="text-gray-500 text-base mb-5 mt-1.5">
-                  Use this space to showcase who you are as a professional
-                  athlete. You can share your sports background, achievements,
-                  and the essence of your athletic journey.
-                </Text>
-                <View className="border border-white h-72 rounded-sm justify-start">
+                </TextScallingFalse>
+                <TextScallingFalse className="text-[#A5A5A5] text-[13px] mb-5 mt-1" >
+                Your journey, your passion, your story — showcase what drives you and connect with the world of sport.
+                </TextScallingFalse>
+                <View className="border border-white h-72 rounded-[8px] justify-start">
                   <TextInput
                     value={initialAbout}
                     onChangeText={setAbout}
@@ -1064,8 +1052,7 @@ function EditOverview() {
                   />
                 </View>
               </View>
-            </View>
-          </View>
+            </SafeAreaView>
         </Modal>
 
         {/* {isUserInfoModalOpen && (

@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   Image,
   Dimensions,
   StyleSheet,
@@ -19,7 +18,7 @@ const Photos = () => {
     typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
   const { data, isLoading, isError } = useGetImagesByHashtagQuery({ hashtag });
   const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No images available</Text>
+    <TextScallingFalse className="text-white text-center p-4">No images available</TextScallingFalse>
   ));
 
   if (isLoading)

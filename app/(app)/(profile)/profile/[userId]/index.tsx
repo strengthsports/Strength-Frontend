@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  Text,
 } from "react-native";
 import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import TextScallingFalse from "~/components/CentralText";
@@ -218,18 +217,18 @@ const Overview = () => {
                         )
                         .map(([key, value]) => (
                           <View key={key}>
-                            <Text
+                            <TextScallingFalse
                               className="text-white font-bold"
                               style={styles.HeadingText}
                             >
                               {key.toUpperCase()}
-                            </Text>
-                            <Text
+                            </TextScallingFalse>
+                            <TextScallingFalse
                               className="text-white font-light pt-1"
                               style={styles.DetailText}
                             >
                               {value as string}
-                            </Text>
+                            </TextScallingFalse>
                           </View>
                         ))}
                     </View>

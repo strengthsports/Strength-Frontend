@@ -36,7 +36,7 @@ const Posts = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View className="w-screen pl-3">
+      <View className="w-screen">
         <PostContainer isVisible={true} item={item} isMyActivity={true} />
       </View>
     ),

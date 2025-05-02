@@ -37,7 +37,7 @@ const Overview = () => {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const sports = user?.selectedSports ? [...user.selectedSports] : [];
-  // console.log(sports);
+  console.log("----->", sports);
 
   // Dynamic scaling for responsiveness
   const containerWidth = width > 768 ? "50%" : "96%";
@@ -216,13 +216,19 @@ const Overview = () => {
                       >
                         CURRENT TEAMS
                       </TextScallingFalse>
-                      <View className="flex items-center justify-center flex-row gap-2">
+                      <View className="flex items-center justify-center flex-row gap-4">
                         <TouchableOpacity
+                          onPress={() => router.push("/(app)/(team)/teams")}
+                        >
+                          <AddIcon />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.7}
                           onPress={() =>
                             router.push("/(app)/(profile)/edit-overview")
                           }
                         >
-                          <AddIcon />
+                          <EditIcon />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -231,42 +237,17 @@ const Overview = () => {
                     {sport.teams.map((team: any, index: any) => (
                       <View key={index} style={{ marginVertical: 1 }}>
                         <TeamEntry team={team} />
-                        <View
-                          style={{
-                            height: 0.5,
-                            backgroundColor: "#3B3B3B",
-                            marginVertical: 16,
-                          }}
-                        />
+                        {index !== sport.teams.length - 1 && (
+                          <View
+                            style={{
+                              height: 0.5,
+                              backgroundColor: "#3B3B3B",
+                              marginVertical: 16,
+                            }}
+                          />
+                        )}
                       </View>
                     ))}
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => console.log("Navigate to Full Insights")}
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginVertical: 6,
-                      }}
-                    >
-                      <TextScallingFalse
-                        style={{
-                          color: "#808080",
-                          fontSize: 15,
-                          fontWeight: "700", // Bold
-                        }}
-                      >
-                        Full Insights
-                      </TextScallingFalse>
-                      <Feather
-                        name="arrow-right"
-                        size={20}
-                        color={"#808080"}
-                        style={{ marginLeft: 5 }}
-                      />
-                    </TouchableOpacity>
                   </View>
                 )}
               </View>

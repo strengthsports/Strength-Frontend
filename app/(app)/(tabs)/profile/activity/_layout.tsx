@@ -24,7 +24,6 @@ export default function ActivityTabLayout() {
       { name: "Thoughts", segment: "thoughts" },
       { name: "Polls", segment: "polls" },
       { name: "Comments", segment: "comments" },
-      { name: "Articles", segment: "articles" },
     ],
     []
   );
@@ -46,6 +45,7 @@ export default function ActivityTabLayout() {
         contentContainerStyle={{
           marginTop: 5,
           paddingStart: 15 * scaleFactor,
+          paddingEnd: 80 * scaleFactor,
           justifyContent: "flex-start",
           alignItems: "center",
           gap: 12,
@@ -62,7 +62,10 @@ export default function ActivityTabLayout() {
                 isActive ? "bg-[#12956B]" : "bg-black border-[#454545]"
               }`}
             >
-              <TextScallingFalse className="text-white font-medium text-[14px]">
+              <TextScallingFalse
+                className="text-white font-medium"
+                style={{ fontSize: 12 }}
+              >
                 {tab.name}
               </TextScallingFalse>
             </Pressable>

@@ -47,7 +47,11 @@ const MemoizedCommentItem = memo(
           .replace(/ years?/, "y")
       : "";
 
-    const commenterName = item.postedBy?.username || "You";
+    // console.log(item);
+    const firstName = item.postedBy?.firstName || "";
+    const lastName = item.postedBy?.lastName || "";
+    const fullName = `${firstName} ${lastName}`.trim();
+    const commenterName = fullName || "You";
     const originalPosterName = item.postInfo?.originalPoster?.username;
     const postId = item.postInfo?._id;
 
@@ -72,7 +76,7 @@ const MemoizedCommentItem = memo(
           </TextScallingFalse>
           {originalPosterName ? (
             <TextScallingFalse style={styles.commentMeta} numberOfLines={1}>
-              {" commented on "}
+              {"commented on "}
               <TextScallingFalse style={styles.originalPosterName}>
                 @{originalPosterName}
               </TextScallingFalse>
@@ -235,7 +239,7 @@ const styles = StyleSheet.create({
   },
   commentContainer: {
     backgroundColor: "#000000",
-    paddingVertical: 12,
+    paddingVertical: 15,
     paddingHorizontal: 15,
     // marginBottom: 4,
     borderBottomWidth: 1,
@@ -244,28 +248,29 @@ const styles = StyleSheet.create({
   commentHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 10,
     flexWrap: "nowrap",
     overflow: "hidden",
   },
   commenterName: {
     color: "#FFFFFF",
     fontWeight: "bold",
-    fontSize: 15,
+    fontSize: 13,
   },
   commentMeta: {
-    color: "#8E8E93",
-    fontSize: 14,
+    color: "#CECECE",
+    fontSize: 12,
     marginLeft: 4,
     flexShrink: 1,
   },
   originalPosterName: {
-    color: "#34C759",
+    color: "#12956B",
     fontWeight: "500",
+    fontSize: 12,
   },
   timestamp: {
     color: "#8E8E93",
-    fontSize: 14,
+    fontSize: 12,
     marginLeft: "auto",
     paddingLeft: 5,
   },

@@ -246,7 +246,9 @@ const Overview = () => {
                           <TouchableOpacity
                             activeOpacity={0.7}
                             onPress={() =>
-                              router.push("/(app)/(profile)/edit-overview")
+                              router.push(
+                                "/(app)/(profile)/edit-overview/(modal)/current-team"
+                              )
                             }
                           >
                             <EditIcon />

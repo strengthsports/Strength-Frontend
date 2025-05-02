@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useMemo,
 } from "react";
 import {
   View,
@@ -27,6 +28,8 @@ import { logoutUser } from "~/reduxStore/slices/user/authSlice";
 import Toast from "react-native-toast-message";
 import TextScallingFalse from "~/components/CentralText";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
+import SportsIndicator from "~/components/SvgIcons/SideMenu/SportsIndicator";
 
 interface DrawerContextProps {
   handleOpenDrawer: () => void;
@@ -38,11 +41,13 @@ interface Team {
   id: string;
   name: string;
   url: string;
+  sport: string;
+  members?: any[];
 }
 
 const DrawerContext = createContext<DrawerContextProps>({
-  handleOpenDrawer: () => {},
-  handleCloseDrawer: () => {},
+  handleOpenDrawer: () => { },
+  handleCloseDrawer: () => { },
   isDrawerOpen: false,
 });
 
@@ -67,6 +72,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
     setIsDrawerOpen(false);
   };
 
+
   const processTeams = () => {
     const uniqueTeams = new Map<string, Team>();
 
@@ -75,8 +81,10 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
         if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
           uniqueTeams.set(teamEntry.team._id, {
             name: teamEntry.team.name,
+            sport: teamEntry.team.name,
             url: teamEntry.team.logo?.url || "",
             id: teamEntry.team._id,
+            members: teamEntry.team.members || [],
           });
         }
       }
@@ -123,7 +131,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
         onOpen={handleOpenDrawer}
       >
         <SafeAreaView
-          className="w-full h-full bg-black pt-4"
+          className={`w-full h-full bg-black ${Platform.OS === 'ios' ? 'pt-10' : 'pt-4'}`}
           style={{ justifyContent: "space-between" }}
         >
           <ScrollView className="flex-1 pt-12">
@@ -159,12 +167,12 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
 
             <CustomDivider
               color="#5C5C5C"
-              thickness={0.2}
+              thickness={1}
               style={{ width: "90%", opacity: 0.5, alignSelf: "center" }}
             />
             {/* Teams Section */}
-            <View style={{ paddingHorizontal: 24, paddingVertical: 7, gap: 7 }}>
-              <TextScallingFalse className="text-white text-4xl font-bold mb-4">
+            <View style={{ paddingHorizontal: 24, paddingVertical: 8, gap: 8}}>
+              <TextScallingFalse className="text-white text-4xl mb-4" style={{ fontWeight: '500' }}>
                 Manage Teams
               </TextScallingFalse>
 
@@ -177,18 +185,35 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   }}
                   className={`mb-${index === visibleTeams.length - 1 ? 4 : 2}`}
                 >
-                  <View style={{ width: 210, flexDirection: "row" }}>
+                  <View style={{ width: 210, flexDirection: "row", gap: 15, alignItems:'center'}}>
+                    <View style={{borderWidth: 1.5, borderColor:'#202020'}} className="rounded-lg">
                     <Image
                       source={{ uri: team.url }}
-                      className="w-10 h-10 rounded-full"
+                      className="w-12 h-12 rounded-md"
                       resizeMode="cover"
                     />
-                    <TextScallingFalse
-                      className="text-white text-3xl font-medium ml-4"
-                      style={{ flex: 1 }}
-                    >
-                      {team.name}
-                    </TextScallingFalse>
+                    </View>
+                    <View style={{ gap: 4 }}>
+                      <TextScallingFalse numberOfLines={1}
+                      ellipsizeMode="tail"
+                        className="text-white text-xl font-medium"
+                        style={{ fontWeight: '500'}}
+                      >
+                        {team.name}
+                      </TextScallingFalse>
+                      <View style={{ flexDirection: 'row', gap: 5, justifyContent: 'center', alignItems: 'center' }}>
+                        <View style={{ gap: 4, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                          <SportsIndicator />
+                          <TextScallingFalse style={{ color: '#12956B', fontSize: 12, fontWeight: '500' }}>
+                            Cricket
+                          </TextScallingFalse>
+                        </View>
+                        <View style={{backgroundColor:'grey', width: 3, height: 3, borderRadius:'100%'}}/>
+                        <TextScallingFalse style={{ color: 'grey', fontSize: 12, fontWeight: '500', }}>
+                          50 Members
+                        </TextScallingFalse>
+                      </View>
+                    </View>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -207,48 +232,50 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
               {
                 teamList.length === 0 && (
                   <View className="flex-row mb-2 mt-2">
-                <TouchableOpacity
-                  onPress={() => {
-                    router.push("/(app)/(team)/teams");
-                    handleCloseDrawer();
-                  }}
-                  className="border border-[#12956B] px-3 py-[5px] gap-1 rounded-md flex-row items-center mr-4"
-                >
-                  <TextScallingFalse className="text-[#12956B] text-sm font-semibold">
-                    Create Team
-                  </TextScallingFalse>
-                  <AntDesign name="plus" size={10} color="#12956B" />
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.push("/(app)/(team)/teams");
+                        handleCloseDrawer();
+                      }}
+                      className="border border-[#12956B] px-3 py-[5px] gap-1 rounded-md flex-row items-center mr-4"
+                    >
+                      <TextScallingFalse className="text-[#12956B] text-sm font-semibold">
+                        Create Team
+                      </TextScallingFalse>
+                      <AntDesign name="plus" size={10} color="#12956B" />
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => {
-                    router.push("/(app)/(team)/join-team");
-                    handleCloseDrawer();
-                  }}
-                  className="bg-[#303030] px-3 py-2 rounded-md"
-                >
-                  <TextScallingFalse className="text-white text-sm font-semibold">
-                    Join Team
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.push("/(app)/(team)/join-team");
+                        handleCloseDrawer();
+                      }}
+                      className="bg-[#303030] px-3 py-2 rounded-md"
+                    >
+                      <TextScallingFalse className="text-white text-sm font-semibold">
+                        Join Team
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                  </View>
                 )
               }
             </View>
           </ScrollView>
           {/* Settings and Logout */}
-          <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <View style={{ justifyContent: "center", alignItems: "center"}}>
+          <CustomDivider
+              color="#5C5C5C"
+              thickness={1}
+              style={{ width: "90%", opacity: 0.5, alignSelf: "center" }}
+            />
             <View
               style={{
                 height: 100,
-                borderTopColor: "#303030",
-                borderWidth: 0.5,
                 width: "85%",
-                paddingVertical: 16,
               }}
             >
               <TouchableOpacity
-                className="flex-row items-center py-6"
+                className="flex-row items-center py-5" style={{paddingLeft: 5}}
                 onPress={() => {
                   router.push("/(app)/(settings)/settings");
                   handleCloseDrawer();

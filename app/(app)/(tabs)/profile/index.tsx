@@ -159,7 +159,7 @@ const Overview = () => {
                     source={{ uri: sport.sport?.logo }}
                     style={{
                       width: 20 * scaleFactor,
-                      height: 20 * scaleFactor,
+                      height: 20 * scaleFactor, zIndex: 10,
                     }}
                     resizeMode="contain"
                   />

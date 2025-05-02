@@ -14,6 +14,7 @@ import {
 } from "~/reduxStore/api/explore/footballApi";
 import {
   useGetBasketballLiveMatchesQuery,
+  useGetBasketballNextMatchesQuery,
   useGetBasketballRecentMatchesQuery,
 } from "~/reduxStore/api/explore/basketballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
@@ -24,6 +25,10 @@ import BasketballRecentMatch from "~/components/explorePage/recentMatch/Basketba
 import BasketballLiveMatch from "~/components/explorePage/liveMatch/BasketballLiveMatch";
 import CricketRecentMatch from "~/components/explorePage/recentMatch/CricketRecentMatch";
 import FootballRecentMatch from "~/components/explorePage/recentMatch/FootballRecentMatch";
+import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
+import CricketMatch from "~/components/explorePage/match/CricketMatch";
+import FootballMatch from "~/components/explorePage/match/FootballMatch";
+import BasketballMatch from "~/components/explorePage/match/BasketballMatch";
 
 interface SelectedSportProps {
   sportsName: string;
@@ -33,7 +38,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const [refreshing, setRefreshing] = useState(false);
   const renderMatches = () => {
     return (
-      <View className="flex-row items-center pl-7 mt-3">
+      <View className="flex-row items-center pl-3 mt-3">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Matches
         </TextScallingFalse>
@@ -49,9 +54,9 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
 
   const renderDontMiss = () => {
     return (
-      <View className="flex-row items-center justify-between pl-7 pr-10 mt-10">
+      <View className="flex-row items-center justify-between pl-4 mt-7 mb-6">
         <TextScallingFalse className="text-white text-5xl font-bold">
-          Don’t Miss
+          Upcoming Matches
         </TextScallingFalse>
       </View>
     );
@@ -69,7 +74,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     isFetching: isCricketNextFetching,
     refetch: refetchNextCricket,
   } = useGetCricketNextMatchesQuery({});
-  const { nextMatches: nextCricketMatches } = cricketNextData || {};
+  const { nextMatches: nextCricketMatches = [] } = cricketNextData || {};
 
   const {
     data: cricketRecentData,
@@ -78,22 +83,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   } = useGetCricketRecentMatchesQuery({});
   const { recentMatches: recentCricketMatches } = cricketRecentData || {};
 
-  const renderCricketLiveMatches = () => {
+  const renderCricketMatches = () => {
     return (
-      <CricketLiveMatch
-        liveMatches={liveCricketMatches}
-        isFetching={isCricketLiveFetching}
-        onRefetch={refetchLiveCricket}
-      />
-    );
-  };
-
-  const renderCricketRecentMatches = () => {
-    return (
-      <CricketRecentMatch
-        recentMatches={recentCricketMatches}
-        isFetching={isCricketRecentFetching}
-        onRefetch={refetchRecentCricket}
+      <CricketMatch
+        liveCricketMatches={liveCricketMatches}
+        recentCricketMatches={recentCricketMatches}
+        isCricketLiveFetching={isCricketLiveFetching}
+        isCricketRecentFetching={isCricketRecentFetching}
       />
     );
   };
@@ -115,34 +111,37 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { liveMatches: liveFootballMatches } = footballLiveData || {};
 
   const {
+    data: footballNextData,
+    isFetching: isFootballNextFetching,
+    refetch: refetchNextFootball,
+  } = useGetFootballNextMatchesQuery({});
+  const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
+
+  const {
     data: footballRecentData,
     isFetching: isFootballRecentFetching,
     refetch: refetchRecentFootball,
   } = useGetFootballRecentMatchesQuery({});
   const { recentMatches: recentFootballMatches } = footballRecentData || {};
 
-  const renderFootballLiveMatches = () => {
+  const renderFootballMatches = () => {
     return (
-      <FootballLiveMatch
-        liveMatches={liveFootballMatches}
-        isFetching={isFootballLiveFetching}
-        onRefetch={refetchLiveFootball}
-      />
-    );
-  };
-
-  const renderFootballRecentMatches = () => {
-    return (
-      <FootballRecentMatch
-        recentMatches={recentFootballMatches}
-        isFetching={isFootballRecentFetching}
-        onRefetch={refetchRecentFootball}
+      <FootballMatch
+        liveFootballMatches={liveFootballMatches}
+        recentFootballMatches={recentFootballMatches}
+        isFootballLiveFetching={isFootballLiveFetching}
+        isFootballRecentFetching={isFootballRecentFetching}
       />
     );
   };
 
   const renderFootballNextMatches = () => {
-    return <FootballNextMatch />;
+    return (
+      <FootballNextMatch
+        nextMatches={nextFootballMatches}
+        isFetching={isFootballNextFetching}
+      />
+    );
   };
 
   const {
@@ -153,62 +152,56 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { liveMatches: liveBasketballMatches } = basketballLiveData || {};
 
   const {
+    data: basketballNextData,
+    isFetching: isBasketballNextFetching,
+    refetch: refetchNextBasketball,
+  } = useGetBasketballNextMatchesQuery({});
+  const { nextMatches: nextBasketballMatches = [] } = basketballNextData || {};
+
+  const {
     data: basketballRecentData,
     isFetching: isBasketballRecentFetching,
     refetch: refetchRecentBasketball,
   } = useGetBasketballRecentMatchesQuery({});
   const { recentMatches: recentBasketballMatches } = basketballRecentData || {};
 
-  const renderBasketballLiveMatches = () => {
+  const renderBasketballMatches = () => {
     return (
-      <BasketballLiveMatch
-        liveMatches={liveBasketballMatches}
-        isFetching={isBasketballLiveFetching}
-        onRefetch={refetchLiveBasketball}
+      <BasketballMatch
+        liveBasketballMatches={liveBasketballMatches}
+        recentBasketballMatches={recentBasketballMatches}
+        isBasketballLiveFetching={isBasketballLiveFetching}
+        isBasketballRecentFetching={isBasketballRecentFetching}
       />
     );
   };
 
-  const renderBasketballRecentMatches = () => {
+  const renderBasketballNextMatches = () => {
     return (
-      <BasketballRecentMatch
-        recentMatches={recentBasketballMatches}
-        isFetching={isBasketballRecentFetching}
-        onRefetch={refetchRecentBasketball}
+      <BasketballNextMatch
+        nextMatches={nextBasketballMatches}
+        isFetching={isBasketballNextFetching}
       />
     );
   };
 
   const sections = [{ type: "matches", content: renderMatches() }];
 
-  if (sportsName === "Cricket") {
+  if (sportsName === "Cricket")
     sections.push({
-      type: "CricketLiveMatches",
-      content: renderCricketLiveMatches(),
+      type: "CricketMatches",
+      content: renderCricketMatches(),
     });
+  else if (sportsName === "Football")
     sections.push({
-      type: "CricketRecentMatches",
-      content: renderCricketRecentMatches(),
+      type: "FootballMatches",
+      content: renderFootballMatches(),
     });
-  } else if (sportsName === "Football") {
+  else if (sportsName === "Basketball")
     sections.push({
-      type: "FootballLiveMatches",
-      content: renderFootballLiveMatches(),
+      type: "BasketballMatches",
+      content: renderBasketballMatches(),
     });
-    sections.push({
-      type: "FootballRecentMatches",
-      content: renderFootballRecentMatches(),
-    });
-  } else if (sportsName === "Basketball") {
-    sections.push({
-      type: "BasketballLiveMatches",
-      content: renderBasketballLiveMatches(),
-    });
-    sections.push({
-      type: "BasketballRecentMatches",
-      content: renderBasketballRecentMatches(),
-    });
-  }
 
   sections.push({ type: "dontMiss", content: renderDontMiss() });
 
@@ -222,6 +215,11 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       type: "FootballNextMatches",
       content: renderFootballNextMatches(),
     });
+  else if (sportsName === "Basketball")
+    sections.push({
+      type: "BasketballNextMatches",
+      content: renderBasketballNextMatches(),
+    });
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -229,10 +227,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       await Promise.all([
         refetchLiveCricket(),
         refetchNextCricket(),
+        // refetchRecentCricket(),
         refetchLiveFootball(),
+        refetchNextFootball(),
+        // refetchRecentFootball(),
         refetchLiveBasketball(),
-        // Optionally refetch article data if needed:
-        // refetchSportArticles?.(),
+        refetchNextBasketball(),
+        // refetchRecentBasketball(),
       ]);
     } catch (error) {
       console.error("Refresh failed", error);

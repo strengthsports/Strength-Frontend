@@ -79,7 +79,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
     [swiperData]
   );
 
-  const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(2);
+  const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
 
   return (
     <Swiper
@@ -126,11 +126,18 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 alignItems: "center",
               }}
             > */}
-            <Image
-              source={{ uri: slide.imageUrl }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
+            <View className="flex-1 justify-center items-center">
+              {/* Image container */}
+              <Image
+                source={{ uri: slide.imageUrl }}
+                style={{
+                  width: "100%",
+                  height: undefined,
+                  aspectRatio: 16 / 9, // Dynamically adjust based on the aspect ratio
+                }}
+                resizeMode="cover"
+              />
+            </View>
             {/* <LinearGradient
                 colors={[
                   "rgba(0,0,0,0.95)",
@@ -141,7 +148,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 end={{ x: 0.5, y: 1 }}
                 className="absolute bottom-0 left-0 right-0 h-64"
               /> */}
-            <View className="absolute bottom-9 pl-5">
+            <View className="absolute bottom-9 px-5">
               <TextScallingFalse
                 className="text-white text-6xl font-bold"
                 numberOfLines={numberOfLinesTitle}

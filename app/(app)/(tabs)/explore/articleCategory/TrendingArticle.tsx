@@ -1,7 +1,6 @@
-import { View, Text, FlatList } from "react-native";
-import React from "react";
+import { View, Text, FlatList, RefreshControl } from "react-native";
+import React, { useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
-import { useGetCricketMatchesQuery } from "~/reduxStore/api/explore/cricketApi";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import SwiperTop from "~/components/explorePage/SwiperTop";
 import ArticleContent from "~/components/explorePage/article/ArticleContent";
@@ -9,7 +8,14 @@ import ArticleContent from "~/components/explorePage/article/ArticleContent";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
 const TrendingArticle = () => {
-  const { data: articles, error, isLoading } = useGetSportArticleQuery();
+  const [refreshing, setRefreshing] = useState(false);
+  const {
+    data: articles,
+    error,
+    isLoading,
+    refetch: refetchSportArticles,
+  } = useGetSportArticleQuery();
+  const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
       return (
@@ -26,7 +32,8 @@ const TrendingArticle = () => {
         </TextScallingFalse>
       );
     }
-    return <SwiperTop swiperData={articles ?? []} />;
+
+    return <SwiperTop swiperData={topFiveArticles ?? []} />;
   };
 
   const renderArticles = () => {
@@ -53,6 +60,17 @@ const TrendingArticle = () => {
     { type: "article", content: renderArticles() },
   ];
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchSportArticles()]);
+    } catch (error) {
+      console.error("Refresh failed", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <View className="flex-1">
       <FlatList
@@ -61,6 +79,16 @@ const TrendingArticle = () => {
         renderItem={({ item }) => item.content}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#12956B", "#6E7A81"]}
+            tintColor="#6E7A81"
+            progressViewOffset={60}
+            progressBackgroundColor="#181A1B"
+          />
+        }
         ListHeaderComponent={
           <View>{/* Add any additional header content here if needed */}</View>
         }

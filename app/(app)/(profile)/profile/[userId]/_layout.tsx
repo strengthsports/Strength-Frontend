@@ -53,6 +53,7 @@ import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
 import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
 import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Define the context type
 interface ProfileContextType {
@@ -978,6 +979,7 @@ const ProfileLayout = () => {
         animationOut="slideOutRight"
         style={{ margin: 0, padding: 0 }}
       >
+        <SafeAreaView style={{flex: 1}}>
         <TouchableOpacity
           className="flex-1 justify-center items-center bg-black"
           activeOpacity={1}
@@ -1014,6 +1016,7 @@ const ProfileLayout = () => {
             )}
           </View>
         </TouchableOpacity>
+        </SafeAreaView>
       </Modal>
     </PageThemeView>
   );

@@ -1,48 +1,103 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  RefreshControl,
+  FlatList,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import React, { useState, useCallback, memo, useRef } from "react";
 import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
-import { useSelector } from "react-redux";
-import { RootState } from "~/reduxStore";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { FlatList } from "react-native";
 import { LikerCard } from "~/components/feedPage/LikerModal";
-import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
+import PageThemeView from "~/components/PageThemeView";
+import { debounce } from "@/utils/debounce";
+import TextScallingFalse from "~/components/CentralText";
+import { View } from "react-native";
+import { Image } from "expo-image";
+import emptyLike from "@/assets/images/emptyLike.jpg";
+import { AntDesign } from "@expo/vector-icons";
+import LikeNotFound from "~/components/notfound/likeNotFound";
 
-const Likes = () => {
+const DEBOUNCE_DELAY = 1000;
+const { height } = Dimensions.get("window");
+
+const Likes = memo(() => {
   const { postId } = useLocalSearchParams();
-  console.log(postId);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+
   const { data, error, isLoading, refetch } = useFetchLikersQuery({
     targetId: postId.toString(),
     targetType: "Post",
   });
 
-  console.log(data);
+  // Store the debounced function in a ref to maintain it between renders
+  const debouncedRefetch = useRef(
+    debounce(async () => {
+      try {
+        await refetch();
+      } finally {
+        setRefreshing(false);
+      }
+    }, DEBOUNCE_DELAY)
+  ).current;
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    debouncedRefetch();
+  }, [debouncedRefetch]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => <LikerCard liker={item.liker} />,
+    []
+  );
+
+  const keyExtractor = useCallback((item: any) => item.liker._id, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <PageThemeView>
       <TopBar heading="Likes" backHandler={() => router.push("..")} />
-      <Text>Likes</Text>
-      {isLoading ? (
+
+      {isLoading && !refreshing ? (
         <ActivityIndicator size="large" color="#12956B" />
       ) : (
         <FlatList
           data={data?.data}
-          keyExtractor={(item) => item.liker._id}
-          renderItem={({ item }) => <LikerCard liker={item.liker} />}
-          contentContainerStyle={{ paddingHorizontal: 10 }}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingHorizontal: 15, paddingTop: 5 }}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           windowSize={5}
+          removeClippedSubviews
+          updateCellsBatchingPeriod={100}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#12956B", "#6E7A81"]}
+              tintColor="#6E7A81"
+              progressBackgroundColor="#181A1B"
+            />
+          }
           ListEmptyComponent={
-            <Text className="text-white text-center">No Likes Found!</Text>
+            <View
+              className="justify-center items-center"
+              style={{
+                paddingTop: height / 2.5,
+              }}
+            >
+              <LikeNotFound />
+            </View>
           }
         />
       )}
-    </SafeAreaView>
+    </PageThemeView>
   );
-};
+});
 
 export default Likes;
 

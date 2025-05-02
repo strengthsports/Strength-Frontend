@@ -82,7 +82,9 @@ const Forgot_Password_Enter_Email = () => {
           <View style={{width: 45}} />
         </View>
       <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <View style={{ marginTop: 55, width:'100%', paddingHorizontal: 40}}>
+
+        <View style={{ marginTop: 20, gap: 20, paddingHorizontal: 30}}>
+        <View style={{ marginTop: 55, width:'100%'}}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 24, fontWeight: "500" }}
           >
@@ -97,7 +99,7 @@ const Forgot_Password_Enter_Email = () => {
             </TextScallingFalse>
           </View>
         </View>
-        <View style={{ marginTop: 20 }}>
+        <View>
           <TextScallingFalse
             style={{ color: "white", fontSize: 14, fontWeight: "400" }}
           >
@@ -109,7 +111,9 @@ const Forgot_Password_Enter_Email = () => {
             onChangeText={setEmail}
             autoCapitalize="none"
           />
+          </View>
         </View>
+
         <View style={{ marginTop: 55 }}>
           <SignupButton onPress={handleNext} disabled={false}>
             {loading ? (

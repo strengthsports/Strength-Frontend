@@ -1,5 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { useDispatch } from "react-redux";
 import { saveToken } from "~/utils/secureStore";
+import { setAuthState } from "./authSlice";
 
 // Types
 interface SignupState {

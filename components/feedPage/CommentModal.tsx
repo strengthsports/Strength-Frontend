@@ -35,6 +35,7 @@ import {
   useLazyFetchRepliesQuery,
 } from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Comment } from "~/types/post";
+import CommentNotFound from "../notfound/commentNotFound";
 
 const MAX_HEIGHT = 80;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -501,9 +502,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
 
     return (
       <View className="flex-1 justify-center items-center py-10">
-        <TextScallingFalse className="text-gray-500 text-center">
-          Drop the first comment and start the chant!
-        </TextScallingFalse>
+        <CommentNotFound />
       </View>
     );
   }, [loadingComments]);

@@ -6,7 +6,7 @@ import {
   ToastAndroid,
   TouchableOpacity,
   Vibration,
-  View,
+  View,ScrollView
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -45,11 +45,11 @@ const SignupEnterOtp2 = () => {
     isAndroid
       ? ToastAndroid.show(errorMsg, ToastAndroid.LONG)
       : Toast.show({
-          type,
-          text1: errorMsg,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+        type,
+        text1: errorMsg,
+        visibilityTime: 3000,
+        autoHide: true,
+      });
   };
 
   const handleResendOtp = async () => {
@@ -101,11 +101,10 @@ const SignupEnterOtp2 = () => {
     }
   };
 
-  console.log("otp-",OTP)
 
   return (
     <PageThemeView>
-      <View style={{ marginTop: 80 }}>
+      <ScrollView style={{flex: 1, marginTop: 80}} showsVerticalScrollIndicator={false}>
         <View>
           <Logo />
         </View>
@@ -113,11 +112,11 @@ const SignupEnterOtp2 = () => {
           style={{
             marginTop: 55,
             width: "100%",
-            justifyContent: "center",
-            alignItems: "center",
+            alignItems: 'center', rowGap: 30,
           }}
         >
-          <View style={{ width: '82%'}}>
+          <View style={{gap: 30, justifyContent:'center', alignItems:'center'}}>
+          <View style={{ width: 334}}>
             <TextScallingFalse
               style={{ color: "white", fontSize: 23, fontWeight: "500" }}
             >
@@ -125,26 +124,16 @@ const SignupEnterOtp2 = () => {
             </TextScallingFalse>
             <View>
               <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
-                We sent the verification code to {email}
-                <TextScallingFalse
-                  onPress={() => router.back()}
-                  style={{ fontSize: 13, color: "#12956B" }}
-                >
-                  {" "}
-                  Edit email
-                </TextScallingFalse>
+                We sent the verification code to {email}{" "}
+              </TextScallingFalse>
+              <TextScallingFalse
+                onPress={() => router.back()}
+                style={{ fontSize: 13, color: "#12956B" }}
+              >
+                Edit Email
               </TextScallingFalse>
             </View>
           </View>
-        </View>
-        <View
-          style={{
-            width: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 25,
-          }}
-        >
           <View>
             <TextScallingFalse
               style={{ fontSize: 13, fontWeight: "400", color: "white" }}
@@ -158,33 +147,42 @@ const SignupEnterOtp2 = () => {
               keyboardType="numeric" // Optional: Ensure proper keyboard type
               autoCapitalize="none"
             />
+            </View>
           </View>
-          <TouchableOpacity
-            onPress={handleResendOtp}
-            activeOpacity={0.5}
-            style={{ marginTop: 35 }}
+          <View
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+            <TouchableOpacity
+              onPress={handleResendOtp}
+              activeOpacity={0.5}
             >
-              Resend code
-            </TextScallingFalse>
-          </TouchableOpacity>
-          <View style={{ marginTop: 50 }}>
-            <SignupButton onPress={handleOTPAndNextScreen}>
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <TextScallingFalse
-                  style={{ color: "white", fontSize: 15, fontWeight: "600" }}
-                >
-                  Next
-                </TextScallingFalse>
-              )}
-            </SignupButton>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+              >
+                Resend code
+              </TextScallingFalse>
+            </TouchableOpacity>
+            <View style={{ marginTop: 50}}>
+              {
+                loading ?
+                  <ActivityIndicator size={'small'} color={'white'} />
+                  :
+                  <SignupButton onPress={handleOTPAndNextScreen}>
+                    <TextScallingFalse
+                      style={{ color: "white", fontSize: 15, fontWeight: "600" }}
+                    >
+                      Next
+                    </TextScallingFalse>
+                  </SignupButton>
+              }
+            </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </PageThemeView>
   );
 };

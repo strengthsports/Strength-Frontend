@@ -595,9 +595,10 @@ export default function AddPostContainer({
 }) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  // const { text } = useLocalSearchParams();
+  // Caption
   const [postText, setPostText] = useState("");
   const [placeholderText, setPlaceholderText] = useState(text.toString());
+  // Image
   const [isImageRatioModalVisible, setIsImageRatioModalVisible] =
     useState(false);
   const [pickedImageUris, setPickedImageUris] = useState<string[]>([]);
@@ -606,21 +607,24 @@ export default function AddPostContainer({
     [number, number]
   >([3, 2]);
 
-  // New state for video upload
+  // Video
   const [pickedVideoUri, setPickedVideoUri] = useState<string | null>(null);
   const [isVideoTrimmerVisible, setIsVideoTrimmerVisible] = useState(false);
+  const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
+  const [isVideoTrimmed, setIsVideoTrimmed] = useState<boolean>(false);
 
-  const [activeIndex, setActiveIndex] = useState<any>(0);
-  const [isAlertModalOpen, setAlertModalOpen] = useState<boolean>(false);
-  const inputRef = useRef<TextInput>(null);
-  const [inputHeight, setInputHeight] = useState(40);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  // Poll
   const [showPollInput, setShowPollInput] = useState(false);
   const [newPollOptions, setNewPollOptions] = useState<string[]>(["", ""]);
   const [showFeatureModal, setShowFeatureModal] = useState(false);
 
-  const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
-  const [isVideoTrimmed, setIsVideoTrimmed] = useState<boolean>(false);
+  // Tagged Users
+  const [taggedUsers, setTaggedUsers] = useState<string[]>([]);
+
+  // Others
+  const [activeIndex, setActiveIndex] = useState<any>(0);
+  const [isAlertModalOpen, setAlertModalOpen] = useState<boolean>(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -708,7 +712,8 @@ export default function AddPostContainer({
       }
 
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
-      formData.append("taggedUsers", JSON.stringify([]));
+      formData.append("taggedUsers", JSON.stringify(taggedUsers));
+      console.log("tagged Users : ", taggedUsers);
       // For poll
       const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
       console.log("Valid Options : ", validOptions);
@@ -948,7 +953,11 @@ export default function AddPostContainer({
             removeClippedSubviews={true}
           >
             <View style={{ minHeight: 100 }}>
-              <MentionHashtagInput2 setPostText={setPostText} text={postText} />
+              <MentionHashtagInput2
+                setPostText={setPostText}
+                text={postText}
+                setTaggedUsers={setTaggedUsers}
+              />
             </View>
 
             {/* Only render PollsContainer when polls is selected */}

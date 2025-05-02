@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -24,6 +24,10 @@ import {
 } from "~/reduxStore/slices/user/onboardingSlice";
 import { RootState } from "@/reduxStore";
 import { AppDispatch } from "@/reduxStore";
+import SportsChoiceLoader from "~/components/skeletonLoaders/onboarding/SportsChoiceLoader";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
+import RequestSportModal from "~/components/modals/SportsRequestModal";
+import RequestSuccessfulModal from "~/components/modals/RequestSuccessModal";
 
 // Define the type of sport that includes a 'logo' property
 interface Sport {
@@ -128,10 +132,10 @@ const SportsChoice: React.FC = () => {
     });
   };
 
+  const [isAlertVisible, setIsAlertVisible] = useState<boolean>(false);
   const handleRequestClick = () => {
-    router.push({
-      pathname: "/onboarding/requestSport",
-    });
+    setShowRequestModal(true)
+    setIsAlertVisible(false);
   };
 
   // Filter sports data based on search query
@@ -148,13 +152,12 @@ const SportsChoice: React.FC = () => {
 
     return (
       <>
-        <TouchableOpacity className="m-1" onPress={() => toggleSport(item._id)}>
+        <TouchableOpacity activeOpacity={0.7} className="m-1" onPress={() => toggleSport(item._id)}>
           <View
-            className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${
-              isSelected
-                ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
-                : "border border-white/30 bg-black" // Default black background
-            }`}
+            className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${isSelected
+              ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
+              : "border border-white/30 bg-black" // Default black background
+              }`}
           >
             <Image
               source={item.logo ? { uri: item.logo } : defaultImage}
@@ -162,9 +165,8 @@ const SportsChoice: React.FC = () => {
               style={{ tintColor: isSelected ? "white" : "inherit" }}
             />
             <TextScallingFalse
-              className={`text-center text-[13px] leading-[15px] mt-2 ${
-                isSelected ? "text-white font-normal" : "text-white font-normal"
-              }`}
+              className={`text-center text-[13px] leading-[15px] mt-2 ${isSelected ? "text-white font-normal" : "text-white font-normal"
+                }`}
               numberOfLines={2} // Ensures text wraps within two lines
               ellipsizeMode="tail" // Adds "..." if text is too long
               allowFontScaling={false}
@@ -183,6 +185,21 @@ const SportsChoice: React.FC = () => {
     );
   };
 
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const handleRequestSuccess = (sportsList: string[]) => {
+    console.log("User requested:", sportsList);
+    setModalVisible(true)
+    setShowRequestModal(false);
+    // maybe navigate or show a success toast
+  };
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleSendRequest = () => {
+    console.log("Request sent!");
+    setModalVisible(true); // when request is sent, show modal
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <View style={{ flex: 1 }}>
@@ -198,8 +215,8 @@ const SportsChoice: React.FC = () => {
           Let us know your athletic passion as you sign up!
         </TextScallingFalse>
         <View className="px-6">
-          <View className="flex-row items-center rounded-[2rem] px-5  mb-8 h-14 border border-white">
-            <Icon name="search" size={32} color="#fff" />
+          <View className="flex-row items-center rounded-[2rem] px-5 gap-2 mb-4 h-14 border border-[#606060]">
+            <SearchIcon />
             <TextInput
               className="flex-1 text-white h-[50px]"
               placeholder="Search...."
@@ -210,7 +227,7 @@ const SportsChoice: React.FC = () => {
           </View>
         </View>
         <ScrollView
-          className="flex-1  mt-4"
+          className="flex-1" style={{ paddingTop: 3 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             flexGrow: 1,
@@ -222,9 +239,24 @@ const SportsChoice: React.FC = () => {
           </TextScallingFalse> */}
 
           {isLoading ? (
-            <Text className="text-white">Loading...</Text>
+            // <TextScallingFalse className="text-white">Loading...</TextScallingFalse>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "center", // or "flex-start"
+                alignItems: "center",
+                gap: 6
+              }}
+            >
+              {new Array(35).fill(null).map((_, index) => (
+                <View key={index} style={{}}>
+                  <SportsChoiceLoader />
+                </View>
+              ))}
+            </View>
           ) : isError ? (
-            <Text className="text-red-500">{isError}</Text>
+            <TextScallingFalse className="text-red-500">{isError}</TextScallingFalse>
           ) : (
             <View
               style={{
@@ -245,23 +277,21 @@ const SportsChoice: React.FC = () => {
                 </View>
               ))}
               {userType && userType === "Page" && (
-                <TouchableOpacity
+                <TouchableOpacity activeOpacity={0.7}
                   className="m-1"
                   onPress={() => toggleSport("all")}
                 >
                   <View
-                    className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${
-                      isSelected
-                        ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
-                        : "border border-white/30 bg-black" // Default black background
-                    }`}
+                    className={`rounded-lg w-[110px] h-[100px] items-center justify-center p-2 ${isSelected
+                      ? "border border-[#12956B] bg-[#12956B]" // Green background when selected
+                      : "border border-white/30 bg-black" // Default black background
+                      }`}
                   >
                     <TextScallingFalse
-                      className={`text-center text-[13px] leading-[15px] mt-2 ${
-                        isSelected
-                          ? "text-white font-normal"
-                          : "text-white font-normal"
-                      }`}
+                      className={`text-center text-[13px] leading-[15px] mt-2 ${isSelected
+                        ? "text-white font-normal"
+                        : "text-white font-normal"
+                        }`}
                       numberOfLines={2} // Ensures text wraps within two lines
                       ellipsizeMode="tail" // Adds "..." if text is too long
                       allowFontScaling={false}
@@ -282,19 +312,19 @@ const SportsChoice: React.FC = () => {
 
           <View className="flex-row justify-center items-center mt-6 flex-wrap">
             <TouchableOpacity className="">
-              <Text className="text-white text-[1.2rem]">
+              <TextScallingFalse className="text-white text-[1.2rem]">
                 Don't see your sport?
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
           </View>
           <View className="flex-row justify-center items-center flex-wrap">
             <TouchableOpacity
               className="ml-2 mt-4"
-              onPress={handleRequestClick}
+              onPress={handleRequestClick} style={{width: 150, justifyContent:'center', alignItems:'center'}} activeOpacity={0.7}
             >
-              <Text className="text-[#00A67E] text-[1.1rem] font-semibold">
+              <TextScallingFalse className="text-[#00A67E] text-[1.1rem] font-semibold">
                 Request Sport
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -314,31 +344,40 @@ const SportsChoice: React.FC = () => {
             }}
           >
             <View className="flex-row justify-between items-center">
-              <Text className="text-gray-300 text-[1rem]">
+              <TextScallingFalse className="text-gray-300 text-[1rem]">
                 You can always select more than {numberOfSports}
-              </Text>
+              </TextScallingFalse>
               <TouchableOpacity
                 activeOpacity={0.5}
-                className={`px-8 py-4 rounded-3xl ${
-                  localSelectedSports.size > 0 ? "bg-[#00A67E]" : "bg-[#333]"
-                }`}
+                className={`px-8 py-2 rounded-3xl ${localSelectedSports.size > 0 ? "bg-[#00A67E]" : "bg-[#333]"
+                  }`}
                 onPress={
                   localSelectedSports.size > 0
                     ? handleNextClick
                     : handleSkipClick
                 }
               >
-                <Text
-                  className={`text-[1rem] font-medium ${
-                    localSelectedSports.size > 0 ? "text-white" : "text-black"
-                  }`}
+                <TextScallingFalse
+                  className={`text-[1rem] font-medium ${localSelectedSports.size > 0 ? "text-white" : "text-black"
+                    }`}
                 >
                   {localSelectedSports.size > 0 ? "Next" : "Skip"}
-                </Text>
+                </TextScallingFalse>
               </TouchableOpacity>
             </View>
           </View>
         )}
+        {/* Sports Request Added Modal */}
+        <RequestSportModal
+          visible={showRequestModal}
+          onClose={() => setShowRequestModal(false)}
+          onSuccess={handleRequestSuccess}
+        />
+        {/* Sports Added success Modal */}
+        <RequestSuccessfulModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
       </View>
     </SafeAreaView>
   );

@@ -21,28 +21,33 @@ const CricketNextMatch: React.FC<NextCricketMatchProps> = ({
   isFetching,
 }) => {
   return (
-    <View className="mt-7">
+    <View className="">
       <FlatList
         data={nextMatches}
-        keyExtractor={(item) => item?.match_id.toString()}
+        keyExtractor={(item, index) => `${item.series}_${index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="h-56 w-full rounded-2xl bg-[#0B0B0B] mr-5 border border-[#454545] mb-10">
+          <View className="min-h-56 w-full mr-5 mb-5 px-3">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ActivityIndicator size="large" color={Colors.themeColor} />
               </View>
             ) : (
-              <CricketNextMatchCard match={item} />
+              <View className="border border-[#454545] rounded-xl">
+                <CricketNextMatchCard
+                  series={item.series}
+                  groupedMatches={item.matches}
+                />
+              </View>
             )}
           </View>
         )}
         ListEmptyComponent={
-          <View className="w-screen justify-center mt-10">
-            <TextScallingFalse className="text-white self-center text-center pr-7">
+          <View className="w-screen justify-center">
+            {/* <TextScallingFalse className="text-white self-center text-center pr-7">
               No upcoming matches available
-            </TextScallingFalse>
+            </TextScallingFalse> */}
           </View>
         }
       />

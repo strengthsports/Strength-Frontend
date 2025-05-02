@@ -19,7 +19,7 @@ import { Ionicons, AntDesign, Feather } from "@expo/vector-icons";
 import CustomDrawer, { DrawerRefProps } from "~/components/ui/CustomDrawer";
 import nopic from "@/assets/images/nopic.jpg";
 import { useRouter } from "expo-router";
-import { RootState } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTeams } from "~/reduxStore/slices/team/teamSlice";
 import CustomDivider from "~/components/ui/CustomDivider";
@@ -41,14 +41,14 @@ interface Team {
 }
 
 const DrawerContext = createContext<DrawerContextProps>({
-  handleOpenDrawer: () => { },
-  handleCloseDrawer: () => { },
+  handleOpenDrawer: () => {},
+  handleCloseDrawer: () => {},
   isDrawerOpen: false,
 });
 
 export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   const drawerRef = useRef<DrawerRefProps>(null);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showAllTeams, setShowAllTeams] = useState(false);
@@ -70,15 +70,17 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   const processTeams = () => {
     const uniqueTeams = new Map<string, Team>();
 
-    [...(teams?.createdTeams || []), ...(teams?.joinedTeams || [])].forEach((teamEntry) => {
-      if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
-        uniqueTeams.set(teamEntry.team._id, {
-          name: teamEntry.team.name,
-          url: teamEntry.team.logo?.url || "",
-          id: teamEntry.team._id,
-        });
+    [...(teams?.createdTeams || []), ...(teams?.joinedTeams || [])].forEach(
+      (teamEntry) => {
+        if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
+          uniqueTeams.set(teamEntry.team._id, {
+            name: teamEntry.team.name,
+            url: teamEntry.team.logo?.url || "",
+            id: teamEntry.team._id,
+          });
+        }
       }
-    });
+    );
 
     setTeamList(Array.from(uniqueTeams.values()));
   };
@@ -120,11 +122,20 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
         onClose={handleCloseDrawer}
         onOpen={handleOpenDrawer}
       >
-        <SafeAreaView className="w-full h-full bg-black pt-4" style={{ justifyContent: 'space-between' }}>
-
+        <SafeAreaView
+          className="w-full h-full bg-black pt-4"
+          style={{ justifyContent: "space-between" }}
+        >
           <ScrollView className="flex-1 pt-12">
             {/* Profile Section */}
-            <TouchableOpacity onPress={() => { handleCloseDrawer(); router.push("/(app)/(tabs)/profile") }} activeOpacity={0.7} className="flex-row items-center pl-6 mb-6">
+            <TouchableOpacity
+              onPress={() => {
+                handleCloseDrawer();
+                router.push("/(app)/(tabs)/profile");
+              }}
+              activeOpacity={0.7}
+              className="flex-row items-center pl-6 mb-6"
+            >
               <Image
                 source={user?.profilePic ? { uri: user.profilePic } : nopic}
                 className="w-14 h-14 rounded-full"
@@ -135,7 +146,11 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
                 <View style={{ width: 130 }}>
-                  <TextScallingFalse numberOfLines={2} ellipsizeMode="tail" className="text-gray-400 text-lg">
+                  <TextScallingFalse
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                    className="text-gray-400 text-lg"
+                  >
                     @{user?.username} | {user?.headline}
                   </TextScallingFalse>
                 </View>
@@ -145,10 +160,10 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
             <CustomDivider
               color="#5C5C5C"
               thickness={0.2}
-              style={{ width: '90%', opacity: 0.5, alignSelf: 'center' }}
+              style={{ width: "90%", opacity: 0.5, alignSelf: "center" }}
             />
             {/* Teams Section */}
-            <View style={{ paddingHorizontal: 24, paddingVertical: 7, gap: 7}}>
+            <View style={{ paddingHorizontal: 24, paddingVertical: 7, gap: 7 }}>
               <TextScallingFalse className="text-white text-4xl font-bold mb-4">
                 Manage Teams
               </TextScallingFalse>
@@ -162,13 +177,16 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   }}
                   className={`mb-${index === visibleTeams.length - 1 ? 4 : 2}`}
                 >
-                  <View style={{ width: 210, flexDirection: 'row' }}>
+                  <View style={{ width: 210, flexDirection: "row" }}>
                     <Image
                       source={{ uri: team.url }}
                       className="w-10 h-10 rounded-full"
                       resizeMode="cover"
                     />
-                    <TextScallingFalse className="text-white text-3xl font-medium ml-4" style={{ flex: 1 }}>
+                    <TextScallingFalse
+                      className="text-white text-3xl font-medium ml-4"
+                      style={{ flex: 1 }}
+                    >
                       {team.name}
                     </TextScallingFalse>
                   </View>
@@ -186,7 +204,9 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                 </TouchableOpacity>
               )}
 
-              <View className="flex-row mb-2 mt-2">
+              {
+                teamList.length === 0 && (
+                  <View className="flex-row mb-2 mt-2">
                 <TouchableOpacity
                   onPress={() => {
                     router.push("/(app)/(team)/teams");
@@ -212,24 +232,34 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                   </TextScallingFalse>
                 </TouchableOpacity>
               </View>
+                )
+              }
             </View>
           </ScrollView>
           {/* Settings and Logout */}
-          <View style={{justifyContent:'center', alignItems:'center'}}>
-          <View style={{ height: 100, borderTopColor: '#303030', borderWidth: 0.5, width:'85%'}}>
-            <TouchableOpacity
-              className="flex-row items-center py-6"
-              onPress={() => {
-                router.push("/(app)/(settings)/settings");
-                handleCloseDrawer();
+          <View style={{ justifyContent: "center", alignItems: "center" }}>
+            <View
+              style={{
+                height: 100,
+                borderTopColor: "#303030",
+                borderWidth: 0.5,
+                width: "85%",
+                paddingVertical: 16,
               }}
             >
-              <Feather name="settings" size={20} color="white" />
-              <TextScallingFalse className="text-white text-4xl font-medium ml-2">
-                Settings
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                className="flex-row items-center py-6"
+                onPress={() => {
+                  router.push("/(app)/(settings)/settings");
+                  handleCloseDrawer();
+                }}
+              >
+                <Feather name="settings" size={20} color="white" />
+                <TextScallingFalse className="text-white text-4xl font-medium ml-2">
+                  Settings
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
           </View>
         </SafeAreaView>
       </CustomDrawer>

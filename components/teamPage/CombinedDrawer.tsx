@@ -13,12 +13,18 @@ import { RelativePathString, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import BackIcon from "../SvgIcons/Common_Icons/BackIcon";
+import { resetTeamState } from "~/reduxStore/slices/team/teamSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 
 interface MenuItem {
   label: string;
   onPress: () => void;
   color?: string;
+  isMember: boolean;
+  isAdmin:boolean;
   logo?: React.ComponentType<any>;
+
 }
 
 interface DrawerProps {
@@ -32,9 +38,12 @@ const HEADER_HEIGHT = 40;
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
   menuItems,
+  isMember, 
+  isAdmin,
   teamId,
 }) => {
   const SIDEBAR_WIDTH = 200;
+  const dispatch = useDispatch<AppDispatch>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(SIDEBAR_WIDTH)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -70,7 +79,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
       setIsSidebarOpen(true);
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: SIDEBAR_WIDTH - 200, 
+          toValue: SIDEBAR_WIDTH - 200,
           duration: 300,
           useNativeDriver: true,
         }),
@@ -100,6 +109,11 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
     outputRange: ["0deg", "90deg"],
   });
 
+  const handleBackFromTeamPage = () => {
+    router.push("/(app)/(tabs)/home");
+    dispatch(resetTeamState());
+  };
+
   return (
     <SafeAreaView className="flex-1">
       {/* Fixed Header Drawer */}
@@ -107,9 +121,11 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         className="flex-row justify-between items-center px-4 py-1 bg-black top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
       >
-        <TouchableOpacity onPress={() => router.push("/(app)/(tabs)/home")}>
-          <BackIcon/>
+        <TouchableOpacity onPress={handleBackFromTeamPage}>
+          <BackIcon />
         </TouchableOpacity>
+        {
+          isMember || isAdmin?
         <View className="flex-row items-center gap-x-5">
           <TouchableOpacity
             onPress={() =>
@@ -130,6 +146,8 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
             </Animated.View>
           </TouchableOpacity>
         </View>
+        :<></>
+}
       </View>
 
       {/* Main Content */}
@@ -147,34 +165,34 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
       {isSidebarOpen && (
         <>
           {/* Overlay */}
-          <Animated.View 
-            style={{ 
-              position: 'absolute',
+          <Animated.View
+            style={{
+              position: "absolute",
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'black',
+              backgroundColor: "black",
               opacity: opacityAnim,
-              zIndex: 15 
+              zIndex: 15,
             }}
           >
             <TouchableWithoutFeedback onPress={closeSidebar}>
-              <View style={{ width: '100%', height: '100%' }} />
+              <View style={{ width: "100%", height: "100%" }} />
             </TouchableWithoutFeedback>
           </Animated.View>
 
           {/* Sidebar */}
-          <Animated.View 
+          <Animated.View
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               width: 200,
               right: 0,
               bottom: 0,
-              backgroundColor: 'black',
+              backgroundColor: "black",
               zIndex: 20,
-              transform: [{ translateX: slideAnim }]
+              transform: [{ translateX: slideAnim }],
             }}
           >
             <View className="flex-1 mt-10 pt-[72px]">
@@ -188,11 +206,18 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                   className="py-4 pl-5 border-b border-gray-600"
                 >
                   <View className="flex flex-row justify-between mr-4">
-                    <Text style={{ color: item.color || 'white', fontSize: 16 }}>
+                    <Text
+                      style={{ color: item.color || "white", fontSize: 16 }}
+                    >
                       {item.label}
                     </Text>
                     {item?.logo && (
-                      <item.logo width={32} height={32} fill="white" className="mr-2" />
+                      <item.logo
+                        width={32}
+                        height={32}
+                        fill="white"
+                        className="mr-2"
+                      />
                     )}
                   </View>
                 </TouchableOpacity>

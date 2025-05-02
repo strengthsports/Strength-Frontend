@@ -41,8 +41,8 @@ const DiscoverPeopleList = () => {
   }, [first10Users]);
 
   return (
-    <View className="flex-1 px-2.5">
-      <TextScallingFalse className="text-white text-4xl ml-5 my-2 font-semibold">
+    <View className="flex-1">
+      <TextScallingFalse className="text-white text-4xl ml-3 my-2 font-bold">
         Discover People
       </TextScallingFalse>
       {/* <Divider width={2} color="#1e1e1e" /> */}

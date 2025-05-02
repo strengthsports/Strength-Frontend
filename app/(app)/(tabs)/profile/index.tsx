@@ -46,7 +46,7 @@ const Overview = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSubSection, setActiveSubSection] = useState(
-    sports[0]?.sport?.name
+    sports[0]?.sport?.name || ""
   );
 
   // Get filtered posts from Redux
@@ -65,22 +65,24 @@ const Overview = () => {
 
   // Fetch initial posts
   useEffect(() => {
-    dispatch(
-      fetchUserPosts({
-        postedBy: user?._id,
-        postedByType: user?.type,
-        limit: 10,
-        skip: 0,
-      })
-    );
-  }, [user._id, dispatch]);
+    if (user?._id) {
+      dispatch(
+        fetchUserPosts({
+          postedBy: user._id,
+          postedByType: user?.type,
+          limit: 10,
+          skip: 0,
+        })
+      );
+    }
+  }, [user?._id, dispatch]);
 
   // Fetch page associates
   useEffect(() => {
-    if (user.type === "Page") {
+    if (user?.type === "Page") {
       dispatch(fetchAssociates(null));
     }
-  }, [user.type, dispatch]);
+  }, [user?.type, dispatch]);
 
   // Memoized athlete and coach data
   const athletes = useMemo(
@@ -105,6 +107,31 @@ const Overview = () => {
     setIsExpanded(!isExpanded);
   };
 
+  // Filter teams to only show joined teams (not created or admin teams)
+  const getFilteredTeams = (sport) => {
+    if (!sport.teams || !Array.isArray(sport.teams)) return [];
+
+    // Filter out admin roles and created teams
+    const joinedTeams = sport.teams.filter((team) => {
+      // Skip teams where role is "Admin" or user is creator
+      const isAdmin = team.role && team.role.toLowerCase() === "admin";
+      const isCreator = team.isCreator === true || team.createdBy === user?._id;
+
+      return !isAdmin && !isCreator;
+    });
+
+    // Remove duplicates by team ID
+    const uniqueTeamsMap = new Map();
+    joinedTeams.forEach((team) => {
+      const teamId = team._id || team.id || JSON.stringify(team);
+      if (!uniqueTeamsMap.has(teamId)) {
+        uniqueTeamsMap.set(teamId, team);
+      }
+    });
+
+    return Array.from(uniqueTeamsMap.values());
+  };
+
   return (
     <ScrollView style={{ flex: 1, paddingBottom: 120 }}>
       {user?.selectedSports?.length > 0 && (
@@ -117,7 +144,7 @@ const Overview = () => {
             <TabsList className="flex-row gap-x-2 w-[100%] p-1 px-1.5">
               {user?.selectedSports?.map((sport: any) => (
                 <TouchableOpacity
-                  key={sport.sport?._id}
+                  key={`sport-tab-${sport.sport?._id}`}
                   onPress={() => setActiveSubSection(sport.sport?.name)}
                   className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
                     activeSubSection === sport.sport?.name
@@ -143,7 +170,6 @@ const Overview = () => {
                         ? "text-white"
                         : "text-[#CCCCCC]"
                     }`}
-                    // style={styles.buttonText}
                   >
                     {sport.sport?.name.charAt(0).toUpperCase() +
                       sport.sport?.name.slice(1)}
@@ -163,7 +189,10 @@ const Overview = () => {
 
           {/* Tab Contents */}
           {user?.selectedSports?.map((sport: any) => (
-            <TabsContent key={sport.sport?._id} value={sport.sport?.name}>
+            <TabsContent
+              key={`sport-content-${sport.sport?._id}`}
+              value={sport.sport?.name}
+            >
               {/* Sports Overview */}
               <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
                 {sport.details && (
@@ -174,8 +203,8 @@ const Overview = () => {
                           value &&
                           (typeof value === "string" ? value.trim() : true)
                       )
-                      .map(([key, value]) => (
-                        <View key={key}>
+                      .map(([key, value], index) => (
+                        <View key={`detail-${sport.sport?._id}-${index}`}>
                           <Text
                             className="text-white font-bold"
                             style={styles.HeadingText}
@@ -190,66 +219,65 @@ const Overview = () => {
                           </Text>
                         </View>
                       ))}
-                    {/* <TouchableOpacity
-                      activeOpacity={0.7}
-                      className="absolute bottom-8 right-5"
-                      onPress={() =>
-                        router.push("/(app)/(profile)/edit-overview")
-                      }
-                    >
-                      <EditIcon />
-                    </TouchableOpacity> */}
                   </View>
                 )}
 
-                {sport.teams?.length > 0 && (
-                  <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-xl mt-2">
-                    {/* Two-Column Header */}
-                    <View className="flex-row justify-between items-center mb-3">
-                      <TextScallingFalse
-                        className="text-[#8A8A8A] "
-                        style={{
-                          fontFamily: "Montserrat",
-                          fontWeight: 700,
-                          fontSize: responsiveFontSize(1.8),
-                        }}
-                      >
-                        CURRENT TEAMS
-                      </TextScallingFalse>
-                      <View className="flex items-center justify-center flex-row gap-4">
-                        <TouchableOpacity
-                          onPress={() => router.push("/(app)/(team)/teams")}
+                {sport.teams?.length > 0 &&
+                  getFilteredTeams(sport).length > 0 && (
+                    <View className="bg-[#161616] w-[96%] px-5 py-4 rounded-xl mt-2">
+                      {/* Two-Column Header */}
+                      <View className="flex-row justify-between items-center mb-3">
+                        <TextScallingFalse
+                          className="text-[#8A8A8A] "
+                          style={{
+                            fontFamily: "Montserrat",
+                            fontWeight: 700,
+                            fontSize: responsiveFontSize(1.8),
+                          }}
                         >
-                          <AddIcon />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          activeOpacity={0.7}
-                          onPress={() =>
-                            router.push("/(app)/(profile)/edit-overview")
-                          }
-                        >
-                          <EditIcon />
-                        </TouchableOpacity>
+                          JOINED TEAMS
+                        </TextScallingFalse>
+                        <View className="flex items-center justify-center flex-row gap-4">
+                          <TouchableOpacity
+                            onPress={() => router.push("/(app)/(team)/teams")}
+                          >
+                            <AddIcon />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() =>
+                              router.push("/(app)/(profile)/edit-overview")
+                            }
+                          >
+                            <EditIcon />
+                          </TouchableOpacity>
+                        </View>
                       </View>
-                    </View>
 
-                    {/* Teams Mapping */}
-                    {sport.teams.map((team: any, index: any) => (
-                      <View key={index} style={{ marginVertical: 1 }}>
-                        <TeamEntry team={team} />
-                        {index !== sport.teams.length - 1 && (
+                      {/* Teams Mapping with Filtered Teams */}
+                      {getFilteredTeams(sport).map(
+                        (team: any, index: number) => (
                           <View
-                            style={{
-                              height: 0.5,
-                              backgroundColor: "#3B3B3B",
-                              marginVertical: 16,
-                            }}
-                          />
-                        )}
-                      </View>
-                    ))}
-                  </View>
-                )}
+                            key={`team-${sport.sport?._id}-${
+                              team._id || index
+                            }`}
+                            style={{ marginVertical: 1 }}
+                          >
+                            <TeamEntry team={team} />
+                            {index !== sport.teams.length - 1 && (
+                              <View
+                                style={{
+                                  height: 0.5,
+                                  backgroundColor: "#3B3B3B",
+                                  marginVertical: 16,
+                                }}
+                              />
+                            )}
+                          </View>
+                        )
+                      )}
+                    </View>
+                  )}
               </View>
             </TabsContent>
           ))}
@@ -293,13 +321,6 @@ const Overview = () => {
                 </TextScallingFalse>
               )}
             </TextScallingFalse>
-
-            {/* See More / See Less
-            <TouchableOpacity onPress={handleToggle}>
-              <Text className="text-[#808080] font-light text-sm mt-1">
-                {isExpanded ? "see less" : "see more"}
-              </Text>
-            </TouchableOpacity> */}
 
             {/* edit button */}
             <TouchableOpacity

@@ -7,15 +7,24 @@ import TextScallingFalse from "../CentralText";
 import RightArrow from "../Arrows/RightArrow";
 import { useAssociate } from "~/context/UseAssociate";
 import Icon from "react-native-vector-icons/AntDesign";
+import { RelativePathString, useRouter } from "expo-router";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
+import ViceCaptain from "../SvgIcons/teams/ViceCaptain";
+import Captain from "../SvgIcons/teams/Captain";
+import CaptainSq from "../SvgIcons/teams/CaptainSq";
+import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
 
 const MemberEntry = ({
   member,
   isLast,
   isEditView,
+  isAdmin,
 }: {
   member: Member;
   isLast: boolean;
   isEditView?: boolean;
+  isAdmin?: boolean;
 }) => {
   const {
     openModal,
@@ -24,7 +33,19 @@ const MemberEntry = ({
     selectedMembers,
   } = useAssociate();
 
-  // Handle select member
+  const router = useRouter();
+  const teamId = useSelector((state: RootState) => state.team.team?._id);
+
+  const handleTeamClick = () => {
+    router.push({
+      pathname: `/teams/${teamId}/members/${member._id}` as RelativePathString,
+      params: {
+        member: JSON.stringify(member),
+        role: JSON.stringify(member.role),
+      },
+    });
+  };
+
   const handleSelectMember = () => {
     toggleMemberSelection({
       memberId: member._id,
@@ -32,9 +53,14 @@ const MemberEntry = ({
     });
   };
 
+  const isCaptain = member.position?.toLowerCase() === "captain";
+  const isViceCaptain = member.position?.toLowerCase() === "vicecaptain";
+
   return (
     <>
-      <View
+      <TouchableOpacity
+        onPress={() => (isAdmin ? handleTeamClick() : openModal(member))}
+        activeOpacity={0.8}
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -58,32 +84,33 @@ const MemberEntry = ({
           className={`flex-1 flex-row ml-2 items-center justify-between gap-2 ${
             !isLast && "border-b-[0.5px] border-[#3B3B3B]"
           } py-5`}
-        >
+        >r
           <View className="flex flex-col">
-            <TextScallingFalse
-              style={{
-                color: "#FFFFFF",
-                fontSize: 16,
-                fontWeight: "600", // Bold
-              }}
-            >
-              {member.firstName} {member.lastName}
-            </TextScallingFalse>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TextScallingFalse
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                {member.firstName} {member.lastName}
+              </TextScallingFalse>
+              {isCaptain &&<View className="ml-2 mt-1"><CaptainSq /></View> }
+              {isViceCaptain &&<View className="ml-2 mt-1"><ViceCaptainSq  /></View>}
+            </View>
             <TextScallingFalse
               style={{
                 color: "#B2B2B2",
                 fontSize: 12,
-                fontWeight: "300", // Regular
+                width: 230,
+                fontWeight: "300",
               }}
             >
-              {member.headline}
+              {"@"}{member.username}{" | "}{member.headline}
             </TextScallingFalse>
           </View>
-          {isEditView && !isSelectModeEnabled && (
-            <TouchableOpacity onPress={() => openModal(member)}>
-              <RightArrow />
-            </TouchableOpacity>
-          )}
+          {isEditView && !isSelectModeEnabled && <RightArrow />}
 
           {isSelectModeEnabled && (
             <TouchableOpacity
@@ -100,7 +127,7 @@ const MemberEntry = ({
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     </>
   );
 };

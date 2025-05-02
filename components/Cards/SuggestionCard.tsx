@@ -10,6 +10,7 @@ import { useFollow } from "~/hooks/useFollow";
 import { Entypo } from "@expo/vector-icons";
 import { RootState } from "~/reduxStore";
 import { Divider } from "react-native-elements";
+import { ActivityIndicator } from "react-native-paper";
 
 const SuggestionCard = ({
   user,
@@ -92,34 +93,42 @@ const SuggestionCard = ({
     setModalOpen(true);
   };
 
+
   return (
     <>
       <View
-        className={`bg-black rounded-xl pb-4 relative border ${
-          size === "small" ? "w-[150px] h-[180px]" : "w-[45%] h-[200px]"
-        } border-[#80808085] overflow-hidden`}
+        className={`bg-black rounded-xl pb-4 relative border ${size === "small" ? "w-[150px] h-[180px]" : "w-[45%] h-[200px]"
+          } border-[#80808085] overflow-hidden`}
       >
         {/* Close Button */}
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() => removeSuggestion(user._id)}
-          className="absolute right-2 top-2 z-30 bg-black rounded-full w-6 h-6 items-center justify-center opacity-60"
+          className="absolute right-2 top-2 z-30 bg-black rounded-full w-[25px] h-[25px] items-center justify-center opacity-60"
         >
-          <TextScallingFalse className="text-white text-lg">
+          <TextScallingFalse className="text-white text-xl">
             ×
           </TextScallingFalse>
         </TouchableOpacity>
 
         <View
-          className={`${
-            size === "small" ? "h-14" : "h-16"
-          } rounded-t-xl overflow-hidden`}
+          className={`${size === "small" ? "h-14" : "h-16"
+            } rounded-t-xl overflow-hidden`}
         >
-          <Image
-            source={nocoverpic}
-            className="w-full h-full"
-            resizeMode="cover"
-          />
+          {
+            user.coverPic ?
+              <Image
+                source={{ uri: user.coverPic }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+              :
+              <Image
+                source={nocoverpic}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+          }
         </View>
 
         {/* Profile Image positioned outside the cover's container */}
@@ -129,66 +138,68 @@ const SuggestionCard = ({
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
           disabled={onboarding}
-          className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
-            size === "small" ? "w-16 h-16" : "w-20 h-20"
-          } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
+          className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${size === "small" ? "w-16 h-16" : "w-20 h-20"
+            } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
           style={{ marginTop: "10%" }}
         >
-          <Image source={nopic} className="w-full h-full" resizeMode="cover" />
+          {
+            user.profilePic ?
+              <Image source={{ uri: user.profilePic }} className="w-full h-full" resizeMode="cover" />
+              :
+              <Image source={nopic} className="w-full h-full" resizeMode="cover" />
+          }
         </TouchableOpacity>
 
         <View className="items-center flex-grow">
-          <View className="flex-grow pt-10 px-1.5 items-center justify-between">
+          <View className="flex-grow pt-10 items-center justify-between">
             {/* Name and headline */}
             <View className="w-4/5">
               <TextScallingFalse
-                className={`text-white ${
-                  size === "small" ? "text-xl" : "text-2xl"
-                } font-semibold text-center`}
+                className={`text-white ${size === "small" ? "text-xl" : "text-2xl"
+                  } font-semibold text-center`}
               >
                 {user.firstName} {user.lastName}
               </TextScallingFalse>
               <TextScallingFalse
-                className={`text-[#EAEAEA] ${
-                  size === "small" ? "text-xs" : "text-sm"
-                } text-center`}
-              >
-                {user.headline && user.headline.length >= 25
-                  ? user.headline.substring(0, 24).concat("...")
-                  : user.headline}
+                className={`text-[#919191] ${size === "small" ? "text-xs" : "text-sm"
+                  } text-center`} numberOfLines={2}
+              >@{user.username} |{" "}
+                {/* {user.headline && user.headline.length >= 45
+                  ? user.headline.substring(0, 44).concat("...")
+                  : user.headline} */}
+                  { user.headline }
               </TextScallingFalse>
             </View>
 
             {/* Follow Button */}
-            <TouchableOpacity
-              className={`mt-4 border rounded-xl px-8 py-1.5 ${
-                followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
-              } `}
-              activeOpacity={0.6}
-              onPress={
-                followingStatus
-                  ? onboarding
-                    ? handleUnfollow
-                    : handleOpenModal
-                  : handleFollow
-              }
-            >
-              {followingStatus ? (
-                <TextScallingFalse className="text-center text-lg text-white">
-                  <Entypo
-                    className="mr-4"
-                    name="check"
-                    size={14}
-                    color="white"
-                  />
-                  Following
-                </TextScallingFalse>
-              ) : (
-                <TextScallingFalse className="text-center text-lg text-white">
-                  Follow
-                </TextScallingFalse>
-              )}
-            </TouchableOpacity>
+                <TouchableOpacity
+                  className={`mt-4 border rounded-xl px-8 py-1.5 ${followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
+                    } `} 
+                  activeOpacity={0.6}
+                  onPress={
+                    followingStatus
+                      ? onboarding
+                        ? handleUnfollow
+                        : handleOpenModal
+                      : handleFollow
+                  }
+                >
+                  {followingStatus ? (
+                    <TextScallingFalse className="text-center text-lg text-white">
+                      <Entypo
+                        className="mr-4"
+                        name="check"
+                        size={14}
+                        color="white"
+                      />
+                      Following
+                    </TextScallingFalse>
+                  ) : (
+                    <TextScallingFalse className="text-center text-lg text-white">
+                      Follow
+                    </TextScallingFalse>
+                  )}
+                </TouchableOpacity>
           </View>
         </View>
       </View>

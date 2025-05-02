@@ -147,9 +147,9 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
   return (
     <>
       {/* Tittle Section */}
-      <View className="px-4 pt-3 pb-2">
+      <View className="px-4 pt-3 pb-1">
         <TouchableOpacity
-          className="flex-row items-center w-4/5 gap-2"
+          className="flex-row items-center w-[280px] gap-2"
           onPress={toggleNumberOfLines}
         >
           {/* {match?.tournamentImg && (
@@ -184,7 +184,7 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
 
       {/* Live Indicator */}
       {isLive && (
-        <View className="rounded-full absolute right-5 top-4 bg-[#BC3D40] px-[7px] flex-row items-center justify-center">
+        <View className="rounded-full absolute right-5 top-3 bg-[#BC3D40] px-[7px] flex-row items-center justify-center">
           <Animated.Text
             className="text-xs text-white font-bold"
             style={[

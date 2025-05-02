@@ -1,90 +1,170 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from "react-native";
-import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  StyleSheet,
+} from "react-native";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PageThemeView from "~/components/PageThemeView";
-import Icon from "react-native-vector-icons/AntDesign";
-// import { RelativePathString, useRouter } from "expo-router";
-import { Divider, Avatar, ActivityIndicator } from "react-native-paper";
+import { ActivityIndicator } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
-// import { useSelector } from "react-redux";
-import { useRouter, useLocalSearchParams, RelativePathString } from "expo-router";
-// import { RootState } from "@/reduxStore";
-import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
-import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
-import nopic from "../../../../../../assets/images/nopic.jpg";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 import TextScallingFalse from "~/components/CentralText";
+import { Colors } from "~/constants/Colors";
+import { AntDesign } from "@expo/vector-icons";
+import MembersSection from "~/components/profilePage/MembersSection";
+import { Member } from "~/types/user";
+import UserInfoModal from "~/components/modals/UserInfoModal";
+import { AssociateProvider, useAssociate } from "~/context/UseAssociate";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
-import Edit from "../../../../../../components/SvgIcons/teams/Edit"
+import { useFocusEffect } from "@react-navigation/native";
 
-
-// Define TypeScript Interfaces
-interface User {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  profilePic?: string;
-  headline: string;
+// Interface for our section data structure
+interface SectionData {
+  key: string;
+  title: string;
+  data: any[];
 }
 
-interface Member {
-  user: User;
-  role: string;
+// Interface for our rendered item
+interface RenderItemData {
+  item: SectionData;
 }
 
 const Members: React.FC = () => {
   const router = useRouter();
+  const { teamId } = useLocalSearchParams<{ teamId: string }>();
   const { user } = useSelector((state: RootState) => state.profile);
   const { team, loading } = useSelector((state: RootState) => state.team);
-  const { teamId } = useLocalSearchParams<{ teamId: string }>();
   const dispatch = useDispatch<AppDispatch>();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const { isModalOpen, selectedMember, closeModal } = useAssociate();
 
   const isAdmin = user?._id === team?.admin?.[0]?._id;
 
+  // Fetch team details only once when component mounts or team ID changes
+  useEffect(() => {
+    if (team?._id) {
+      dispatch(fetchTeamDetails(team._id));
+    }
+  }, [team?._id, dispatch]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (teamId) {
+        dispatch(fetchTeamDetails(teamId));
+      }
+    }, [teamId, dispatch])
+  );
+  
+
   // Normalize roles to categories
-  const normalizeRole = (role: string): string => {
+  const normalizeRole = useCallback((role: string | undefined): string => {
+    if (!role) return "All-Rounders";
+
     const lower = role.toLowerCase();
     if (lower.includes("bowl")) return "Bowlers";
     if (lower.includes("bat")) return "Batters";
     if (lower.includes("allround")) return "Allrounders";
     if (lower.includes("wicket")) return "Wicketkeepers";
+    if (lower.includes("keepers")) return "Keepers";
     return role;
-  };
+  }, []);
 
-  const groupMembersByRole = (members: Member[]): Record<string, Member[]> => {
-    return members.reduce((acc, member) => {
+  // Memoize the filtered members based on search text
+  const filteredMembers = useMemo(() => {
+    if (!team?.members) return [];
+    
+    if (!searchText.trim()) {
+      return team.members;
+    }
+    
+    const query = searchText.toLowerCase();
+    return team.members.filter((m:any) => {
+      if (!m.user) return false;
+      const fullName = `${m.user.firstName} ${m.user.lastName}`.toLowerCase();
+      return (
+        m.user.firstName.toLowerCase().includes(query) ||
+        m.user.lastName.toLowerCase().includes(query) ||
+        fullName.includes(query)
+      );
+    });
+  }, [searchText, team?.members,router.back]);
+
+  // Transform the filtered members into a format suitable for FlatList
+  const sectionsData = useMemo(() => {
+    if (!filteredMembers.length) return [];
+
+    const groupedMembers: Record<string, Member[]> = {};
+    
+    // Group members by role
+    filteredMembers.forEach((member:any) => {
       const roleKey = normalizeRole(member.role);
-      acc[roleKey] = acc[roleKey] || [];
-      acc[roleKey].push(member);
-      return acc;
-    }, {} as Record<string, Member[]>);
-  };
+      groupedMembers[roleKey] = groupedMembers[roleKey] || [];
+      groupedMembers[roleKey].push(member);
+    });
 
-  useEffect(() => {
-     dispatch(fetchTeamDetails(team?._id));
-         
-    if (team?.members) {
-      setFilteredMembers(team.members);
-    }
-  }, [team]);
+    // Convert to array format for FlatList
+    return Object.keys(groupedMembers).map(role => {
+      const members = groupedMembers[role];
+      const users = members
+        .filter(member => member.user !== null)
+        .map(member => ({
+          ...member.user,
+          role: member.role,
+          position: member.position,
+        }));
 
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredMembers(team?.members || []);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = team?.members?.filter(
-        (m) =>
-          m.user.firstName.toLowerCase().includes(query) ||
-          m.user.lastName.toLowerCase().includes(query)
-      ) || [];
-      setFilteredMembers(filtered);
-    }
-  }, [searchQuery, team?.members]);
+      return {
+        key: role,
+        title: role,
+        data: users
+      };
+    });
+  }, [filteredMembers, normalizeRole,router.back]);
+
+  // Clear search function
+  const clearSearch = useCallback(() => {
+    setSearchText("");
+  }, []);
+
+  // Render a section (role header + members)
+  const renderSection = useCallback(({ item }: RenderItemData) => {
+    return (
+      <View>
+        <TextScallingFalse
+          className="text-[#8A8A8A]"
+          style={{
+            fontFamily: "Montserrat",
+            fontWeight: "600",
+            fontSize: 16,
+            marginLeft: 20,
+            marginBottom: 10,
+            marginTop: 10,
+          }}
+        >
+          {item.title}
+        </TextScallingFalse>
+        <MembersSection
+          members={item.data}
+          isEditView={true}
+          isAdmin={isAdmin}
+          // disableScroll={true}
+        />
+      </View>
+    );
+  }, [isAdmin]);
+
+  // Render empty component
+  const renderEmptyList = useCallback(() => (
+    <View style={styles.noResultsContainer}>
+      <TextScallingFalse style={styles.noResultsText}>No members found</TextScallingFalse>
+    </View>
+  ), []);
 
   if (loading) {
     return (
@@ -94,101 +174,127 @@ const Members: React.FC = () => {
     );
   }
 
-  const groupedMembers = groupMembersByRole(filteredMembers);
   return (
-    <PageThemeView>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-2 bg-black">
-  <TouchableOpacity onPress={() => router.back()}>
-    <BackIcon/>
-  </TouchableOpacity>
+    <>
+      <PageThemeView>
+        {/* Header */}
+        <View className="flex-row justify-between items-center h-14 px-5 border-b border-[#2B2B2B]">
+          <View className="flex-row items-center">
+            <TouchableOpacity onPress={() => router.back()}>
+              <BackIcon/>
+            </TouchableOpacity>
+          </View>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: "600" }}>
+  Members
+</Text>
 
-  {/* Conditionally render Members text in the center */}
-  <View className={isAdmin ? "flex-row items-center justify-center flex-1" : "flex-1 items-center mr-8 justify-center"}>
-    <TextScallingFalse className="text-white text-4xl font-semibold ">Members</TextScallingFalse>
-  </View>
+<TouchableOpacity>
+  <Text style={{ color: 'white', fontSize: 16 }}>Edit</Text>
+</TouchableOpacity>
+        </View>
 
-  {/* Conditionally render Edit button if isAdmin is true */}
-  {isAdmin && (
-    <TouchableOpacity onPress={() => router.push("/teams/settings/edit-members")}>
-      <View className="flex-row items-center space-x-2">
-       <Edit/>
-        <TextScallingFalse className="text-white text-lg">Edit</TextScallingFalse>
-      </View>
-    </TouchableOpacity>
-  )}
-</View>
+        {/* Custom Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <AntDesign
+              name="search1"
+              size={20}
+              color="#8A8A8A"
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search members..."
+              placeholderTextColor="#8A8A8A"
+              value={searchText}
+              onChangeText={setSearchText}
+              autoCapitalize="none"
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity
+                onPress={clearSearch}
+                style={styles.clearButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <AntDesign name="close" size={16} color="#8A8A8A" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
-
-      <Divider className="bg-gray-600 mt-2" />
-
-      {/* Search */}
-      <View className="px-4 py-4">
-        <View className="flex-row items-center bg-[#262626] h-15 rounded-full px-4 py-2 ">
-          <SearchIcon />
-          <TextInput
-            placeholder="Search members..."
-            placeholderTextColor="gray"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            className="text-white TextScallingFalse-lg flex-1 ml-2 mt-1 "
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={sectionsData}
+            renderItem={renderSection}
+            keyExtractor={(item) => item.key}
+            ListEmptyComponent={renderEmptyList}
+            showsVerticalScrollIndicator={false}
+            removeClippedSubviews={true}
+            initialNumToRender={5}
+            maxToRenderPerBatch={3}
+            windowSize={5}
+            contentContainerStyle={{ paddingBottom: 400 }}
           />
         </View>
-      </View>
-
-      {/* Members List */}
-      <FlatList
-        data={Object.keys(groupedMembers)}
-        keyExtractor={(role) => role}
-        renderItem={({ item: role }) => (
-          <View className="py-1 rounded-sm mb-0 mx-1">
-            <TextScallingFalse className="text-gray-500 text-4xl font-bold mb-2">{role}</TextScallingFalse>
-            <View className="bg-[#121212] rounded-2xl py-2">
-              {groupedMembers[role].map((member) => (
-                <TouchableOpacity
-                  key={member.user._id}
-                  className="flex-row items-center py-3 px-3 border-gray-800 rounded-lg"
-                  onPress={() => {
-                    if (isAdmin && team?._id && member?.user?._id) {
-                      router.push({
-                        pathname: `/teams/${team._id}/members/${member.user._id}` as RelativePathString,
-                        params: {
-                          // memberId: member.user._id,
-                          member: JSON.stringify(member.user),
-                          role: JSON.stringify(member.role),
-                        },
-                      });
-                    } else {
-                      setSelectedMember(member);
-                      setShowDownwardDrawer(true);
-                    }
-                  }}
-                >
-                  <Avatar.Image size={50} source={member.user.profilePic ? { uri: member.user.profilePic } : nopic} />
-                  <View className="ml-4 mt-2 flex-1 border-b pb-3 bottom-2 border-[#3B3B3B]">
-                    <TextScallingFalse className="text-white text-2xl font-medium">
-                      {member.user.firstName} {member.user.lastName}
-                    </TextScallingFalse>
-                    <TextScallingFalse className="text-gray-400 text-sm mr-9">{"@"}{member?.user?.username}{" "}|{" "}{member.user.headline}</TextScallingFalse>
-                  </View>
-                  <Icon name="right" size={12} color="gray" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
+      </PageThemeView>
+      <UserInfoModal
+        visible={isModalOpen}
+        onClose={closeModal}
+        member={selectedMember}
+        isTeam={true}
       />
+    </>
+  );
+};
 
-      {/* Downward Drawer for Non-Admin */}
-      {showDownwardDrawer && selectedMember && (
-        <DownwardDrawer
-          visible={showDownwardDrawer}
-          member={selectedMember}
-          onClose={() => setShowDownwardDrawer(false)}
-        />
-      )}
+const Associates = () => {
+  return (
+    <PageThemeView>
+      <AssociateProvider>
+        <Members />
+      </AssociateProvider>
     </PageThemeView>
   );
 };
 
-export default Members;
+const styles = StyleSheet.create({
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingTop:10,
+    paddingBottom:5,
+    backgroundColor: "black",
+  },
+  searchInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#262626",
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    height: 38,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#B4B4B4",
+    fontSize: 14,
+    fontFamily: "Sanas",
+  },
+  clearButton: {
+    padding: 5,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 90,
+  },
+  noResultsText: {
+    color: "#8A8A8A",
+    fontSize: 14,
+    fontFamily: "Sanas",
+  },
+});
+
+export default Associates;

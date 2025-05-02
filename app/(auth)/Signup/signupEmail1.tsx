@@ -28,6 +28,7 @@ import { AppDispatch, RootState } from "@/reduxStore";
 import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import { dateFormatter } from "~/utils/dateFormatter";
+import { ScrollView } from "react-native-gesture-handler";
 
 const SignupEmail1 = () => {
   const router = useRouter();
@@ -36,7 +37,7 @@ const SignupEmail1 = () => {
   const isAndroid = Platform.OS === "android";
 
   const [openModal14, setOpenModal14] = React.useState(false);
-  const [email, setEmail] = useState<string>(""); 
+  const [email, setEmail] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
@@ -60,7 +61,7 @@ const SignupEmail1 = () => {
 
   const handleDateChange = (event, selectedDate) => {
     setIsDatePickerVisible(Platform.OS === 'ios'); // Only hide on Android after selection
-    
+
     if (selectedDate) {
       // Format the date correctly
       const formatted = dateFormatter(selectedDate, "date");
@@ -89,7 +90,7 @@ const SignupEmail1 = () => {
     gender,
     userType: "User",
   };
-  
+
   const feedback = (message: string, type: "error" | "success" = "error") => {
     if (type === "error") {
       Vibration.vibrate(vibrationPattern);
@@ -145,7 +146,7 @@ const SignupEmail1 = () => {
   // Separate rendering for iOS date picker (modal style)
   const renderIOSDatePicker = () => {
     if (!isDatePickerVisible) return null;
-    
+
     return (
       <Modal
         visible={isDatePickerVisible}
@@ -163,15 +164,15 @@ const SignupEmail1 = () => {
               <TouchableOpacity onPress={() => setIsDatePickerVisible(false)}>
                 <Text style={styles.datePickerHeaderButton}>Cancel</Text>
               </TouchableOpacity>
-              
+
               <Text style={styles.datePickerHeaderTitle}>Date of Birth</Text>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 onPress={() => {
                   setIsDatePickerVisible(false);
                 }}
               >
-                <Text style={[styles.datePickerHeaderButton, {color: '#12956B'}]}>Done</Text>
+                <Text style={[styles.datePickerHeaderButton, { color: '#12956B' }]}>Done</Text>
               </TouchableOpacity>
             </View>
 
@@ -192,6 +193,7 @@ const SignupEmail1 = () => {
 
   return (
     <PageThemeView>
+      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.push("/option")}
@@ -345,15 +347,16 @@ const SignupEmail1 = () => {
           </View>
 
           <View style={styles.signupButtonContainer}>
-            <SignupButton onPress={() => validateSignupForm()}>
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <TextScallingFalse style={styles.signupButtonText}>
-                  Agree & join
-                </TextScallingFalse>
-              )}
-            </SignupButton>
+            {
+              loading ?
+                <ActivityIndicator size={'small'} />
+                :
+                <SignupButton onPress={() => validateSignupForm()}>
+                  <TextScallingFalse style={styles.signupButtonText}>
+                    Agree & join
+                  </TextScallingFalse>
+                </SignupButton>
+            }
           </View>
           <View style={styles.loginContainer}>
             <TextScallingFalse style={styles.loginText}>
@@ -453,6 +456,7 @@ const SignupEmail1 = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+      </ScrollView>
     </PageThemeView>
   );
 };

@@ -21,7 +21,7 @@ export const cricketApi = createApi({
     getCricketLiveMatches: builder.query({
       query: () => `/liveMatches`,
       transformResponse: (response: any) => {
-        const matches = response.data || [];
+        const matches = Array.isArray(response.data) ? response.data : [];
 
         // Extract live matches
         // Extra checking for live match
@@ -39,7 +39,7 @@ export const cricketApi = createApi({
     getCricketNextMatches: builder.query({
       query: () => `/upcomingMatches`,
       transformResponse: (response: any) => {
-        const matches = response.data || [];
+        const matches = Array.isArray(response.data) ? response.data : [];
 
         // Extract next matches
         // Extra checking for next match
@@ -50,13 +50,30 @@ export const cricketApi = createApi({
           (match: any) => match.series === "Indian Premier League 2025"
         );
 
-        return { nextMatches };
+        // ✅ Group matches by series
+        const groupedBySeries: { series: string; matches: any[] }[] = [];
+
+        nextMatches.forEach((match: any) => {
+          const seriesIndex = groupedBySeries.findIndex(
+            (item) => item.series === match.series
+          );
+          if (seriesIndex > -1) {
+            groupedBySeries[seriesIndex].matches.push(match);
+          } else {
+            groupedBySeries.push({
+              series: match.series,
+              matches: [match],
+            });
+          }
+        });
+
+        return { nextMatches: groupedBySeries };
       },
     }),
     getCricketRecentMatches: builder.query({
       query: () => `/recentMatches`,
       transformResponse: (response: any) => {
-        const matches = response.data || [];
+        const matches = Array.isArray(response.data) ? response.data : [];
 
         // Extract recent matches
         // Extra checking for recent match

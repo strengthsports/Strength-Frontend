@@ -69,11 +69,14 @@ const ArticlePage = () => {
     return (
       <ScrollView
         style={{ width }}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
       >
-        <View className="w-full h-[220px] overflow-hidden border-[#181818]">
+        <View
+          className="overflow-hidden border-[#181818]"
+          style={{ aspectRatio: 16 / 9 }}
+        >
           <Image
             source={{ uri: item.imageUrl }}
             className="w-full h-full"

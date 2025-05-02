@@ -127,12 +127,30 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
       : needRunData.replace(teamB, teamB_short).trim();
   };
 
+  const filterResultData = ({
+    result,
+    teamA,
+    teamB,
+    teamA_short,
+    teamB_short,
+  }: {
+    result: string;
+    teamA: string;
+    teamB: string;
+    teamA_short: string;
+    teamB_short: string;
+  }): string | null => {
+    return result.includes(teamA)
+      ? result.replace(teamA, teamA_short).trim()
+      : result.replace(teamB, teamB_short).trim();
+  };
+
   return (
     <>
       {/* Title Section */}
       <View className="px-4 pt-3 pb-1">
         <TouchableOpacity
-          className="flex-row items-center w-4/5 gap-2"
+          className="flex-row items-center w-[220px] gap-2"
           onPress={toggleNumberOfLines}
         >
           {/* {match?.tournamentImg && (
@@ -165,7 +183,7 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
 
       {/* Live Indicator */}
       {isLive && (
-        <View className="rounded-full absolute right-5 top-4 bg-[#BC3D40] px-[7px] flex-row items-center justify-center">
+        <View className="rounded-full absolute right-5 top-3 bg-[#BC3D40] px-[7px] flex-row items-center justify-center">
           <Animated.Text
             className="text-xs text-white font-bold"
             style={[
@@ -267,11 +285,11 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
         </View>
       </View>
       {/* Match Status */}
-      <View className="px-4 pb-2">
+      <View className="px-5 pt-2">
         {isLive
           ? match.current_inning && match.current_inning === 1
             ? match.toss && (
-                <TextScallingFalse className="text-[#C2C2C2] text-xs">
+                <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
                   {filterTossData({
                     tossData: match.toss,
                     teamA: match.team_a,
@@ -282,7 +300,7 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
                 </TextScallingFalse>
               )
             : match.need_run_ball && (
-                <TextScallingFalse className="text-[#C2C2C2] text-xs">
+                <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
                   {filterTargetData({
                     needRunData: match.need_run_ball,
                     teamA: match.team_a,
@@ -293,8 +311,14 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
                 </TextScallingFalse>
               )
           : match.result && (
-              <TextScallingFalse className="text-[#C2C2C2] text-xs">
-                {match.result}
+              <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
+                {filterResultData({
+                  result: match.result,
+                  teamA: match.team_a,
+                  teamB: match.team_b,
+                  teamA_short: match.team_a_short,
+                  teamB_short: match.team_b_short,
+                })}
               </TextScallingFalse>
             )}
       </View>

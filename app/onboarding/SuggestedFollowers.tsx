@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Image,
@@ -23,6 +23,9 @@ import SuggestionCard from "~/components/Cards/SuggestionCard";
 import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
 import { FlatList } from "react-native";
 import { SuggestionUser } from "~/types/user";
+import { throttle } from "lodash";
+import SuggestedUserCardLoader from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
+import UserCardSkeleton from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
 
 interface SupportCardProps {
   user: any;
@@ -53,22 +56,35 @@ const SuggestedSupportScreen: React.FC = () => {
 
   useEffect(() => {
     if (fetchedUsers) {
-      setUsers((prevUsers) => [...prevUsers, ...fetchedUsers]);
-    }
-  }, [fetchedUsers]); // Update `users` when `fetchedUsers` changes
+      setUsers((prevUsers) => {
+        const mergedUsers = [...prevUsers, ...fetchedUsers];
 
-  const loadMoreUsers = () => {
-    if (!loading) {
-      SetPage((prevPage) => prevPage + 1); // Increment page to load more users
+        // Remove duplicates based on _id
+        const uniqueUsers = mergedUsers.filter(
+          (user, index, self) =>
+            index === self.findIndex((u) => u._id === user._id)
+        );
+
+        return uniqueUsers;
+      });
     }
-  };
+  }, [fetchedUsers]);
+  // Update `users` when `fetchedUsers` changes
+
+  const loadMoreUsers = throttle(() => {
+    if (!loading) {
+      SetPage((prevPage) => prevPage + 1);
+    }
+  }, 500); // only once every 500ms
 
   const handleClose = (id: string) => {
-    setSelectedPlayers((prev) => prev.filter((player) => player !== id));
+    setUsers(prevUsers => prevUsers.filter(user => user._id !== id));
   };
 
+  const [finalLoading, setFinalLoading] = useState(false)
   const handleContinue = async () => {
     console.log("Selected Sports:", selectedSports);
+    setFinalLoading(true);
 
     const onboardingData = {
       headline: headline,
@@ -80,7 +96,11 @@ const SuggestedSupportScreen: React.FC = () => {
       // console.log("Data to be submitted : ", onboardingData);
       const finalOnboardingData = new FormData();
       finalOnboardingData.append("headline", onboardingData.headline);
-      finalOnboardingData.append("profilePic", profilePic?.fileObject as any);
+      // Only add 'assets' if profilePic is available
+      if (profilePic?.fileObject) {
+        finalOnboardingData.append("assets", profilePic.fileObject as any);
+      }
+
       onboardingData.favSports.forEach((sportId) => {
         finalOnboardingData.append("favSports", sportId);
       });
@@ -90,11 +110,17 @@ const SuggestedSupportScreen: React.FC = () => {
         console.log(`${key}: ${value}`);
       });
 
+      console.log("FormData object before dispatch:");
+      for (let pair of (finalOnboardingData as any).entries()) {
+        console.log(`${pair[0]}: ${typeof pair[1] === 'object' ? JSON.stringify(pair[1]) : pair[1]}`);
+      }      
+
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
       // console.log(response);
 
       dispatch(fetchMyProfile(user?._id));
+      setFinalLoading(false);
 
       // Alert the successful response
       Toast.show({
@@ -125,7 +151,9 @@ const SuggestedSupportScreen: React.FC = () => {
     );
   };
 
+
   const handleSkip = async () => {
+    setFinalLoading(true);
     const onboardingData = {
       headline: headline,
       profilePic: profilePic?.fileObject,
@@ -144,7 +172,7 @@ const SuggestedSupportScreen: React.FC = () => {
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
       // console.log(response);
-
+      setFinalLoading(false);
       // Alert the successful response
       Toast.show({
         type: "success",
@@ -167,112 +195,105 @@ const SuggestedSupportScreen: React.FC = () => {
     }
   };
 
+  // 1. Define renderItem first
+  const renderItem = useCallback(
+    ({ item }: { item: SuggestionUser }) => (
+      <SuggestionCard
+        user={item}
+        onboarding={true}
+        size="large"
+        removeSuggestion={handleClose}
+        isSelected={handleSelectedPlayers}
+      />
+    ),
+    [handleClose, handleSelectedPlayers]
+  );
+  const filteredUsers = users.filter(userItem => userItem._id !== user?._id);
+
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "black" }}
-      className="py-12"
-    >
-      <Logo />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
-      <View
-        style={{ paddingTop: insets.top }}
-        className="px-4 py-6 flex-1 mt-6"
-      >
-        <View className="mb-6">
-          <TextScallingFalse className="text-gray-500 text-[1rem]">
-            Step 2 of 2
-          </TextScallingFalse>
-          <TextScallingFalse className="text-white text-[1.8rem] font-semibold mt-1">
-            Suggested Followers
-          </TextScallingFalse>
-          <TextScallingFalse className="text-gray-400 text-[0.9rem] mt-2">
-            Following others lets you see updates and keep in touch.
-          </TextScallingFalse>
-        </View>
-
-        {/* <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingBottom: 20,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          {loading ? (
-            <ActivityIndicator size={24} color="#12956B" />
-          ) : (
-            <View className="flex-row flex-wrap justify-center">
-              {fetchedUsers.map((user) => (
-                <SuggestionCard
-                  key={user._id}
-                  user={user}
-                  onboarding={true}
-                  size="large" // or "small" depending on your design preference
-                  removeSuggestion={handleClose}
-                  isSelected={handleSelectedPlayers}
-                />
-              ))}
+      {/* FlatList scrolls everything from Logo to suggestions */}
+      <FlatList
+        data={loading ? [] : filteredUsers}
+        keyExtractor={(item) => item._id}
+        numColumns={2}
+        renderItem={renderItem}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 100, // space for fixed skip button
+          gap: 12,
+          paddingTop: 40
+        }}
+        columnWrapperStyle={{ justifyContent: "center", gap: 12 }}
+        ListHeaderComponent={
+          <>
+            <Logo />
+            <View className="mb-6 mt-6">
+              <TextScallingFalse className="text-gray-500 text-[1rem]">
+                Step 2 of 2
+              </TextScallingFalse>
+              <TextScallingFalse className="text-white text-[1.8rem] font-semibold mt-1">
+                Suggested Followers
+              </TextScallingFalse>
+              <TextScallingFalse className="text-gray-400 text-[0.9rem] mt-2">
+                Following others lets you see updates and keep in touch.
+              </TextScallingFalse>
             </View>
-          )}
-        </ScrollView> */}
-        <FlatList
-          data={users}
-          keyExtractor={(item) => item._id}
-          numColumns={2} // Adjust based on your preferred layout
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "center",
-            paddingBottom: 20,
-          }}
-          columnWrapperStyle={{
-            justifyContent: "center", // Aligns items in the center
-          }}
-          ListEmptyComponent={() => (
-            <ActivityIndicator size={24} color="#12956B" />
-          )}
-          renderItem={({ item }) => (
-            <SuggestionCard
-              user={item}
-              onboarding={true}
-              size="large"
-              removeSuggestion={handleClose}
-              isSelected={handleSelectedPlayers}
-            />
-          )}
-          onEndReached={loadMoreUsers}
-          onEndReachedThreshold={0.9} // Load more users when the list is halfway to the bottom
-          ListFooterComponent={
-            users.length > 0 && loading ? (
-              <ActivityIndicator size={24} color="#12956B" />
-            ) : null
-          }
-        />
-
-        <TouchableOpacity
-          className={`py-2 mt-4 mx-4 rounded-full  ${
-            selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
-          }`}
-          style={{
-            alignSelf: "center",
-            width: "100%",
-            maxWidth: 120,
-            height: 36,
-          }}
-          onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
-        >
-          <TextScallingFalse
-            className={`${
-              selectedPlayers.length > 0 ? "text-white" : "text-gray-400"
-            } text-center`}
+          </>
+        }
+        ListEmptyComponent={() => (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 12,
+            }}
           >
-            {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
-          </TextScallingFalse>
-        </TouchableOpacity>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <UserCardSkeleton key={index} size="large" />
+            ))}
+          </View>
+        )}
+        onEndReached={loadMoreUsers}
+        onEndReachedThreshold={0.9}
+        ListFooterComponent={
+          users.length > 0 && loading ? (
+            <ActivityIndicator size={24} color="#12956B" />
+            // <SuggestedUserCardLoader />
+          ) : null
+        }
+      />
+
+      {/* Fixed Skip/Continue Button */}
+      <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 70, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
+        {
+          finalLoading ?
+            <ActivityIndicator size={'small'} color={'#606060'} />
+            :
+            <TouchableOpacity activeOpacity={0.7}
+              className={`py-2 rounded-full ${selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
+                }`}
+              style={{
+                width: "60%",
+                height: 36, justifyContent: 'center', alignItems: 'center',
+              }}
+              onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
+            >
+              <TextScallingFalse
+                className={`${selectedPlayers.length > 0 ? "text-white font-semibold" : "text-gray-400"
+                  } text-center`}
+              >
+                {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
+              </TextScallingFalse>
+            </TouchableOpacity>
+        }
       </View>
       <Toast />
     </SafeAreaView>
+
   );
 };
 

@@ -318,15 +318,15 @@ const Settings = () => {
     <View style={styles.memberItem}>
       <Avatar.Image
         size={40}
-        source={{ uri: member.user.profilePic || DEFAULT_PROFILE_PIC }}
+        source={{ uri: member?.user?.profilePic || DEFAULT_PROFILE_PIC }}
         style={styles.memberAvatar}
       />
       <View style={styles.memberInfo}>
         <TextScallingFalse style={styles.memberName}>
-          {member.user.firstName} {member.user.lastName}
+          {member?.user?.firstName} {member?.user?.lastName}
         </TextScallingFalse>
         <TextScallingFalse style={styles.memberRole}>
-         @{member.user.username} | {member.user.headline || "No headline"}
+         @{member?.user?.username} | {member?.user?.headline || "No headline"}
         </TextScallingFalse>
       </View>
       {isUserAdmin && (

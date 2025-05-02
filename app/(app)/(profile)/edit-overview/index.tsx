@@ -75,7 +75,7 @@ function EditOverview() {
   const filteredSports = sports?.filter((sport) =>
     sport.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("sports-", sports)
+  console.log("sports-", sports);
 
   const [isLocalLoading, setLocalLoading] = useState<boolean>(false);
   const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -93,7 +93,7 @@ function EditOverview() {
   const [alertConfig, setAlertConfig] = useState<AlertConfigType>({
     title: "Discard changes?",
     message: "If you go back now, you will lose your changes.",
-    discardAction: () => { },
+    discardAction: () => {},
     confirmMessage: "Discard Changes",
     cancelMessage: "Continue editing",
   });
@@ -143,7 +143,7 @@ function EditOverview() {
 
       const mergedKeyDetails =
         existingSport &&
-          Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
+        Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
           ? existingSport.keyDetails
           : keyDetails;
 
@@ -235,7 +235,11 @@ function EditOverview() {
       discardAction: () => void,
       confirmMessage: string,
       cancelMessage: string,
-      buttonColors?: { confirmButtonColor?: { bg: string; text: string }; cancelButtonColor?: { bg: string; text: string }; discardButtonColor?: { bg: string; text: string } }
+      buttonColors?: {
+        confirmButtonColor?: { bg: string; text: string };
+        cancelButtonColor?: { bg: string; text: string };
+        discardButtonColor?: { bg: string; text: string };
+      }
     ) => {
       if (hasSkippedAlert) return;
       setAlertConfig({
@@ -246,7 +250,7 @@ function EditOverview() {
         cancelMessage,
         confirmButtonColor: buttonColors?.confirmButtonColor,
         cancelButtonColor: buttonColors?.cancelButtonColor,
-        discardButtonColor: buttonColors?.discardButtonColor
+        discardButtonColor: buttonColors?.discardButtonColor,
       });
       setAlertModal(true);
     },
@@ -301,7 +305,7 @@ function EditOverview() {
           "Add more",
           "  Skip  ",
           {
-            confirmButtonColor: { bg: "#12956B", text: "white" } // Pass it all in one object
+            confirmButtonColor: { bg: "#12956B", text: "white" }, // Pass it all in one object
           }
         );
         return; // Don't proceed
@@ -383,7 +387,6 @@ function EditOverview() {
     </View>;
   }
 
-
   const originalKeyDetailsRef = useRef(null);
 
   // Only store original data when modal opens
@@ -392,9 +395,10 @@ function EditOverview() {
     !originalKeyDetailsRef.current &&
     selectedSport?.keyDetails
   ) {
-    originalKeyDetailsRef.current = JSON.parse(JSON.stringify(selectedSport.keyDetails));
+    originalKeyDetailsRef.current = JSON.parse(
+      JSON.stringify(selectedSport.keyDetails)
+    );
   }
-
 
   const handleBackPress = () => {
     const isDataUnchanged =
@@ -429,7 +433,7 @@ function EditOverview() {
     JSON.stringify(originalKeyDetailsRef.current);
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1 }}>
       <PageThemeView>
         <TopBar heading="Edit Overview" backHandler={handleBackPress}>
           {isLocalLoading ? (
@@ -439,166 +443,150 @@ function EditOverview() {
               onPress={handleSubmitOverviewData}
               disabled={
                 JSON.stringify(initialSportsData) ===
-                JSON.stringify(finalSelectedSports) &&
+                  JSON.stringify(finalSelectedSports) &&
                 initialAbout === user?.about
               }
             >
               <TextScallingFalse
-                className={`${JSON.stringify(initialSportsData) ===
-                  JSON.stringify(finalSelectedSports) &&
+                className={`${
+                  JSON.stringify(initialSportsData) ===
+                    JSON.stringify(finalSelectedSports) &&
                   initialAbout === user?.about
-                  ? "text-[#808080]"
-                  : "text-[#12956B]"
-                  } text-4xl text-right`}
+                    ? "text-[#808080]"
+                    : "text-[#12956B]"
+                } text-4xl text-right`}
               >
                 Save
               </TextScallingFalse>
             </TouchableOpacity>
           )}
         </TopBar>
-        {/* Headings */}
-        <View style={{ width: "100%", padding: 17 }}>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 21, fontWeight: "bold" }}
-          >
-            {user?.type === "User"
-              ? "Highlight your unique Journey"
-              : "Enhance Your Profile"}
-          </TextScallingFalse>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 13, fontWeight: "300" }}
-          >
-            Your overview is your canvas to share key details about your sports
-            {user?.type === "User" ? " profession" : " page"}.
-          </TextScallingFalse>
-        </View>
-
-        {/* Sports overview */}
-        {user?.type === "User" && (
-          <View
-            style={{ width: "90%", paddingVertical: 7 }}
-            className="mx-auto flex justify-center gap-y-2"
-          >
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 50 }} // Add padding for bottom content
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Headings */}
+          <View style={{ width: "100%", padding: 17 }}>
             <TextScallingFalse
-              style={{ color: "white", fontSize: 16, fontWeight: "bold" }}
+              style={{ color: "white", fontSize: 21, fontWeight: "bold" }}
             >
-              Sports Overview
+              {user?.type === "User"
+                ? "Highlight your unique Journey"
+                : "Enhance Your Profile"}
             </TextScallingFalse>
-            <View className="w-full justify-start gap-x-2.5 gap-y-2 py-[5px] flex-row items-center flex-wrap">
-              {finalSelectedSports && finalSelectedSports.length > 0 ? (
-                finalSelectedSports.map((sport, index) => (
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    key={index}
-                    onPress={() =>
-                      handleOpenEditModal(
-                        sport.sportsId,
-                        sport.sportsName,
-                        sport.keyDetails,
-                        sport.logo
-                      )
-                    }
-                    style={{ justifyContent: "center", alignItems: "center" }}
-                  >
-                    <View
-                      className={`p-2.5 min-w-[8rem] bg-[#12956B] rounded-md flex-row px-4 items-center justify-between gap-x-2`}
-                      style={{ zIndex: 10 }}
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 13, fontWeight: "300" }}
+            >
+              Your overview is your canvas to share key details about your
+              sports
+              {user?.type === "User" ? " profession" : " page"}.
+            </TextScallingFalse>
+          </View>
+
+          {/* Sports overview */}
+          {user?.type === "User" && (
+            <View
+              style={{ width: "90%", paddingVertical: 7 }}
+              className="mx-auto flex justify-center gap-y-2"
+            >
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 16, fontWeight: "bold" }}
+              >
+                Sports Overview
+              </TextScallingFalse>
+              <View className="w-full justify-start gap-x-2.5 gap-y-2 py-[5px] flex-row items-center flex-wrap">
+                {finalSelectedSports && finalSelectedSports.length > 0 ? (
+                  finalSelectedSports.map((sport, index) => (
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      key={index}
+                      onPress={() =>
+                        handleOpenEditModal(
+                          sport.sportsId,
+                          sport.sportsName,
+                          sport.keyDetails,
+                          sport.logo
+                        )
+                      }
+                      style={{ justifyContent: "center", alignItems: "center" }}
                     >
-                      <Image
-                        source={{ uri: sport.logo }}
+                      <View
+                        className={`p-2.5 min-w-[8rem] bg-[#12956B] rounded-md flex-row px-4 items-center justify-between gap-x-2`}
+                        style={{ zIndex: 10 }}
+                      >
+                        <Image
+                          source={{ uri: sport.logo }}
+                          style={{
+                            width: 20,
+                            height: 20,
+                          }}
+                          resizeMode="contain"
+                        />
+                        <TextScallingFalse className="text-3xl font-medium text-white">
+                          {sport.sportsName}
+                        </TextScallingFalse>
+                      </View>
+                      <View
                         style={{
-                          width: 20,
-                          height: 20,
-                        }}
-                        resizeMode="contain"
-                      />
-                      <TextScallingFalse className="text-3xl font-medium text-white">
-                        {sport.sportsName}
-                      </TextScallingFalse>
-                    </View>
-                    <View
-                      style={{
-                        borderWidth: 0.5,
-                        borderColor: "#505050",
-                        width: "98%",
-                        height: 22,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderBottomLeftRadius: 6,
-                        borderBottomRightRadius: 6,
-                        marginTop: -2,
-                      }}
-                    >
-                      <TextScallingFalse
-                        style={{
-                          color: "white",
-                          fontSize: 9,
-                          fontWeight: "semibold",
+                          borderWidth: 0.5,
+                          borderColor: "#505050",
+                          width: "98%",
+                          height: 22,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          borderBottomLeftRadius: 6,
+                          borderBottomRightRadius: 6,
+                          marginTop: -2,
                         }}
                       >
-                        {" "}
-                        Edit {sport.sportsName}
-                      </TextScallingFalse>
-                    </View>
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <TextScallingFalse className="text-white">
-                  {""}
+                        <TextScallingFalse
+                          style={{
+                            color: "white",
+                            fontSize: 9,
+                            fontWeight: "semibold",
+                          }}
+                        >
+                          {" "}
+                          Edit {sport.sportsName}
+                        </TextScallingFalse>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <TextScallingFalse className="text-white">
+                    {""}
+                  </TextScallingFalse>
+                )}
+              </View>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                  width: 115,
+                  height: 40,
+                  backgroundColor: "white",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexDirection: "row",
+                  borderRadius: 5,
+                  gap: 9,
+                }}
+                onPress={handleOpenSportsOptionModal}
+              >
+                <FontAwesome5 name="plus" size={19} color="black" />
+                <TextScallingFalse
+                  style={{ color: "black", fontSize: 14, fontWeight: "500" }}
+                >
+                  Add Sport
                 </TextScallingFalse>
-              )}
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                width: 115,
-                height: 40,
-                backgroundColor: "white",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "row",
-                borderRadius: 5,
-                gap: 9,
-              }}
-              onPress={handleOpenSportsOptionModal}
-            >
-              <FontAwesome5 name="plus" size={19} color="black" />
-              <TextScallingFalse
-                style={{ color: "black", fontSize: 14, fontWeight: "500" }}
-              >
-                Add Sport
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-        )}
+          )}
 
-        {/* About section */}
-        <View style={{ paddingTop: 20 }}>
-          <View
-            style={{ width: "90%", padding: 20 }}
-            className="mx-auto py-2 px-0 border-t-[0.5px] border-b-[0.5px] border-[#808080]"
-          >
-            <TouchableOpacity
-              activeOpacity={0.8}
-              className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-              onPress={handleOpenAboutModal}
-            >
-              <TextScallingFalse
-                style={{ color: "white", fontSize: 16, fontWeight: "500" }}
-              >
-                About
-              </TextScallingFalse>
-              <RightArrow />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Members section */}
-        {user?.type === "Page" && (
-          <>
+          {/* About section */}
+          <View style={{ paddingTop: 20 }}>
             <View
               style={{ width: "90%", padding: 20 }}
-              className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+              className="mx-auto py-2 px-0 border-t-[0.5px] border-b-[0.5px] border-[#808080]"
             >
               <TouchableOpacity
                 activeOpacity={0.8}
@@ -608,32 +596,77 @@ function EditOverview() {
                 <TextScallingFalse
                   style={{ color: "white", fontSize: 16, fontWeight: "500" }}
                 >
-                  Teams
+                  About
                 </TextScallingFalse>
                 <RightArrow />
               </TouchableOpacity>
             </View>
-            <View
-              style={{ width: "90%", padding: 20 }}
-              className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+          </View>
+
+          <View
+            style={{ width: "90%", padding: 20 }}
+            className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+              onPress={() =>
+                router.push(
+                  "/(app)/(profile)/edit-overview/(modal)/current-team"
+                )
+              }
             >
-              <TouchableOpacity
-                activeOpacity={0.8}
-                className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-                onPress={() =>
-                  router.push("/(app)/(profile)/edit-overview/associates")
-                }
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 16, fontWeight: "500" }}
               >
-                <TextScallingFalse
-                  style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                Current Teams
+              </TextScallingFalse>
+              <RightArrow />
+            </TouchableOpacity>
+          </View>
+
+          {/* Members section */}
+          {user?.type === "Page" && (
+            <>
+              <View
+                style={{ width: "90%", padding: 20 }}
+                className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+              >
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+                  onPress={handleOpenAboutModal}
                 >
-                  Associates {`[${associatesLength}]`}
-                </TextScallingFalse>
-                <RightArrow />
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+                  <TextScallingFalse
+                    style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                  >
+                    Teams
+                  </TextScallingFalse>
+                  <RightArrow />
+                </TouchableOpacity>
+              </View>
+              <View
+                style={{ width: "90%", padding: 20 }}
+                className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
+              >
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+                  onPress={() =>
+                    router.push("/(app)/(profile)/edit-overview/associates")
+                  }
+                >
+                  <TextScallingFalse
+                    style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+                  >
+                    Associates {`[${associatesLength}]`}
+                  </TextScallingFalse>
+                  <RightArrow />
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </ScrollView>
 
         {/* Alert modal */}
         {isAlertModalSet && (
@@ -657,7 +690,6 @@ function EditOverview() {
             isVisible={isAlertModalSet}
           />
         )}
-
 
         {/* Edit sports details modal */}
         <Modal
@@ -758,7 +790,10 @@ function EditOverview() {
               <TextScallingFalse className="text-6xl text-white">
                 {selectedSport ? selectedSport.sportsName : ""}
               </TextScallingFalse>
-              <TouchableOpacity disabled={isKeyDetailsUnchanged} onPress={handleSaveFinalSportsData}>
+              <TouchableOpacity
+                disabled={isKeyDetailsUnchanged}
+                onPress={handleSaveFinalSportsData}
+              >
                 <MaterialIcons
                   name="done"
                   size={30}
@@ -904,7 +939,7 @@ function EditOverview() {
               <TouchableOpacity
                 activeOpacity={0.5}
                 onPress={handleCloseSportsOptionModal}
-                style={{ width: '30%', height: 50, paddingVertical: 5.5}}
+                style={{ width: "30%", height: 50, paddingVertical: 5.5 }}
               >
                 <BackIcon />
               </TouchableOpacity>

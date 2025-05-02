@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
   },
   postItemContainer: {
     width: "100%",
-    paddingLeft: 12,
     marginBottom: 10,
   },
   centerContent: {

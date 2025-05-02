@@ -43,7 +43,7 @@ const Polls = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View className="w-screen pl-3">
+      <View className="w-screen">
         <PostContainer item={item} />
       </View>
     ),

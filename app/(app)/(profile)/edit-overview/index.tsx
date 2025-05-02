@@ -6,7 +6,6 @@ import {
 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Text } from "react-native";
 import {
   ActivityIndicator,
   Image,
@@ -146,8 +145,6 @@ function EditOverview() {
         Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
           ? existingSport.keyDetails
           : keyDetails;
-
-      console.log("\n\n\nKey details test", mergedKeyDetails);
 
       setSelectedSport({
         sportsId,
@@ -321,7 +318,6 @@ function EditOverview() {
         existingIndex !== -1
           ? prev.filter((_, index) => index !== existingIndex)
           : prev;
-      console.log("\n\n\nNewly selected array of sports", selectedSport);
       // Add the updated selectedSport at the end (or add new if didn't exist)
       return selectedSport ? [...filteredArray, selectedSport] : filteredArray;
     });
@@ -361,7 +357,6 @@ function EditOverview() {
           sportsId: sp.sportsId,
         }));
         const sportsData = { sports: dataToSubmit };
-        console.log("sportsData-", sportsData);
         await dispatch(editUserSportsOverview(sportsData));
         await dispatch(
           fetchMyProfile({ targetUserId: user?._id, targetUserType: user.type })
@@ -835,10 +830,6 @@ function EditOverview() {
                 .flatMap((sport) =>
                   sport.defaultProperties.map((prop, index) => {
                     const propName = prop.name;
-                    console.log(
-                      "Selected sports key details : ",
-                      selectedSport?.keyDetails
-                    );
                     const propValue =
                       selectedSport?.keyDetails?.[propName] || "";
 
@@ -1059,48 +1050,48 @@ function EditOverview() {
           transparent
           onRequestClose={handleCloseAboutModal}
         >
-          <View>
-            <View className="bg-black h-full">
-              {/* Modal Header */}
-              <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
-                <View className="flex-row items-center">
-                  <TouchableOpacity onPress={handleCloseAboutModal}>
-                    <AntDesign name="arrowleft" size={24} color="white" />
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={handleSaveAbout}>
-                  <MaterialIcons
-                    name="done"
-                    size={28}
-                    color={initialAbout === user?.about ? "grey" : "#12956B"}
-                  />
+          <SafeAreaView className="bg-black h-full">
+            {/* Modal Header */}
+            <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  style={{ height: "20", width: "30" }}
+                  onPress={handleCloseAboutModal}
+                >
+                  <BackIcon />
                 </TouchableOpacity>
               </View>
-              {/* Modal Content */}
-              <View className="p-5">
-                <Text className="text-white font-bold text-5xl">
-                  Edit About
-                </Text>
-                <Text className="text-gray-500 text-base mb-5 mt-1.5">
-                  Use this space to showcase who you are as a professional
-                  athlete. You can share your sports background, achievements,
-                  and the essence of your athletic journey.
-                </Text>
-                <View className="border border-white h-72 rounded-sm justify-start">
-                  <TextInput
-                    value={initialAbout}
-                    onChangeText={setAbout}
-                    placeholder="Write about yourself..."
-                    placeholderTextColor="gray"
-                    multiline
-                    numberOfLines={15}
-                    className="text-white text-xl flex-1 p-3"
-                    style={{ textAlignVertical: "top" }}
-                  />
-                </View>
+              <TouchableOpacity onPress={handleSaveAbout}>
+                <MaterialIcons
+                  name="done"
+                  size={28}
+                  color={initialAbout === user?.about ? "grey" : "#12956B"}
+                />
+              </TouchableOpacity>
+            </View>
+            {/* Modal Content */}
+            <View className="p-5">
+              <TextScallingFalse className="text-white font-bold text-5xl">
+                Edit About
+              </TextScallingFalse>
+              <TextScallingFalse className="text-[#A5A5A5] text-[13px] mb-5 mt-1">
+                Your journey, your passion, your story — showcase what drives
+                you and connect with the world of sport.
+              </TextScallingFalse>
+              <View className="border border-white h-72 rounded-[8px] justify-start">
+                <TextInput
+                  value={initialAbout}
+                  onChangeText={setAbout}
+                  placeholder="Write about yourself..."
+                  placeholderTextColor="gray"
+                  multiline
+                  numberOfLines={15}
+                  className="text-white text-xl flex-1 p-3"
+                  style={{ textAlignVertical: "top" }}
+                />
               </View>
             </View>
-          </View>
+          </SafeAreaView>
         </Modal>
 
         {/* {isUserInfoModalOpen && (

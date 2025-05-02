@@ -6,7 +6,6 @@ import {
   Image,
   Dimensions,
   ScrollView,
-  Text,
   BackHandler,
   Modal as RNModal,
   ActivityIndicator,
@@ -507,7 +506,7 @@ const ProfileLayout = () => {
                               {" "}
                               Height:{" "}
                               {profileData?.height || (
-                                <Text style={{ color: "grey" }}>undefined</Text>
+                                <TextScallingFalse style={{ color: "grey" }}>undefined</TextScallingFalse>
                               )}
                             </TextScallingFalse>
                           </View>
@@ -522,7 +521,7 @@ const ProfileLayout = () => {
                               {" "}
                               Weight:{" "}
                               {profileData?.weight || (
-                                <Text style={{ color: "grey" }}>undefined</Text>
+                                <TextScallingFalse style={{ color: "grey" }}>undefined</TextScallingFalse>
                               )}
                             </TextScallingFalse>
                           </View>
@@ -587,13 +586,13 @@ const ProfileLayout = () => {
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
                               Sports Category:{" "}
-                              <Text style={{ color: "grey" }}>
+                              <TextScallingFalse style={{ color: "grey" }}>
                                 {profileData?.favouriteSports.length > 0
                                   ? profileData?.favouriteSports?.map(
                                       (sport: any) => `${sport.sport.name} `
                                     )
                                   : "All"}
-                              </Text>
+                              </TextScallingFalse>
                             </TextScallingFalse>
                           </View>
                           {/* website */}
@@ -609,9 +608,9 @@ const ProfileLayout = () => {
                               >
                                 {" "}
                                 Website:{" "}
-                                <Text style={{ color: "#12956B" }}>
+                                <TextScallingFalse style={{ color: "#12956B" }}>
                                   https://www.eastbengal.in
-                                </Text>
+                                </TextScallingFalse>
                               </TextScallingFalse>
                             </View>
                           )}
@@ -628,9 +627,9 @@ const ProfileLayout = () => {
                               >
                                 {" "}
                                 Established On:{" "}
-                                <Text style={{ color: "grey" }}>
+                                <TextScallingFalse style={{ color: "grey" }}>
                                   Sept, 1997
-                                </Text>
+                                </TextScallingFalse>
                               </TextScallingFalse>
                             </View>
                           )}
@@ -1070,13 +1069,13 @@ const Tabs = ({
           }`}
           onPress={() => handleTabPress(tab.name, tab.path)}
         >
-          <Text
+          <TextScallingFalse
             className={`text-[1.1rem] ${
               activeTab === tab.name ? "text-[#12956B]" : "text-white"
             }`}
           >
             {tab.name}
-          </Text>
+          </TextScallingFalse>
         </TouchableOpacity>
       ))}
     </View>

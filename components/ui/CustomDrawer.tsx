@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Define the drawer width (e.g., 75% of screen width)
-const DRAWER_WIDTH = SCREEN_WIDTH * 0.67;
+const DRAWER_WIDTH = SCREEN_WIDTH * 0.69;
 
 export type DrawerRefProps = {
   toggle: () => void;

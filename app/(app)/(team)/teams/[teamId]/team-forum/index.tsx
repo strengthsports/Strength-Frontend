@@ -63,12 +63,12 @@ const TeamForum: React.FC = () => {
   // State
   const [newMessage, setNewMessage] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // Hooks
   const router = useRouter();
   const { teamId } = useLocalSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-  
+
   // Redux selectors
   const userId = useSelector((state: RootState) => state.auth.user?._id);
   const { team, loading: teamLoading } = useSelector((state: RootState) => state.team);
@@ -87,19 +87,19 @@ const TeamForum: React.FC = () => {
 
   const userRole = useMemo<TeamRole | null>(() => {
     if (!team || !user) return null;
-    
+
     const isAdmin = team.admin?.some(admin => admin._id === user._id);
     if (isAdmin) return 'Admin';
-    
+
     const member = team.members?.find(m => m.user?._id === user._id);
     if (!member) return null;
-  
+
     // Return the position if it's one of our defined roles
     if (['Captain', 'ViceCaptain'].includes(member.position || '')) {
       return member.position as TeamRole;
     }
-    
-    return 'member'; 
+
+    return 'member';
   }, [team, user]);
 
   const canSendMessages = useMemo(() => {
@@ -110,7 +110,7 @@ const TeamForum: React.FC = () => {
   // Create welcome message
   const welcomeMessage = useMemo<Message | null>(() => {
     if (!team) return null;
-    
+
     return {
       _id: 'welcome-message',
       userId: 'system',
@@ -127,7 +127,7 @@ const TeamForum: React.FC = () => {
     if (welcomeMessage) {
       allMessages.unshift(welcomeMessage);
     }
-    return allMessages.sort((a, b) => 
+    return allMessages.sort((a, b) =>
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   }, [messages, welcomeMessage]);
@@ -135,7 +135,7 @@ const TeamForum: React.FC = () => {
   // Load team messages
   const loadMessages = useCallback(async () => {
     if (!teamId) return;
-    
+
     try {
       setRefreshing(true);
       await dispatch(fetchTeamMessages(teamId as string)).unwrap();
@@ -149,7 +149,7 @@ const TeamForum: React.FC = () => {
   // Handle sending a new message
   const handleSendMessage = useCallback(async () => {
     if (!canSendMessages || !newMessage.trim() || !teamId || !team || !user) return;
-    
+
     try {
       await dispatch(
         sendMessage({
@@ -176,7 +176,7 @@ const TeamForum: React.FC = () => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
       return "Today";
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -189,44 +189,44 @@ const TeamForum: React.FC = () => {
   // Get role badge based on role
   const getRoleBadge = useCallback((role: TeamRole) => {
     switch (role) {
-      case 'Admin': 
+      case 'Admin':
         return (
           <View style={[styles.badgeContainer, styles.adminBadge]}>
             <TextScallingFalse style={styles.badgeText}>Admin</TextScallingFalse>
           </View>
         );
-      case 'Captain': 
+      case 'Captain':
         return (
           <View style={[styles.badgeContainer, styles.captainBadge]}>
             <TextScallingFalse style={styles.badgeText}>{"[C]"}</TextScallingFalse>
           </View>
         );
-      case 'ViceCaptain': 
+      case 'ViceCaptain':
         return (
           <View style={[styles.badgeContainer, styles.viceCaptainBadge]}>
             <TextScallingFalse style={styles.badgeText}>{"[VC]"}</TextScallingFalse>
           </View>
         );
-      default: 
+      default:
         return null;
     }
   }, []);
 
   // Group messages by day
   const groupedMessages = useMemo(() => {
-    const groups: {[key: string]: Message[]} = {};
-    
+    const groups: { [key: string]: Message[] } = {};
+
     combinedMessages.forEach(message => {
       const date = new Date(message.timestamp);
       const dateKey = date.toISOString().split('T')[0];
-      
+
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
-      
+
       groups[dateKey].push(message);
     });
-    
+
     return Object.keys(groups).map(date => ({
       date,
       messages: groups[date]
@@ -245,52 +245,52 @@ const TeamForum: React.FC = () => {
         </View>
       );
     }
-    
+
     // Determine user role based on userId
     const getUserRole = (): TeamRole | null => {
       // Check if user is admin
       if (team?.admin?.some(admin => admin._id === item.userId)) {
         return 'Admin';
       }
-      
+
       // Check in team members
       const member = team?.members?.find(m => m.user?._id === item.userId);
       if (!member) return null;
-      
+
       // Return the position if it's one of our defined roles
       if (['Captain', 'ViceCaptain'].includes(member.position || '')) {
         return member.position as TeamRole;
       }
-      
+
       return 'member';
     };
-    
+
     const messageUserRole = getUserRole();
     const roleBadge = messageUserRole ? getRoleBadge(messageUserRole) : null;
     const isCurrentUser = item.userId === user?._id;
-    
+
     return (
       <View style={styles.messageContainer}>
         <View style={styles.avatarContainer}>
           {item.userProfilePic ? (
-            <Image 
-              source={{ uri: item.userProfilePic }} 
-              style={styles.avatar} 
+            <Image
+              source={{ uri: item.userProfilePic }}
+              style={styles.avatar}
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <Avatar.Text 
-              size={40} 
-              label={item.userName.split(' ').map(n => n[0]).join('')} 
-              style={[styles.avatar, isCurrentUser ? styles.currentUserAvatar : null]} 
+            <Avatar.Text
+              size={40}
+              label={item.userName.split(' ').map(n => n[0]).join('')}
+              style={[styles.avatar, isCurrentUser ? styles.currentUserAvatar : null]}
             />
           )}
         </View>
-    
+
         <View style={styles.messageContentContainer}>
           <View style={styles.messageHeader}>
             <TextScallingFalse style={[
-              styles.senderName, 
+              styles.senderName,
               isCurrentUser ? styles.currentUserName : null
             ]}>
               {item.userName}
@@ -300,7 +300,7 @@ const TeamForum: React.FC = () => {
               {formatTime(item.timestamp)}
             </TextScallingFalse>
           </View>
-          
+
           <View style={[
             styles.messageBubble,
             isCurrentUser && styles.currentUserBubble
@@ -319,7 +319,7 @@ const TeamForum: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
-    
+
     return (
       <View style={styles.dateHeaderContainer}>
         <View style={styles.dateHeaderLine} />
@@ -332,7 +332,7 @@ const TeamForum: React.FC = () => {
   // Render the flat list with grouped messages
   const renderMessagesList = useCallback(() => {
     return (
-       <FlatList
+      <FlatList
         data={groupedMessages}
         keyExtractor={(item) => item.date}
         refreshControl={
@@ -382,25 +382,25 @@ const TeamForum: React.FC = () => {
     <PageThemeView>
       {/* Header Section */}
       <View
-        
+
         style={styles.header}
       >
-        <TouchableOpacity activeOpacity={0.7} 
-        style={{ width: 30, height: 40, justifyContent:'center'}} onPress={() => router.back()}>
-        <BackIcon />
+        <TouchableOpacity activeOpacity={0.7}
+          style={{ width: 30, height: 40, justifyContent: 'center', zIndex: 10 }} onPress={() => router.back()}>
+          <BackIcon />
         </TouchableOpacity>
         <View style={styles.headerContent}>
           {team?.logo ? (
-            <Image 
-              source={{ uri: team.logo.url }} 
-              style={styles.teamLogo} 
+            <Image
+              source={{ uri: team.logo.url }}
+              style={styles.teamLogo}
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <Avatar.Text 
-              size={40} 
-              label={team?.name?.[0] || "T"} 
-              style={styles.teamLogoPlaceholder} 
+            <Avatar.Text
+              size={40}
+              label={team?.name?.[0] || "T"}
+              style={styles.teamLogoPlaceholder}
             />
           )}
           <View>
@@ -412,14 +412,44 @@ const TeamForum: React.FC = () => {
             </TextScallingFalse>
           </View>
         </View>
-        <IconButton 
-          icon="dots-vertical" 
-          color="white" 
-          size={24} 
+        <IconButton
+          icon="dots-vertical"
+          color="white"
+          size={24}
           accessibilityLabel="Team info"
         />
       </View>
       <Divider style={styles.divider} />
+
+      {/* background theme art */}
+      <View style={{}}>
+        <View style={{
+          width: '100%', height: '100%', position: 'absolute',
+          zIndex: 0, justifyContent: 'center', alignItems: 'center', paddingTop: 440
+        }}>
+          <View style={{
+            width: 540, height: 540, borderWidth: 1, borderColor: '#505050',
+            justifyContent: 'center', alignItems: 'center', borderRadius: 125, transform: [{ rotate: '45deg' }]
+          }}>
+            <View style={{ width: 475, height: 475, backgroundColor: '#12956B', borderRadius: 120, justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: 390, height: 390, backgroundColor: 'black', borderRadius: 118 }} />
+            </View>
+          </View>
+          <View style={{
+            width: '100%', height: 400,
+            backgroundColor: 'black', zIndex: 2, marginTop: '-70%'
+          }} />
+          <View style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 540,
+            height: 540,
+            backgroundColor: 'rgba(0, 0, 0, 0.59)',
+            zIndex: 2
+          }} />
+        </View>
+      </View>
 
       {/* Chat Messages */}
       {forumLoading && !refreshing ? (
@@ -438,10 +468,6 @@ const TeamForum: React.FC = () => {
       {/* Message Input Box - Only shown for authorized users */}
       {canSendMessages ? (
         <View style={styles.inputWrapper}>
-          <View
-           
-            style={styles.inputGradient}
-          >
             <View style={styles.inputContainer}>
               <TextInput
                 placeholder="Write the Message ......"
@@ -454,24 +480,21 @@ const TeamForum: React.FC = () => {
                 multiline
                 accessibilityLabel="Message input"
               />
-              <IconButton 
-                icon="plus-circle-outline" 
+              {/* <IconButton
+                icon="plus-circle-outline"
                 color="#aaa"
-                size={24} 
-                style={styles.attachButton}
+                size={22}
                 accessibilityLabel="Add attachment"
-              />
-              <IconButton 
-                icon="send" 
-                color={newMessage.trim() ? "#5865F2" : "#666"} 
-                size={24} 
-                onPress={handleSendMessage} 
+              /> */}
+              <IconButton
+                icon="send"
+                color={newMessage.trim() ? "#5865F2" : "#666"}
+                size={22}
+                onPress={handleSendMessage}
                 disabled={!newMessage.trim() || forumLoading}
-                style={styles.sendButton}
                 accessibilityLabel="Send message"
               />
             </View>
-          </View>
         </View>
       ) : (
         <View style={styles.infoContainer}>
@@ -505,7 +528,7 @@ const styles = StyleSheet.create({
   },
   adminBadge: {
     // backgroundColor: '#12956B', 
-    color:"#12956B",
+    color: "#12956B",
   },
   captainBadge: {
     // backgroundColor: '#5865F2',
@@ -535,7 +558,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     padding: 16,
-    backgroundColor: '#2C2F33', 
+    backgroundColor: '#2C2F33',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -550,13 +573,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 6,
     paddingHorizontal: 15,
-    gap: 10
+    backgroundColor: 'black',
+    gap: 10,
+    zIndex: 10,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
     flex: 1,
+    zIndex: 10,
   },
   teamLogo: {
     width: 40,
@@ -565,7 +591,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   teamLogoPlaceholder: {
-    backgroundColor: '#5865F2', 
+    backgroundColor: '#5865F2',
     marginRight: 10,
   },
   teamName: {
@@ -582,6 +608,7 @@ const styles = StyleSheet.create({
   divider: {
     backgroundColor: '#151515',
     height: 1,
+    zIndex: 10,
   },
   systemMessageContainer: {
     alignItems: 'center',
@@ -612,8 +639,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatar: {
-    width: 40,
-    height: 40,
+    width: 35,
+    height: 35,
     borderRadius: 20,
     backgroundColor: '#3a4a5a',
   },
@@ -621,16 +648,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#5865F2', // Discord blue
   },
   messageContentContainer: {
-    opacity:100,
-    marginRight:40,
-    padding:10,
+    opacity: 100,
+    marginRight: 40,
+    padding: 10,
     paddingHorizontal: 14,
-    borderRadius:10,
-    backgroundColor:"#181818",
+    borderRadius: 10,
+    backgroundColor: "#181818",
     // flex: 1,
     maxWidth: '80%',
     alignItems: 'flex-start',
-    zIndex:3,
+    zIndex: 3,
   },
   messageHeader: {
     flexDirection: 'row',
@@ -664,35 +691,28 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     borderRadius: 60,
   },
-  inputWrapper: {
-    width: '100%',
-    borderRadius: 60,
-  },
-  inputGradient: {
-    // paddingTop: 8,
-    // paddingBottom: 16,
+  inputWrapper:{
+    width:'100%', 
+    height: 65,
+    paddingHorizontal: 15,
+    justifyContent:'center',
+    paddingVertical: 10
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#121212', // Discord input background
     borderRadius: 60,
-    margin: 8,
-    paddingHorizontal: 16,
-    // paddingVertical: 2,
+    paddingHorizontal: 10,
+     paddingVertical: 0,
   },
   input: {
     flex: 1,
     color: 'white',
-    maxHeight: 120,
+    maxHeight: 100,
     paddingVertical: 10,
     fontSize: 15,
-  },
-  attachButton: {
-    marginLeft: 4,
-  },
-  sendButton: {
-    marginLeft: 4,
+    paddingLeft: 14,
   },
   emptyContainer: {
     flex: 1,

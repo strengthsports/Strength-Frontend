@@ -235,7 +235,7 @@ const Overview = () => {
                             fontSize: responsiveFontSize(1.8),
                           }}
                         >
-                          JOINED TEAMS
+                          CURRENT TEAMS
                         </TextScallingFalse>
                         <View className="flex items-center justify-center flex-row gap-4">
                           <TouchableOpacity

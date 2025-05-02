@@ -25,10 +25,7 @@ import { responsiveFontSize } from "react-native-responsive-dimensions";
 import CustomButton from "~/components/common/CustomButtons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import {
-  editUserProfile,
-  optimisticallyUpdateUser,
-} from "~/reduxStore/slices/user/profileSlice";
+import { editUserProfile } from "~/reduxStore/slices/user/profileSlice";
 import { UserData } from "@/types/user";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { getToken } from "~/utils/secureStore";
@@ -40,6 +37,7 @@ import useGetAddress from "~/hooks/useGetAddress";
 import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
 import AlertModal from "~/components/modals/AlertModal";
+import { Sport } from "./SelectSports";
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -50,6 +48,7 @@ type PicType =
   | "height"
   | "weight"
   | "websiteLink"
+  | "favouriteSports"
   | "";
 
 // Form configurations
@@ -104,7 +103,7 @@ const userFormConfig = [
 const pageFormConfig = [
   { type: "username", label: "Username*", icon: null },
   { type: "headline", label: "Tagline", icon: null },
-  { type: "favouriteSports", label: "Sports Category*", icon: null },
+  { type: "favouriteSports", label: "Sports*", icon: null },
   {
     type: "dateOfBirth",
     label: "Established",
@@ -834,7 +833,7 @@ const EditProfile = () => {
         setWeightInLbs("");
       } else {
         const kg = parseFloat(value) || 0;
-        setWeightInLbs((kg * 2.20462).toFixed(2));
+        setWeightInLbs((kg * 2.20462).toFixed(0));
       }
     },
     [setWeightInKg, setWeightInLbs]
@@ -847,7 +846,7 @@ const EditProfile = () => {
         setWeightInKg("");
       } else {
         const lbs = parseFloat(value) || 0;
-        setWeightInKg((lbs / 2.20462).toFixed(2));
+        setWeightInKg((lbs / 2.20462).toFixed(0));
       }
     },
     [setWeightInLbs, setWeightInKg]
@@ -1074,19 +1073,18 @@ const EditProfile = () => {
             ({ type, label, icon, placeholder }, index: Number) => (
               <FormField
                 key={type}
+                type={type}
                 label={label}
-                value={
-                  type === "address"
-                    ? formData.address?.city &&
-                      formData.address?.state &&
-                      formData.address?.country
-                      ? `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`
-                      : ""
-                    : formData[type as keyof UserData] || ""
-                }
+                value={formData[type as keyof UserData] || ""}
                 isDate={type === "dateOfBirth" && true}
                 placeholder={placeholder || "not given"}
-                onPress={() => openModal(type as PicType)}
+                onPress={() => {
+                  if (type === "favouriteSports") {
+                    router.push("/edit-profile/SelectSports");
+                  } else {
+                    openModal(type as PicType);
+                  }
+                }}
                 icon={icon}
                 isLast={index === formConfig.length - 1}
               />
@@ -1756,6 +1754,7 @@ const styles = StyleSheet.create({
 
 // Reusable FormField Component
 const FormField = ({
+  type,
   label,
   value,
   placeholder,
@@ -1764,8 +1763,9 @@ const FormField = ({
   isLast,
   isDate,
 }: {
+  type?: string;
   label: string;
-  value: string;
+  value: any;
   placeholder: string;
   onPress: () => void;
   icon?: React.ReactNode;
@@ -1790,7 +1790,21 @@ const FormField = ({
           value ? "text-white" : "text-gray-500"
         }`}
       >
-        {isDate ? dateFormatter(value as any, "date") : value || placeholder}
+        {isDate
+          ? dateFormatter(value, "date")
+          : type === "favouriteSports"
+          ? Array.isArray(value)
+            ? value
+                .map((sport) =>
+                  typeof sport === "object" ? sport.name : sport
+                )
+                .join(", ")
+            : "Select sports"
+          : type === "address"
+          ? value?.city && value?.state && value?.country
+            ? `${value.city}, ${value.state}, ${value.country}`
+            : ""
+          : value || placeholder}
       </TextScallingFalse>
       {icon && <View className="">{icon}</View>}
     </TouchableOpacity>

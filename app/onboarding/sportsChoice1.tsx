@@ -30,7 +30,7 @@ import RequestSportModal from "~/components/modals/SportsRequestModal";
 import RequestSuccessfulModal from "~/components/modals/RequestSuccessModal";
 
 // Define the type of sport that includes a 'logo' property
-interface Sport {
+export interface Sport {
   _id: string;
   name: string;
   logo?: string; // 'logo' is optional as it may not be available for every sport

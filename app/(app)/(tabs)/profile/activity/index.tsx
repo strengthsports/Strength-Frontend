@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { memo, useCallback, useEffect } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -15,6 +15,7 @@ import PostContainer from "~/components/Cards/postContainer";
 // import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import { Post } from "~/types/post";
 import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
+import { useFocusEffect } from "expo-router";
 
 const Posts = () => {
   // const { posts, error, loading } = useSelector((state: any) => state?.profile);
@@ -23,20 +24,45 @@ const Posts = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
   const isAndroid = Platform.OS === "android";
+  const flatListRef = useRef<FlatList>(null);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const userPosts = useSelector((state: RootState) =>
     selectPostsByUserId(state.feed.posts as any, user?._id)
   );
 
+  const scrollToTop = useCallback(() => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToOffset({
+        offset: 0,
+        animated: true,
+      });
+    }, 100);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollToTop();
+      setInitialLoad(true);
+    }, [scrollToTop])
+  );
+
   useEffect(() => {
-    if (!userPosts || userPosts.length === 0) {
+    if ((!userPosts || userPosts.length === 0) && initialLoad) {
       dispatch(getOwnPosts(null));
+      setInitialLoad(false);
     }
-  }, [dispatch, userPosts]);
+  }, [dispatch, userPosts, initialLoad]);
+
+  useEffect(() => {
+    if (userPosts && userPosts.length > 0) {
+      scrollToTop();
+    }
+  }, [userPosts, scrollToTop]);
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View className="w-screen pl-3">
+      <View className="w-screen">
         <PostContainer isVisible={true} item={item} isMyActivity={true} />
       </View>
     ),
@@ -65,6 +91,11 @@ const Posts = () => {
   return (
     <View className="mt-4">
       <FlatList
+        ref={flatListRef}
+        initialScrollIndex={0}
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 0,
+        }}
         data={userPosts || []}
         keyExtractor={(item) => item._id}
         initialNumToRender={5}

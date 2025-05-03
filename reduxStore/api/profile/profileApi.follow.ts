@@ -5,7 +5,7 @@ export const followApi = profileApi.injectEndpoints({
   endpoints: (builder) => ({
     followUser: builder.mutation<void, FollowUser>({
       query: (body) => ({
-        url: "/api/v1/follow",
+        url: "/follow",
         method: "POST",
         body,
       }),
@@ -34,7 +34,7 @@ export const followApi = profileApi.injectEndpoints({
     }),
     unFollowUser: builder.mutation<void, FollowUser>({
       query: (body) => ({
-        url: "/api/v1/unfollow",
+        url: "/unfollow",
         method: "DELETE",
         body,
       }),
@@ -63,7 +63,7 @@ export const followApi = profileApi.injectEndpoints({
     }),
     findFollowers: builder.query<any, Partial<TargetUser>>({
       query: (body) => ({
-        url: "/api/v1/findFollowers",
+        url: "/findFollowers",
         method: "POST",
         body,
       }),

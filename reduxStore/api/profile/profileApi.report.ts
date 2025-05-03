@@ -5,7 +5,7 @@ export const reportApi = profileApi.injectEndpoints({
   endpoints: (builder) => ({
     reportUser: builder.mutation<any, ReportUser>({
       query: (body) => ({
-        url: "/api/v1/report",
+        url: "/report",
         method: "POST",
         body,
       }),
@@ -13,7 +13,7 @@ export const reportApi = profileApi.injectEndpoints({
     }),
     undoReportUser: builder.mutation<any, Partial<ReportUser>>({
       query: (body) => ({
-        url: "/api/v1/undo-report",
+        url: "/undo-report",
         method: "DELETE",
         body,
       }),

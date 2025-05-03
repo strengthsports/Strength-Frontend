@@ -17,7 +17,7 @@ import React, {
 } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import { useLocalSearchParams, router, Href } from "expo-router";
-import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
+import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post";
 import { ProfileContext } from "./_layout";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import { Post } from "~/types/post";
@@ -38,11 +38,11 @@ const iconSizeInsideCircle = 18;
 
 const Media = () => {
   const params = useLocalSearchParams();
-  const {
-    profileData,
-    isLoading: profileIsLoading,
-    error: profileHasError,
-  } = useContext(ProfileContext);
+  const { isLoading: profileIsLoading, error: profileHasError } =
+    useContext(ProfileContext);
+
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   const fetchedUserId = useMemo(() => {
     try {
@@ -64,21 +64,24 @@ const Media = () => {
       error: postsError,
       isError: postsIsError,
     },
-  ] = useLazyGetSpecificUserPostQuery();
+  ] = useLazyGetUserPostsByCategoryQuery();
 
   const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
 
-  useEffect(() => {
-    if (fetchedUserId?.id && fetchedUserId?.type) {
-      getUserSpecificPost({
-        postedBy: fetchedUserId.id,
-        postedByType: fetchedUserId.type,
-        limit: 30,
-        skip: 0,
-      });
-    }
-  }, [fetchedUserId?.id, fetchedUserId?.type, getUserSpecificPost]);
+  useEffect(
+    (isInitial = false) => {
+      if (fetchedUserId?.id && fetchedUserId?.type) {
+        getUserSpecificPost({
+          userId: fetchedUserId.id,
+          type: "polls", // specifically fetch poll posts
+          limit: 10,
+          cursor: isInitial ? null : cursor,
+        });
+      }
+    },
+    [fetchedUserId?.id, fetchedUserId?.type, getUserSpecificPost]
+  );
 
   const initialImageData = useMemo<MediaItem[]>(() => {
     const posts: Post[] = postsData || [];

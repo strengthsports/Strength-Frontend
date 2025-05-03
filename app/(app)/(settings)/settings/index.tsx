@@ -304,7 +304,7 @@ const index = () => {
       </Modal>
 
       {/* Change Password Modal */}
-      <Modal
+      {/* <Modal
         visible={isModalVisible2}
         transparent={true}
         onRequestClose={closeModal2}
@@ -417,7 +417,7 @@ const index = () => {
             </View>
           </View>
         </PageThemeView>
-      </Modal>
+      </Modal> */}
 
       {/* Close Account Modal */}
       <Modal

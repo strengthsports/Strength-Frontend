@@ -95,6 +95,8 @@ const TeamForum: React.FC = () => {
     const member = team.members?.find(m => m.user?._id === user._id);
     if (!member) return null;
 
+    
+
     // Return the position if it's one of our defined roles
     if (['Captain', 'ViceCaptain'].includes(member.position || '')) {
       return member.position as TeamRole;
@@ -129,8 +131,9 @@ const TeamForum: React.FC = () => {
       allMessages.unshift(welcomeMessage);
     }
     return allMessages.sort((a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
+    
   }, [messages, welcomeMessage]);
 
   // Load team messages
@@ -225,7 +228,7 @@ const TeamForum: React.FC = () => {
         groups[dateKey] = [];
       }
 
-      groups[dateKey].push(message);
+      groups[dateKey].unshift(message);
     });
 
     return Object.keys(groups).map(date => ({

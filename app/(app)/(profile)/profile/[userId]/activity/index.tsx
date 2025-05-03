@@ -3,19 +3,20 @@ import {
   FlatList,
   Platform,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
-import React, { memo, useCallback, useEffect, useMemo } from "react";
-import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
+import { Divider } from "react-native-elements";
 import PostContainer from "~/components/Cards/postContainer";
-import { useLocalSearchParams } from "expo-router";
-// import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import { Post } from "~/types/post";
+import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post"; // adjust path accordingly
+import { useLocalSearchParams } from "expo-router";
 
 const Posts = () => {
   const params = useLocalSearchParams();
+  const isAndroid = Platform.OS === "android";
 
   const fetchedUserId = useMemo(() => {
     return params.userId
@@ -23,70 +24,98 @@ const Posts = () => {
       : null;
   }, [params.userId]);
 
-  console.log(fetchedUserId);
-  const isAndroid = Platform.OS === "android";
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  const [getUserSpecificPost, { data: posts, error, isLoading }] =
-    useLazyGetSpecificUserPostQuery();
+  const [trigger, { isLoading, isFetching, isError, error }] =
+    useLazyGetUserPostsByCategoryQuery();
+
+  console.log(cursor);
+
+  const fetchPosts = async (isInitial = false) => {
+    const res = await trigger({
+      userId: fetchedUserId.id,
+      type: "all", // or "recent" / "polls" etc.
+      limit: 10,
+      cursor: isInitial ? null : cursor,
+    }).unwrap();
+
+    if (res) {
+      setPosts((prev) => (isInitial ? res.data : [...prev, ...res.data]));
+      setCursor(res.nextCursor);
+    }
+  };
 
   useEffect(() => {
-    getUserSpecificPost({
-      postedBy: fetchedUserId?.id,
-      postedByType: fetchedUserId?.type,
-      limit: 10,
-      skip: 0,
-      // lastTimestamp: null,
-    });
-  }, []);
+    if (fetchedUserId?.id) {
+      fetchPosts(true); // fetch first time
+    }
+  }, [fetchedUserId?.id]);
 
-  console.log("\n\n\nPosts : ", posts);
+  const handleLoadMore = () => {
+    if (!isFetching && cursor !== null) {
+      setIsFetchingMore(true);
+      fetchPosts().finally(() => setIsFetchingMore(false));
+    }
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View className="w-screen">
-        <PostContainer item={item} isMyActivity={true} isVisible={true} />
+        <PostContainer isVisible={true} item={item} isMyActivity={true} />
+        <Divider style={{ width: "100%" }} width={0.4} color="#282828" />
       </View>
     ),
-    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+    []
   );
 
-  const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No posts available</Text>
-  ));
-
-  // Loading
-  if (isLoading) {
+  const MemoizedEmptyComponent = useCallback(() => {
     return (
-      <View className="flex justify-center items-center">
-        <ActivityIndicator color="#12956B" size={22} />
+      <View className="flex justify-center items-center flex-1 p-4">
+        {isLoading ? (
+          <ActivityIndicator color="#12956B" size={22} />
+        ) : (
+          <TextScallingFalse className="text-white text-center">
+            No posts available
+          </TextScallingFalse>
+        )}
       </View>
     );
-  }
+  }, [isLoading]);
 
-  // Error
-  if (error) {
-    console.log(error);
+  if (error || isError)
     return (
-      <View>
+      <View className="flex justify-center items-center">
         <TextScallingFalse className="text-red-500">
-          {error?.message || "Error fetching posts"}
+          Error loading posts
         </TextScallingFalse>
       </View>
     );
-  }
 
   return (
     <View className="mt-4">
       <FlatList
-        data={posts || []}
+        data={posts}
         keyExtractor={(item) => item._id}
         initialNumToRender={5}
         removeClippedSubviews={isAndroid}
         windowSize={11}
         renderItem={renderItem}
-        ListEmptyComponent={memoizedEmptyComponent}
+        ListEmptyComponent={MemoizedEmptyComponent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
         bounces={false}
         contentContainerStyle={{ paddingBottom: 40 }}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <ActivityIndicator
+              size="small"
+              color="#12956B"
+              style={{ marginVertical: 10 }}
+            />
+          ) : null
+        }
       />
     </View>
   );

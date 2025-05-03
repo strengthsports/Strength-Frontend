@@ -32,7 +32,7 @@ const WrittenPost = () => {
         userId: user._id,
         type: "thoughts", // specifically for written/thought posts
         limit: 10,
-        lastTimeStamp: isInitial ? null : cursor,
+        cursor: isInitial ? null : cursor,
       }).unwrap();
 
       if (res) {
@@ -67,14 +67,17 @@ const WrittenPost = () => {
     []
   );
 
-  const memoizedEmptyComponent = useCallback(
-    () => (
-      <View className="flex justify-center items-center">
-        <ActivityIndicator color="#12956B" size={22} />
+  const MemoizedEmptyComponent = useCallback(() => {
+    return (
+      <View className="flex justify-center items-center flex-1 p-4">
+        {isLoading ? (
+          <ActivityIndicator color="#12956B" size={22} />
+        ) : (
+          <Text className="text-white text-center">No posts available</Text>
+        )}
       </View>
-    ),
-    [isLoading]
-  );
+    );
+  }, [isLoading]);
 
   if (error || isError)
     return (
@@ -94,7 +97,7 @@ const WrittenPost = () => {
         removeClippedSubviews={isAndroid}
         windowSize={11}
         renderItem={renderItem}
-        ListEmptyComponent={memoizedEmptyComponent}
+        ListEmptyComponent={MemoizedEmptyComponent}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         bounces={false}

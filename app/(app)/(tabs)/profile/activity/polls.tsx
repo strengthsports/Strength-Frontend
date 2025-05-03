@@ -32,7 +32,7 @@ const Polls = () => {
         userId: user._id,
         type: "polls", // specifically fetch poll posts
         limit: 10,
-        lastTimeStamp: isInitial ? null : cursor,
+        cursor: isInitial ? null : cursor,
       }).unwrap();
 
       if (res) {
@@ -67,14 +67,17 @@ const Polls = () => {
     []
   );
 
-  const MemoizedEmptyComponent = useCallback(
-    () => (
-      <View className="flex justify-center items-center flex-1">
-        <ActivityIndicator color="#12956B" size={22} />
+  const MemoizedEmptyComponent = useCallback(() => {
+    return (
+      <View className="flex justify-center items-center flex-1 p-4">
+        {isLoading ? (
+          <ActivityIndicator color="#12956B" size={22} />
+        ) : (
+          <Text className="text-white text-center">No posts available</Text>
+        )}
       </View>
-    ),
-    [isLoading]
-  );
+    );
+  }, [isLoading]);
 
   if (error || isError)
     return (

@@ -8,12 +8,12 @@ export const profileEndpoints = profileApi.injectEndpoints({
         userId: string;
         type?: "all" | "recent" | "polls" | "media" | "thoughts" | "clips";
         limit?: number;
-        lastTimeStamp?: string | null;
+        cursor?: string | null;
       }
     >({
-      query: ({ userId, type = "all", limit = 10, lastTimeStamp }) => ({
+      query: ({ userId, type = "all", limit = 10, cursor }) => ({
         url: `/post/${userId}`,
-        params: { type, limit, lastTimeStamp },
+        params: { type, limit, ...(cursor && { cursor }) },
       }),
       transformResponse: (response: {
         data: any;

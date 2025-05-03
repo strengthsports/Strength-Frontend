@@ -86,7 +86,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
-  const { scrollY } = useScroll();
+  // const { scrollY } = useScroll();
 
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
@@ -225,10 +225,10 @@ const Home = () => {
             ref={flatListRef}
             data={interleavedData}
             keyExtractor={keyExtractor}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: true }
-            )}
+            // onScroll={Animated.event(
+            //   [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            //   { useNativeDriver: true }
+            // )}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig.current}
             scrollEventThrottle={16}

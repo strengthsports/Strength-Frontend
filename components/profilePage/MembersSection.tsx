@@ -85,7 +85,7 @@ const MembersSection = ({
       />
 
       {/* Show more button */}
-      {members.length >= 5 && !isAdmin &&(
+      {members.length >= 5 && isAdmin &&(
         <TouchableOpacity
           activeOpacity={0.3}
           onPress={() =>

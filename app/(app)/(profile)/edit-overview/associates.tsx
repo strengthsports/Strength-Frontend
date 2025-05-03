@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React, { useMemo, useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -236,14 +236,14 @@ const AssociateContent = () => {
               style={styles.tooltipButton}
               onPress={handleInviteAssociates}
             >
-              <Text style={styles.tooltipButtonText}>Invite Associates</Text>
+              <TextScallingFalse style={styles.tooltipButtonText}>Invite Associates</TextScallingFalse>
             </TouchableOpacity>
             <Divider color="#434343" marginVertical={0} />
             <TouchableOpacity
               style={styles.tooltipButton}
               onPress={handleSelectAssociates}
             >
-              <Text style={styles.tooltipButtonText}>Select</Text>
+              <TextScallingFalse style={styles.tooltipButtonText}>Select</TextScallingFalse>
             </TouchableOpacity>
           </View>
         </View>

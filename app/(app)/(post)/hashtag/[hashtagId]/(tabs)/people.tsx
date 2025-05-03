@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   Image,
@@ -102,12 +101,20 @@ const People = () => {
         </TouchableOpacity>
 
         <View className="ml-3">
-          <Text className="text-white text-2xl font-medium" numberOfLines={1}>
+          <TextScallingFalse
+            className="text-white text-2xl font-medium"
+            numberOfLines={1}
+            allowFontScaling={false}
+          >
             {item.firstName} {item.lastName}
-          </Text>
-          <Text className="text-white text-sm font-light" numberOfLines={1}>
-            @{item.username} | {item.headline}
-          </Text>
+          </TextScallingFalse>
+          <TextScallingFalse
+            className="text-white text-sm font-light"
+            numberOfLines={1}
+            allowFontScaling={false}
+          >
+            {item.headline}
+          </TextScallingFalse>
         </View>
 
         {item._id !== user?._id && (
@@ -148,12 +155,15 @@ const People = () => {
         />
       )}
       {isError && (
-        <Text style={styles.errorText}>
+        <TextScallingFalse style={styles.errorText}>
           Failed to load people. Please try again.
-        </Text>
+        </TextScallingFalse>
       )}
-      {!isLoading && !isError && data?.data?.length === 0 && (
-        <Text style={styles.emptyText}>No people found.</Text>
+
+      {!isLoading && !isError && data?.length === 0 && (
+        <TextScallingFalse style={styles.emptyText}>
+          No people found.
+        </TextScallingFalse>
       )}
 
       <FlatList

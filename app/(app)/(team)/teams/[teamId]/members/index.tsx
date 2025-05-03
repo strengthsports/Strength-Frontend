@@ -20,6 +20,8 @@ import MembersSection from "~/components/profilePage/MembersSection";
 import { Member } from "~/types/user";
 import UserInfoModal from "~/components/modals/UserInfoModal";
 import { AssociateProvider, useAssociate } from "~/context/UseAssociate";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Interface for our section data structure
 interface SectionData {
@@ -35,6 +37,7 @@ interface RenderItemData {
 
 const Members: React.FC = () => {
   const router = useRouter();
+  const { teamId } = useLocalSearchParams<{ teamId: string }>();
   const { user } = useSelector((state: RootState) => state.profile);
   const { team, loading } = useSelector((state: RootState) => state.team);
   const dispatch = useDispatch<AppDispatch>();
@@ -49,6 +52,15 @@ const Members: React.FC = () => {
       dispatch(fetchTeamDetails(team._id));
     }
   }, [team?._id, dispatch]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (teamId) {
+        dispatch(fetchTeamDetails(teamId));
+      }
+    }, [teamId, dispatch])
+  );
+  
 
   // Normalize roles to categories
   const normalizeRole = useCallback((role: string | undefined): string => {
@@ -72,7 +84,7 @@ const Members: React.FC = () => {
     }
     
     const query = searchText.toLowerCase();
-    return team.members.filter((m) => {
+    return team.members.filter((m:any) => {
       if (!m.user) return false;
       const fullName = `${m.user.firstName} ${m.user.lastName}`.toLowerCase();
       return (
@@ -81,7 +93,7 @@ const Members: React.FC = () => {
         fullName.includes(query)
       );
     });
-  }, [searchText, team?.members]);
+  }, [searchText, team?.members,router.back]);
 
   // Transform the filtered members into a format suitable for FlatList
   const sectionsData = useMemo(() => {
@@ -90,7 +102,7 @@ const Members: React.FC = () => {
     const groupedMembers: Record<string, Member[]> = {};
     
     // Group members by role
-    filteredMembers.forEach(member => {
+    filteredMembers.forEach((member:any) => {
       const roleKey = normalizeRole(member.role);
       groupedMembers[roleKey] = groupedMembers[roleKey] || [];
       groupedMembers[roleKey].push(member);
@@ -113,7 +125,7 @@ const Members: React.FC = () => {
         data: users
       };
     });
-  }, [filteredMembers, normalizeRole]);
+  }, [filteredMembers, normalizeRole,router.back]);
 
   // Clear search function
   const clearSearch = useCallback(() => {
@@ -141,7 +153,7 @@ const Members: React.FC = () => {
           members={item.data}
           isEditView={true}
           isAdmin={isAdmin}
-          disableScroll={true} // Important: Disable internal scrolling
+          // disableScroll={true}
         />
       </View>
     );
@@ -150,7 +162,7 @@ const Members: React.FC = () => {
   // Render empty component
   const renderEmptyList = useCallback(() => (
     <View style={styles.noResultsContainer}>
-      <Text style={styles.noResultsText}>No members found</Text>
+      <TextScallingFalse style={styles.noResultsText}>No members found</TextScallingFalse>
     </View>
   ), []);
 
@@ -166,18 +178,19 @@ const Members: React.FC = () => {
     <>
       <PageThemeView>
         {/* Header */}
-        <View className="flex-row justify-between items-center h-16 px-5 border-b border-[#2B2B2B]">
+        <View className="flex-row justify-between items-center h-14 px-5 border-b border-[#2B2B2B]">
           <View className="flex-row items-center">
             <TouchableOpacity onPress={() => router.back()}>
-              <AntDesign name="arrowleft" size={24} color="white" />
+              <BackIcon/>
             </TouchableOpacity>
           </View>
-          <TextScallingFalse className="text-white text-5xl">
-            Members
-          </TextScallingFalse>
-          <TouchableOpacity>
-            <TextScallingFalse className={`text-4xl`}>Edit</TextScallingFalse>
-          </TouchableOpacity>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: "600" }}>
+  Members
+</Text>
+
+<TouchableOpacity>
+  <Text style={{ color: 'white', fontSize: 16 }}>Edit</Text>
+</TouchableOpacity>
         </View>
 
         {/* Custom Search Bar */}

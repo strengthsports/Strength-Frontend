@@ -1,6 +1,5 @@
 import {
   StyleSheet,
-  Text,
   View,
   Image,
   FlatList,
@@ -222,7 +221,7 @@ const Media = () => {
 
   const MemoizedEmptyComponent = memo(() => (
     <View style={styles.centerContent}>
-      <Text className="text-white text-center p-4">No media available</Text>
+      <TextScallingFalse className="text-white text-center p-4">No media available</TextScallingFalse>
     </View>
   ));
 

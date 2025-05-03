@@ -2,6 +2,8 @@ export interface CommentPostedBy {
     _id: string;
     type: string;
     username: string;
+    firstName: string;
+    lastName: string;
     profilePic?: string;
   }
   

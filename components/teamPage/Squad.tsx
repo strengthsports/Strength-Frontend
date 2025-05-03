@@ -46,7 +46,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       teamDetails?.members?.some(
         (member: any) => member.user?._id === user?._id
       ),
-    [teamDetails?.members, user?._id]
+    [user?._id]
   );
 
   if (!fontsLoaded) {
@@ -134,6 +134,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                       isViceCaptain={member.position?.toLowerCase() === "vicecaptain"}
                       description={user?.headline || "No description available"}
                       isAdmin={isAdmin}
+                      username={user?.username}
                       onRemove={() => console.log("Remove user:", user?._id)}
                     />
                   </TouchableOpacity>

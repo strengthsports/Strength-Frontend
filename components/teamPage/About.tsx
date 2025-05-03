@@ -39,51 +39,40 @@ const About: React.FC<AboutProps> = () => {
   } = useSelector((state: RootState) => state.team);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [descriptionLines, setDescriptionLines] = useState(0);
-  const [isSupportingTeam, setIsSupportingTeam] = useState(isSupporting);
-  const [teamSupporterCount, setTeamSupporterCount] =
-    useState<number>(supporterCount);
+  const [isProcessing, setIsProcessing] = useState(false); // Track API call state
   const { followUser, unFollowUser } = useFollow();
 
-  //handle follow
-  const handleFollow = async () => {
-    dispatch(toggleIsSupporting(true));
-    dispatch(toggleSupporterCount(1));
+  // Optimized support toggle handler
+  const handleSupportPress = async () => {
+    if (!teamDetails?._id || !user?._id || isProcessing) return;
+    
+    setIsProcessing(true);
+    const wasSupporting = isSupporting;
+    const previousCount = supporterCount;
+    
     try {
+      // Optimistic UI update
+      dispatch(toggleIsSupporting(!wasSupporting));
+      dispatch(toggleSupporterCount(wasSupporting ? -1 : 1));
+      
       const followData: FollowUser = {
-        followingId: teamDetails?._id as string,
+        followingId: teamDetails._id,
         followingType: "Team",
       };
 
-      await followUser(followData, true);
+      if (wasSupporting) {
+        await unFollowUser(followData, true);
+      } else {
+        await followUser(followData, true);
+      }
     } catch (err) {
-      dispatch(toggleIsSupporting(false));
-      dispatch(toggleSupporterCount(-1));
-      console.error("Follow error:", err);
+      // Revert on error
+      dispatch(toggleIsSupporting(wasSupporting));
+      dispatch(toggleSupporterCount(wasSupporting ? 1 : -1));
+      console.error("Support toggle error:", err);
+    } finally {
+      setIsProcessing(false);
     }
-  };
-
-  //handle unfollow
-  const handleUnfollow = async () => {
-    dispatch(toggleIsSupporting(false));
-    dispatch(toggleSupporterCount(-1));
-    try {
-      const unfollowData: FollowUser = {
-        followingId: teamDetails?._id as string,
-        followingType: "Team",
-      };
-
-      await unFollowUser(unfollowData, true);
-    } catch (err) {
-      dispatch(toggleIsSupporting(true));
-      dispatch(toggleSupporterCount(1));
-      console.error("Unfollow error:", err);
-    }
-  };
-
-  const handleSupportPress = () => {
-    if (!teamDetails?._id || !user?._id) return;
-
-    teamDetails.isSupporting ? handleUnfollow() : handleFollow();
   };
 
   const toggleDescription = () => {
@@ -130,7 +119,7 @@ const About: React.FC<AboutProps> = () => {
   };
 
   return (
-    <ScrollView className="pb-[500px] bg-[#0B0B0B]">
+    <ScrollView className="pb-[500px]  bg-[#0B0B0B]">
       {/* Copied Message Animation */}
       {showCopiedMessage && (
         <Animated.View
@@ -158,6 +147,7 @@ const About: React.FC<AboutProps> = () => {
           <CustomButton
             buttonName={isSupporting ? "✓ Supporting" : "+ Support"}
             onPress={handleSupportPress}
+            disabled={isProcessing}
           />
         </View>
 
@@ -180,21 +170,21 @@ const About: React.FC<AboutProps> = () => {
         </View>
       </View>
 
-      <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
+      <View className="p-2 ml-4 bg-[#0B0B0B] flex flex-row items-center">
         <Members />
         <Text className="text-[#CECECE] text-3xl ml-3">
           Members - {teamDetails?.members?.length || 0}
         </Text>
       </View>
 
-      <View className="p-2 ml-3 bg-[#0B0B0B] flex flex-row items-center">
+      <View className="p-2 ml-4 bg-[#0B0B0B] flex flex-row items-center">
         <EstabilishedOn />
         <Text className="text-[#CECECE] text-3xl ml-3">
           Established On - {handleEstablished()}
         </Text>
       </View>
 
-      <View className="p-2 ml-3 flex flex-row items-center">
+      <View className="p-2 ml-4 flex flex-row items-center">
         <TeamId />
         <Text className="text-[#CECECE] text-3xl ml-2">
           {" "}

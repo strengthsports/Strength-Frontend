@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   Image,
   Dimensions,
   StyleSheet,
@@ -26,7 +25,7 @@ const Photos = () => {
   console.log("\n\nMedia", data?.data);
 
   const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No images available</Text>
+    <TextScallingFalse className="text-white text-center p-4">No images available</TextScallingFalse>
   ));
 
   if (isLoading)

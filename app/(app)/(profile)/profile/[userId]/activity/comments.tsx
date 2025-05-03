@@ -246,10 +246,14 @@ const Comments = () => {
 };
 
 const styles = StyleSheet.create({
-  listContainer: { paddingTop: 10, paddingBottom: 50, flexGrow: 1 },
+  listContainer: {
+    paddingTop: 10,
+    paddingBottom: 50,
+    flexGrow: 1,
+  },
   commentContainer: {
     backgroundColor: "#000000",
-    paddingVertical: 12,
+    paddingVertical: 15,
     paddingHorizontal: 15,
     // marginBottom: 4,
     borderBottomWidth: 1,
@@ -258,34 +262,67 @@ const styles = StyleSheet.create({
   commentHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 10,
     flexWrap: "nowrap",
     overflow: "hidden",
   },
-  commenterName: { color: "#FFFFFF", fontWeight: "bold", fontSize: 15 },
-  commentMeta: { color: "#8E8E93", fontSize: 14, marginLeft: 4, flexShrink: 1 },
-  originalPosterName: { color: "#34C759", fontWeight: "500" },
+  commenterName: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 13,
+  },
+  commentMeta: {
+    color: "#CECECE",
+    fontSize: 12,
+    marginLeft: 4,
+    flexShrink: 1,
+  },
+  originalPosterName: {
+    color: "#12956B",
+    fontWeight: "500",
+    fontSize: 12,
+  },
   timestamp: {
     color: "#8E8E93",
-    fontSize: 14,
+    fontSize: 12,
     marginLeft: "auto",
     paddingLeft: 5,
   },
-  commentText: { color: "#E5E5EA", fontSize: 15, lineHeight: 20, marginTop: 2 },
+  commentText: {
+    color: "#E5E5EA",
+    fontSize: 15,
+    lineHeight: 20,
+    marginTop: 2,
+  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  footerLoader: { marginVertical: 20 },
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  footerLoader: {
+    marginVertical: 20,
+  },
   retryButton: {
     backgroundColor: "#12956B",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  retryButtonText: { color: "#FFFFFF", fontWeight: "bold" },
-  emptyText: { color: "#8E8E93", fontSize: 16, textAlign: "center" },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+  emptyText: {
+    color: "#8E8E93",
+    fontSize: 16,
+    textAlign: "center",
+  },
 });
 
 export default Comments;

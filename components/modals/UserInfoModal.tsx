@@ -136,9 +136,9 @@ const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
         {/* Role views */}
         <View className="mt-8 gap-y-4">
           <View className={roleViews}>
-            <TextScallingFalse className="font-medium text-[#CFCFCF]">
-              {member.role}
-            </TextScallingFalse>
+          <TextScallingFalse className="font-medium text-[#CFCFCF]">
+          {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+          </TextScallingFalse>
           </View>
 
           {!isTeam && (

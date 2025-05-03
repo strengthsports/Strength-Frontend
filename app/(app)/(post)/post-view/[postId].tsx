@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   ScrollView,
   NativeSyntheticEvent,
   TextLayoutEventData,
@@ -73,7 +72,7 @@ const post = () => {
     return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
       if (word.startsWith("#")) {
         return (
-          <Text
+          <TextScallingFalse
             key={index}
             onPress={() =>
               router.push(
@@ -83,7 +82,7 @@ const post = () => {
             className={`text-xl text-[#12956B]`}
           >
             {word}
-          </Text>
+          </TextScallingFalse>
         );
       }
       return word;
@@ -275,7 +274,7 @@ const post = () => {
             contentContainerStyle={{ flexGrow: 1 }}
             onStartShouldSetResponder={() => true}
           >
-            <Text
+            <TextScallingFalse
               className="text-xl leading-5 text-neutral-200"
               numberOfLines={isExpanded ? undefined : 1}
               ellipsizeMode="tail"
@@ -286,7 +285,7 @@ const post = () => {
               }}
             >
               {post?.caption && renderCaptionWithHashtags(post?.caption)}
-            </Text>
+            </TextScallingFalse>
           </ScrollView>
         </LinearGradient>
       </SafeAreaView>

@@ -96,9 +96,7 @@ const TeamPage: React.FC = () => {
         ? `${captainMember.user?.firstName || ""} ${
             captainMember.user?.lastName || ""
           }`.trim()
-        : `${teamDetails?.admin?.[0]?.firstName || ""} ${
-            teamDetails?.admin?.[0]?.lastName || ""
-          }`.trim() || "Loading...",
+        : "Not Assigned",
       viceCapt: viceCaptainMember
         ? `${viceCaptainMember.user?.firstName || ""} ${
             viceCaptainMember.user?.lastName || ""

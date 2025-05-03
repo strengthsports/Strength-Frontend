@@ -1,4 +1,4 @@
-import { useWindowDimensions, View } from "react-native";
+import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { Image } from "react-native";
 
@@ -24,6 +24,7 @@ const TeamEntry = ({ team }: any) => {
       }}
     >
       {/* Team Logo */}
+     
       <Image
         source={{ uri: team.team.logo.url }}
         // source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
@@ -36,7 +37,9 @@ const TeamEntry = ({ team }: any) => {
           // marginRight: 10,
           marginTop: 2,
         }}
+
       />
+  
       {/* Team Details */}
       <View className="flex flex-col ml-5 items-start gap-2 justify-between py-3">
         <View className="flex flex-col">

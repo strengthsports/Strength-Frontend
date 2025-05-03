@@ -22,7 +22,7 @@ interface MemberSuggestionsState {
   error: string | null;
 }
 
-type TeamsList = {
+export type TeamsList = {
   team: {
     logo: {
       url: string;
@@ -30,6 +30,8 @@ type TeamsList = {
     };
     name: string;
     _id: string;
+    membersLength: number;
+    sportname: string;
   };
   [key: string]: any;
 };

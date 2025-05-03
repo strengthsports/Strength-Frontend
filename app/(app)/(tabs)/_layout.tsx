@@ -79,9 +79,11 @@ import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
 import HomeIcon from "~/components/SvgIcons/navbar/HomeIcon";
 import NotificationIcon from "~/components/SvgIcons/navbar/NotificationIcon";
 import ProfileIcon from "~/components/SvgIcons/navbar/ProfileIcon";
+import { DrawerProvider } from "~/context/DrawerContext";
 
 export default function TabLayout() {
   return (
+    <DrawerProvider>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#12956B",
@@ -149,5 +151,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </DrawerProvider>
   );
 }

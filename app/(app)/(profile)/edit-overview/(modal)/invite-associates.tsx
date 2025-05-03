@@ -7,14 +7,14 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import SearchBar from "~/components/search/searchbar";
 import InviteUser from "~/components/common/InviteUser";
 import PageThemeView from "~/components/PageThemeView";
-import { useGetPopularUsersQuery } from "~/reduxStore/api/community/communityApi";
+import { useSuggestUsersQuery } from "~/reduxStore/api/community/communityApi";
 import { Colors } from "~/constants/Colors";
 import { useDispatch, useSelector } from "react-redux";
 import { inviteAssociates } from "~/reduxStore/slices/user/profileSlice";
@@ -30,9 +30,12 @@ const InviteAssociates = () => {
   const [searchText, setSearchText] = useState("");
   const [isInvitationSending, setInvitationSending] = useState(loading);
 
-  const { data: users, isLoading: loadingUsers } = useGetPopularUsersQuery({
+  const { data: users, isLoading: loadingUsers } = useSuggestUsersQuery({
     limit: 20,
+    start: 0,
   });
+
+  console.log("Users : ", users);
 
   // Toggle selection for a user ID.
   const handleSelectUser = (userId: string) => {
@@ -66,10 +69,13 @@ const InviteAssociates = () => {
   };
 
   // Filter users based on search text.
-  const filteredUsers = users?.filter((user) => {
-    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-    return fullName.includes(searchText.toLowerCase());
-  });
+  const filteredUsers = useMemo(() => {
+    if (!users?.users) return [];
+    return users.users.filter((user) => {
+      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+      return fullName.includes(searchText.toLowerCase());
+    });
+  }, [users, searchText]);
 
   return (
     <PageThemeView>

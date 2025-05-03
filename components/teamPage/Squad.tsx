@@ -143,7 +143,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
             })
           ) : (
             // Only show "Add Member" button if user is a member and category is empty
-            isMember && (
+            isAdmin && (
               <TouchableOpacity
                 key={`add-${sectionKey}`}
                 className="w-1/2 p-2"

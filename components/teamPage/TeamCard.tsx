@@ -35,8 +35,8 @@ const TeamCard: React.FC<TeamCardProps> = ({
   requestSent = false,
 }) => {
   return (
-    <>
-      <View className="rounded-lg max-width-[500] mb-3 p-3 pt-[-8]">
+
+      <View className="rounded-lg  w-full mb-3 p-3 pt-[-8]">
         <View className="flex flex-row py-4 w-64 max-w-84">
           <Image source={{ uri: teamLogo }} className="w-32 h-32 mt-1 rounded ml-8" />
           <View className="flex flex-row items-center pl-10">
@@ -139,7 +139,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
           </View>
         </View>
       </View>
-    </>
+  
   );
 };
 

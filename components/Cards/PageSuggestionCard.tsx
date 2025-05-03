@@ -51,10 +51,10 @@ const PageSuggestionCard = ({
       setFollowingStatus(true);
       const followData: FollowUser = {
         followingId: user._id,
-        followingType: user.type,
+        followingType: "Page",
       };
 
-      await followUser(followData, true);
+      await followUser(followData);
     } catch (err) {
       setFollowingStatus(false);
       console.error("Follow error:", err);
@@ -68,13 +68,13 @@ const PageSuggestionCard = ({
       setFollowingStatus(false);
       const unfollowData: FollowUser = {
         followingId: user._id,
-        followingType: user.type,
+        followingType: "Page",
       };
       if (isSelected) {
         isSelected(user._id); // Remove from selected players
       }
 
-      await unFollowUser(unfollowData, true);
+      await unFollowUser(unfollowData);
     } catch (err) {
       setFollowingStatus(true);
       console.error("Unfollow error:", err);

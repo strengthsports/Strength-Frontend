@@ -2,7 +2,7 @@ import React from "react";
 import HashtagPosts from "~/components/hashtagPage/HashtagPosts";
 
 const Latest = () => {
-  return <HashtagPosts sort={-1} />;
+  return <HashtagPosts type="latest" />;
 };
 
 export default Latest;

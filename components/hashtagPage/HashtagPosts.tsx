@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useGetPostsByHashtagQuery } from "~/reduxStore/api/posts/postsApi.hashtag";
+import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedApi.hashtag";
 import PostContainer from "~/components/Cards/postContainer";
 import { Colors } from "~/constants/Colors";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
@@ -16,14 +16,19 @@ import { Divider } from "react-native-elements";
 import PostSkeletonLoader1 from "../skeletonLoaders/PostSkeletonLoader1";
 import { ScrollView } from "react-native";
 
-export default function HashtagPosts({ sort }: { sort?: number }) {
+type ContentType = "top" | "latest" | "polls" | "media" | "people";
+
+export default function HashtagPosts({ type }: { type: ContentType }) {
   const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
   const hashtag =
     typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
-  const { data, error, isLoading, refetch } = useGetPostsByHashtagQuery({
+  const { data, error, isLoading, refetch } = useGetHashtagContentsQuery({
     hashtag,
-    sort,
+    type,
+    limit: 10,
   });
+
+  console.log(`\n\n${type}`, data?.data);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -69,7 +74,7 @@ export default function HashtagPosts({ sort }: { sort?: number }) {
       <PostSkeletonLoader1 />
       <PostSkeletonLoader1 />
     </ScrollView>
-  ) : !data?.data?.posts?.length ? (
+  ) : !data?.data?.length ? (
     <View className="justify-center items-center h-20">
       <TextScallingFalse className="text-[#808080] text-2xl">
         No posts found for #{hashtag}
@@ -77,7 +82,7 @@ export default function HashtagPosts({ sort }: { sort?: number }) {
     </View>
   ) : (
     <FlatList
-      data={data?.data?.posts}
+      data={data.data}
       keyExtractor={(item) => item._id.toString()}
       renderItem={renderItem}
       refreshControl={

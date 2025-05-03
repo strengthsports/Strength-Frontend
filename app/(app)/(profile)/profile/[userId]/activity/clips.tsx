@@ -1,16 +1,18 @@
 import {
-  ActivityIndicator,
-  FlatList,
-  Platform,
   StyleSheet,
   Text,
   View,
+  FlatList,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
-import React, { memo, useCallback, useEffect, useMemo } from "react";
-import TextScallingFalse from "~/components/CentralText";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/types/post";
-import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
+import TextScallingFalse from "~/components/CentralText";
+import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post";
+import { Divider } from "react-native-elements";
 import { useLocalSearchParams } from "expo-router";
 
 const Clips = () => {
@@ -18,95 +20,104 @@ const Clips = () => {
   const isAndroid = Platform.OS === "android";
 
   const fetchedUserId = useMemo(() => {
-    try {
-      const userIdParam = params.userId as string;
-      if (userIdParam) {
-        return JSON.parse(decodeURIComponent(userIdParam));
-      }
-      return null;
-    } catch (e) {
-      console.error("[OtherUserClips] Failed to parse userId param:", e);
-      return null;
-    }
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params?.userId as string))
+      : null;
   }, [params.userId]);
 
-  const [
-    getUserSpecificPost,
-    {
-      data: postsData,
-      isLoading: postsIsLoading,
-      isFetching: postsIsFetching,
-      error: postsError,
-      isError: postsIsError,
-    },
-  ] = useLazyGetSpecificUserPostQuery();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  const [trigger, { isLoading, isError, isFetching, error }] =
+    useLazyGetUserPostsByCategoryQuery();
+
+  const fetchPosts = async (isInitial = false) => {
+    if (!fetchedUserId?.id) return;
+    try {
+      const res = await trigger({
+        userId: fetchedUserId.id,
+        type: "clips", // specifically fetch poll posts
+        limit: 10,
+        ...(!isInitial && { cursor }),
+      }).unwrap();
+
+      if (res) {
+        setPosts((prev) => (isInitial ? res.data : [...prev, ...res.data]));
+        setCursor(res.nextCursor);
+      }
+    } catch (err) {
+      console.log("Fetch failed:", err);
+    }
+  };
 
   useEffect(() => {
-    if (fetchedUserId?.id && fetchedUserId?.type) {
-      getUserSpecificPost({
-        postedBy: fetchedUserId.id,
-        postedByType: fetchedUserId.type,
-        limit: 30,
-        skip: 0,
-      });
+    if (fetchedUserId?.id) {
+      fetchPosts(true);
     }
-  }, [fetchedUserId?.id, fetchedUserId?.type, getUserSpecificPost]);
+  }, [fetchedUserId?.id]);
 
-  const videoPosts = useMemo(() => {
-    const allPosts: Post[] = postsData || [];
-    return allPosts.filter((post: Post) => post?.isVideo === true);
-  }, [postsData]);
+  const handleLoadMore = () => {
+    if (!isFetching && cursor) {
+      setIsFetchingMore(true);
+      fetchPosts().finally(() => setIsFetchingMore(false));
+    }
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View style={styles.postItemContainer}>
-        <PostContainer item={item} isVisible={true} />
+      <View className="w-screen">
+        <PostContainer item={item} />
+        <Divider style={{ width: "100%" }} width={0.4} color="#282828" />
       </View>
     ),
     []
   );
 
-  const MemoizedEmptyComponent = memo(() => (
-    <View style={styles.centerContent}>
-      <TextScallingFalse style={styles.emptyText}>
-        No clips available
-      </TextScallingFalse>
-    </View>
-  ));
-
-  const isLoading = postsIsLoading || postsIsFetching;
-
-  if (isLoading && videoPosts.length === 0) {
+  const MemoizedEmptyComponent = useCallback(() => {
     return (
-      <View style={styles.centerContent}>
-        <ActivityIndicator color="#12956B" size={22} />
+      <View className="flex justify-center items-center flex-1 p-4">
+        {isLoading ? (
+          <ActivityIndicator color="#12956B" size={22} />
+        ) : (
+          <Text className="text-white text-center">No posts available</Text>
+        )}
       </View>
     );
-  }
+  }, [isLoading]);
 
-  if (postsIsError && videoPosts.length === 0) {
-    //  console.error("[OtherUserClips] Error loading user clips:", postsError);
+  if (error || isError)
     return (
-      <View style={styles.centerContent}>
-        <TextScallingFalse style={styles.errorText}>
-          Error loading videos
+      <View className="flex justify-center items-center flex-1">
+        <TextScallingFalse className="text-red-500">
+          Error loading polls
         </TextScallingFalse>
       </View>
     );
-  }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 mt-4">
       <FlatList
-        data={videoPosts}
+        data={posts}
         keyExtractor={(item) => item._id}
-        initialNumToRender={3}
+        initialNumToRender={5}
         removeClippedSubviews={isAndroid}
-        windowSize={7}
+        windowSize={11}
         renderItem={renderItem}
         ListEmptyComponent={MemoizedEmptyComponent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
         bounces={false}
-        contentContainerStyle={styles.listContentContainer}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <ActivityIndicator
+              size="small"
+              color="#12956B"
+              style={{ marginVertical: 10 }}
+            />
+          ) : null
+        }
       />
     </View>
   );
@@ -114,33 +125,4 @@ const Clips = () => {
 
 export default Clips;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: 4,
-    backgroundColor: "#000",
-  },
-  postItemContainer: {
-    width: "100%",
-    paddingLeft: 12,
-    marginBottom: 10,
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyText: {
-    color: "#FFF",
-    textAlign: "center",
-    padding: 4,
-  },
-  errorText: {
-    color: "#F87171",
-    textAlign: "center",
-  },
-  listContentContainer: {
-    paddingBottom: 40,
-  },
-});
+const styles = StyleSheet.create({});

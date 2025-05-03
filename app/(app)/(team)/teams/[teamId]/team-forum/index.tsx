@@ -10,6 +10,7 @@ import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
 import { fetchTeamMessages, sendMessage } from "~/reduxStore/slices/team/teamForumSlice";
 import { LinearGradient } from "expo-linear-gradient";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import MessageBoxTopCurve from "~/components/SvgIcons/teams/MessageBoxTopCurve";
 
 // Type definitions
 type TeamRole = 'Admin' | 'Captain' | 'ViceCaptain' | 'member';
@@ -286,8 +287,11 @@ const TeamForum: React.FC = () => {
             />
           )}
         </View>
-
+  
         <View style={styles.messageContentContainer}>
+        <View style={{position:'absolute', left: -9}}>
+        <MessageBoxTopCurve />
+        </View>
           <View style={styles.messageHeader}>
             <TextScallingFalse style={[
               styles.senderName,
@@ -335,6 +339,7 @@ const TeamForum: React.FC = () => {
       <FlatList
         data={groupedMessages}
         keyExtractor={(item) => item.date}
+        inverted={true}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -361,7 +366,6 @@ const TeamForum: React.FC = () => {
             </TextScallingFalse>
           </View>
         }
-        inverted={false}
         showsVerticalScrollIndicator={false}
       />
     );
@@ -412,12 +416,6 @@ const TeamForum: React.FC = () => {
             </TextScallingFalse>
           </View>
         </View>
-        <IconButton
-          icon="dots-vertical"
-          color="white"
-          size={24}
-          accessibilityLabel="Team info"
-        />
       </View>
       <Divider style={styles.divider} />
 
@@ -445,7 +443,7 @@ const TeamForum: React.FC = () => {
             left: 0,
             width: 540,
             height: 540,
-            backgroundColor: 'rgba(0, 0, 0, 0.59)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
             zIndex: 2
           }} />
         </View>
@@ -470,8 +468,8 @@ const TeamForum: React.FC = () => {
         <View style={styles.inputWrapper}>
             <View style={styles.inputContainer}>
               <TextInput
-                placeholder="Write the Message ......"
-                placeholderTextColor="#999"
+                placeholder="Message"
+                placeholderTextColor="#707070"
                 style={styles.input}
                 value={newMessage}
                 onChangeText={setNewMessage}
@@ -499,7 +497,19 @@ const TeamForum: React.FC = () => {
       ) : (
         <View style={styles.infoContainer}>
           <TextScallingFalse style={styles.infoText}>
-            Only team leaders (Admin, Captain, Vice-Captain) can post messages
+            Only
+            </TextScallingFalse>
+            <TextScallingFalse style={{color:'#12956B'}}>
+              admin
+            </TextScallingFalse>
+            <TextScallingFalse style={styles.infoText}>
+             and
+             </TextScallingFalse>
+            <TextScallingFalse style={{color:'#12956B'}}>
+              captains
+            </TextScallingFalse>
+            <TextScallingFalse style={styles.infoText}>
+            can send messages
           </TextScallingFalse>
         </View>
       )}
@@ -557,21 +567,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   infoContainer: {
-    padding: 16,
-    backgroundColor: '#2C2F33',
+    paddingVertical: 25,
+    backgroundColor: '#151515',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection:'row',
+    gap: 6,
   },
   infoText: {
-    color: '#aaa',
-    fontSize: 14,
+    color: '#808080',
+    fontSize: 16,
     textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 10,
     paddingHorizontal: 15,
     backgroundColor: 'black',
     gap: 10,
@@ -606,7 +618,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   divider: {
-    backgroundColor: '#151515',
+    backgroundColor: '#252525',
     height: 1,
     zIndex: 10,
   },
@@ -630,17 +642,18 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     flexDirection: 'row',
-    marginVertical: 2,
+    marginVertical: 4,
     paddingHorizontal: 16,
     paddingVertical: 6,
     alignItems: 'flex-start',
   },
   avatarContainer: {
-    marginRight: 12,
+    marginRight: 8,
+    marginTop:5,
   },
   avatar: {
-    width: 35,
-    height: 35,
+    width: 32,
+    height: 32,
     borderRadius: 20,
     backgroundColor: '#3a4a5a',
   },
@@ -650,10 +663,12 @@ const styles = StyleSheet.create({
   messageContentContainer: {
     opacity: 100,
     marginRight: 40,
-    padding: 10,
+    padding: 8,
     paddingHorizontal: 14,
-    borderRadius: 10,
-    backgroundColor: "#181818",
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    backgroundColor: "#202020",
     // flex: 1,
     maxWidth: '80%',
     alignItems: 'flex-start',
@@ -667,7 +682,7 @@ const styles = StyleSheet.create({
   senderName: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: '600',
   },
   currentUserName: {
     color: 'white', // Discord blue
@@ -696,12 +711,14 @@ const styles = StyleSheet.create({
     height: 65,
     paddingHorizontal: 15,
     justifyContent:'center',
-    paddingVertical: 10
+    paddingVertical: 10,
+    borderWidth: 0.7,
+    borderTopColor:'#252525',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#121212', // Discord input background
+    backgroundColor: '#202020', // Discord input background
     borderRadius: 60,
     paddingHorizontal: 10,
      paddingVertical: 0,

@@ -14,7 +14,6 @@ import {
   RefreshControl,
 } from "react-native";
 import { useRouter, RelativePathString } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   useGetPagesToFollowQuery,

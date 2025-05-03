@@ -12,6 +12,6 @@ export const feedApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["addPost", "FeedPost", "Liker", "Comment"],
+  tagTypes: ["addPost", "FeedPost", "Liker", "Comment", "HashtagContents"],
   endpoints: () => ({}), // No endpoints defined here
 });

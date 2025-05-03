@@ -67,7 +67,7 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
         <Pressable
           onPress={() => {
             router.push({
-              pathname: `/(app)/(tabs)/articlePage`,
+              pathname: `/(app)/articlePage`,
               params: {
                 id: item._id,
                 sportsName: item.sportsName,

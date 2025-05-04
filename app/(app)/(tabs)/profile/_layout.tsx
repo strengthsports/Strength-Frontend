@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from "react";
+"use client";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -11,6 +12,7 @@ import {
   Modal,
   SafeAreaView,
   RefreshControl,
+  InteractionManager
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import flag from "@/assets/images/IN.png";
@@ -191,6 +193,13 @@ const ProfileLayout = () => {
   const handleOpenPostContainer = () => {
     dispatch(setAddPostContainerOpen(true));
   };
+
+
+  //added part to test and check performance
+  useEffect(() => {
+    const end = performance.now(); // End timer
+    console.log("Profile screen rendered at:", end);
+  }, []);
 
   return (
     <PageThemeView>

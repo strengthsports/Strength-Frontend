@@ -1,3 +1,4 @@
+'use client';
 import {
   StyleSheet,
   Modal,
@@ -924,11 +925,19 @@ const EditProfile = () => {
           <View className="h-12 w-full flex-row justify-between items-center px-5">
             {/* Back button */}
             <TouchableOpacity
-              onPress={() =>
-                !Array.from(finalUploadData.entries()).length
-                  ? router.push("/profile")
-                  : setAlertModal(true)
+            onPress={() => {
+              if (!Array.from(finalUploadData.entries()).length) {
+                const start = performance.now(); // Start timer
+                router.replace("/profile");
+            
+                // You can't measure after `router.push` directly since it's async & render happens elsewhere,
+                // so use a navigation listener in the profile screen itself.
+                console.log("Navigation started at:", start);
+              } else {
+                setAlertModal(true);
               }
+            }}
+            
               className="basis-[20%]"
             >
               <TextScallingFalse className="text-[#808080] text-4xl font-normal">

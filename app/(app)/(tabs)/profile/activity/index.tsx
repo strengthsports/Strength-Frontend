@@ -5,13 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";

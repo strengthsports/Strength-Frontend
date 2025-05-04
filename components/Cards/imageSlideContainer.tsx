@@ -6,13 +6,12 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { View, TouchableOpacity, Dimensions, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Dimensions, StyleSheet, Image } from "react-native";
 import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
-import { Image } from "expo-image";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 
 // const borderLeftWidth = Platform.select({
@@ -92,7 +91,7 @@ const ImageSlide = memo(
           source={
             isError ? require("../../assets/images/nocover.png") : { uri }
           }
-          contentFit="cover"
+          resizeMode="cover"
           style={{
             width: "100%",
             height: "100%",
@@ -104,14 +103,6 @@ const ImageSlide = memo(
             borderBottomWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
             borderLeftWidth: !isMyActivity && isFirstSlide ? 0.5 : 0,
             borderColor: "#2F2F2F",
-          }}
-          placeholder={require("../../assets/images/nocover.png")}
-          placeholderContentFit="cover"
-          transition={500}
-          cachePolicy="memory-disk"
-          onError={(e) => {
-            setIsError(true);
-            console.log(`Error loading image ${index}: `, e?.error);
           }}
         />
         {!isFeedPage && !isMyActivity && (

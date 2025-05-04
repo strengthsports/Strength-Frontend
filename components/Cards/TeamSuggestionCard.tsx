@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
-import { Image, View, TouchableOpacity, Modal as RNModal } from "react-native";
+import { Image, View, TouchableOpacity } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { SuggestTeam } from "~/types/team";
 import { useRouter } from "expo-router";
@@ -10,6 +10,8 @@ import { Entypo } from "@expo/vector-icons";
 import { RootState } from "~/reduxStore";
 import MultipleProfiles from "../ui/atom/MultipleProfiles";
 import FollowerText from "../ui/atom/FollowerText";
+import { FollowUser } from "~/types/user"; // Replace with actual path
+import { useFollow } from "~/hooks/useFollow";
 
 const TeamSuggestionCard = ({
   team,
@@ -25,85 +27,111 @@ const TeamSuggestionCard = ({
   isSelected?: (id: string) => void;
 }) => {
   const router = useRouter();
-  // const serializedUser = encodeURIComponent(
-  //   JSON.stringify({ id: team._id, type: team.type })
-  // );
   const isFollowing = useSelector((state: RootState) =>
     state.profile?.followings?.includes(team._id)
   );
-  // console.log(userFollowings);
+  const { followUser, unFollowUser } = useFollow();
   const [followingStatus, setFollowingStatus] = useState(isFollowing);
 
   useEffect(() => {
     setFollowingStatus(isFollowing);
-  }, [isFollowing]); // Sync when Redux state changes
+  }, [isFollowing]);
 
-  // console.log("Team details : ", team);
+  // Optimistic follow
+  const handleFollow = async () => {
+    try {
+      if (isSelected) isSelected(team._id);
+      setFollowingStatus(true);
+
+      const followData: FollowUser = {
+        followingId: team._id,
+        followingType: "Team",
+      };
+
+      await followUser(followData, true);
+    } catch (err) {
+      setFollowingStatus(false);
+      console.error("Follow error:", err);
+    }
+  };
+
+  // Optimistic unfollow
+  const handleUnfollow = async () => {
+    try {
+      if (isSelected) isSelected(team._id);
+      setFollowingStatus(false);
+
+      const unfollowData: FollowUser = {
+        followingId: team._id,
+        followingType: "Team",
+      };
+
+      await unFollowUser(unfollowData, true);
+    } catch (err) {
+      setFollowingStatus(true);
+      console.error("Unfollow error:", err);
+    }
+  };
 
   return (
-    <>
-      <View
-        className={`bg-black rounded-xl p-4 mb-4 relative border justify-between ${
-          size === "small" ? "w-[150px] h-[180px]" : "w-full h-[200px]"
-        } border-[#323232] overflow-hidden`}
+    <View
+      className={`bg-black rounded-xl p-4 mb-4 relative border justify-between ${
+        size === "small" ? "w-[150px] h-[180px]" : "w-full h-[200px]"
+      } border-[#323232] overflow-hidden`}
+    >
+      {/* Close Button */}
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => removeSuggestion(team._id)}
+        className="absolute right-2 top-2 z-30 bg-black rounded-full w-6 h-6 items-center justify-center opacity-60"
       >
-        {/* Close Button */}
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() => removeSuggestion(team._id)}
-          className="absolute right-2 top-2 z-30 bg-black rounded-full w-6 h-6 items-center justify-center opacity-60"
-        >
-          <TextScallingFalse className="text-white text-5xl">
-            ×
-          </TextScallingFalse>
-        </TouchableOpacity>
+        <TextScallingFalse className="text-white text-5xl">×</TextScallingFalse>
+      </TouchableOpacity>
 
-        <View className="flex-col">
-          {/* Details section */}
-          <View className="basis-[80%] flex-row gap-x-2">
-            {/* Profile Image */}
-            <TouchableOpacity
-              activeOpacity={0.5}
-              // onPress={() =>
-              //   router.push(`/(app)/(profile)/profile/${serializedUser}`)
-              // }
-              disabled={onboarding}
-              className={`bg-white rounded-xl ${
-                size === "small" ? "w-12 h-12" : "w-16 h-16"
-              } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
-              // style={{ marginTop: "10%" }}
-            >
-              <Image
-                source={team.logo ? { uri: team.logo.url } : nopic}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
+      <View className="flex-col">
+        {/* Details section */}
+        <View className="basis-[80%] flex-row gap-x-2">
+          {/* Profile Image */}
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => router.push(`/(app)/(team)/teams/${team._id}`)}
+            disabled={onboarding}
+            className={`bg-white rounded-xl ${
+              size === "small" ? "w-12 h-12" : "w-16 h-16"
+            } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
+          >
+            <Image
+              source={team.logo ? { uri: team.logo.url } : nopic}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
 
-            {/* Name and headline */}
-            <View className="flex-col gap-y-5">
-              <View>
-                <TextScallingFalse
-                  className={`text-white ${
-                    size === "small" ? "text-xl" : "text-2xl"
-                  } font-semibold`}
-                >
-                  {team.name}
-                </TextScallingFalse>
-                <TextScallingFalse
-                  className={`text-[#9F9F9F] ${
-                    size === "small" ? "text-sm" : "text-lg"
-                  }`}
-                >
-                  {team.address?.city} {team.address?.state}{" "}
-                  {team.address?.country}
-                </TextScallingFalse>
-              </View>
-              {team.supporters &&
-                team.supporters.length > 0 &&
-                team.supporterCount > 1 && (
-                  <View className="flex-row items-center">
-                    <MultipleProfiles users={team.supporters} />
+          {/* Name and headline */}
+          <View className="flex-col gap-y-5">
+            <View>
+              <TextScallingFalse
+                className={`text-white ${
+                  size === "small" ? "text-xl" : "text-2xl"
+                } font-semibold`}
+              >
+                {team.name}
+              </TextScallingFalse>
+              <TextScallingFalse
+                className={`text-[#9F9F9F] ${
+                  size === "small" ? "text-sm" : "text-lg"
+                }`}
+              >
+                {team.address?.city} {team.address?.state}{" "}
+                {team.address?.country}
+              </TextScallingFalse>
+            </View>
+            {team.supporters &&
+              team.supporters.length > 0 &&
+              team.supporterCount > 1 && (
+                <View className="flex-row items-center">
+                  <MultipleProfiles users={team.supporters} />
+                  <View className="w-[55%]">
                     <FollowerText
                       user={{
                         followers: team.supporters,
@@ -111,86 +139,37 @@ const TeamSuggestionCard = ({
                       }}
                     />
                   </View>
-                )}
-            </View>
-          </View>
-
-          {/* Support button */}
-          <View className="basis-[20%]">
-            {/* Follow Button */}
-            <TouchableOpacity
-              className={`border-[0.5px] rounded-3xl px-8 py-2 border-[#DEDEDE]`}
-              activeOpacity={0.6}
-            >
-              {followingStatus ? (
-                <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
-                  <Entypo
-                    className="mr-4"
-                    name="check"
-                    size={14}
-                    color="#DEDEDE"
-                  />
-                  Supporting
-                </TextScallingFalse>
-              ) : (
-                <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
-                  Support
-                </TextScallingFalse>
+                </View>
               )}
-            </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      {/* {isModalOpen && (
-        <RNModal
-          visible={isModalOpen}
-          animationType="slide"
-          onRequestClose={() => setModalOpen(false)}
-          transparent={true}
-        >
+        {/* Follow/Unfollow button */}
+        <View className="basis-[20%]">
           <TouchableOpacity
-            className="flex-1 justify-end items-center bg-black/30"
-            activeOpacity={1}
-            onPress={() => setModalOpen(false)}
+            className="border-[0.5px] rounded-3xl px-8 py-2 border-[#DEDEDE]"
+            activeOpacity={0.6}
+            onPress={followingStatus ? handleUnfollow : handleFollow}
           >
-            <View className="w-full mx-auto bg-black rounded-t-3xl p-5 pt-3 border-t-[0.5px] border-x-[0.5px] border-neutral-700">
-              <Divider
-                className="w-16 self-center rounded-full bg-neutral-700 mb-10"
-                width={4}
-              />
-              <TextScallingFalse className="text-white text-4xl font-semibold">
-                Unfollow {team?.name}
+            {followingStatus ? (
+              <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
+                <Entypo
+                  className="mr-4"
+                  name="check"
+                  size={14}
+                  color="#DEDEDE"
+                />
+                Supporting
               </TextScallingFalse>
-              <TextScallingFalse className="text-white mt-1 font-light text-sm">
-                Stop seeing posts from {team?.firstName} on your feed.{" "}
-                {team?.firstName} won't be notified that you've unfollowed
+            ) : (
+              <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
+                Support
               </TextScallingFalse>
-              <View className="items-center justify-evenly flex-row mt-5">
-                <TouchableOpacity
-                  activeOpacity={0.5}
-                  className="px-14 py-1.5 justify-center items-center border rounded-xl border-[#12956B]"
-                  onPress={() => setModalOpen(false)}
-                >
-                  <TextScallingFalse className="text-[#12956B] text-[1rem] font-medium">
-                    Cancel
-                  </TextScallingFalse>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.5}
-                  className="px-14 py-1.5 justify-center items-center bg-[#12956B] border rounded-xl border-[#12956B]"
-                  onPress={handleUnfollow}
-                >
-                  <TextScallingFalse className="text-white text-[1rem] font-medium">
-                    Unfollow
-                  </TextScallingFalse>
-                </TouchableOpacity>
-              </View>
-            </View>
+            )}
           </TouchableOpacity>
-        </RNModal>
-      )} */}
-    </>
+        </View>
+      </View>
+    </View>
   );
 };
 

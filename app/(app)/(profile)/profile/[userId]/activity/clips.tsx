@@ -125,4 +125,32 @@ const Clips = () => {
 
 export default Clips;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 4,
+    backgroundColor: "#000",
+  },
+  postItemContainer: {
+    width: "100%",
+    marginBottom: 10,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyText: {
+    color: "#FFF",
+    textAlign: "center",
+    padding: 4,
+  },
+  errorText: {
+    color: "#F87171",
+    textAlign: "center",
+  },
+  listContentContainer: {
+    paddingBottom: 40,
+  },
+});

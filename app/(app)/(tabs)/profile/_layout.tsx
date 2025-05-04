@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from "react";
+"use client";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -11,6 +12,8 @@ import {
   Modal,
   SafeAreaView,
   RefreshControl,
+  Linking,
+  InteractionManager,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import flag from "@/assets/images/IN.png";
@@ -44,6 +47,7 @@ import { useBottomSheet } from "~/context/BottomSheetContext";
 import { RootState } from "~/reduxStore";
 import { Platform } from "react-native";
 import { Share } from "react-native";
+import { FontAwesome6 } from "@expo/vector-icons";
 
 const ProfileOptionsBottomSheet = ({
   onClose,
@@ -160,7 +164,6 @@ const ProfileLayout = () => {
         url: Platform.OS === "ios" ? profileUrl : undefined,
         title: "Share Profile",
       });
-      // Optional: Handle result.action if needed
     } catch (error: any) {
       console.error("Error sharing profile:", error.message);
     }
@@ -191,6 +194,53 @@ const ProfileLayout = () => {
   const handleOpenPostContainer = () => {
     dispatch(setAddPostContainerOpen(true));
   };
+  // console.log(user);
+  const handlePress = async () => {
+    if (user?.websiteLink) {
+      const supported = await Linking.canOpenURL(user.websiteLink);
+      if (supported) {
+        await Linking.openURL(user.websiteLink);
+      } else {
+        console.log(`Don't know how to open this URL: ${user.websiteLink}`);
+      }
+    }
+  };
+
+  const getDisplaySportNames = (
+    favouriteSports: Array<{ sport: { _id: string; name: string } }>
+  ) => {
+    if (!favouriteSports || favouriteSports.length === 0) {
+      return "No sports added";
+    }
+    const sportNames = favouriteSports
+      .map((item) => item.sport?.name)
+      .filter(Boolean);
+
+    if (sportNames.length === 0) {
+      return "No sports added";
+    }
+
+    const firstSportName = sportNames[0];
+    const remainingCount = sportNames.length - 1;
+
+    if (remainingCount > 0) {
+      return `${firstSportName} +${remainingCount}`;
+    } else {
+      return firstSportName;
+    }
+  };
+
+  //added part to test and check performance
+  useEffect(() => {
+    const end = performance.now(); // End timer
+    console.log("Profile screen rendered at:", end);
+  }, []);
+
+  //added part to test and check performance
+  useEffect(() => {
+    const end = performance.now(); // End timer
+    console.log("Profile screen rendered at:", end);
+  }, []);
 
   return (
     <PageThemeView>
@@ -441,30 +491,12 @@ const ProfileLayout = () => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Sports Category:{" "}
-                        <Text style={{ color: "grey" }}>
-                          {user?.favouriteSports?.map(
-                            (sport: any) => `${sport.sport.name} `
-                          )}
-                        </Text>
+                        Sports:{" "}
+                        <TextScallingFalse style={{ color: "grey" }}>
+                          {getDisplaySportNames(user?.favouriteSports)}
+                        </TextScallingFalse>
                       </TextScallingFalse>
                     </View>
-                    {user?.websiteLink && (
-                      <View style={{ flexDirection: "row" }}>
-                        <Entypo
-                          name="dot-single"
-                          size={responsiveDotSize}
-                          color="white"
-                        />
-                        <TextScallingFalse style={styles.ProfileKeyPoints}>
-                          {" "}
-                          Website:{" "}
-                          <Text style={{ color: "#12956B" }}>
-                            https://www.eastbengal.in
-                          </Text>
-                        </TextScallingFalse>
-                      </View>
-                    )}
                     {user?.dateOfBirth && (
                       <View style={{ flexDirection: "row" }}>
                         <Entypo
@@ -474,10 +506,49 @@ const ProfileLayout = () => {
                         />
                         <TextScallingFalse style={styles.ProfileKeyPoints}>
                           {" "}
-                          Established On:{" "}
+                          Est.:{" "}
                           <Text style={{ color: "grey" }}>
                             {dateFormatter(user?.dateOfBirth, "text")}
                           </Text>
+                        </TextScallingFalse>
+                      </View>
+                    )}
+                    {user?.websiteLink && (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Entypo
+                          name="dot-single"
+                          size={responsiveDotSize}
+                          color="white"
+                        />
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          Website:{" "}
+                          <Text
+                            style={{
+                              color: "#E1E1E1",
+                              fontSize: responsiveFontSize(1.4),
+                            }}
+                          >
+                            {user?.websiteLink}
+                            {"  "}
+                          </Text>
+                          <TouchableOpacity
+                            className="mt-[5px]"
+                            onPress={handlePress}
+                            activeOpacity={0.7}
+                          >
+                            <FontAwesome6
+                              name="arrow-up-right-from-square"
+                              size={10}
+                              color="#E1E1E1"
+                            />
+                          </TouchableOpacity>
                         </TextScallingFalse>
                       </View>
                     )}
@@ -738,6 +809,8 @@ const styles = StyleSheet.create({
     color: "#E1E1E1",
     fontSize: responsiveFontSize(1.4),
     fontWeight: "semibold",
+    alignItems: "center",
+    display: "flex",
   },
   bottomSheetContainer: {
     paddingHorizontal: 20,

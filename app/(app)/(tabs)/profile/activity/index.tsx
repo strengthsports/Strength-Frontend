@@ -5,7 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
@@ -16,6 +16,8 @@ import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/pro
 const Posts = () => {
   const { user } = useSelector((state: any) => state?.profile);
   const isAndroid = Platform.OS === "android";
+  const flatListRef = useRef<FlatList>(null);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);

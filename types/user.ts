@@ -1,3 +1,4 @@
+import { Sport } from "~/app/(app)/(profile)/edit-profile/SelectSports";
 import { Post } from "./post";
 
 // Types
@@ -59,6 +60,8 @@ export interface UserData {
   height: string | null;
   weight: string | null;
   assets: Array<string> | Array<Blob> | Array<File> | null;
+  websiteLink?: string;
+  favouriteSports?: Sport[];
 }
 
 export interface FollowUser {

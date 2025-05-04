@@ -57,7 +57,7 @@ const Clips = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
-      <View className="w-screen pl-3">
+      <View className="w-screen">
         <PostContainer item={item} isMyActivity={true} isVisible={true} />
       </View>
     ),

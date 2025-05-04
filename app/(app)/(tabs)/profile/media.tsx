@@ -13,13 +13,13 @@ import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { router, Href } from "expo-router";
 import { RootState } from "~/reduxStore";
-import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
 import { Post } from "~/types/post";
 import ClipsIcon from "~/components/SvgIcons/addpost/ClipsIcon";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
-import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
 import { BlurView } from "expo-blur";
+import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post";
+import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
 
 interface MediaItem {
   imageUrl: string;
@@ -37,130 +37,144 @@ const Media = () => {
     error: profileError,
     loading: profileLoading,
     user,
-  } = useSelector((state: any) => state?.profile);
-  const { loading: feedLoading, error: feedError } = useSelector(
-    (state: RootState) => state.feed
-  );
-  const userPosts = useSelector((state: RootState) =>
-    user?._id ? selectPostsByUserId(state.feed.posts as any, user._id) : []
-  );
+  } = useSelector((state: RootState) => state.profile);
+
+  // RTK Query setup
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  const [trigger, { isLoading, isError, isFetching }] =
+    useLazyGetUserPostsByCategoryQuery();
+
   const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
 
+  // Fetch posts with pagination
+  const fetchPosts = async (isInitial = false) => {
+    if (!user?._id) return;
+    try {
+      const res = await trigger({
+        userId: user._id,
+        type: "media",
+        limit: 10,
+        cursor: isInitial ? null : cursor,
+      }).unwrap();
+
+      if (res) {
+        setPosts((prev) => (isInitial ? res.data : [...prev, ...res.data]));
+        setCursor(res.nextCursor);
+      }
+    } catch (err) {
+      console.error("Failed to fetch media posts:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?._id) {
+      fetchPosts(true);
+    }
+  }, [user?._id]);
+
+  const handleLoadMore = () => {
+    if (cursor && !isFetching && !isFetchingMore) {
+      setIsFetchingMore(true);
+      fetchPosts().finally(() => setIsFetchingMore(false));
+    }
+  };
+
+  // Process posts into media items
   const initialImageData = useMemo<MediaItem[]>(() => {
-    return (
-      (userPosts as Post[] | undefined)?.flatMap((post: Post): MediaItem[] => {
-        if (!post?._id || !post.assets || post.assets.length === 0) {
-          return [];
-        }
+    return posts.flatMap((post: Post): MediaItem[] => {
+      if (!post?._id || !post.assets || post.assets.length === 0) return [];
 
-        const isVideoPost = post.isVideo === true;
+      const isVideoPost = post.isVideo === true;
 
-        if (isVideoPost) {
-          return (
-            post.assets
-              ?.filter((asset: any) => asset?.url)
-              ?.map(
-                (asset: any): MediaItem => ({
-                  imageUrl: asset.url,
-                  postId: post._id!,
-                  isVideoAsset: true,
-                  thumbnailUrl: undefined,
-                  hasMultipleAssets: false,
-                })
-              ) || []
-          );
-        } else {
-          const firstAsset = post.assets[0];
-          if (!firstAsset?.url) {
-            return [];
-          }
-          const hasMultipleImages = post.assets.length > 1;
-          return [
-            {
-              imageUrl: firstAsset.url,
-              postId: post._id!,
-              isVideoAsset: false,
-              thumbnailUrl: undefined,
-              hasMultipleAssets: hasMultipleImages,
-            },
-          ];
-        }
-      }) || []
-    );
-  }, [userPosts]);
+      if (isVideoPost) {
+        return post.assets
+          .filter((asset) => asset?.url)
+          .map((asset) => ({
+            imageUrl: asset.url,
+            postId: post._id!,
+            isVideoAsset: true,
+            thumbnailUrl: undefined,
+            hasMultipleAssets: false,
+          }));
+      } else {
+        const firstAsset = post.assets[0];
+        if (!firstAsset?.url) return [];
+        return [
+          {
+            imageUrl: firstAsset.url,
+            postId: post._id!,
+            isVideoAsset: false,
+            thumbnailUrl: undefined,
+            hasMultipleAssets: post.assets.length > 1,
+          },
+        ];
+      }
+    });
+  }, [posts]);
 
+  // Thumbnail generation (existing logic)
   useEffect(() => {
     const generateThumbnails = async (mediaItems: MediaItem[]) => {
       setThumbnailsLoading(true);
-      let updated = false;
-
       const thumbnailPromises = mediaItems.map(async (item, index) => {
         if (item.isVideoAsset && item.imageUrl && !item.thumbnailUrl) {
           try {
             const { uri } = await VideoThumbnails.getThumbnailAsync(
               item.imageUrl,
-              { time: 1000, quality: 0.5 }
+              {
+                time: 1000,
+                quality: 0.5,
+              }
             );
             return { index, thumbnailUrl: uri };
           } catch (error) {
-            console.warn(
-              `Failed to generate thumbnail for ${item.imageUrl}:`,
-              error
-            );
-            return { index, thumbnailUrl: null };
+            console.warn("Failed to generate thumbnail:", error);
+            return null;
           }
         }
         return null;
       });
 
       const results = await Promise.all(thumbnailPromises);
-
-      setProcessedImageData((currentData) => {
-        if (currentData.length !== mediaItems.length) {
-          console.warn(
-            "State inconsistency detected in thumbnail generation. Using latest data."
-          );
-        }
-        const newData = [...currentData];
-        results.forEach((result) => {
-          if (result && result.thumbnailUrl !== undefined) {
-            if (result.index >= 0 && result.index < newData.length) {
-              if (newData[result.index].thumbnailUrl !== result.thumbnailUrl) {
-                newData[result.index] = {
-                  ...newData[result.index],
-                  thumbnailUrl: result.thumbnailUrl ?? undefined,
-                };
-                updated = true;
-              }
-            } else {
-              console.warn(
-                `Thumbnail result index ${result.index} out of bounds.`
-              );
+      setProcessedImageData((current) =>
+        results.reduce(
+          (acc, result) => {
+            if (result) {
+              acc[result.index] = {
+                ...current[result.index],
+                thumbnailUrl: result.thumbnailUrl,
+              };
             }
-          }
-        });
-        return updated ? newData : currentData;
-      });
+            return acc;
+          },
+          [...current]
+        )
+      );
       setThumbnailsLoading(false);
     };
 
-    setProcessedImageData(initialImageData);
-
-    const videosToProcess = initialImageData.filter(
-      (item) => item.isVideoAsset && !item.thumbnailUrl
-    );
-
-    if (videosToProcess.length > 0) {
-      generateThumbnails(initialImageData);
-    } else {
-      setThumbnailsLoading(false);
+    if (initialImageData.length > 0) {
+      setProcessedImageData(initialImageData);
+      const videosToProcess = initialImageData.filter(
+        (item) => item.isVideoAsset && !item.thumbnailUrl
+      );
+      if (videosToProcess.length > 0) {
+        generateThumbnails(initialImageData);
+      }
     }
   }, [initialImageData]);
 
   const MemoizedEmptyComponent = memo(() => (
     <View style={styles.centerContent}>
-      <Text className="text-white text-center p-4">No media available</Text>
+      {isLoading ? (
+        <ActivityIndicator color="#12956B" size={22} />
+      ) : (
+        <Text className="text-white text-center p-4">No media available</Text>
+      )}
     </View>
   ));
 
@@ -230,15 +244,14 @@ const Media = () => {
   }, []);
 
   const keyExtractor = useCallback(
-    (item: MediaItem, index: number) =>
-      `${item.postId}-${item.imageUrl}-${index}-${item.isVideoAsset}`,
+    (item: MediaItem) => `${item.postId}-${item.imageUrl}`,
     []
   );
 
-  const isLoading = profileLoading;
-  const error = profileError || feedError;
+  const loading = profileLoading || isLoading;
+  const error = profileError;
 
-  if (isLoading) {
+  if (loading) {
     return (
       <View style={styles.centerContent}>
         <ActivityIndicator color="#12956B" size={22} />
@@ -246,12 +259,11 @@ const Media = () => {
     );
   }
 
-  if (error) {
+  if (error || isError) {
     return (
       <View style={styles.centerContent}>
         <TextScallingFalse className="text-red-500">
-          Error loading media:{" "}
-          {typeof error === "string" ? error : "An error occurred"}
+          Error loading media: {error?.toString()}
         </TextScallingFalse>
       </View>
     );
@@ -265,29 +277,32 @@ const Media = () => {
         numColumns={3}
         renderItem={renderGridItem}
         ListEmptyComponent={MemoizedEmptyComponent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
         contentContainerStyle={[
           styles.listContentContainer,
           processedImageData.length === 0 && styles.emptyListContainer,
         ]}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <ActivityIndicator
+              style={styles.bottomLoader}
+              color="#555"
+              size="small"
+            />
+          ) : null
+        }
         windowSize={11}
         initialNumToRender={15}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         removeClippedSubviews={true}
       />
-      {thumbnailsLoading && (
-        <ActivityIndicator
-          style={styles.bottomLoader}
-          color="#555"
-          size="small"
-        />
-      )}
     </View>
   );
 };
 
-export default Media;
-
+// Keep existing styles unchanged
 const { width } = Dimensions.get("window");
 const itemMargin = 1;
 const numColumns = 3;
@@ -357,3 +372,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+export default Media;

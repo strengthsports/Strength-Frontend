@@ -83,7 +83,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
             sportname: teamEntry.team.sportname,
             url: teamEntry.team.logo?.url || "",
             id: teamEntry.team._id,
-            membersLength: teamEntry.team.membersLength || [],
+            membersLength: teamEntry.team.membersLength,
           });
         }
       }

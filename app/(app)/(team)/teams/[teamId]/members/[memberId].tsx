@@ -100,6 +100,7 @@ const RoleDropdownComponent = ({
         keyExtractor={(item) => item._id}
         renderItem={({ item: role }) => (
           <TouchableOpacity
+          key={role._id} 
             style={[
               styles.roleItem,
               currentRole === role.name && styles.selectedRole,
@@ -109,7 +110,7 @@ const RoleDropdownComponent = ({
               onClose();
             }}
           >
-            <Text style={styles.roleText}>{role.name}</Text>
+            <TextScallingFalse style={styles.roleText}>{role.name}</TextScallingFalse>
             {currentRole === role.name && (
               <AntIcon name="check" size={16} color="#12956B" />
             )}
@@ -161,11 +162,11 @@ const ActionButton = React.memo(
         <ActivityIndicator size="small" color={textColor} />
       ) : (
         <View style={styles.textWithIcon}>
-          <Text
+          <TextScallingFalse
             style={[styles.actionButtonText, { color: textColor, flex: 1 }]}
           >
             {label}
-          </Text>
+          </TextScallingFalse>
           {iconName && (
             <MaterialCommunityIcons
               name={iconName}
@@ -195,9 +196,9 @@ const ActionButtonRole = React.memo(
       className="flex-row w-full justify-between pl-8 pr-3 py-4 mb-4 rounded-lg"
       style={{ backgroundColor }}
     >
-      <Text className="text-3xl font-bold" style={{ color: textColor }}>
+      <TextScallingFalse className="text-3xl font-bold" style={{ color: textColor }}>
         {label}
-      </Text>
+      </TextScallingFalse>
       {icon && <View className="mr-2">{icon}</View>}
     </TouchableOpacity>
   )
@@ -244,11 +245,11 @@ const ProfileSection = React.memo(({ member }: { member: any }) => (
       source={member?.profilePic ? { uri: member.profilePic } : Nopic}
       style={styles.profileImage}
     />
-    <Text style={styles.nameText}>
+    <TextScallingFalse style={styles.nameText}>
       {member?.firstName} {member?.lastName}
-    </Text>
+    </TextScallingFalse>
     <View className="flex-row">
-      <Text style={styles.roleText}>{"@"}{member?.username} |{" "}{member?.headline}</Text>
+      <TextScallingFalse style={styles.roleText}>{"@"}{member?.username} |{" "}{member?.headline}</TextScallingFalse>
     </View>
   </View>
 ));
@@ -745,7 +746,7 @@ const MemberDetails = () => {
       <PageThemeView>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#12956B" />
-          <Text style={styles.loadingText}>Loading member details...</Text>
+          <TextScallingFalse style={styles.loadingText}>Loading member details...</TextScallingFalse>
         </View>
       </PageThemeView>
     );
@@ -807,7 +808,7 @@ const MemberDetails = () => {
 
       {/* Role Actions */}
       <View style={styles.actionsContainer}>
-        <Text style={styles.sectionLabel}>Role</Text>
+        <TextScallingFalse style={styles.sectionLabel}>Role</TextScallingFalse>
         <View>
           <ActionButtonRole
             onPress={() => {

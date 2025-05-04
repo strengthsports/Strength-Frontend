@@ -246,7 +246,9 @@ const Overview = () => {
                           <TouchableOpacity
                             activeOpacity={0.7}
                             onPress={() =>
-                              router.push("/(app)/(profile)/edit-overview")
+                              router.push(
+                                "/(app)/(profile)/edit-overview/(modal)/current-team"
+                              )
                             }
                           >
                             <EditIcon />
@@ -317,7 +319,7 @@ const Overview = () => {
                   onPress={handleToggle}
                   className="text-[#808080] font-light text-lg"
                 >
-                  {isExpanded ? "  see less" : " see more"}
+                  {isExpanded ? "" : " see more"}
                 </TextScallingFalse>
               )}
             </TextScallingFalse>

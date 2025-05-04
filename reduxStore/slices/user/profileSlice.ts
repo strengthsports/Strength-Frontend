@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
 import { Member, ProfileState, TargetUser, User } from "@/types/user";
 import { loginUser, logoutUser } from "./authSlice";
@@ -428,8 +428,13 @@ const profileSlice = createSlice({
   name: "profile",
   initialState,
   reducers: {
-    setUserProfile: (state, action) => {
-      state.user = action.payload;
+    setUserProfile: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+      }
     },
     setFollowingStatus: (state, action) => {
       state.user!.followingStatus = action.payload;
@@ -462,6 +467,14 @@ const profileSlice = createSlice({
       state.error = null;
       state.posts = [];
     },
+    updateProfileSports: (state, action: PayloadAction<string[]>) => {
+      if (state.user) {
+        state.user.favouriteSports = action.payload.map(id => ({ 
+          _id: id,
+          name: '' 
+        }));
+      }
+    }
   },
   extraReducers: (builder) => {
     // Login
@@ -550,7 +563,9 @@ const profileSlice = createSlice({
       })
       .addCase(editUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = { ...state.user, ...action.payload };
+        if (action.payload?.data?.updatedUser) {
+          state.user = action.payload.data.updatedUser;
+        }
         console.log(action.payload)
         state.msgBackend = action.payload.message;
         state.error = null;
@@ -568,6 +583,7 @@ const profileSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.user = action.payload;
+      // console.log("Fetch profile", state.user)
     });
     builder.addCase(fetchMyProfile.rejected, (state, action) => {
       state.loading = false;
@@ -698,8 +714,7 @@ export const {
   pullFollowings,
   pushFollowings,
   setCurrentPost,
-  optimisticallyUpdateUser,
-  rollbackUserUpdate,
+  updateProfileSports
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

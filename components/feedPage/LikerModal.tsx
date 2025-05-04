@@ -55,7 +55,7 @@ export const LikerCard = ({ liker }: { liker: any }) => {
             ellipsizeMode="tail"
             numberOfLines={1}
           >
-            {liker.username} | {liker.headline}
+            @{liker.username} | {liker.headline}
           </TextScallingFalse>
         </View>
       </View>

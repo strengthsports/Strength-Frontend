@@ -87,15 +87,15 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   };
 
   const renderMemberSection = (title: string, members: any[], sectionKey: string) => {
-    // Don't render the section at all if there are no members and user is not a member
-    if (members.length === 0 && !isMember) {
+    // Don't render the section at all if there are no members and user is not an admin
+    if (members.length === 0 && !isAdmin) {
       return null;
     }
   
     return (
       <View key={`section-${sectionKey}`}>
-        {/* Only show title if there are members in this category */}
-        {members.length > 0 && (
+        {/* Only show title if there are members OR if user is admin */}
+        {(members.length > 0 || isAdmin) && (
           <Text
             style={{
               fontFamily: "Sansation-Regular",
@@ -111,6 +111,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
         
         <View className="flex mt-6 mb-5 flex-row flex-wrap">
           {members.length > 0 ? (
+            // If members exist, render them without "Add Member" button
             members.map((member) => {
               const user = {...member.user, role: member.role, position: member.position};
               const memberKey = member._id || `member-${Math.random().toString(36).substr(2, 9)}`;
@@ -142,7 +143,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
               );
             })
           ) : (
-            // Only show "Add Member" button if user is a member and category is empty
+            // Show "Add Member" button ONLY if user is an admin and this player type has no members
             isAdmin && (
               <TouchableOpacity
                 key={`add-${sectionKey}`}
@@ -183,7 +184,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           paddingBottom: 80,
         }}
       >
-        {isMember && ( <View
+        {(isMember || isAdmin) &&  ( <View
           style={{
             flexDirection: "row",
             justifyContent: "flex-end",

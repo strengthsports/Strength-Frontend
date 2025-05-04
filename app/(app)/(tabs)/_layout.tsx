@@ -73,7 +73,7 @@
 
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, View, TouchableOpacity, Text } from "react-native";
 import CommunityIcon from "~/components/SvgIcons/navbar/CommunityIcon";
 import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
 import HomeIcon from "~/components/SvgIcons/navbar/HomeIcon";
@@ -81,76 +81,112 @@ import NotificationIcon from "~/components/SvgIcons/navbar/NotificationIcon";
 import ProfileIcon from "~/components/SvgIcons/navbar/ProfileIcon";
 import { DrawerProvider } from "~/context/DrawerContext";
 
+const tabs = [
+  {
+    name: "home",
+    title: "Home",
+    icon: HomeIcon,
+    href: "/(app)/(tabs)/home",
+  },
+  {
+    name: "explore",
+    title: "Explore",
+    icon: SearchIcon,
+    href: "/(app)/(tabs)/explore/allCategory",
+  },
+  {
+    name: "community",
+    title: "Community",
+    icon: CommunityIcon,
+    href: "/(app)/(tabs)/community",
+  },
+  {
+    name: "notification",
+    title: "Notification",
+    icon: NotificationIcon,
+    href: "/(app)/(tabs)/notification",
+  },
+  {
+    name: "profile",
+    title: "Profile",
+    icon: ProfileIcon,
+    href: "/(app)/(tabs)/profile",
+  },
+] as const;
+
 export default function TabLayout() {
   return (
-    <DrawerProvider>
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "#12956B",
-        headerShown: false,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute",
-            height: 60, // Increase height to create space
-            paddingBottom: 15, // Adds space at the bottom
-            paddingTop: 5, // Adds space at the top
-            borderTopLeftRadius: 10, // Rounded top-left corner
-            borderTopRightRadius: 10, // Rounded top-right corner
-            overflow: "hidden", // Prevents background bleed
-            backgroundColor: "#000",
-          },
-          default: {
-            height: 60, // Ensures consistent height
-            paddingBottom: 15,
-            paddingTop: 5,
-            borderTopLeftRadius: 10, // Rounded top-left corner
-            borderTopRightRadius: 10, // Rounded top-right corner
-            overflow: "hidden", // Prevents background bleed
-            backgroundColor: "#000",
-          },
-        }),
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          href: "/(app)/(tabs)/home",
-          tabBarIcon: () => <HomeIcon />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-          href: "/(app)/(tabs)/explore/allCategory",
-          tabBarIcon: () => <SearchIcon />,
-        }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: "Community",
-          href: "/(app)/(tabs)/community",
-          tabBarIcon: () => <CommunityIcon />,
-        }}
-      />
-      <Tabs.Screen
-        name="notification"
-        options={{
-          title: "Notification",
-          tabBarIcon: () => <NotificationIcon />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          href: "/(app)/(tabs)/profile",
-          tabBarIcon: () => <ProfileIcon />,
-        }}
-      />
-    </Tabs>
-    </DrawerProvider>
+    <View style={{ flex: 1, backgroundColor: "black" }}>
+      <DrawerProvider>
+        <Tabs
+          screenOptions={{
+            tabBarActiveTintColor: "#12956B",
+            tabBarInactiveTintColor: "#CECECE",
+            headerShown: false,
+            tabBarStyle: Platform.select({
+              ios: {
+                position: "absolute",
+                height: 75,
+                paddingTop: 20,
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                overflow: "hidden",
+                backgroundColor: "black",
+                borderColor:'black',
+                borderWidth: 0.5,
+              },
+              default: {
+                height: 55,
+                paddingBottom: 0,
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                overflow: "hidden",
+                backgroundColor: "black",
+                borderWidth: 0.5,
+                borderColor: "black",
+                paddingTop: 5,
+              },
+            }),
+          }}
+        >
+          {tabs.map(({ name, title, icon: Icon, href }) => (
+            <Tabs.Screen
+              key={name}
+              name={name}
+              options={{
+                title,
+                tabBarButton: ({ onPress, accessibilityState }) => {
+                  const isSelected = accessibilityState?.selected;
+                  return (
+                    <TouchableOpacity
+                      onPress={onPress}
+                      activeOpacity={0.4}
+                      style={{
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: 40, 
+                      }}
+                    >
+                      <Icon color={isSelected ? "#12956B" : "#CECECE"} />
+                      <Text
+                        style={{
+                          fontSize: 9,
+                          fontWeight: '500',
+                          color: isSelected ? "#12956B" : "#CECECE",
+                          marginTop: 2,
+                        }}
+                      >
+                        {title}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                },
+              }}
+            />
+          ))}
+        </Tabs>
+      </DrawerProvider>
+    </View>
   );
 }

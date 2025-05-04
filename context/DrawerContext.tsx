@@ -92,24 +92,6 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
     setTeamList(Array.from(uniqueTeams.values()));
   };
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap();
-      if (Platform.OS === "android") {
-        ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT);
-      } else {
-        Toast.show({
-          type: "success",
-          text1: "Logged out successfully",
-          visibilityTime: 1500,
-        });
-      }
-      router.replace("/(auth)/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
   useEffect(() => {
     dispatch(fetchTeams());
   }, [isDrawerOpen]);

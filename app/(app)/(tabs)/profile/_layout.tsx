@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from "react";
+"use client";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -12,6 +13,7 @@ import {
   SafeAreaView,
   RefreshControl,
   Linking,
+  InteractionManager,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
 import flag from "@/assets/images/IN.png";
@@ -227,6 +229,18 @@ const ProfileLayout = () => {
       return firstSportName;
     }
   };
+
+  //added part to test and check performance
+  useEffect(() => {
+    const end = performance.now(); // End timer
+    console.log("Profile screen rendered at:", end);
+  }, []);
+
+  //added part to test and check performance
+  useEffect(() => {
+    const end = performance.now(); // End timer
+    console.log("Profile screen rendered at:", end);
+  }, []);
 
   return (
     <PageThemeView>

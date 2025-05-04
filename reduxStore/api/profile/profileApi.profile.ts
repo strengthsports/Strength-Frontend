@@ -5,7 +5,7 @@ export const profileEndpoints = profileApi.injectEndpoints({
   endpoints: (builder) => ({
     getUserProfile: builder.query<any, TargetUser>({
       query: (body) => ({
-        url: "/api/v1/getProfile",
+        url: "/getProfile",
         method: "POST",
         body,
       }),
@@ -15,7 +15,7 @@ export const profileEndpoints = profileApi.injectEndpoints({
     }),
     getPageMembers: builder.query<any, { pageId: string }>({
       query: ({ pageId }) => ({
-        url: "/api/v1/page-members",
+        url: "/page-members",
         params: { pageId },
       }),
       transformResponse: (response: any) => response.data,

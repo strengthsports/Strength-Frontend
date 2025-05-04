@@ -28,7 +28,7 @@ const PageSuggestionCard = ({
 }) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
-    JSON.stringify({ id: user._id, type: user.type })
+    JSON.stringify({ id: user._id, type: "Page" })
   );
   const isFollowing = useSelector((state: RootState) =>
     state.profile?.followings?.includes(user._id)
@@ -51,7 +51,7 @@ const PageSuggestionCard = ({
       setFollowingStatus(true);
       const followData: FollowUser = {
         followingId: user._id,
-        followingType: user.type,
+        followingType: "Page",
       };
 
       await followUser(followData);
@@ -68,7 +68,7 @@ const PageSuggestionCard = ({
       setFollowingStatus(false);
       const unfollowData: FollowUser = {
         followingId: user._id,
-        followingType: user.type,
+        followingType: "Page",
       };
       if (isSelected) {
         isSelected(user._id); // Remove from selected players

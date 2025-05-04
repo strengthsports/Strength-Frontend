@@ -108,7 +108,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
           <Pressable
             onPress={() => {
               router.push({
-                pathname: `/(app)/(tabs)/articlePage`,
+                pathname: `/(app)/articlePage`,
                 params: {
                   id: slide._id,
                   sportsName: slide.sportsName,

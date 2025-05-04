@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import React, { memo } from "react";
 import { FlatList } from "react-native";
-import { useGetImagesByHashtagQuery } from "~/reduxStore/api/posts/postsApi.hashtag";
+import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedApi.hashtag";
 import { useLocalSearchParams } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import { Colors } from "~/constants/Colors";
@@ -16,7 +16,14 @@ const Photos = () => {
   const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
   const hashtag =
     typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
-  const { data, isLoading, isError } = useGetImagesByHashtagQuery({ hashtag });
+  const { data, isLoading, isError } = useGetHashtagContentsQuery({
+    hashtag,
+    limit: 10,
+    type: "media",
+  });
+
+  console.log("\n\nMedia", data?.data);
+
   const memoizedEmptyComponent = memo(() => (
     <TextScallingFalse className="text-white text-center p-4">No images available</TextScallingFalse>
   ));
@@ -46,7 +53,7 @@ const Photos = () => {
         numColumns={2} // Adjusts for responsiveness
         renderItem={({ item }) => (
           <Image
-            source={{ uri: item.url }}
+            source={{ uri: item.assets[0].url }}
             resizeMode="cover" // Maintains aspect ratio
             style={styles.image}
           />

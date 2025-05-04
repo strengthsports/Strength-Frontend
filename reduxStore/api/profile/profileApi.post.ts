@@ -1,32 +1,31 @@
 import { profileApi } from "./profileApi";
-import { TargetUser, User } from "~/types/user";
 
 export const profileEndpoints = profileApi.injectEndpoints({
   endpoints: (builder) => ({
-    getSpecificUserPost: builder.query<
+    getUserPostsByCategory: builder.query<
       any,
       {
-        postedBy: string;
-        postedByType: string;
+        userId: string;
+        type?: "all" | "recent" | "polls" | "media" | "thoughts" | "clips";
         limit?: number;
-        skip?: number;
-        lastTimestamp?: string | null;
+        cursor?: string | null;
       }
     >({
-      query: ({ postedBy, postedByType, limit, skip, lastTimestamp }) => ({
-        url: "/api/v1/post/other-user",
-        method: "POST",
-        body: { postedBy, postedByType },
-        params: { limit, skip, lastTimestamp },
+      query: ({ userId, type = "all", limit = 10, cursor }) => ({
+        url: `/post/${userId}`,
+        params: { type, limit, ...(cursor && { cursor }) },
       }),
-      transformResponse: (response: { data: any }) => {
-        console.log(response);
-        return response.data.formattedPosts;
-      },
-      keepUnusedDataFor: 300,
+      transformResponse: (response: {
+        data: any;
+        nextCursor: string | null;
+      }) => ({
+        data: response.data,
+        nextCursor: response.nextCursor,
+      }),
+      keepUnusedDataFor: 10,
       providesTags: ["UserPosts"],
     }),
   }),
 });
 
-export const { useLazyGetSpecificUserPostQuery } = profileEndpoints;
+export const { useLazyGetUserPostsByCategoryQuery } = profileEndpoints;

@@ -5,7 +5,7 @@ export const blockApi = profileApi.injectEndpoints({
   endpoints: (builder) => ({
     blockUser: builder.mutation<any, BlockUser>({
       query: (body) => ({
-        url: "/api/v1/block",
+        url: "/block",
         method: "POST",
         body,
       }),
@@ -17,7 +17,7 @@ export const blockApi = profileApi.injectEndpoints({
     }),
     unblockUser: builder.mutation<any, UnblockUser>({
       query: (body) => ({
-        url: "/api/v1/unblock",
+        url: "/unblock",
         method: "DELETE",
         body,
       }),
@@ -29,7 +29,7 @@ export const blockApi = profileApi.injectEndpoints({
     }),
     getBlockedUsers: builder.query<any, void>({
       query: () => ({
-        url: "/api/v1/blocked-users", // Fixed return syntax
+        url: "/blocked-users", // Fixed return syntax
       }),
       transformResponse: (response: { data: any }) => response.data,
       keepUnusedDataFor: 100,

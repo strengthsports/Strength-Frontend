@@ -4,7 +4,7 @@ import { getToken } from "~/utils/secureStore";
 export const profileApi = createApi({
   reducerPath: "profileApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
+    baseUrl: `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1`,
     prepareHeaders: async (headers) => {
       const token = await getToken("accessToken");
       if (token) {

@@ -3,108 +3,120 @@ import {
   FlatList,
   Platform,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useState,
+} from "react";
+import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
-import { AppDispatch, RootState } from "~/reduxStore";
-import { getOwnPosts } from "~/reduxStore/slices/user/profileSlice";
+import { Divider } from "react-native-elements";
 import PostContainer from "~/components/Cards/postContainer";
-// import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import { Post } from "~/types/post";
-import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
-import { useFocusEffect } from "expo-router";
+import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post"; // adjust path accordingly
 
 const Posts = () => {
-  // const { posts, error, loading } = useSelector((state: any) => state?.profile);
-  // console.log("\n\n\nPosts : ", posts);
-  // const dispatch = useDispatch<AppDispatch>();
-  const { error, loading, user } = useSelector((state: any) => state?.profile);
-  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: any) => state?.profile);
   const isAndroid = Platform.OS === "android";
   const flatListRef = useRef<FlatList>(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  const userPosts = useSelector((state: RootState) =>
-    selectPostsByUserId(state.feed.posts as any, user?._id)
-  );
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  const scrollToTop = useCallback(() => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToOffset({
-        offset: 0,
-        animated: true,
-      });
-    }, 100);
-  }, []);
+  const [trigger, { data, isLoading, isFetching, isError, error }] =
+    useLazyGetUserPostsByCategoryQuery();
 
-  useFocusEffect(
-    useCallback(() => {
-      scrollToTop();
-      setInitialLoad(true);
-    }, [scrollToTop])
-  );
+  console.log(data);
+
+  const fetchPosts = async (isInitial = false) => {
+    const res = await trigger({
+      userId: user._id,
+      type: "all", // or "recent" / "polls" etc.
+      limit: 10,
+      cursor: isInitial ? null : cursor,
+    }).unwrap();
+
+    if (res) {
+      setPosts((prev) => (isInitial ? res.data : [...prev, ...res.data]));
+      setCursor(res.nextCursor);
+    }
+  };
 
   useEffect(() => {
-    if ((!userPosts || userPosts.length === 0) && initialLoad) {
-      dispatch(getOwnPosts(null));
-      setInitialLoad(false);
+    if (user?._id) {
+      fetchPosts(true); // fetch first time
     }
-  }, [dispatch, userPosts, initialLoad]);
+  }, [user?._id]);
 
-  useEffect(() => {
-    if (userPosts && userPosts.length > 0) {
-      scrollToTop();
+  const handleLoadMore = () => {
+    if (!isFetching && cursor) {
+      setIsFetchingMore(true);
+      fetchPosts().finally(() => setIsFetchingMore(false));
     }
-  }, [userPosts, scrollToTop]);
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View className="w-screen">
         <PostContainer isVisible={true} item={item} isMyActivity={true} />
+        <Divider style={{ width: "100%" }} width={0.4} color="#282828" />
       </View>
     ),
-    [] // Empty dependency array ensures the function is memoized and doesn't re-create
+    []
   );
-  const memoizedEmptyComponent = memo(() => (
-    <Text className="text-white text-center p-4">No new posts available</Text>
-  ));
 
-  if (loading)
+  const memoizedEmptyComponent = useCallback(() => {
     return (
-      <View className="flex justify-center items-center">
-        <ActivityIndicator color="#12956B" size={22} />
+      <View className="flex justify-center items-center flex-1 p-4">
+        {isLoading ? (
+          <ActivityIndicator color="#12956B" size={22} />
+        ) : (
+          <TextScallingFalse className="text-white text-center">
+            No posts available
+          </TextScallingFalse>
+        )}
       </View>
     );
+  }, [isLoading]);
 
-  if (error)
+  if (error || isError)
     return (
       <View className="flex justify-center items-center">
         <TextScallingFalse className="text-red-500">
-          {" "}
           Error loading posts
         </TextScallingFalse>
       </View>
     );
+
   return (
     <View className="mt-4">
       <FlatList
-        ref={flatListRef}
-        initialScrollIndex={0}
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
-        }}
-        data={userPosts || []}
+        data={posts}
         keyExtractor={(item) => item._id}
         initialNumToRender={5}
         removeClippedSubviews={isAndroid}
         windowSize={11}
         renderItem={renderItem}
         ListEmptyComponent={memoizedEmptyComponent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
         bounces={false}
         contentContainerStyle={{ paddingBottom: 40 }}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <ActivityIndicator
+              size="small"
+              color="#12956B"
+              style={{ marginVertical: 10 }}
+            />
+          ) : null
+        }
       />
     </View>
   );

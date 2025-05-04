@@ -1,5 +1,6 @@
 import {
   StyleSheet,
+  Text,
   View,
   Image,
   FlatList,
@@ -7,23 +8,18 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, {
-  memo,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-} from "react";
+import React, { memo, useEffect, useMemo, useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
-import { useLocalSearchParams, router, Href } from "expo-router";
-import { useLazyGetSpecificUserPostQuery } from "~/reduxStore/api/profile/profileApi.post";
-import { ProfileContext } from "./_layout";
-import * as VideoThumbnails from "expo-video-thumbnails";
+import { router, Href, useLocalSearchParams } from "expo-router";
+import { RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
+import ClipsIcon from "~/components/SvgIcons/addpost/ClipsIcon";
+import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
-import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
 import { BlurView } from "expo-blur";
+import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post";
+import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
 
 interface MediaItem {
   imageUrl: string;
@@ -38,271 +34,225 @@ const iconSizeInsideCircle = 18;
 
 const Media = () => {
   const params = useLocalSearchParams();
-  const {
-    profileData,
-    isLoading: profileIsLoading,
-    error: profileHasError,
-  } = useContext(ProfileContext);
-
   const fetchedUserId = useMemo(() => {
-    try {
-      return params.userId
-        ? JSON.parse(decodeURIComponent(params?.userId as string))
-        : null;
-    } catch (e) {
-      console.error("Failed to parse userId param:", e);
-      return null;
-    }
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params?.userId as string))
+      : null;
   }, [params.userId]);
 
-  const [
-    getUserSpecificPost,
-    {
-      data: postsData,
-      isLoading: postsIsLoading,
-      isFetching: postsIsFetching,
-      error: postsError,
-      isError: postsIsError,
-    },
-  ] = useLazyGetSpecificUserPostQuery();
+  // RTK Query setup
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  const [trigger, { isLoading, isError, isFetching, error: mediaError }] =
+    useLazyGetUserPostsByCategoryQuery();
 
   const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
 
-  useEffect(() => {
-    if (fetchedUserId?.id && fetchedUserId?.type) {
-      getUserSpecificPost({
-        postedBy: fetchedUserId.id,
-        postedByType: fetchedUserId.type,
-        limit: 30,
-        skip: 0,
-      });
+  // Fetch posts with pagination
+  const fetchPosts = async (isInitial = false) => {
+    if (!fetchedUserId?.id) return;
+    try {
+      const res = await trigger({
+        userId: fetchedUserId.id,
+        type: "media",
+        limit: 10,
+        cursor: isInitial ? null : cursor,
+      }).unwrap();
+
+      if (res) {
+        setPosts((prev) => (isInitial ? res.data : [...prev, ...res.data]));
+        setCursor(res.nextCursor);
+      }
+    } catch (err) {
+      console.error("Failed to fetch media posts:", err);
     }
-  }, [fetchedUserId?.id, fetchedUserId?.type, getUserSpecificPost]);
+  };
 
+  useEffect(() => {
+    if (fetchedUserId.id) {
+      fetchPosts(true);
+    }
+  }, [fetchedUserId?.id]);
+
+  const handleLoadMore = () => {
+    if (cursor && !isFetching && !isFetchingMore) {
+      setIsFetchingMore(true);
+      fetchPosts().finally(() => setIsFetchingMore(false));
+    }
+  };
+
+  // Process posts into media items
   const initialImageData = useMemo<MediaItem[]>(() => {
-    const posts: Post[] = postsData || [];
+    return posts.flatMap((post: Post): MediaItem[] => {
+      if (!post?._id || !post.assets || post.assets.length === 0) return [];
 
-    return (
-      posts.flatMap((post: Post): MediaItem[] => {
-        if (!post?._id || !post.assets || post.assets.length === 0) {
-          return [];
-        }
+      const isVideoPost = post.isVideo === true;
 
-        const isVideoPost = post.isVideo === true;
+      if (isVideoPost) {
+        return post.assets
+          .filter((asset) => asset?.url)
+          .map((asset) => ({
+            imageUrl: asset.url,
+            postId: post._id!,
+            isVideoAsset: true,
+            thumbnailUrl: undefined,
+            hasMultipleAssets: false,
+          }));
+      } else {
+        const firstAsset = post.assets[0];
+        if (!firstAsset?.url) return [];
+        return [
+          {
+            imageUrl: firstAsset.url,
+            postId: post._id!,
+            isVideoAsset: false,
+            thumbnailUrl: undefined,
+            hasMultipleAssets: post.assets.length > 1,
+          },
+        ];
+      }
+    });
+  }, [posts]);
 
-        if (isVideoPost) {
-          return (
-            post.assets
-              ?.filter((asset) => asset && asset.url)
-              ?.map(
-                (asset): MediaItem => ({
-                  imageUrl: asset.url,
-                  postId: post._id!,
-                  isVideoAsset: true,
-                  thumbnailUrl: undefined,
-                  hasMultipleAssets: false,
-                })
-              ) || []
-          );
-        } else {
-          const firstAsset = post.assets[0];
-          if (!firstAsset?.url) {
-            return [];
-          }
-          const hasMultipleImages = post.assets.length > 1;
-          return [
-            {
-              imageUrl: firstAsset.url,
-              postId: post._id!,
-              isVideoAsset: false,
-              thumbnailUrl: undefined,
-              hasMultipleAssets: hasMultipleImages,
-            },
-          ];
-        }
-      }) || []
-    );
-  }, [postsData]);
-
+  // Thumbnail generation (existing logic)
   useEffect(() => {
     const generateThumbnails = async (mediaItems: MediaItem[]) => {
       setThumbnailsLoading(true);
-      let updated = false;
-
-      const videoItemsToProcess = mediaItems
-        .map((item, index) => ({ ...item, originalIndex: index }))
-        .filter(
-          (item) => item.isVideoAsset && item.imageUrl && !item.thumbnailUrl
-        );
-
-      const thumbnailPromises = videoItemsToProcess.map(async (item) => {
-        try {
-          const { uri } = await VideoThumbnails.getThumbnailAsync(
-            item.imageUrl,
-            { time: 1000, quality: 0.5 }
-          );
-          return { index: item.originalIndex, thumbnailUrl: uri };
-        } catch (error) {
-          console.warn(
-            `Failed to generate thumbnail for ${item.imageUrl}:`,
-            error
-          );
-          return { index: item.originalIndex, thumbnailUrl: null };
+      const thumbnailPromises = mediaItems.map(async (item, index) => {
+        if (item.isVideoAsset && item.imageUrl && !item.thumbnailUrl) {
+          try {
+            const { uri } = await VideoThumbnails.getThumbnailAsync(
+              item.imageUrl,
+              {
+                time: 1000,
+                quality: 0.5,
+              }
+            );
+            return { index, thumbnailUrl: uri };
+          } catch (error) {
+            console.warn("Failed to generate thumbnail:", error);
+            return null;
+          }
         }
+        return null;
       });
 
       const results = await Promise.all(thumbnailPromises);
-
-      setProcessedImageData((currentData) => {
-        if (currentData.length !== mediaItems.length) {
-          console.warn(
-            "State inconsistency detected before applying thumbnails. Using latest data structure."
-          );
-          const alignedData = mediaItems.map((item) => ({ ...item }));
-          results.forEach((result) => {
-            if (result && result.thumbnailUrl !== undefined) {
-              if (result.index >= 0 && result.index < alignedData.length) {
-                if (
-                  alignedData[result.index].thumbnailUrl !== result.thumbnailUrl
-                ) {
-                  alignedData[result.index].thumbnailUrl =
-                    result.thumbnailUrl ?? undefined;
-                  updated = true;
-                }
-              } else {
-                console.warn(
-                  `Thumbnail result index ${result.index} out of bounds during alignment.`
-                );
-              }
+      setProcessedImageData((current) =>
+        results.reduce(
+          (acc, result) => {
+            if (result) {
+              acc[result.index] = {
+                ...current[result.index],
+                thumbnailUrl: result.thumbnailUrl,
+              };
             }
-          });
-          return updated ? alignedData : currentData;
-        }
-
-        const newData = [...currentData];
-        results.forEach((result) => {
-          if (result && result.thumbnailUrl !== undefined) {
-            if (result.index >= 0 && result.index < newData.length) {
-              if (newData[result.index].thumbnailUrl !== result.thumbnailUrl) {
-                newData[result.index] = {
-                  ...newData[result.index],
-                  thumbnailUrl: result.thumbnailUrl ?? undefined,
-                };
-                updated = true;
-              }
-            } else {
-              console.warn(
-                `Thumbnail result index ${result.index} out of bounds for current data.`
-              );
-            }
-          }
-        });
-        return updated ? newData : currentData;
-      });
+            return acc;
+          },
+          [...current]
+        )
+      );
       setThumbnailsLoading(false);
     };
 
-    setProcessedImageData(initialImageData);
-
-    const videosToProcess = initialImageData.filter(
-      (item) => item.isVideoAsset && item.imageUrl && !item.thumbnailUrl
-    );
-
-    if (videosToProcess.length > 0) {
-      generateThumbnails(initialImageData);
-    } else {
-      setThumbnailsLoading(false);
+    if (initialImageData.length > 0) {
+      setProcessedImageData(initialImageData);
+      const videosToProcess = initialImageData.filter(
+        (item) => item.isVideoAsset && !item.thumbnailUrl
+      );
+      if (videosToProcess.length > 0) {
+        generateThumbnails(initialImageData);
+      }
     }
   }, [initialImageData]);
 
   const MemoizedEmptyComponent = memo(() => (
     <View style={styles.centerContent}>
-      <TextScallingFalse className="text-white text-center p-4">No media available</TextScallingFalse>
+      {isLoading ? (
+        <ActivityIndicator color="#12956B" size={22} />
+      ) : (
+        <Text className="text-white text-center p-4">No media available</Text>
+      )}
     </View>
   ));
 
-  const renderGridItem = useCallback(
-    ({ item }: { item: MediaItem }) => {
-      const displayUri = item.isVideoAsset ? item.thumbnailUrl : item.imageUrl;
+  const renderGridItem = useCallback(({ item }: { item: MediaItem }) => {
+    const displayUri = item.isVideoAsset
+      ? item.thumbnailUrl || item.imageUrl
+      : item.imageUrl;
+    const sourceUri = typeof displayUri === "string" ? displayUri : null;
 
-      const sourceUri =
-        displayUri || (item.isVideoAsset ? item.imageUrl : null);
+    const handlePress = () => {
+      if (item.postId) {
+        router.push({
+          pathname: "/post-details/[postId]",
+          params: { postId: item.postId },
+        } as Href);
+      } else {
+        console.warn(
+          "Could not navigate: postId is missing for media item",
+          item.imageUrl
+        );
+      }
+    };
 
-      const handlePress = () => {
-        if (item.postId) {
-          router.push({
-            pathname: "/post-details/[postId]",
-            params: { postId: item.postId },
-          } as Href);
-        } else {
-          console.warn(
-            "Could not navigate: postId is missing for media item",
-            item.imageUrl
-          );
-        }
-      };
+    const currentIconSize = iconSizeInsideCircle;
 
-      const currentIconSize = iconSizeInsideCircle;
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={styles.itemContainer}
+        onPress={handlePress}
+      >
+        {sourceUri ? (
+          <Image
+            source={{ uri: sourceUri }}
+            resizeMode="cover"
+            style={styles.image}
+          />
+        ) : (
+          <View style={[styles.image, styles.placeholder]}>
+            {item.isVideoAsset && (
+              <ActivityIndicator size="small" color="#ccc" />
+            )}
+          </View>
+        )}
 
-      return (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={styles.itemContainer}
-          onPress={handlePress}
-        >
-          {sourceUri ? (
-            <Image
-              source={{ uri: sourceUri }}
-              resizeMode="cover"
-              style={styles.image}
-            />
-          ) : (
-            <View style={[styles.image, styles.placeholder]}>
-              {(item.isVideoAsset ||
-                (item.isVideoAsset && thumbnailsLoading)) && (
-                <ActivityIndicator size="small" color="#ccc" />
-              )}
-            </View>
-          )}
+        {item.isVideoAsset && (
+          <BlurView
+            intensity={30}
+            tint="dark"
+            style={styles.videoIconContainer}
+          >
+            <ClipsIconMedia size={currentIconSize} />
+          </BlurView>
+        )}
 
-          {item.isVideoAsset && (
-            <BlurView
-              intensity={30}
-              tint="dark"
-              style={styles.videoIconContainer}
-            >
-              <ClipsIconMedia size={currentIconSize} />
-            </BlurView>
-          )}
-
-          {item.hasMultipleAssets && !item.isVideoAsset && (
-            <BlurView
-              intensity={30}
-              tint="dark"
-              style={styles.multipleIconContainer}
-            >
-              <MultipleImageIcon size={16} />
-            </BlurView>
-          )}
-        </TouchableOpacity>
-      );
-    },
-    [thumbnailsLoading]
-  );
+        {item.hasMultipleAssets && !item.isVideoAsset && (
+          <BlurView
+            intensity={30}
+            tint="dark"
+            style={styles.multipleIconContainer}
+          >
+            <MultipleImageIcon size={16} />
+          </BlurView>
+        )}
+      </TouchableOpacity>
+    );
+  }, []);
 
   const keyExtractor = useCallback(
-    (item: MediaItem, index: number) =>
-      `${item.postId}-${item.imageUrl}-${index}-${item.isVideoAsset}-${item.hasMultipleAssets}`,
+    (item: MediaItem) => `${item.postId}-${item.imageUrl}`,
     []
   );
 
-  const isLoading =
-    profileIsLoading || postsIsLoading || (postsIsFetching && !postsData);
-  const hasError = profileHasError || postsIsError;
-  const error = profileHasError || postsError;
+  const loading = isLoading;
+  const error = mediaError;
 
-  if (isLoading && !processedImageData.length) {
+  if (loading) {
     return (
       <View style={styles.centerContent}>
         <ActivityIndicator color="#12956B" size={22} />
@@ -310,52 +260,50 @@ const Media = () => {
     );
   }
 
-  if (hasError && !processedImageData.length) {
-    const errorMessage = error
-      ? typeof error === "string"
-        ? error
-        : JSON.stringify(error)
-      : "An unknown error occurred";
+  if (error || isError) {
     return (
       <View style={styles.centerContent}>
-        <TextScallingFalse className="text-red-500 text-center">
-          Error loading media: {errorMessage}
+        <TextScallingFalse className="text-red-500">
+          Error loading media: {error?.toString()}
         </TextScallingFalse>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 mt-[5px]">
+    <View className="flex-1">
       <FlatList
         data={processedImageData}
         keyExtractor={keyExtractor}
         numColumns={3}
         renderItem={renderGridItem}
-        ListEmptyComponent={!isLoading ? MemoizedEmptyComponent : null}
+        ListEmptyComponent={MemoizedEmptyComponent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
         contentContainerStyle={[
           styles.listContentContainer,
           processedImageData.length === 0 && styles.emptyListContainer,
         ]}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <ActivityIndicator
+              style={styles.bottomLoader}
+              color="#555"
+              size="small"
+            />
+          ) : null
+        }
         windowSize={11}
         initialNumToRender={15}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         removeClippedSubviews={true}
       />
-      {thumbnailsLoading && (
-        <ActivityIndicator
-          style={styles.bottomLoader}
-          color="#555"
-          size="small"
-        />
-      )}
     </View>
   );
 };
 
-export default Media;
-
+// Keep existing styles unchanged
 const { width } = Dimensions.get("window");
 const itemMargin = 1;
 const numColumns = 3;
@@ -364,7 +312,6 @@ const itemSize = (width - itemMargin * (numColumns - 1) * 2) / numColumns;
 const styles = StyleSheet.create({
   centerContent: {
     flex: 1,
-    alignItems: "center",
     padding: 20,
   },
   emptyListContainer: {
@@ -426,3 +373,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+export default Media;

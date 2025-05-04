@@ -1,4 +1,3 @@
-// Home.tsx
 import React, {
   memo,
   useCallback,
@@ -16,13 +15,11 @@ import {
   Text,
   Animated,
   Platform,
-  Image,
   ScrollView,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
 import PostContainer from "@/components/Cards/postContainer";
-import DiscoverPeopleList from "@/components/discover/discoverPeopleList";
 import { Divider } from "react-native-elements";
 import {
   fetchFeedPosts,
@@ -35,7 +32,6 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "~/components/CentralText";
-import { useNavigation } from "@react-navigation/native";
 import { useScroll } from "~/context/ScrollContext";
 import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
 import debounce from "lodash.debounce";
@@ -43,10 +39,10 @@ import eventBus from "~/utils/eventBus";
 import PageThemeView from "~/components/PageThemeView";
 import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 import UploadProgressBar from "~/components/UploadProgressBar";
+import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 
 const INTERLEAVE_INTERVAL = 6;
 
-// Moved outside to prevent re-creation on each render
 const EmptyComponent = memo(({ error }: { error: any }) => {
   if (error) {
     console.error("Feed Error:", error);
@@ -55,53 +51,51 @@ const EmptyComponent = memo(({ error }: { error: any }) => {
   return <Text style={styles.emptyText}>No new posts available</Text>;
 });
 
-const ListFooterComponent = memo(({ isLoading }: { isLoading: boolean }) => {
-  if (isLoading) {
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={Colors.themeColor} />
-      </View>
-    );
-  } else {
-    return (
-      <View style={styles.footerMessage}>
-        <TextScallingFalse style={styles.footerLargeText}>
-          you
-        </TextScallingFalse>
-        <TextScallingFalse style={styles.footerLargeText}>
-          did it!
-        </TextScallingFalse>
-        <TextScallingFalse style={styles.footerSmallText}>
-          Crafted with &#10084; in Kolkata, IN
-        </TextScallingFalse>
-      </View>
-    );
+const ListFooterComponent = memo(
+  ({ isLoading, hasMore }: { isLoading: boolean; hasMore: boolean }) => {
+    if (isLoading) {
+      return (
+        <View style={styles.footerLoader}>
+          <ActivityIndicator size="small" color={Colors.themeColor} />
+        </View>
+      );
+    } else if (!hasMore) {
+      return (
+        <View style={styles.footerMessage}>
+          <TextScallingFalse style={styles.footerLargeText}>
+            Level Unlocked
+          </TextScallingFalse>
+          <TextScallingFalse style={styles.footerLargeText2}>
+            Ultimate Scoller
+          </TextScallingFalse>
+          <TextScallingFalse style={styles.footerSmallText}>
+            Crafted with &#10084; in Kolkata, IN
+          </TextScallingFalse>
+        </View>
+      );
+    } else {
+      return null; // No footer needed if more posts are loading
+    }
   }
-});
+);
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigation = useNavigation();
-  const { loading, error, hasMore, currentPage } = useSelector(selectFeedState);
+  const { loading, error, cursor, hasMore } = useSelector(selectFeedState);
   const posts = useSelector(selectAllPosts);
-  const { progress } = useSelector((state: RootState) => state.post);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
-  const { scrollY } = useScroll();
+  // const { scrollY } = useScroll();
 
-  // state for visible posts; assume each post has a unique id in item.data.id
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
-  // viewabilityConfig: consider an item visible if 100% of it is onscreen
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 100,
   });
 
-  // Handle updates to visible items
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<any> }) => {
-      // Extract post IDs of visible items that are of type "post"
       const visibleIds = viewableItems
         .filter((vi) => vi.item.data && vi.item.data._id)
         .map((vi) => vi.item.data._id);
@@ -109,23 +103,16 @@ const Home = () => {
     }
   ).current;
 
-  // Refresh posts handler
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     dispatch(resetFeed());
-    dispatch(fetchFeedPosts({ page: 1 }));
+    dispatch(fetchFeedPosts({}));
     setIsRefreshing(false);
   }, [dispatch]);
 
-  // Listener for tab press to scroll to top and refresh posts
   useEffect(() => {
     const scrollListener = () => {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-      // setIsRefreshing(true);
-      // // You can add a slight delay if needed before refreshing
-      // setTimeout(() => {
-      //   handleRefresh();
-      // }, 1000);
     };
 
     eventBus.addListener("scrollToTop", scrollListener);
@@ -134,12 +121,10 @@ const Home = () => {
     };
   }, []);
 
-  // Fetch posts on mount
   useEffect(() => {
-    dispatch(fetchFeedPosts({ page: 1 }));
-  }, [dispatch]);
+    dispatch(fetchFeedPosts({ limit: 10, cursor }));
+  }, [cursor, dispatch]);
 
-  // Debounced refresh to avoid multiple rapid calls
   const debouncedRefresh = useMemo(
     () => debounce(handleRefresh, 1000),
     [handleRefresh]
@@ -151,16 +136,14 @@ const Home = () => {
     };
   }, [debouncedRefresh]);
 
-  // Load more posts handler
   const handleLoadMore = useCallback(async () => {
-    if (currentPage !== null && !loading) {
+    if (hasMore && !loading && cursor) {
       setIsLoading(true);
-      await dispatch(fetchFeedPosts({ page: currentPage }));
+      await dispatch(fetchFeedPosts({ limit: 10, cursor }));
       setIsLoading(false);
     }
-  }, [currentPage, dispatch, loading]);
+  }, [cursor, dispatch, loading, hasMore]);
 
-  // Interleave posts with discover people items
   const interleavedData = useMemo(() => {
     return posts.reduce(
       (
@@ -180,7 +163,6 @@ const Home = () => {
     );
   }, [posts]);
 
-  // Render items based on type
   const renderItem = useCallback(
     ({ item }: { item: { type: string; data?: Post; id?: string } }) => {
       if (item.type === "post" && item.data) {
@@ -200,7 +182,6 @@ const Home = () => {
     [visiblePostIds]
   );
 
-  // Key extractor based on item type
   const keyExtractor = useCallback(
     (item: { type: "post"; data: Post } | { type: "discover"; id: string }) => {
       return item.type === "post" ? item.data._id : item.id;
@@ -210,8 +191,7 @@ const Home = () => {
 
   const isAndroid = Platform.OS === "android";
 
-  if (loading && currentPage === 1) {
-    console.log("\n\nLOADING...", currentPage);
+  if (loading && !cursor) {
     return (
       <PageThemeView>
         <CustomHomeHeader />
@@ -237,7 +217,7 @@ const Home = () => {
     <PageThemeView>
       <CustomHomeHeader />
       <UploadProgressBar />
-      {loading && currentPage === 1 ? (
+      {loading && !cursor ? (
         <ActivityIndicator size="large" color={Colors.themeColor} />
       ) : (
         <GestureHandlerRootView>
@@ -245,10 +225,10 @@ const Home = () => {
             ref={flatListRef}
             data={interleavedData}
             keyExtractor={keyExtractor}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: true }
-            )}
+            // onScroll={Animated.event(
+            //   [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            //   { useNativeDriver: true }
+            // )}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig.current}
             scrollEventThrottle={16}
@@ -258,7 +238,7 @@ const Home = () => {
             windowSize={21}
             refreshControl={
               <RefreshControl
-                refreshing={isRefreshing || (loading && currentPage === 1)}
+                refreshing={isRefreshing || (loading && !cursor)}
                 onRefresh={debouncedRefresh}
                 colors={["#12956B", "#6E7A81"]}
                 tintColor="#6E7A81"
@@ -269,7 +249,9 @@ const Home = () => {
             onEndReached={handleLoadMore}
             onEndReachedThreshold={2}
             ListEmptyComponent={<EmptyComponent error={error} />}
-            ListFooterComponent={<ListFooterComponent isLoading={isLoading} />}
+            ListFooterComponent={
+              <ListFooterComponent isLoading={isLoading} hasMore={hasMore} />
+            }
             contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
           />
@@ -310,6 +292,11 @@ const styles = StyleSheet.create({
     height: 240,
   },
   footerLargeText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#808080c6",
+  },
+  footerLargeText2: {
     fontSize: 60,
     fontWeight: "bold",
     color: "#808080c6",

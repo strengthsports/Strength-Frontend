@@ -121,7 +121,7 @@ const FollowersPage = () => {
               numberOfLines={1}
               allowFontScaling={false}
             >
-              {item.headline}
+              @{user.username} | {item.headline}
             </Text>
           </View>
         </View>

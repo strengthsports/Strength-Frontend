@@ -1,100 +1,70 @@
 import {
   ActivityIndicator,
   StyleSheet,
-  Text,
   RefreshControl,
-  FlatList,
   Dimensions,
-  TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import React, { useState, useCallback, memo, useRef } from "react";
-import { useFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
+import React, { useState, useCallback, memo, useRef, useMemo } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { LikerCard } from "~/components/feedPage/LikerModal";
+import UserList from "~/components/ui/UserList";
 import TopBar from "~/components/TopBar";
 import PageThemeView from "~/components/PageThemeView";
 import { debounce } from "@/utils/debounce";
-import TextScallingFalse from "~/components/CentralText";
-import { View } from "react-native";
-import { Image } from "expo-image";
-import emptyLike from "@/assets/images/emptyLike.jpg";
-import { AntDesign } from "@expo/vector-icons";
-import LikeNotFound from "~/components/notfound/likeNotFound";
 
 const DEBOUNCE_DELAY = 1000;
 const { height } = Dimensions.get("window");
 
 const Likes = memo(() => {
-  const { postId } = useLocalSearchParams();
-  const [refreshing, setRefreshing] = useState(false);
+  const params = useLocalSearchParams();
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data, error, isLoading, refetch } = useFetchLikersQuery({
-    targetId: postId.toString(),
-    targetType: "Post",
-  });
+  console.log(params);
 
-  // Store the debounced function in a ref to maintain it between renders
-  const debouncedRefetch = useRef(
-    debounce(async () => {
-      try {
-        await refetch();
-      } finally {
-        setRefreshing(false);
-      }
+  const targetData = useMemo(() => {
+    return params.postId
+      ? JSON.parse(decodeURIComponent(params.postId as string))
+      : null;
+  }, [params.postId]);
+  const refreshTrigger = useRef(0);
+
+  const debouncedRefresh = useRef(
+    debounce(() => {
+      refreshTrigger.current += 1; // change key to trigger refetch
+      setRefreshing(false);
     }, DEBOUNCE_DELAY)
   ).current;
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    debouncedRefetch();
-  }, [debouncedRefetch]);
+    debouncedRefresh();
+  }, [debouncedRefresh]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: any }) => <LikerCard liker={item.liker} />,
-    []
-  );
-
-  const keyExtractor = useCallback((item: any) => item.liker._id, []);
+  if (!targetData) return null;
 
   return (
     <PageThemeView>
       <TopBar heading="Likes" backHandler={() => router.push("..")} />
 
-      {isLoading && !refreshing ? (
-        <ActivityIndicator size="large" color="#12956B" />
-      ) : (
-        <FlatList
-          data={data?.data}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingHorizontal: 15, paddingTop: 5 }}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          removeClippedSubviews
-          updateCellsBatchingPeriod={100}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["#12956B", "#6E7A81"]}
-              tintColor="#6E7A81"
-              progressBackgroundColor="#181A1B"
-            />
-          }
-          ListEmptyComponent={
-            <View
-              className="justify-center items-center"
-              style={{
-                paddingTop: height / 2.5,
-              }}
-            >
-              <LikeNotFound />
-            </View>
-          }
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#12956B", "#6E7A81"]}
+            tintColor="#6E7A81"
+            progressBackgroundColor="#181A1B"
+          />
+        }
+      >
+        <UserList
+          key={refreshTrigger.current}
+          targetId={targetData.id}
+          targetType={targetData.type}
+          type="Likers"
         />
-      )}
+      </ScrollView>
     </PageThemeView>
   );
 });

@@ -128,6 +128,10 @@ const LocationModal = ({ visible, onClose, onSave }) => {
         };
 
         setSelectedPlace(addressData);
+        // Automatically save the location when a place is selected
+        onSave(addressData);
+        feedback("Location successfully set", "success");
+        onClose();
       }
     } catch (error) {
       console.error("Error fetching place details:", error);
@@ -140,6 +144,10 @@ const LocationModal = ({ visible, onClose, onSave }) => {
     if (address) {
       setAddressPickup(address.formattedAddress);
       setSelectedPlace(address);
+      // Automatically save when current location is fetched
+      onSave(address);
+      feedback("Location successfully set", "success");
+      onClose();
     }
   }, [address]);
 
@@ -149,16 +157,6 @@ const LocationModal = ({ visible, onClose, onSave }) => {
       feedback(error);
     }
   }, [error]);
-
-  const handleSaveLocation = () => {
-    if (!selectedPlace) {
-      feedback("Please select a valid location", "error");
-      return;
-    }
-    onSave(selectedPlace);
-    feedback("Location successfully set", "success");
-    onClose();
-  };
 
   return (
     <Modal
@@ -171,19 +169,17 @@ const LocationModal = ({ visible, onClose, onSave }) => {
         <View className="bg-black border border-[#515151] rounded-lg mx-4 my-8 p-4 h-4/5">
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
-            <TextScallingFalse className="text-white text-2xl font-bold">
-              Set Location
+            <TextScallingFalse className="text-white text-3xl font-bold">
+              Select Location
             </TextScallingFalse>
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={24} color="white" />
+              <MaterialIcons name="close" size={24} color="white"/>
             </TouchableOpacity>
           </View>
 
           {/* Search Input */}
           <View className="mb-4">
-            <TextScallingFalse className="text-white mb-2">
-              Enter location
-            </TextScallingFalse>
+          
             <TextInput
               value={addressPickup}
               onChangeText={handleAddressChange}
@@ -238,29 +234,6 @@ const LocationModal = ({ visible, onClose, onSave }) => {
               </ScrollView>
             </View>
           )}
-
-          {/* Selected Location Display */}
-          {selectedPlace && (
-            <View className="bg-gray-900 rounded-lg p-4 mb-4">
-              <TextScallingFalse className="text-white font-bold mb-2">
-                Selected Location:
-              </TextScallingFalse>
-              <TextScallingFalse className="text-gray-300">
-                {selectedPlace.formattedAddress || 
-                  `${selectedPlace.city}, ${selectedPlace.state}, ${selectedPlace.country}`}
-              </TextScallingFalse>
-            </View>
-          )}
-
-          {/* Save Button */}
-          <TouchableOpacity
-            onPress={handleSaveLocation}
-            className="bg-[#12956B] rounded-lg p-4 items-center"
-          >
-            <TextScallingFalse className="text-white text-lg font-semibold">
-              Save Location
-            </TextScallingFalse>
-          </TouchableOpacity>
         </View>
       </View>
     </Modal>

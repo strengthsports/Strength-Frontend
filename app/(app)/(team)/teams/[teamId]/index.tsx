@@ -218,7 +218,7 @@ const TeamPage: React.FC = () => {
     (role: string) => {
       modalRef.current?.close();
       router.push(
-        `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role.toLowerCase()}` as RelativePathString
+        `/(app)/(team)/teams/${teamId}/InviteMembers?role=${role}` as RelativePathString
       );
     },
     [router, teamId]
@@ -281,7 +281,17 @@ const TeamPage: React.FC = () => {
   }, [isAdmin, teamData.membersCount, teamId, router, handleDeleteTeam]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}
+    showsVerticalScrollIndicator={false}
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        tintColor="#fff"
+        colors={["#fff"]}
+        progressViewOffset={40}
+      />
+    }>
       <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId}>
        
 
@@ -290,15 +300,7 @@ const TeamPage: React.FC = () => {
           ref={scrollViewRef}
           style={styles.squadContainer}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#fff"
-              colors={["#fff"]}
-              progressViewOffset={40}
-            />
-          }
+         
           showsVerticalScrollIndicator={false}
         >
           {loading && !refreshing ? (
@@ -335,7 +337,7 @@ const TeamPage: React.FC = () => {
         isAdmin={isAdmin}
         onInvitePress={handleInvitePress}
       />
-    </View>
+    </ScrollView>
   );
 };
 

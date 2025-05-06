@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Image,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -16,8 +17,6 @@ import { formatTimeAgo } from "~/utils/formatTime";
 import nopic from "@/assets/images/nopic.jpg";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
-import { RelativePathString } from "expo-router";
-import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
 import { toggleLike, voteInPoll } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";

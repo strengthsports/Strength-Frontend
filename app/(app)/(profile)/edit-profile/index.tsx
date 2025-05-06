@@ -10,8 +10,10 @@ import {
   ToastAndroid,
   Platform,
   Keyboard,
+  BackHandler,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -253,8 +255,8 @@ const EditProfile = () => {
           parsed.unit === "kg"
             ? parsed.value
             : parsed.unit === "lbs"
-            ? parsed.value / 2.20462
-            : 0;
+              ? parsed.value / 2.20462
+              : 0;
         setInitialMeasurement(baseKg);
       }
 
@@ -913,6 +915,28 @@ const EditProfile = () => {
   const maxDOB = new Date();
   maxDOB.setFullYear(today.getFullYear() - 13); // must be born before today minus 13 years
 
+
+  const handleBackPress = () => {
+    if (!Array.from(finalUploadData.entries()).length) {
+      router.back(); // No unsaved changes — go back
+      return false;  // Allow default back behavior (for system back)
+    } else {
+      setAlertModal(true); // Unsaved changes — show alert modal
+      return true;  // Prevent default system back
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+  
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+      };
+    }, [finalUploadData])
+  );
+
+  
   return (
     <SafeAreaView>
       <PageThemeView>
@@ -924,19 +948,7 @@ const EditProfile = () => {
           <View className="h-12 w-full flex-row justify-between items-center px-5">
             {/* Back button */}
             <TouchableOpacity
-            onPress={() => {
-              if (!Array.from(finalUploadData.entries()).length) {
-                const start = performance.now(); // Start timer
-                router.replace("/profile");
-            
-                // You can't measure after `router.push` directly since it's async & render happens elsewhere,
-                // so use a navigation listener in the profile screen itself.
-                console.log("Navigation started at:", start);
-              } else {
-                setAlertModal(true);
-              }
-            }}
-            
+            onPress={handleBackPress}
               className="basis-[20%]"
             >
               <TextScallingFalse className="text-[#808080] text-4xl font-normal">
@@ -963,11 +975,10 @@ const EditProfile = () => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${
-                    Array.from(finalUploadData.entries()).length
+                  className={`${Array.from(finalUploadData.entries()).length
                       ? "text-[#12956B]"
                       : "text-[#808080]"
-                  } text-4xl font-medium`}
+                    } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -1107,7 +1118,7 @@ const EditProfile = () => {
               alertConfig={{
                 title: "Discard changes?",
                 message: "If you go back now, you will lose your changes.",
-                confirmAction: () => router.push("/profile"),
+                confirmAction: () => router.back(),
                 discardAction: () => setAlertModal(false),
                 confirmMessage: "Discard",
                 cancelMessage: "Continue",
@@ -1483,9 +1494,8 @@ const EditProfile = () => {
                       {label}
                     </TextScallingFalse>
                     <View
-                      className={`flex-row border-b border-white ${
-                        picType === "headline" ? "" : "h-[50px]"
-                      }`}
+                      className={`flex-row border-b border-white ${picType === "headline" ? "" : "h-[50px]"
+                        }`}
                     >
                       <TextInput
                         value={inputValue}
@@ -1782,9 +1792,8 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-16 ${
-      !isLast ? "border-b border-[#3030309a]" : ""
-    }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
+      }`}
   >
     <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
       {label}
@@ -1795,25 +1804,24 @@ const FormField = ({
       className="flex-row items-center justify-between h-full w-2/3"
     >
       <TextScallingFalse
-        className={`text-2xl font-light ${
-          value ? "text-white" : "text-gray-500"
-        }`}
+        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
+          }`}
       >
         {isDate
           ? dateFormatter(value, "date")
           : type === "favouriteSports"
-          ? Array.isArray(value)
-            ? value
+            ? Array.isArray(value)
+              ? value
                 .map((sport) =>
                   typeof sport === "object" ? sport.name : sport
                 )
                 .join(", ")
-            : "Select sports"
-          : type === "address"
-          ? value?.city && value?.state && value?.country
-            ? `${value.city}, ${value.state}, ${value.country}`
-            : ""
-          : value || placeholder}
+              : "Select sports"
+            : type === "address"
+              ? value?.city && value?.state && value?.country
+                ? `${value.city}, ${value.state}, ${value.country}`
+                : ""
+              : value || placeholder}
       </TextScallingFalse>
       {icon && <View className="">{icon}</View>}
     </TouchableOpacity>
@@ -1896,22 +1904,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-              ? "Cm"
-              : field === "meters"
-              ? "m"
-              : field === "kilograms"
-              ? "kg"
-              : "lbs"}
+                ? "Cm"
+                : field === "meters"
+                  ? "m"
+                  : field === "kilograms"
+                    ? "kg"
+                    : "lbs"}
           </TextScallingFalse>
         </View>
         <CustomButton
           field={
             field as
-              | "feetInches"
-              | "centimeters"
-              | "meters"
-              | "kilograms"
-              | "pounds"
+            | "feetInches"
+            | "centimeters"
+            | "meters"
+            | "kilograms"
+            | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

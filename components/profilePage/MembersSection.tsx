@@ -80,12 +80,12 @@ const MembersSection = ({
       <MembersList
         members={members}
         isEditView={isEditView}
-        limit={isEditView ? members.length : 4}
+        limit={40}
         isAdmin={isAdmin}
       />
 
       {/* Show more button */}
-      {members.length >= 5 && isAdmin &&(
+      {members.length >= 10 && isAdmin &&(
         <TouchableOpacity
           activeOpacity={0.3}
           onPress={() =>
@@ -103,7 +103,7 @@ const MembersSection = ({
             style={{
               color: "#808080",
               fontSize: 15,
-              fontWeight: "700", // Bold
+              fontWeight: "700", 
             }}
           >
             {moreText}

@@ -97,52 +97,42 @@ const LoginScreen = () => {
     <PageThemeView>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1 }}
+        // contentContainerStyle={{ flexGrow: 1}}
+        style={{flex: 1}}
       >
-        <View style={{ width: "100%", paddingHorizontal: 25 }}>
+        <View style={{ width: "100%", paddingHorizontal: 25}}>
           <View style={{ flexDirection: "row", marginTop: 30, gap: 7 }}>
             <Image style={{ width: 45, height: 45 }} source={logo} />
-            <Text
+            <TextScallingFalse
               style={{
                 color: "white",
                 fontSize: 26,
                 fontWeight: "500",
-                marginTop: 3,
+                marginTop: 4,
               }}
             >
               Strength
-            </Text>
+            </TextScallingFalse>
           </View>
         </View>
 
-        <View style={{ width: "100%", height: "31%", marginTop: 20 }}>
+        <View style={{ width: "100%", height: 270, marginTop: 20}}>
           <Image source={banner} style={{ width: "100%", height: "100%" }} />
         </View>
 
-        <View
-          style={{
-            width: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-            paddingVertical: 15,
-          }}
-        >
-          <View style={{ width: "84%" }}>
+        <View style={{ width: "100%", alignItems: "center"}}>
             <TextScallingFalse
               style={{
                 color: "white",
                 fontSize: 35,
                 fontWeight: "500",
-                width: "80%",
+                paddingHorizontal: 10,
+                paddingVertical: 18,
               }}
             >
               Step Into the World of Sports
             </TextScallingFalse>
-          </View>
-        </View>
-
-        <View style={{ width: "100%", alignItems: "center" }}>
-          <View>
+          <View >
             <TextScallingFalse
               style={{ color: "white", fontSize: 13, fontWeight: "400" }}
             >
@@ -176,7 +166,7 @@ const LoginScreen = () => {
             <TouchableOpacity
               activeOpacity={0.5}
               onPress={toggleShowPassword}
-              style={{ position: "absolute", top: 112, left: 288 }}
+              style={{ position: "absolute", top: 112, left: 288}}
             >
               <TextScallingFalse
                 style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
@@ -201,7 +191,7 @@ const LoginScreen = () => {
           </View>
         </View>
 
-        <View style={{ marginTop: 27, width: "100%", alignItems: "center" }}>
+        <View style={{ marginTop: 27, width: "100%", alignItems: "center"}}>
           {loading ? (
             <ActivityIndicator
               size={"small"}

@@ -551,6 +551,8 @@ const PostDetailsPage = () => {
               setReplyingTo={setReplyingTo}
               user={user}
               textInputRef={textInputRef}
+              commentText={commentText}
+              setCommentText={setCommentText}
             />
           </View>
         </View>

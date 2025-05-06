@@ -351,16 +351,16 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
     textInputRef.current?.focus();
   }, []);
 
-  // Handle text change in comment input
-  const handleTextChange = useCallback(
-    (text) => {
-      setCommentText(text);
-      if (text === "" && replyingTo) {
-        setReplyingTo(null);
-      }
-    },
-    [replyingTo]
-  );
+  // // Handle text change in comment input
+  // const handleTextChange = useCallback(
+  //   (text) => {
+  //     setCommentText(text);
+  //     if (text === "" && replyingTo) {
+  //       setReplyingTo(null);
+  //     }
+  //   },
+  //   [replyingTo]
+  // );
 
   // Handle posting a new comment or reply
   const handlePostComment = useCallback(async () => {
@@ -604,6 +604,8 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
                 setReplyingTo={setReplyingTo}
                 user={user}
                 textInputRef={textInputRef}
+                commentText={commentText}
+                setCommentText={setCommentText}
               />
             </View>
           </View>

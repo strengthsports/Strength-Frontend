@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View,
   TextInput,
@@ -18,15 +18,22 @@ const CommentInput = ({
   handlePostComment,
   isPosting,
   textInputRef,
+  commentText,
+  setCommentText,
 }: any) => {
-  const [commentText, setCommentText] = useState("");
   const [inputHeight, setInputHeight] = useState(40);
   const MAX_HEIGHT = 120;
 
   // Handle text change with or without reply tag
-  const handleTextChange = (text: string) => {
-    setCommentText(text);
-  };
+  const handleTextChange = useCallback(
+    (text: string) => {
+      setCommentText(text);
+      if (text === "" && replyingTo) {
+        setReplyingTo(null);
+      }
+    },
+    [replyingTo]
+  );
 
   return (
     <View className="bg-black p-2">
@@ -90,14 +97,16 @@ const CommentInput = ({
           />
           <TouchableOpacity
             onPress={handlePostComment}
-            disabled={isPosting || !commentText.trim()}
+            disabled={isPosting || !commentText?.trim()}
             className="p-1"
           >
             <MaterialIcons
               name="send"
               size={22}
               color={
-                isPosting || !commentText.trim() ? "#565656" : Colors.themeColor
+                isPosting || !commentText?.trim()
+                  ? "#565656"
+                  : Colors.themeColor
               }
             />
           </TouchableOpacity>

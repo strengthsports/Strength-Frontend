@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import React, { useCallback, useState } from "react";
+import React from "react";
 import { Member } from "~/types/user";
 import { Image } from "react-native";
 import nopic from "~/assets/images/nopic.jpg";
@@ -10,8 +10,6 @@ import Icon from "react-native-vector-icons/AntDesign";
 import { RelativePathString, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "~/reduxStore";
-import ViceCaptain from "../SvgIcons/teams/ViceCaptain";
-import Captain from "../SvgIcons/teams/Captain";
 import CaptainSq from "../SvgIcons/teams/CaptainSq";
 import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
 
@@ -84,7 +82,7 @@ const MemberEntry = ({
           className={`flex-1 flex-row ml-2 items-center justify-between gap-2 ${
             !isLast && "border-b-[0.5px] border-[#3B3B3B]"
           } py-5`}
-        >r
+        >
           <View className="flex flex-col">
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <TextScallingFalse
@@ -96,8 +94,16 @@ const MemberEntry = ({
               >
                 {member.firstName} {member.lastName}
               </TextScallingFalse>
-              {isCaptain &&<View className="ml-2 mt-1"><CaptainSq /></View> }
-              {isViceCaptain &&<View className="ml-2 mt-1"><ViceCaptainSq  /></View>}
+              {isCaptain && (
+                <View className="ml-2 mt-1">
+                  <CaptainSq />
+                </View>
+              )}
+              {isViceCaptain && (
+                <View className="ml-2 mt-1">
+                  <ViceCaptainSq />
+                </View>
+              )}
             </View>
             <TextScallingFalse
               style={{
@@ -107,7 +113,10 @@ const MemberEntry = ({
                 fontWeight: "300",
               }}
             >
-              {"@"}{member.username}{" | "}{member.headline}
+              {"@"}
+              {member.username}
+              {" | "}
+              {member.headline}
             </TextScallingFalse>
           </View>
           {isEditView && !isSelectModeEnabled && <RightArrow />}

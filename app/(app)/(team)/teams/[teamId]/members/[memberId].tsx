@@ -20,7 +20,7 @@ import {
   changeUserPosition,
   changeUserRole,
 } from "~/reduxStore/slices/team/teamSlice";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 import { toastConfig } from "~/configs/toastConfig";
 import PageThemeView from "~/components/PageThemeView";
 import AntIcon from "react-native-vector-icons/AntDesign";
@@ -33,8 +33,13 @@ import ViceCaptain from "~/components/SvgIcons/teams/ViceCaptain";
 import Captain from "~/components/SvgIcons/teams/Captain";
 import RemoveFromTeam from "~/components/SvgIcons/teams/RemoveFromTeam";
 import TransferAdmin from "~/components/SvgIcons/teams/TransferAdmin";
-import AlertModal from "~/components/modals/AlertModal"; 
-import { showSuccess, showError, showInfo, showWarning } from '../../../../../../utils/feedbackToast';
+import AlertModal from "~/components/modals/AlertModal";
+import {
+  showSuccess,
+  showError,
+  showInfo,
+  showWarning,
+} from "../../../../../../utils/feedbackToast";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 // Types
@@ -100,7 +105,7 @@ const RoleDropdownComponent = ({
         keyExtractor={(item) => item._id}
         renderItem={({ item: role }) => (
           <TouchableOpacity
-          key={role._id} 
+            key={role._id}
             style={[
               styles.roleItem,
               currentRole === role.name && styles.selectedRole,
@@ -110,7 +115,9 @@ const RoleDropdownComponent = ({
               onClose();
             }}
           >
-            <TextScallingFalse style={styles.roleText}>{role.name}</TextScallingFalse>
+            <TextScallingFalse style={styles.roleText}>
+              {role.name}
+            </TextScallingFalse>
             {currentRole === role.name && (
               <AntIcon name="check" size={16} color="#12956B" />
             )}
@@ -120,7 +127,6 @@ const RoleDropdownComponent = ({
     </View>
   </Modal>
 );
-
 
 // Apply React.memo with a display name
 const RoleDropdown = React.memo(RoleDropdownComponent);
@@ -196,7 +202,10 @@ const ActionButtonRole = React.memo(
       className="flex-row w-full justify-between pl-8 pr-3 py-4 mb-4 rounded-lg"
       style={{ backgroundColor }}
     >
-      <TextScallingFalse className="text-3xl font-bold" style={{ color: textColor }}>
+      <TextScallingFalse
+        className="text-3xl font-bold"
+        style={{ color: textColor }}
+      >
         {label}
       </TextScallingFalse>
       {icon && <View className="mr-2">{icon}</View>}
@@ -249,7 +258,10 @@ const ProfileSection = React.memo(({ member }: { member: any }) => (
       {member?.firstName} {member?.lastName}
     </TextScallingFalse>
     <View className="flex-row">
-      <TextScallingFalse style={styles.roleText}>{"@"}{member?.username} |{" "}{member?.headline}</TextScallingFalse>
+      <TextScallingFalse style={styles.roleText}>
+        {"@"}
+        {member?.username} | {member?.headline}
+      </TextScallingFalse>
     </View>
   </View>
 ));
@@ -355,19 +367,19 @@ const MemberDetails = () => {
   }, [memberPosition, role, originalRole, parsedMember?.position]);
 
   // Unified toast message functions
-  const showToastMessage = (message: string, type = 'success') => {
+  const showToastMessage = (message: string, type = "success") => {
     // Using the imported toast utility functions
-    switch(type) {
-      case 'success':
+    switch (type) {
+      case "success":
         showSuccess(message);
         break;
-      case 'error':
+      case "error":
         showError(message);
         break;
-      case 'info':
+      case "info":
         showInfo(message);
         break;
-      case 'warning':
+      case "warning":
         showWarning(message);
         break;
       default:
@@ -394,7 +406,7 @@ const MemberDetails = () => {
       confirmMessage,
       cancelMessage: "Cancel",
     };
-    
+
     setAlertConfig(config);
     setAlertVisible(true);
   };
@@ -431,7 +443,10 @@ const MemberDetails = () => {
             showToastMessage(`Role successfully changed to ${selectedRole}`);
           } catch (error) {
             console.error("Failed to change role:", error);
-            showToastMessage("Could not update role. Please try again.", "error");
+            showToastMessage(
+              "Could not update role. Please try again.",
+              "error"
+            );
           } finally {
             setIsUpdating(false);
           }
@@ -447,7 +462,9 @@ const MemberDetails = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       setIsFollowing((prev) => !prev);
-      showToastMessage(isFollowing ? "Unfollowed successfully" : "Following now");
+      showToastMessage(
+        isFollowing ? "Unfollowed successfully" : "Following now"
+      );
     } finally {
       setIsFollowingLoading(false);
     }
@@ -515,7 +532,10 @@ const MemberDetails = () => {
         showToastMessage(`Position successfully changed to ${newPosition}`);
       } catch (error) {
         console.error("Failed to change position:", error);
-        showToastMessage("Could not update position. Please try again.", "error");
+        showToastMessage(
+          "Could not update position. Please try again.",
+          "error"
+        );
       } finally {
         setIsUpdating(false);
       }
@@ -525,7 +545,7 @@ const MemberDetails = () => {
 
   const isMemberAdmin = useMemo(() => {
     if (!team || !team.admin || !parsedMember) return false;
-    return team.admin.some(admin => admin._id === parsedMember._id);
+    return team.admin.some((admin) => admin._id === parsedMember._id);
   }, [team?.admin, parsedMember?._id]);
 
   const handlePositionChange = useCallback(
@@ -563,12 +583,7 @@ const MemberDetails = () => {
         );
       }
     },
-    [
-      team,
-      parsedMember,
-      memberPosition,
-      executePositionChange,
-    ]
+    [team, parsedMember, memberPosition, executePositionChange]
   );
 
   const handleRemovePosition = useCallback(async () => {
@@ -616,7 +631,10 @@ const MemberDetails = () => {
           router.back();
         } catch (error) {
           console.error("Failed to remove member:", error);
-          showToastMessage("Could not remove member. Please try again.", "error");
+          showToastMessage(
+            "Could not remove member. Please try again.",
+            "error"
+          );
         } finally {
           setIsUpdating(false);
         }
@@ -734,11 +752,7 @@ const MemberDetails = () => {
         </>
       );
     }
-  }, [
-    memberPosition,
-    handlePositionChange,
-    handleRemovePosition,
-  ]);
+  }, [memberPosition, handlePositionChange, handleRemovePosition]);
 
   // Show loading state during initial fetch
   if (loading && !team) {
@@ -746,7 +760,9 @@ const MemberDetails = () => {
       <PageThemeView>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#12956B" />
-          <TextScallingFalse style={styles.loadingText}>Loading member details...</TextScallingFalse>
+          <TextScallingFalse style={styles.loadingText}>
+            Loading member details...
+          </TextScallingFalse>
         </View>
       </PageThemeView>
     );
@@ -755,30 +771,28 @@ const MemberDetails = () => {
   return (
     <PageThemeView>
       {/* Semi-transparent overlay when alert is visible */}
-      {alertVisible && (
-        <View style={styles.backdropOverlay} />
-      )}
-      
+      {alertVisible && <View style={styles.backdropOverlay} />}
+
       {/* Alert Modal */}
       {alertVisible && (
-        <AlertModal 
+        <AlertModal
           alertConfig={alertConfig}
           isVisible={alertVisible}
           onClose={hideAlert}
         />
       )}
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <BackIcon/>
+          <BackIcon />
         </TouchableOpacity>
 
         <TextScallingFalse style={styles.headerText}>
           {parsedMember?.firstName || ""} {parsedMember?.lastName || ""}
         </TextScallingFalse>
 
-        <View style={{ width: 28,borderColor:"#2B2B2B" }} />
+        <View style={{ width: 28, borderColor: "#2B2B2B" }} />
       </View>
 
       <Divider />
@@ -788,12 +802,14 @@ const MemberDetails = () => {
 
       {/* Buttons */}
       <View style={styles.buttonRow}>
-        <FollowButton
-          isAdmin={isAdmin}
-          isFollowing={isFollowing}
-          onPress={handleFollowToggle}
-          isLoading={isFollowingLoading}
-        />
+        {!isAdmin && (
+          <FollowButton
+            isAdmin={isAdmin}
+            isFollowing={isFollowing}
+            onPress={handleFollowToggle}
+            isLoading={isFollowingLoading}
+          />
+        )}
         <Button
           mode="contained"
           style={styles.smallButtonRight}
@@ -827,7 +843,11 @@ const MemberDetails = () => {
 
         {isAdmin && (
           <ActionButtonRole
-            label={team?.admin[0]._id ===  member?._id ? "Leave Team" : "Remove from team"}
+            label={
+              team?.admin[0]._id === member?._id
+                ? "Leave Team"
+                : "Remove from team"
+            }
             onPress={handleRemoveFromTeam}
             backgroundColor="#141414"
             textColor="#D44044"
@@ -929,7 +949,7 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     paddingHorizontal: 20,
-    borderRadius:15,
+    borderRadius: 15,
     // marginTop: 20,
   },
   actionButton: {
@@ -948,7 +968,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-
   },
   textWithIcon: {
     flexDirection: "row",
@@ -1002,10 +1021,10 @@ const styles = StyleSheet.create({
   },
   // Backdrop overlay for alert modal
   backdropOverlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0,0,0,0.7)",
     zIndex: 10,
   },
 });

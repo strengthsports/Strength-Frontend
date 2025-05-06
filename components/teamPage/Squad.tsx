@@ -64,7 +64,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
 
   const handleAddMember = (playerType: string) => {
     router.push(
-      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${playerType.toLowerCase()}`
+      `/(app)/(team)/teams/${teamId}/InviteMembers?role=${playerType}`
     );
   };
 

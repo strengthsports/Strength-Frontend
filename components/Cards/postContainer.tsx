@@ -377,7 +377,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   height: "100%",
                   borderRadius: 100,
                   borderWidth: 1,
-                  borderColor: "#252525",
+                  borderColor: "#1a1a1a",
                 }}
                 transition={500}
                 cachePolicy="memory-disk"
@@ -387,32 +387,18 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
             {/* Name, Headline, post date */}
             <View className="w-64 flex flex-col gap-y-4 justify-between">
-              {/* <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() =>
-                  user?._id === item.postedBy?._id
-                    ? router.push("/(app)/(tabs)/profile")
-                    : router.push(`/(app)/(profile)/profile/${serializedUser}`)
-                }
-              >
-                <TextScallingFalse className="text-white text-xl font-bold">
-                  {item.postedBy?.firstName} {item.postedBy?.lastName}
-                </TextScallingFalse>
-                <TextScallingFalse
-                  className="text-[#EAEAEA] text-sm"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  @{item.postedBy.username} | {item.postedBy?.headline}
-                </TextScallingFalse>
-              </TouchableOpacity> */}
               <UserInfo
                 fullName={
-                  item.postedBy.firstName + " " + item.postedBy.lastName
+                  item.postedBy.firstName +
+                  " " +
+                  (item.postedBy.lastName !== undefined
+                    ? item.postedBy.lastName
+                    : "")
                 }
                 headline={item.postedBy.headline}
-                size="small"
                 username={item.postedBy.username}
+                size="small"
+                numberOfLines={2}
                 leftAlign={true}
               />
               <View className="flex flex-row items-center">

@@ -1,17 +1,8 @@
-import React, {
-  useState,
-  useRef,
-  forwardRef,
-  useMemo,
-  memo,
-  useEffect,
-} from "react";
+import React, { useState, useRef, forwardRef, useMemo, useEffect } from "react";
 import {
   View,
   Animated,
   TouchableOpacity,
-  NativeSyntheticEvent,
-  TextLayoutEventData,
   StyleSheet,
   Dimensions,
 } from "react-native";
@@ -40,6 +31,7 @@ import { Platform } from "react-native";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import UserInfo from "../ui/atom/UserInfo";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -147,31 +139,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           draggableDirection: "down",
         });
       } else if (type === "comment") {
-        // openBottomSheet({
-        //   isVisible: true,
-        //   content: (
-        //     <>
-        //       <CommentModal targetId={item._id} autoFocusKeyboard={true} />
-        //       <StickyInput
-        //         user={user}
-        //         value={commentText}
-        //         onChangeText={handleTextChange}
-        //         onSubmit={handlePostComment}
-        //         isPosting={isPosting}
-        //         replyingTo={replyingTo}
-        //         progress={progress}
-        //         placeholder="Type your comment here"
-        //         autoFocus={true}
-        //       />
-        //     </>
-        //   ),
-        //   height: "80%",
-        //   bgcolor: "#000",
-        //   border: true,
-        //   maxHeight: "100%",
-        //   draggableDirection: "both",
-        // });
-
         <Modal transparent visible={true} animationType="slide">
           <CommentModal targetId={item._id} autoFocusKeyboard={true} />
         </Modal>;
@@ -410,8 +377,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   width: "100%",
                   height: "100%",
                   borderRadius: 100,
-                  borderWidth: 0.5,
-                  borderColor: "#151515",
+                  borderWidth: 1,
+                  borderColor: "#252525",
                 }}
                 transition={500}
                 cachePolicy="memory-disk"
@@ -421,7 +388,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
             {/* Name, Headline, post date */}
             <View className="w-64 flex flex-col gap-y-4 justify-between">
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() =>
                   user?._id === item.postedBy?._id
@@ -439,7 +406,16 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 >
                   @{item.postedBy.username} | {item.postedBy?.headline}
                 </TextScallingFalse>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
+              <UserInfo
+                fullName={
+                  item.postedBy.firstName + " " + item.postedBy.lastName
+                }
+                headline={item.postedBy.headline}
+                size="small"
+                username={item.postedBy.username}
+                leftAlign={true}
+              />
               <View className="flex flex-row items-center">
                 <TextScallingFalse className="text-sm text-neutral-400">
                   {" "}

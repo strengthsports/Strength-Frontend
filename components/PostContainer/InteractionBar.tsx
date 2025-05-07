@@ -49,6 +49,10 @@ const InteractionBar = ({
     _id: postId,
   } = post;
 
+  const serializedData = encodeURIComponent(
+    JSON.stringify({ id: post._id, type: "Post" })
+  );
+
   const handleShare = () => {
     if (assets && caption) {
       sharePost({
@@ -77,7 +81,7 @@ const InteractionBar = ({
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
           onPress={() => {
-            router.push(`/post-details/${postId}/likes`);
+            router.push(`/post-details/${serializedData}/likes`);
           }}
         >
           <AntDesign name="like1" size={16} color="#fbbf24" />

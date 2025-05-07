@@ -506,7 +506,9 @@ const ProfileLayout = () => {
                               {" "}
                               Height:{" "}
                               {profileData?.height || (
-                                <TextScallingFalse style={{ color: "grey" }}>undefined</TextScallingFalse>
+                                <TextScallingFalse style={{ color: "grey" }}>
+                                  undefined
+                                </TextScallingFalse>
                               )}
                             </TextScallingFalse>
                           </View>
@@ -521,7 +523,9 @@ const ProfileLayout = () => {
                               {" "}
                               Weight:{" "}
                               {profileData?.weight || (
-                                <TextScallingFalse style={{ color: "grey" }}>undefined</TextScallingFalse>
+                                <TextScallingFalse style={{ color: "grey" }}>
+                                  undefined
+                                </TextScallingFalse>
                               )}
                             </TextScallingFalse>
                           </View>
@@ -663,7 +667,7 @@ const ProfileLayout = () => {
                           activeOpacity={0.5}
                           onPress={() =>
                             router.push(
-                              `../followers/${params?.userId}?pageType=followers`
+                              `/(app)/(profile)/followers/${params.userId}?pageType=followers`
                             )
                           }
                         >
@@ -681,7 +685,7 @@ const ProfileLayout = () => {
                           activeOpacity={0.5}
                           onPress={() =>
                             router.push(
-                              `../followers/${params?.userId}?pageType=followings`
+                              `/(app)/(profile)/followers/${params.userId}?pageType=followings`
                             )
                           }
                         >
@@ -978,43 +982,43 @@ const ProfileLayout = () => {
         animationOut="slideOutRight"
         style={{ margin: 0, padding: 0 }}
       >
-        <SafeAreaView style={{flex: 1}}>
-        <TouchableOpacity
-          className="flex-1 justify-center items-center bg-black"
-          activeOpacity={1}
-        >
-          <View className="w-full h-full justify-start items-center mx-auto">
-            {isPicModalVisible.message === "profilePic" ? (
-              <PicModal
-                type={isPicModalVisible.message}
-                heading=""
-                imgUrl={profileData?.profilePic || null}
-                handleBack={() =>
-                  setPicModalVisible({
-                    message: "profilePic",
-                    status: false,
-                  })
-                }
-                profileType="other"
-              />
-            ) : isPicModalVisible.message === "coverPic" ? (
-              <PicModal
-                type={isPicModalVisible.message}
-                heading=""
-                imgUrl={profileData?.coverPic || null}
-                handleBack={() =>
-                  setPicModalVisible({
-                    message: "coverPic",
-                    status: false,
-                  })
-                }
-                profileType="other"
-              />
-            ) : (
-              <View></View>
-            )}
-          </View>
-        </TouchableOpacity>
+        <SafeAreaView style={{ flex: 1 }}>
+          <TouchableOpacity
+            className="flex-1 justify-center items-center bg-black"
+            activeOpacity={1}
+          >
+            <View className="w-full h-full justify-start items-center mx-auto">
+              {isPicModalVisible.message === "profilePic" ? (
+                <PicModal
+                  type={isPicModalVisible.message}
+                  heading=""
+                  imgUrl={profileData?.profilePic || null}
+                  handleBack={() =>
+                    setPicModalVisible({
+                      message: "profilePic",
+                      status: false,
+                    })
+                  }
+                  profileType="other"
+                />
+              ) : isPicModalVisible.message === "coverPic" ? (
+                <PicModal
+                  type={isPicModalVisible.message}
+                  heading=""
+                  imgUrl={profileData?.coverPic || null}
+                  handleBack={() =>
+                    setPicModalVisible({
+                      message: "coverPic",
+                      status: false,
+                    })
+                  }
+                  profileType="other"
+                />
+              ) : (
+                <View></View>
+              )}
+            </View>
+          </TouchableOpacity>
         </SafeAreaView>
       </Modal>
     </PageThemeView>

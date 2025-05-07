@@ -411,7 +411,7 @@ const Settings = () => {
   const roles = team?.sport?.playerTypes?.map((playerType: any) => playerType.name) || [];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <PageThemeView>
       <PageThemeView>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -730,7 +730,7 @@ const Settings = () => {
           />
         </KeyboardAvoidingView>
       </PageThemeView>
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

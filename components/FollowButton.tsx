@@ -26,9 +26,10 @@ const FollowButton = ({
     <TouchableOpacity
       className={`border ${
         size === "regular" ? "rounded-xl px-8" : "rounded-lg px-4"
-      } py-1.5 ${
-        followingStatus ? "border border-[#ffffff]" : "bg-[#12956B]"
-      } `}
+      } py-1.5 ${followingStatus ? "border" : "bg-[#12956B]"} `}
+      style={{
+        borderColor: followingStatus ? "#cacaca" : "#12956B",
+      }}
       activeOpacity={0.6}
       onPress={
         followingStatus
@@ -42,7 +43,6 @@ const FollowButton = ({
         <TextScallingFalse
           className={size === "regular" ? regularFollowText : smallFollowText}
         >
-          <Entypo className="mr-4" name="check" size={14} color="white" />
           Following
         </TextScallingFalse>
       ) : (

@@ -1,15 +1,6 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
-  TextInput,
-  Image,
   TouchableOpacity,
   Keyboard,
   FlatList,
@@ -21,9 +12,7 @@ import {
   PanResponder,
 } from "react-native";
 import { Divider } from "react-native-elements";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
-import nopic from "@/assets/images/nopic.jpg";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
 import { CommenterCard } from "~/components/comment/CommenterCard";
@@ -34,10 +23,10 @@ import {
   useLazyFetchCommentsQuery,
   useLazyFetchRepliesQuery,
 } from "~/reduxStore/api/feed/features/feedApi.comment";
-import { Comment } from "~/types/post";
 import CommentNotFound from "../notfound/commentNotFound";
+import CommentInput from "../comment/CommentInput";
+import { TouchableWithoutFeedback } from "react-native";
 
-const MAX_HEIGHT = 80;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const DRAG_THRESHOLD = 100;
 
@@ -103,8 +92,14 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.profile);
 
-  // Animation values for modal gesture handling
-  const translateY = useRef(new Animated.Value(0)).current;
+  // Calculate modal height (65% of screen)
+  const MODAL_HEIGHT = SCREEN_HEIGHT * 0.8;
+
+  // Initial position should be at the bottom (screen height - modal height)
+  const initialPosition = SCREEN_HEIGHT - MODAL_HEIGHT;
+
+  // Update translateY initialization to start from initialPosition
+  const translateY = useRef(new Animated.Value(initialPosition)).current;
   const modalOpacity = useRef(new Animated.Value(1)).current;
 
   // Comment state management
@@ -122,12 +117,14 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   // State for comment input and reply context
   const [commentText, setCommentText] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  const [inputHeight, setInputHeight] = useState(40);
   const [replyingTo, setReplyingTo] = useState(null);
 
   // RTK Query hooks
   const [fetchComments] = useLazyFetchCommentsQuery();
   const [fetchReplies] = useLazyFetchRepliesQuery();
+
+  // Add keyboard height state
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Setup pan gesture responder
   const panResponder = useRef(
@@ -138,7 +135,12 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
       },
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
+          const newTranslateY =
+            keyboardHeight > 0
+              ? SCREEN_HEIGHT - keyboardHeight + gestureState.dy
+              : initialPosition + gestureState.dy;
+
+          translateY.setValue(newTranslateY);
           const newOpacity = Math.max(
             0,
             1 - gestureState.dy / (SCREEN_HEIGHT / 2)
@@ -167,7 +169,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
           // Return to original position
           Animated.parallel([
             Animated.spring(translateY, {
-              toValue: 0,
+              toValue: initialPosition,
               friction: 8,
               useNativeDriver: true,
             }),
@@ -182,6 +184,10 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
     })
   ).current;
 
+  // Calculate dynamic modal height when keyboard is open
+  const dynamicModalHeight =
+    keyboardHeight > 0 ? SCREEN_HEIGHT - keyboardHeight : MODAL_HEIGHT;
+
   // Focus input on mount if autoFocusKeyboard is true
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -192,6 +198,27 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
 
     return () => clearTimeout(timer);
   }, [autoFocusKeyboard]);
+
+  // Keyboard listeners
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   // Load comments on mount
   useEffect(() => {
@@ -339,21 +366,16 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
 
   // Handle Reply button tap
   const handleReply = useCallback((comment) => {
-    const replyTag = `@${comment.postedBy.username}`;
-    setReplyingTo({ commentId: comment._id, name: replyTag });
+    const replyTag = `${
+      comment.postedBy.firstName + " " + comment.postedBy.lastName
+    }`;
+    setReplyingTo({
+      commentId: comment._id,
+      name: replyTag,
+      username: comment.postedBy.username,
+    });
     textInputRef.current?.focus();
   }, []);
-
-  // Handle text change in comment input
-  const handleTextChange = useCallback(
-    (text) => {
-      setCommentText(text);
-      if (text === "" && replyingTo) {
-        setReplyingTo(null);
-      }
-    },
-    [replyingTo]
-  );
 
   // Handle posting a new comment or reply
   const handlePostComment = useCallback(async () => {
@@ -515,155 +537,104 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   );
 
   return (
-    <Animated.View
-      style={{
-        flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        opacity: modalOpacity,
-      }}
-    >
+    <TouchableWithoutFeedback onPress={onClose}>
       <Animated.View
         style={{
           flex: 1,
-          width: "104%",
-          alignSelf: "center",
-          paddingHorizontal: 10,
-          backgroundColor: "black",
-          borderTopLeftRadius: 40,
-          borderTopRightRadius: 40,
-          marginTop: 50,
-          transform: [{ translateY: translateY }],
-          borderTopWidth: 0.7,
-          borderLeftWidth: 0.7,
-          borderRightWidth: 0.7,
-          borderColor: "#656565",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          opacity: modalOpacity,
         }}
       >
-        <View {...panResponder.panHandlers}>
-          <DragIndicator />
-          <ModalHeader />
-        </View>
-
-        <KeyboardAvoidingView
-          className="flex-1"
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        >
-          <FlatList
-            ref={flatListRef}
-            data={comments}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            ListEmptyComponent={ListEmptyComponent}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: 120,
-              paddingHorizontal: 8,
+        <TouchableWithoutFeedback onPress={() => {}}>
+          <Animated.View
+            style={{
+              // flex: 1,
+              height: dynamicModalHeight,
+              width: "104%",
+              alignSelf: "center",
+              paddingHorizontal: 10,
+              backgroundColor: "black",
+              borderTopLeftRadius: 40,
+              borderTopRightRadius: 40,
+              // marginTop: 50,
+              transform: [{ translateY: translateY }],
+              borderTopWidth: 0.7,
+              borderLeftWidth: 0.7,
+              borderRightWidth: 0.7,
+              borderColor: "#656565",
             }}
-            onEndReached={() => {
-              if (!loadingComments && hasMoreComments) {
-                loadComments();
-              }
-            }}
-            onEndReachedThreshold={0.3}
-            onRefresh={handleRefresh}
-            refreshing={loadingComments && cursor === null}
-            removeClippedSubviews={Platform.OS === "android"}
-            initialNumToRender={5}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-          />
-
-          {/* Sticky comment input bar */}
-          <View className="absolute left-0 right-0 bottom-0">
-            <View className="bg-black">
-              <Divider
-                className="w-full rounded-full bg-neutral-700 mb-[1px]"
-                width={0.3}
-              />
-              {isPosting && (
-                <Animated.View
-                  style={{
-                    height: 4,
-                    width: widthInterpolated,
-                    backgroundColor: "#12956B",
-                  }}
-                />
-              )}
-              <View className="bg-black p-2">
-                <View
-                  className={`w-full flex-row ${
-                    inputHeight <= 40
-                      ? "items-center rounded-full"
-                      : "items-end rounded-2xl"
-                  } bg-neutral-900 px-4 py-1.5`}
-                >
-                  <Image
-                    source={user?.profilePic ? { uri: user.profilePic } : nopic}
-                    className="w-10 h-10 rounded-full"
-                    resizeMode="cover"
-                  />
-                  {replyingTo && (
-                    <TouchableOpacity
-                      onPress={() => setReplyingTo(null)}
-                      className="flex-row items-center bg-neutral-800 px-2 py-1 rounded-lg ml-2"
-                    >
-                      <TextScallingFalse className="text-theme mr-1">
-                        {replyingTo.name}
-                      </TextScallingFalse>
-                      <MaterialIcons
-                        name="close"
-                        size={14}
-                        color={Colors.themeColor}
-                      />
-                    </TouchableOpacity>
-                  )}
-                  <TextInput
-                    ref={textInputRef}
-                    placeholder="Type your comment here"
-                    className="flex-1 px-4 bg-neutral-900 text-white"
-                    style={{
-                      height: Math.min(Math.max(40, inputHeight), MAX_HEIGHT),
-                      maxHeight: MAX_HEIGHT,
-                    }}
-                    multiline={true}
-                    textAlignVertical="top"
-                    onContentSizeChange={(event) =>
-                      setInputHeight(
-                        Math.min(
-                          event.nativeEvent.contentSize.height,
-                          MAX_HEIGHT
-                        )
-                      )
-                    }
-                    scrollEnabled={inputHeight >= MAX_HEIGHT}
-                    placeholderTextColor="grey"
-                    cursorColor={Colors.themeColor}
-                    value={commentText}
-                    onChangeText={handleTextChange}
-                  />
-                  <TouchableOpacity
-                    onPress={handlePostComment}
-                    disabled={isPosting || !commentText.trim()}
-                    className="p-1"
-                  >
-                    <MaterialIcons
-                      name="send"
-                      size={22}
-                      color={
-                        isPosting || !commentText.trim()
-                          ? "#565656"
-                          : Colors.themeColor
-                      }
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
+          >
+            <View {...panResponder.panHandlers}>
+              <DragIndicator />
+              <ModalHeader />
             </View>
-          </View>
-        </KeyboardAvoidingView>
+
+            <KeyboardAvoidingView
+              className="flex-1"
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+            >
+              <FlatList
+                ref={flatListRef}
+                data={comments}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
+                ListEmptyComponent={ListEmptyComponent}
+                contentContainerStyle={{
+                  flexGrow: 1,
+                  paddingBottom: keyboardHeight > 0 ? keyboardHeight : 120,
+                  paddingHorizontal: 8,
+                }}
+                onEndReached={() => {
+                  if (!loadingComments && hasMoreComments) {
+                    loadComments();
+                  }
+                }}
+                onEndReachedThreshold={0.3}
+                onRefresh={handleRefresh}
+                refreshing={loadingComments && cursor === null}
+                removeClippedSubviews={Platform.OS === "android"}
+                initialNumToRender={5}
+                maxToRenderPerBatch={10}
+                windowSize={10}
+              />
+
+              {/* Sticky comment input bar */}
+              <View
+                className="bg-black"
+                style={{
+                  position: "absolute",
+                  bottom: keyboardHeight > 0 ? keyboardHeight - 95 : 0,
+                  left: 0,
+                  right: 0,
+                  backgroundColor: "black",
+                }}
+              >
+                {isPosting && (
+                  <Animated.View
+                    style={{
+                      height: 4,
+                      width: widthInterpolated,
+                      backgroundColor: "#12956B",
+                    }}
+                  />
+                )}
+                <CommentInput
+                  handlePostComment={handlePostComment}
+                  isPosting={isPosting}
+                  replyingTo={replyingTo}
+                  setReplyingTo={setReplyingTo}
+                  user={user}
+                  textInputRef={textInputRef}
+                  commentText={commentText}
+                  setCommentText={setCommentText}
+                />
+              </View>
+            </KeyboardAvoidingView>
+          </Animated.View>
+        </TouchableWithoutFeedback>
       </Animated.View>
-    </Animated.View>
+    </TouchableWithoutFeedback>
   );
 };
 

@@ -8,6 +8,7 @@ const initialState = {
   isAddPostContainerOpen: false,
   progress: 0,
   isLoading: false,
+  isUploadingCompleted: false,
 };
 
 // Upload Post
@@ -56,6 +57,10 @@ const postSlice = createSlice({
     },
     setUploadLoading: (state, action) => {
       state.isLoading = action.payload;
+      state.isUploadingCompleted = !action.payload;
+    },
+    setUploadingCompleted: (state, action) => {
+      state.isUploadingCompleted = action.payload;
     },
     resetUploadProgress: () => initialState,
     setAddPostContainerOpen: (state, action) => {
@@ -69,5 +74,6 @@ export const {
   setUploadLoading,
   resetUploadProgress,
   setAddPostContainerOpen,
+  setUploadingCompleted,
 } = postSlice.actions;
 export default postSlice.reducer;

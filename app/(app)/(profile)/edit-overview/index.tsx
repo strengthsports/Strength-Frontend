@@ -14,8 +14,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import RightArrow from "~/components/Arrows/RightArrow";
 import TextScallingFalse from "~/components/CentralText";
@@ -395,13 +397,14 @@ function EditOverview() {
     );
   }
 
-  const handleBackPress = () => {
+  const handleBackPress = (): boolean => {
     const isDataUnchanged =
       isEqual(initialSportsData, finalSelectedSports) &&
       initialAbout === user?.about;
 
     if (isDataUnchanged) {
-      router.push("/(app)/(tabs)/profile");
+      router.back();
+      return false;
     } else {
       setAlertConfig({
         title: "Discard changes?",
@@ -416,9 +419,10 @@ function EditOverview() {
           bg: "transparent",
           text: "#808080",
         },
-        discardAction: () => router.push("/(app)/(tabs)/profile"),
+        discardAction: () => router.back(),
       });
       setAlertModal(true);
+      return true;
     }
   };
 
@@ -426,6 +430,16 @@ function EditOverview() {
   const isKeyDetailsUnchanged =
     JSON.stringify(selectedSport?.keyDetails) ===
     JSON.stringify(originalKeyDetailsRef.current);
+
+    useFocusEffect(
+      useCallback(() => {
+        BackHandler.addEventListener('handleBackPress', handleBackPress);
+    
+        return () => {
+          BackHandler.removeEventListener('handleBackPress', handleBackPress);
+        };
+      }, [isKeyDetailsUnchanged, initialSportsData, finalSelectedSports, initialAbout, user])
+    );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

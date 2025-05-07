@@ -3,17 +3,16 @@ import React, {
   useRef,
   forwardRef,
   useMemo,
-  memo,
   useEffect,
+  useCallback,
 } from "react";
 import {
   View,
   Animated,
   TouchableOpacity,
-  NativeSyntheticEvent,
-  TextLayoutEventData,
   StyleSheet,
   Dimensions,
+  Image,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -25,8 +24,6 @@ import { formatTimeAgo } from "~/utils/formatTime";
 import nopic from "@/assets/images/nopic.jpg";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
-import { RelativePathString } from "expo-router";
-import { Image } from "expo-image";
 import InteractionBar from "../PostContainer/InteractionBar";
 import { toggleLike, voteInPoll } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
@@ -40,12 +37,13 @@ import { Platform } from "react-native";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import UserInfo from "../ui/atom/UserInfo";
 
 const shadowStyle = Platform.select({
   ios: {
-    shadowColor: "#000000",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.50,
     shadowRadius: 4,
   },
   android: {
@@ -147,31 +145,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           draggableDirection: "down",
         });
       } else if (type === "comment") {
-        // openBottomSheet({
-        //   isVisible: true,
-        //   content: (
-        //     <>
-        //       <CommentModal targetId={item._id} autoFocusKeyboard={true} />
-        //       <StickyInput
-        //         user={user}
-        //         value={commentText}
-        //         onChangeText={handleTextChange}
-        //         onSubmit={handlePostComment}
-        //         isPosting={isPosting}
-        //         replyingTo={replyingTo}
-        //         progress={progress}
-        //         placeholder="Type your comment here"
-        //         autoFocus={true}
-        //       />
-        //     </>
-        //   ),
-        //   height: "80%",
-        //   bgcolor: "#000",
-        //   border: true,
-        //   maxHeight: "100%",
-        //   draggableDirection: "both",
-        // });
-
         <Modal transparent visible={true} animationType="slide">
           <CommentModal targetId={item._id} autoFocusKeyboard={true} />
         </Modal>;
@@ -247,6 +220,21 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       setActiveIndex(index);
     };
 
+    const goToHashtag = useCallback(
+      (tag: string) => {
+        // string version is faster than object
+        router.push(`/(app)/(post)/hashtag/${tag}/top`);
+      },
+      [router]
+    );
+
+    const goToUser = useCallback(
+      (userId: string) => {
+        router.push(`/(app)/(profile)/profile/${userId}`);
+      },
+      [router]
+    );
+
     // Function to render caption with clickable hashtags and mention tags
     const renderCaptionWithTags = (
       caption: string,
@@ -266,54 +254,46 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         if (!part || remainingChars <= 0) continue;
 
         if (part.startsWith("#")) {
-          if (part.length <= remainingChars) {
-            elements.push(
-              <TextScallingFalse
-                key={i}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(app)/(post)/hashtag/[hashtagId]/(tabs)/top",
-                    params: { hashtagId: part.slice(1) },
-                  })
-                }
-                className={`text-2xl text-[#12956B] ${
-                  highlightedHashtag === part && "font-semibold"
-                } active:bg-gray-600`}
-              >
-                {part}
-              </TextScallingFalse>
-            );
-            remainingChars -= part.length;
-          } else {
+          if (part.length > remainingChars) {
             showSeeMore = true;
-            break;
+            return;
           }
-        } else if (part.startsWith("@")) {
-          const user = taggedUsers.find((u) => u.username === part.slice(1));
-          const serializedUser = encodeURIComponent(
-            JSON.stringify({ id: user?._id, type: user?.type })
+          const tag = part.slice(1);
+          elements.push(
+            <TextScallingFalse
+              key={i}
+              onPress={() => goToHashtag(tag)}
+              className={`text-2xl text-[#12956B] ${
+                highlightedHashtag === part && "font-semibold"
+              } active:bg-gray-600`}
+            >
+              {part}
+            </TextScallingFalse>
           );
-          if (part.length <= remainingChars) {
-            elements.push(
-              <TextScallingFalse
-                key={i}
-                onPress={() =>
-                  serializedUser &&
-                  router.push({
-                    pathname: "/(app)/(profile)/profile/[userId]",
-                    params: { userId: serializedUser },
-                  })
-                }
-                className="text-2xl text-[#12956B] active:bg-gray-600"
-              >
-                {part}
-              </TextScallingFalse>
-            );
-            remainingChars -= part.length;
-          } else {
+          remainingChars -= part.length;
+        } else if (part.startsWith("@")) {
+          const uname = part.slice(1);
+          const user = taggedUsers.find((u) => u.username === uname);
+          if (!user || part.length > remainingChars) {
             showSeeMore = true;
-            break;
+            return;
           }
+          elements.push(
+            <TextScallingFalse
+              key={i}
+              onPress={() =>
+                goToUser(
+                  encodeURIComponent(
+                    JSON.stringify({ id: user._id, type: user.type })
+                  )
+                )
+              }
+              className="text-2xl text-[#12956B] active:bg-gray-600"
+            >
+              {part}
+            </TextScallingFalse>
+          );
+          remainingChars -= part.length;
         } else {
           const allowed = Math.min(remainingChars, part.length);
           const visibleText = part.slice(0, allowed);
@@ -410,8 +390,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   width: "100%",
                   height: "100%",
                   borderRadius: 100,
-                  borderWidth: 0.5,
-                  borderColor: "#151515",
+                  borderWidth: 1,
+                  borderColor: "#1a1a1a",
                 }}
                 transition={500}
                 cachePolicy="memory-disk"
@@ -421,25 +401,20 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
             {/* Name, Headline, post date */}
             <View className="w-64 flex flex-col gap-y-4 justify-between">
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() =>
-                  user?._id === item.postedBy?._id
-                    ? router.push("/(app)/(tabs)/profile")
-                    : router.push(`/(app)/(profile)/profile/${serializedUser}`)
+              <UserInfo
+                fullName={
+                  item.postedBy.firstName +
+                  " " +
+                  (item.postedBy.lastName !== undefined
+                    ? item.postedBy.lastName
+                    : "")
                 }
-              >
-                <TextScallingFalse className="text-white text-xl font-bold">
-                  {item.postedBy?.firstName} {item.postedBy?.lastName}
-                </TextScallingFalse>
-                <TextScallingFalse
-                  className="text-[#EAEAEA] text-sm"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  @{item.postedBy.username} | {item.postedBy?.headline}
-                </TextScallingFalse>
-              </TouchableOpacity>
+                headline={item.postedBy.headline}
+                username={item.postedBy.username}
+                size="small"
+                numberOfLines={2}
+                leftAlign={true}
+              />
               <View className="flex flex-row items-center">
                 <TextScallingFalse className="text-sm text-neutral-400">
                   {" "}

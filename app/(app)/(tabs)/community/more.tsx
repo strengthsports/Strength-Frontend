@@ -12,6 +12,7 @@ import {
   View,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import PageThemeView from "~/components/PageThemeView";
@@ -25,6 +26,7 @@ import {
   useGetTeamsToSupportQuery,
 } from "~/reduxStore/api/community/communityApi";
 import { AntDesign } from "@expo/vector-icons";
+import { debounce } from "~/utils/debounce";
 
 const More = () => {
   const router = useRouter();
@@ -35,6 +37,7 @@ const More = () => {
   const [items, setItems] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const isInitialMount = useRef(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Memoize query parameters to prevent unnecessary re-renders
   const baseParams = useMemo(
@@ -82,7 +85,7 @@ const More = () => {
       : teamQuery;
   }, [suggestionType, userQuery, pageQuery, teamQuery]);
 
-  const { data, isLoading, isFetching } = queryResponse;
+  const { data, isLoading, isFetching, refetch } = queryResponse;
 
   useEffect(() => {
     if (data) {
@@ -162,6 +165,22 @@ const More = () => {
     [suggestionType]
   );
 
+  // Store the debounced function in a ref to maintain it between renders
+  const debouncedRefetch = useRef(
+    debounce(async () => {
+      try {
+        await refetch();
+      } finally {
+        setRefreshing(false);
+      }
+    }, 500)
+  ).current;
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    debouncedRefetch();
+  }, [debouncedRefetch]);
+
   // Memoized key extractor
   const keyExtractor = useCallback((item: any) => item._id, []);
 
@@ -231,6 +250,15 @@ const More = () => {
           initialNumToRender={10}
           maxToRenderPerBatch={5}
           windowSize={10}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#12956B", "#6E7A81"]}
+              tintColor="#6E7A81"
+              progressBackgroundColor="#181A1B"
+            />
+          }
           ListEmptyComponent={
             <View className="flex-1 justify-center items-center">
               <TextScallingFalse className="text-[#808080]">

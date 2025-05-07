@@ -12,10 +12,7 @@ import { useLocalSearchParams } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
 import { Colors } from "~/constants/Colors";
 
-const Photos = () => {
-  const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
-  const hashtag =
-    typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
+const MediaScreen = ({ hashtag }: { hashtag: string }) => {
   const { data, isLoading, isError } = useGetHashtagContentsQuery({
     hashtag,
     limit: 10,
@@ -25,12 +22,14 @@ const Photos = () => {
   console.log("\n\nMedia", data?.data);
 
   const memoizedEmptyComponent = memo(() => (
-    <TextScallingFalse className="text-white text-center p-4">No images available</TextScallingFalse>
+    <TextScallingFalse className="text-white text-center p-4">
+      No images available
+    </TextScallingFalse>
   ));
 
   if (isLoading)
     return (
-      <View className="flex justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color={Colors.themeColor} />
       </View>
     );
@@ -68,10 +67,10 @@ const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   image: {
-    width: width / 2 - 10, // Responsive grid layout (2 columns)
-    height: 105, // Fixed height (adjust if needed)
+    width: width / 2 - 10,
+    height: 105,
     margin: 5,
   },
 });
 
-export default Photos;
+export default MediaScreen;

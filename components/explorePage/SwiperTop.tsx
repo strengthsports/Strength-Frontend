@@ -91,14 +91,14 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
       paginationStyle={{ bottom: 8, gap: 4 }}
       dotStyle={{
         backgroundColor: Colors.greyText,
-        width: 6,
-        height: 6,
+        width: 4,
+        height: 4,
         marginHorizontal: 20,
       }}
       activeDotStyle={{
         backgroundColor: "white",
-        width: 7,
-        height: 7,
+        width: 5,
+        height: 5,
         marginHorizontal: 20,
       }}
       style={{ height: 220, marginTop: 0.5 }}
@@ -138,17 +138,19 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 resizeMode="cover"
               />
             </View>
-            {/* <LinearGradient
-                colors={[
-                  "rgba(0,0,0,0.95)",
-                  "rgba(0,0,0,0.98)",
-                  "rgba(0,0,0,1)",
-                ]}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
-                className="absolute bottom-0 left-0 right-0 h-64"
-              /> */}
-            <View className="absolute bottom-9 px-5">
+            <LinearGradient
+              colors={["rgba(0,0,0,0.0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,0.8)"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 112, // 28 * 4 (since Tailwind unit is 4px by default)
+              }}
+            />
+            <View className="absolute bottom-9 px-4">
               <TextScallingFalse
                 className="text-white text-6xl font-bold"
                 numberOfLines={numberOfLinesTitle}

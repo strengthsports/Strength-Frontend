@@ -10,6 +10,8 @@ import CaptainSq from "../SvgIcons/teams/CaptainSq";
 import ViceCaptainSq from "../SvgIcons/teams/ViceCaptainSq";
 import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
 
 const btn = "rounded-xl border border-[#12956B] py-2 w-[40%]";
 const roleViews =
@@ -18,6 +20,7 @@ const visiblePosition = ["Captain", "Vice-Captain", "Admin"];
 
 const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
   const router = useRouter();
+  const user = useSelector((state: RootState) => state.profile.user);
   // Initialize with member.isFollowing or false if member is null/undefined
   const [followingStatus, setFollowingStatus] = useState<boolean>(
     member?.isFollowing ?? false
@@ -106,20 +109,22 @@ const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
         {/* Buttons Container */}
         <View className="flex-row justify-start items-center gap-x-5 mt-8">
           {/* Follow / Following Button */}
-          <TouchableOpacity
-            onPress={handleFollowToggle}
-            className={`${btn} bg-[#12956B]`}
-          >
-            {followingStatus ? (
-              <TextScallingFalse className="text-white font-medium text-center">
-                ✓ Following
-              </TextScallingFalse>
-            ) : (
-              <TextScallingFalse className="text-white font-medium text-center">
-                Follow
-              </TextScallingFalse>
-            )}
-          </TouchableOpacity>
+          {user?._id !== member._id && (
+            <TouchableOpacity
+              onPress={handleFollowToggle}
+              className={`${btn} bg-[#12956B]`}
+            >
+              {followingStatus ? (
+                <TextScallingFalse className="text-white font-medium text-center">
+                  ✓ Following
+                </TextScallingFalse>
+              ) : (
+                <TextScallingFalse className="text-white font-medium text-center">
+                  Follow
+                </TextScallingFalse>
+              )}
+            </TouchableOpacity>
+          )}
 
           {/* View Profile Button */}
           <TouchableOpacity
@@ -136,9 +141,9 @@ const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
         {/* Role views */}
         <View className="mt-8 gap-y-4">
           <View className={roleViews}>
-          <TextScallingFalse className="font-medium text-[#CFCFCF]">
-          {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-          </TextScallingFalse>
+            <TextScallingFalse className="font-medium text-[#CFCFCF]">
+              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+            </TextScallingFalse>
           </View>
 
           {!isTeam && (

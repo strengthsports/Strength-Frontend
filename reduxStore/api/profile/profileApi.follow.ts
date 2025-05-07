@@ -72,7 +72,7 @@ export const followApi = profileApi.injectEndpoints({
     }),
     findFollowings: builder.query<any, Partial<TargetUser>>({
       query: (body) => ({
-        url: "/api/v1/findFollowings",
+        url: "/findFollowings",
         method: "POST",
         body,
       }),

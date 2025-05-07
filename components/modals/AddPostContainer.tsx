@@ -66,7 +66,6 @@ import {
   withSpring,
 } from "react-native-reanimated";
 import { StyleSheet } from "react-native";
-import MentionHashtagInput from "../MentionHashtagInput";
 import MentionHashtagInput2 from "../MentionHashtagInput2";
 // Memoized sub-components for better performance
 const Figure = React.memo(

@@ -54,6 +54,8 @@ const InviteMember: React.FC = () => {
   const { teamId = "" } = useLocalSearchParams<{ teamId: string }>();
   const { role } = useLocalSearchParams();
 
+  console.log(role);
+
   // Redux State
   const { user } = useSelector((state: RootState) => state.profile);
   const { members, loading, error } = useSelector(
@@ -92,7 +94,7 @@ const InviteMember: React.FC = () => {
 
     try {
       setSending(true);
-
+      // console.log("Role Sendinding in database :--->",role);
       const result = await dispatch(
         sendInvitations({
           teamId,

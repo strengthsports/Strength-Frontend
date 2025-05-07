@@ -57,7 +57,7 @@ const CustomHomeHeader = () => {
               width: 36,
               height: 36,
               borderRadius: 18,
-              borderColor: "#2F2F2F",
+              borderColor: "#252525",
               borderWidth: 1,
             }}
           />

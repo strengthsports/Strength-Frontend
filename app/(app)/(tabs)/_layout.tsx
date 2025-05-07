@@ -7,12 +7,6 @@
 // import { ScrollProvider } from "@/context/ScrollContext";
 // import React, { useEffect, useState } from "react";
 // import { DrawerProvider } from "~/context/DrawerContext";
-// import { connectSocket } from "~/utils/socket";
-// import {
-//   incrementCount,
-//   setHasNewNotification,
-// } from "~/reduxStore/slices/notification/notificationSlice";
-// import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
 
 // export default function AppLayout() {
 //   const dispatch = useDispatch<AppDispatch>();
@@ -72,14 +66,31 @@
 // }
 
 import { Tabs } from "expo-router";
-import React from "react";
-import { Platform, View, TouchableOpacity, Text } from "react-native";
+import React, { useEffect } from "react";
+import {
+  Platform,
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+} from "react-native";
 import CommunityIcon from "~/components/SvgIcons/navbar/CommunityIcon";
 import SearchIcon from "~/components/SvgIcons/navbar/SearchIcon";
 import HomeIcon from "~/components/SvgIcons/navbar/HomeIcon";
 import NotificationIcon from "~/components/SvgIcons/navbar/NotificationIcon";
 import ProfileIcon from "~/components/SvgIcons/navbar/ProfileIcon";
 import { DrawerProvider } from "~/context/DrawerContext";
+import { connectSocket } from "~/utils/socket";
+import {
+  incrementCount,
+  setHasNewNotification,
+} from "~/reduxStore/slices/notification/notificationSlice";
+import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
+import { Redirect } from "expo-router";
+import eventBus from "~/utils/eventBus";
+import { GestureResponderEvent } from "react-native";
 
 const tabs = [
   {
@@ -115,6 +126,51 @@ const tabs = [
 ] as const;
 
 export default function TabLayout() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
+  const { data: notificationsData, refetch } = useGetNotificationsQuery();
+  const { notificationCount } = useSelector(
+    (state: RootState) => state.notification
+  );
+
+  useEffect(() => {
+    console.log("Socket function mounted");
+    const initSocket = async () => {
+      const socket = await connectSocket();
+      if (!socket) {
+        console.log("connection failed");
+        return;
+      }
+      // Listen for incoming notifications
+      socket.on("newNotification", (data) => {
+        console.log("Notification Data : ", data);
+        dispatch(setHasNewNotification(true));
+        dispatch(incrementCount(1));
+        console.log("Notification got !");
+      });
+
+      return () => {
+        socket.off("newNotification"); // Cleanup on component unmount
+      };
+    };
+
+    initSocket();
+  }, []);
+
+  // Update notification count when notifications data changes
+  useEffect(() => {
+    if (notificationsData) {
+      const unreadCount = notificationsData.unreadCount || 0;
+      console.log(unreadCount);
+      dispatch(incrementCount(unreadCount));
+      dispatch(setHasNewNotification(unreadCount > 0));
+    }
+  }, [notificationsData, dispatch]);
+
+  if (!isLoggedIn) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
       <DrawerProvider>
@@ -132,7 +188,7 @@ export default function TabLayout() {
                 borderTopRightRadius: 10,
                 overflow: "hidden",
                 backgroundColor: "black",
-                borderColor:'black',
+                borderColor: "black",
                 borderWidth: 0.5,
               },
               default: {
@@ -157,22 +213,46 @@ export default function TabLayout() {
                 title,
                 tabBarButton: ({ onPress, accessibilityState }) => {
                   const isSelected = accessibilityState?.selected;
+                  const isNotificationTab = name === "notification";
+                  const isHomeTab = name === "home";
+
+                  const handlePress = (event: GestureResponderEvent) => {
+                    // First call the original onPress
+                    onPress?.(event);
+
+                    if (isHomeTab && isSelected) {
+                      eventBus.emit("scrollToTop");
+                    }
+                  };
+
                   return (
                     <TouchableOpacity
-                      onPress={onPress}
+                      onPress={handlePress}
                       activeOpacity={0.4}
                       style={{
                         flex: 1,
                         alignItems: "center",
                         justifyContent: "center",
-                        height: 40, 
+                        height: 40,
                       }}
                     >
-                      <Icon color={isSelected ? "#12956B" : "#CECECE"} />
+                      {/* Wrap icon and text in relative view */}
+                      <View style={{ position: "relative" }}>
+                        <Icon color={isSelected ? "#12956B" : "#CECECE"} />
+
+                        {/* Notification badge */}
+                        {isNotificationTab && notificationCount > 0 && (
+                          <View style={styles.notificationDot}>
+                            <Text style={styles.notificationText}>
+                              {notificationCount > 9 ? "9+" : notificationCount}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                       <Text
                         style={{
                           fontSize: 9,
-                          fontWeight: '500',
+                          fontWeight: "500",
                           color: isSelected ? "#12956B" : "#CECECE",
                           marginTop: 2,
                         }}
@@ -190,3 +270,22 @@ export default function TabLayout() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  notificationDot: {
+    position: "absolute",
+    top: -6, // Adjust position
+    right: -8,
+    minWidth: 16, // Dynamic width
+    height: 16, // Larger circle
+    borderRadius: 100,
+    backgroundColor: "#12956B",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notificationText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+});

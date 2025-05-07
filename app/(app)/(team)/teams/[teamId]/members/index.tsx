@@ -61,19 +61,39 @@ const Members: React.FC = () => {
     }, [teamId, dispatch])
   );
   
+  // Function to capitalize first letter of each word
+  const capitalizeWords = (str: string): string => {
+    return str.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
-  // Normalize roles to categories
+  // Normalize roles to categories based on team's playerTypes
   const normalizeRole = useCallback((role: string | undefined): string => {
     if (!role) return "All-Rounders";
-
-    const lower = role.toLowerCase();
-    if (lower.includes("bowl")) return "Bowlers";
-    if (lower.includes("bat")) return "Batters";
-    if (lower.includes("allround")) return "Allrounders";
-    if (lower.includes("wicket")) return "Wicketkeepers";
-    if (lower.includes("keepers")) return "Keepers";
-    return role;
-  }, []);
+    
+    // Get available player types from team details
+    const playerTypes = team?.playerTypes || [];
+    
+    // Find matching player type (case-insensitive)
+    const matchedType = playerTypes.find(
+      (type: string) => type.toLowerCase() === role.toLowerCase()
+    );
+    
+    // If exact match found in playerTypes, use that
+    if (matchedType) {
+      return capitalizeWords(matchedType);
+    }
+    
+    // Otherwise, try to match common variations
+    const lowerRole = role.toLowerCase();
+    
+    if (lowerRole.includes("bowl")) return "Bowlers";
+    if (lowerRole.includes("bat")) return "Batters";
+    if (lowerRole.includes("all") || lowerRole.includes("round")) return "All-Rounders";
+    if (lowerRole.includes("keep")) return "Keepers";
+    
+    // If no match found, capitalize the original role
+    return capitalizeWords(role);
+  }, [team?.playerTypes]);
 
   // Memoize the filtered members based on search text
   const filteredMembers = useMemo(() => {
@@ -84,7 +104,7 @@ const Members: React.FC = () => {
     }
     
     const query = searchText.toLowerCase();
-    return team.members.filter((m:any) => {
+    return team.members.filter((m: any) => {
       if (!m.user) return false;
       const fullName = `${m.user.firstName} ${m.user.lastName}`.toLowerCase();
       return (
@@ -93,7 +113,7 @@ const Members: React.FC = () => {
         fullName.includes(query)
       );
     });
-  }, [searchText, team?.members,router.back]);
+  }, [searchText, team?.members]);
 
   // Transform the filtered members into a format suitable for FlatList
   const sectionsData = useMemo(() => {
@@ -101,8 +121,8 @@ const Members: React.FC = () => {
 
     const groupedMembers: Record<string, Member[]> = {};
     
-    // Group members by role
-    filteredMembers.forEach((member:any) => {
+    // Group members by normalized role
+    filteredMembers.forEach((member: any) => {
       const roleKey = normalizeRole(member.role);
       groupedMembers[roleKey] = groupedMembers[roleKey] || [];
       groupedMembers[roleKey].push(member);
@@ -125,7 +145,7 @@ const Members: React.FC = () => {
         data: users
       };
     });
-  }, [filteredMembers, normalizeRole,router.back]);
+  }, [filteredMembers, normalizeRole]);
 
   // Clear search function
   const clearSearch = useCallback(() => {
@@ -153,7 +173,6 @@ const Members: React.FC = () => {
           members={item.data}
           isEditView={true}
           isAdmin={isAdmin}
-          // disableScroll={true}
         />
       </View>
     );
@@ -184,13 +203,13 @@ const Members: React.FC = () => {
               <BackIcon/>
             </TouchableOpacity>
           </View>
-          <Text style={{ color: 'white', fontSize: 16, fontWeight: "600" }}>
-  Members
-</Text>
+          <TextScallingFalse style={{ color: 'white', fontSize: 16, fontWeight: "600" }}>
+            Members
+          </TextScallingFalse>
 
-<TouchableOpacity>
-  <Text style={{ color: 'white', fontSize: 16 }}>Edit</Text>
-</TouchableOpacity>
+          <TouchableOpacity>
+            <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Edit</TextScallingFalse>
+          </TouchableOpacity>
         </View>
 
         {/* Custom Search Bar */}
@@ -260,8 +279,8 @@ const Associates = () => {
 const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 20,
-    paddingTop:10,
-    paddingBottom:5,
+    paddingTop: 10,
+    paddingBottom: 5,
     backgroundColor: "black",
   },
   searchInputContainer: {

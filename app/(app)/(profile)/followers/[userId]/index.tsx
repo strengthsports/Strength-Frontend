@@ -1,32 +1,17 @@
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { StyleSheet, RefreshControl, ScrollView } from "react-native";
+import React, { useState, useCallback, memo, useRef, useMemo } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Image,
-} from "react-native";
-import TextScallingFalse from "~/components/CentralText";
+import UserList, { PageType } from "~/components/ui/UserList";
+import TopBar from "~/components/TopBar";
 import PageThemeView from "~/components/PageThemeView";
-import {
-  useLazyFindFollowersQuery,
-  useLazyFindFollowingsQuery,
-} from "~/reduxStore/api/profile/profileApi.follow";
-import { TargetUser } from "~/types/user";
-import nopic from "@/assets/images/nopic.jpg";
-import { useSelector } from "react-redux";
-import { showFeedback } from "~/utils/feedbackToast";
-import FollowButton from "~/components/FollowButton";
+import { debounce } from "@/utils/debounce";
 
-const FollowersPage = () => {
-  const router = useRouter();
+const DEBOUNCE_DELAY = 1000;
+
+const FollowerFollowing = memo(() => {
   const params = useLocalSearchParams();
-  const { user } = useSelector((state: any) => state?.profile || {});
+  const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
 
   const type = useMemo(() => {
     if (typeof params.pageType === "string") {
@@ -35,208 +20,54 @@ const FollowersPage = () => {
     return "";
   }, [params.pageType]);
 
-  const userId = useMemo(() => {
+  const targetData = useMemo(() => {
     return params.userId
       ? JSON.parse(decodeURIComponent(params.userId as string))
       : null;
   }, [params.userId]);
-  console.log(userId, type);
-  const [
-    findFollowers,
-    { data: followers, isLoading: isFollowersLoading, isError: followersError },
-  ] = useLazyFindFollowersQuery();
 
-  const [
-    findFollowings,
-    {
-      data: followings,
-      isLoading: isFollowingsLoading,
-      isError: followingsError,
-    },
-  ] = useLazyFindFollowingsQuery();
+  const refreshTrigger = useRef(0);
 
-  useEffect(() => {
-    if (userId) {
-      const targetUser: TargetUser = {
-        targetUserId: userId?.id,
-        targetUserType: userId?.type,
-      };
+  const debouncedRefresh = useRef(
+    debounce(() => {
+      refreshTrigger.current += 1; // change key to trigger refetch
+      setRefreshing(false);
+    }, DEBOUNCE_DELAY)
+  ).current;
 
-      if (params.pageType === "followers") {
-        findFollowers(targetUser)
-          .unwrap()
-          .catch((err: any) =>
-            console.error("Error finding followers list:", err)
-          );
-      } else if (params.pageType === "followings") {
-        findFollowings(targetUser)
-          .unwrap()
-          .catch((err: any) =>
-            console.error("Error finding followings list:", err)
-          );
-      }
-    }
-  }, [userId, params.pageType]);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    debouncedRefresh();
+  }, [debouncedRefresh]);
 
-  const renderFollowerItem = ({ item }: { item: any }) => {
-    const serializedUser = encodeURIComponent(
-      JSON.stringify({ id: item._id, type: item.type })
-    );
-    console.log(item);
-    return (
-      <TouchableOpacity
-        className="flex-row mt-5 items-center justify-between"
-        onPress={() =>
-          item._id === user._id
-            ? router.push("/(app)/(tabs)/profile")
-            : router.push(`/(app)/(profile)/profile/${serializedUser}`)
-        }
-      >
-        <View className="flex-row items-center">
-          <View className="w-12 h-12 rounded-full overflow-hidden">
-            {item.profilePic ? (
-              <Image
-                source={{ uri: item.profilePic }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <Image
-                source={nopic}
-                className="w-full h-full rounded-full"
-                resizeMode="cover"
-              />
-            )}
-          </View>
-          <View className="ml-3">
-            <Text
-              className="text-white text-2xl font-medium"
-              numberOfLines={1}
-              allowFontScaling={false}
-            >
-              {item.firstName} {item.lastName}
-            </Text>
-            <Text
-              className="text-white text-sm font-light"
-              numberOfLines={1}
-              allowFontScaling={false}
-            >
-              {item.headline}
-            </Text>
-          </View>
-        </View>
-        <FollowButton
-          size="small"
-          followingStatus={true}
-          handleFollow={() => {}}
-          handleUnfollow={() => {}}
-        />
-      </TouchableOpacity>
-    );
-  };
-
-  const isLoading =
-    params.pageType === "followers" ? isFollowersLoading : isFollowingsLoading;
-  const error =
-    params.pageType === "followers" ? followersError : followingsError;
-  const data = params.pageType === "followers" ? followers : followings;
+  if (!params.userId) return null;
 
   return (
     <PageThemeView>
-      {/* Header */}
-      <View className="flex-row w-full justify-start items-center p-5 pb-3 relative text-center">
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() => router.back()}
-          className="mr-4"
-        >
-          <AntDesign name="arrowleft" size={24} color="white" />
-        </TouchableOpacity>
-        <View>
-          <TextScallingFalse className="text-white text-4xl font-light">
-            {type}
-          </TextScallingFalse>
-        </View>
-      </View>
+      <TopBar heading={type} backHandler={() => router.push("..")} />
 
-      {/* Search for followers */}
-      <View className="w-[350px] lg:w-[600px] h-[45px] bg-[#121212] mt-5 mx-auto rounded-lg flex-row items-center">
-        <TextInput
-          placeholder={`Search for ${type.toLowerCase()}...`}
-          placeholderTextColor="grey"
-          className="flex-1 text-white rounded-lg text-lg font-normal h-full bg-[#121212] pl-4"
-          allowFontScaling={false}
-          cursorColor="#12956B"
-        />
-        <Feather name="search" size={23} color="grey" className="mr-4" />
-      </View>
-
-      {/* Followers List */}
-      <View
-        style={styles.container}
-        className="relative w-[360px] lg:w-[600px] mx-auto"
-      >
-        <TextScallingFalse
-          className="text-base top-2 right-7 absolute"
-          style={{ color: "grey" }}
-        >
-          {data?.length || 0} {type.toLowerCase()}
-        </TextScallingFalse>
-        {isLoading && (
-          <ActivityIndicator
-            size="large"
-            color="#12956B"
-            style={styles.loader}
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#12956B", "#6E7A81"]}
+            tintColor="#6E7A81"
+            progressBackgroundColor="#181A1B"
           />
-        )}
-
-        {error && (
-          <>
-            {showFeedback(
-              `Can't retrieve ${params.pageType} now! Try again later!`,
-              "error"
-            )}
-          </>
-        )}
-
-        {!isLoading && !error && data?.length === 0 && (
-          <Text style={styles.emptyText}>No {type.toLowerCase()} found.</Text>
-        )}
-
-        <FlatList
-          data={data}
-          renderItem={renderFollowerItem}
-          keyExtractor={(item) => item.id?.toString()}
-          contentContainerStyle={styles.listContent}
+        }
+      >
+        <UserList
+          key={refreshTrigger.current}
+          targetId={targetData.id}
+          targetType={targetData.type}
+          type={type as PageType}
         />
-      </View>
+      </ScrollView>
     </PageThemeView>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 10,
-  },
-  loader: {
-    marginVertical: 20,
-  },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginVertical: 20,
-    fontSize: 16,
-  },
-  emptyText: {
-    color: "gray",
-    textAlign: "center",
-    marginVertical: 20,
-    fontSize: 16,
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
 });
 
-export default FollowersPage;
+export default FollowerFollowing;
+
+const styles = StyleSheet.create({});

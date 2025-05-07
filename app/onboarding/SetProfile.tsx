@@ -69,7 +69,7 @@ const ProfilePictureScreen: React.FC = () => {
   };
 
   const handleSkip = (): void => {
-    router.push({
+    router.replace({
       pathname: "/onboarding/SuggestedFollowers",
       params: {},
     });
@@ -78,7 +78,7 @@ const ProfilePictureScreen: React.FC = () => {
   const handleContinue = (): void => {
     if (profilePic) {
       console.log("Selected profile picture:", profilePic);
-      router.push({
+      router.replace({
         pathname: "/onboarding/SuggestedFollowers",
       });
     }

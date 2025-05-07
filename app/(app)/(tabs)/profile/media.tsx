@@ -173,7 +173,9 @@ const Media = () => {
       {isLoading ? (
         <ActivityIndicator color="#12956B" size={22} />
       ) : (
-        <Text className="text-white text-center p-4">No media available</Text>
+        <TextScallingFalse className="text-white text-center p-4">
+          No media available
+        </TextScallingFalse>
       )}
     </View>
   ));

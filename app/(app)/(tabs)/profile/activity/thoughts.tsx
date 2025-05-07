@@ -73,7 +73,9 @@ const WrittenPost = () => {
         {isLoading ? (
           <ActivityIndicator color="#12956B" size={22} />
         ) : (
-          <Text className="text-white text-center">No posts available</Text>
+          <TextScallingFalse className="text-white text-center">
+            No posts available
+          </TextScallingFalse>
         )}
       </View>
     );

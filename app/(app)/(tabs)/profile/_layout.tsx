@@ -414,7 +414,9 @@ const ProfileLayout = () => {
                         {" "}
                         Height:{" "}
                         {user?.height || (
-                          <Text style={{ color: "grey" }}>undefined</Text>
+                          <TextScallingFalse style={{ color: "grey" }}>
+                            undefined
+                          </TextScallingFalse>
                         )}
                       </TextScallingFalse>
                     </View>
@@ -429,7 +431,9 @@ const ProfileLayout = () => {
                         {" "}
                         Weight:{" "}
                         {user?.weight || (
-                          <Text style={{ color: "grey" }}>undefined</Text>
+                          <TextScallingFalse style={{ color: "grey" }}>
+                            undefined
+                          </TextScallingFalse>
                         )}
                       </TextScallingFalse>
                     </View>
@@ -507,9 +511,9 @@ const ProfileLayout = () => {
                         <TextScallingFalse style={styles.ProfileKeyPoints}>
                           {" "}
                           Est.:{" "}
-                          <Text style={{ color: "grey" }}>
+                          <TextScallingFalse style={{ color: "grey" }}>
                             {dateFormatter(user?.dateOfBirth, "text")}
-                          </Text>
+                          </TextScallingFalse>
                         </TextScallingFalse>
                       </View>
                     )}
@@ -727,13 +731,13 @@ const ProfileLayout = () => {
                 }`}
                 onPress={() => handleTabPress(tab.segment)}
               >
-                <Text
+                <TextScallingFalse
                   className={`text-[1.1rem] ${
                     isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
                   }`}
                 >
                   {tab.name}
-                </Text>
+                </TextScallingFalse>
               </Pressable>
             );
           })}

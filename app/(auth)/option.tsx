@@ -17,7 +17,7 @@ const option = () => {
         {/* Header */}
         <View className="w-full flex-row items-center mt-[30px] justify-between px-4">
           <TouchableOpacity
-            onPress={() => router.push("/login")}
+            onPress={() => router.push('/(auth)/login')}
             activeOpacity={0.5}
           >
             <MaterialIcons name="keyboard-backspace" size={30} color="white" />

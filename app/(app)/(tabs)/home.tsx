@@ -40,6 +40,7 @@ import PageThemeView from "~/components/PageThemeView";
 import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 import UploadProgressBar from "~/components/UploadProgressBar";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
+import { setUploadingCompleted } from "~/reduxStore/slices/post/postSlice";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -82,11 +83,13 @@ const ListFooterComponent = memo(
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error, cursor, hasMore } = useSelector(selectFeedState);
+  const { isUploadingCompleted } = useSelector(
+    (state: RootState) => state.post
+  );
   const posts = useSelector(selectAllPosts);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
-  // const { scrollY } = useScroll();
 
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
@@ -103,12 +106,26 @@ const Home = () => {
     }
   ).current;
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
+    if (isRefreshing) return; // Prevent multiple simultaneous refreshes
     setIsRefreshing(true);
-    dispatch(resetFeed());
-    dispatch(fetchFeedPosts({}));
-    setIsRefreshing(false);
+    try {
+      dispatch(resetFeed());
+      await dispatch(fetchFeedPosts({}));
+    } finally {
+      setIsRefreshing(false);
+    }
   }, [dispatch]);
+
+  // Handle upload completion
+  useEffect(() => {
+    if (isUploadingCompleted) {
+      setTimeout(() => {
+        handleRefresh();
+      }, 500);
+      dispatch(setUploadingCompleted(false));
+    }
+  }, [isUploadingCompleted, handleRefresh, dispatch]);
 
   useEffect(() => {
     const scrollListener = () => {
@@ -123,10 +140,10 @@ const Home = () => {
 
   useEffect(() => {
     dispatch(fetchFeedPosts({ limit: 10, cursor }));
-  }, [cursor, dispatch]);
+  }, [dispatch]);
 
   const debouncedRefresh = useMemo(
-    () => debounce(handleRefresh, 1000),
+    () => debounce(handleRefresh, 100),
     [handleRefresh]
   );
 
@@ -225,10 +242,6 @@ const Home = () => {
             ref={flatListRef}
             data={interleavedData}
             keyExtractor={keyExtractor}
-            // onScroll={Animated.event(
-            //   [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            //   { useNativeDriver: true }
-            // )}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig.current}
             scrollEventThrottle={16}
@@ -238,7 +251,7 @@ const Home = () => {
             windowSize={21}
             refreshControl={
               <RefreshControl
-                refreshing={isRefreshing || (loading && !cursor)}
+                refreshing={isRefreshing}
                 onRefresh={debouncedRefresh}
                 colors={["#12956B", "#6E7A81"]}
                 tintColor="#6E7A81"

@@ -29,6 +29,7 @@ import Toast from "react-native-toast-message";
 import { vibrationPattern } from "~/constants/vibrationPattern";
 import { dateFormatter } from "~/utils/dateFormatter";
 import { ScrollView } from "react-native-gesture-handler";
+import AgreementsModalView from "~/app/(app)/(settings)/settings/AgreementsModalView";
 
 const SignupEmail1 = () => {
   const router = useRouter();
@@ -193,269 +194,212 @@ const SignupEmail1 = () => {
 
   return (
     <PageThemeView>
-      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.push("/option")}
-          activeOpacity={0.5}
-        >
-          <MaterialIcons name="keyboard-backspace" size={30} color="white" />
-        </TouchableOpacity>
-        <Logo />
-        <TouchableOpacity
-          onPress={() => router.push("/login")}
-          activeOpacity={0.5}
-        >
-          <AntDesign name="close" size={25} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.container}>
-        <View style={styles.titleContainer}>
-          <TextScallingFalse style={styles.title}>
-            Create your account
-          </TextScallingFalse>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.push("/option")}
+            activeOpacity={0.5}
+          >
+            <MaterialIcons name="keyboard-backspace" size={30} color="white" />
+          </TouchableOpacity>
+          <Logo />
+          <TouchableOpacity
+            onPress={() => router.push("/login")}
+            activeOpacity={0.5}
+          >
+            <AntDesign name="close" size={25} color="white" />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.formContainer}>
-          <View style={styles.nameInputsRow}>
-            <View style={styles.nameInputContainer}>
-              <TextScallingFalse style={styles.inputLabel}>
-                First Name
-              </TextScallingFalse>
-              <TextInput
-                style={styles.input}
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-            </View>
-            <View style={styles.nameInputContainer}>
-              <TextScallingFalse style={styles.inputLabel}>
-                Last Name
-              </TextScallingFalse>
-              <TextInput
-                style={styles.input}
-                value={lastName}
-                onChangeText={setLastName}
-              />
-            </View>
+        <View style={styles.container}>
+          <View style={styles.titleContainer}>
+            <TextScallingFalse style={styles.title}>
+              Create your account
+            </TextScallingFalse>
           </View>
 
-          <View>
-            <TextScallingFalse style={styles.inputLabel}>
-              Email
-            </TextScallingFalse>
-            <TextInputSection
-              placeholder=""
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View>
-            <TextScallingFalse style={styles.inputLabel}>
-              Date of birth
-            </TextScallingFalse>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => setIsDatePickerVisible(true)}
-              style={styles.datePickerButton}
-            >
-              <View style={styles.datePickerButtonContent}>
-                <AntDesign name="calendar" size={25} color="white" />
-                <Text style={styles.dateText}>
-                  {dateOfBirth || "Select date"}
-                </Text>
+          <View style={styles.formContainer}>
+            <View style={styles.nameInputsRow}>
+              <View style={styles.nameInputContainer}>
+                <TextScallingFalse style={styles.inputLabel}>
+                  First Name
+                </TextScallingFalse>
+                <TextInput
+                  style={styles.input}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                />
               </View>
+              <View style={styles.nameInputContainer}>
+                <TextScallingFalse style={styles.inputLabel}>
+                  Last Name
+                </TextScallingFalse>
+                <TextInput
+                  style={styles.input}
+                  value={lastName}
+                  onChangeText={setLastName}
+                />
+              </View>
+            </View>
 
-              {dateOfBirth && (
-                <TouchableOpacity
-                  onPress={() => setDateOfBirth("")}
-                  activeOpacity={0.5}
-                  style={styles.clearDateButton}
-                >
-                  <AntDesign name="close" size={20} color="white" />
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.genderContainer}>
-            <View style={styles.genderLabelContainer}>
+            <View>
               <TextScallingFalse style={styles.inputLabel}>
-                Gender
+                Email
               </TextScallingFalse>
+              <TextInputSection
+                placeholder=""
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
             </View>
-            <View style={styles.genderButtonsContainer}>
-              <TouchableOpacity
-                onPress={handleFemalePress}
-                activeOpacity={0.5}
-                style={[
-                  styles.genderButton,
-                  femaleSelected && styles.genderButtonSelected
-                ]}
-              >
-                <TextScallingFalse style={styles.genderButtonText}>
-                  Female
-                </TextScallingFalse>
-                <View
-                  style={[
-                    styles.genderRadio,
-                    femaleSelected && styles.genderRadioSelected
-                  ]}
-                />
-              </TouchableOpacity>
 
+            <View>
+              <TextScallingFalse style={styles.inputLabel}>
+                Date of birth
+              </TextScallingFalse>
               <TouchableOpacity
-                onPress={handleMalePress}
                 activeOpacity={0.5}
-                style={[
-                  styles.genderButton,
-                  maleSelected && styles.genderButtonSelected
-                ]}
+                onPress={() => setIsDatePickerVisible(true)}
+                style={styles.datePickerButton}
               >
-                <TextScallingFalse style={styles.genderButtonText}>
-                  Male
-                </TextScallingFalse>
-                <View
-                  style={[
-                    styles.genderRadio,
-                    maleSelected && styles.genderRadioSelected
-                  ]}
-                />
+                <View style={styles.datePickerButtonContent}>
+                  <AntDesign name="calendar" size={25} color="white" />
+                  <Text style={styles.dateText}>
+                    {dateOfBirth || "Select date"}
+                  </Text>
+                </View>
+
+                {dateOfBirth && (
+                  <TouchableOpacity
+                    onPress={() => setDateOfBirth("")}
+                    activeOpacity={0.5}
+                    style={styles.clearDateButton}
+                  >
+                    <AntDesign name="close" size={20} color="white" />
+                  </TouchableOpacity>
+                )}
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
 
-        <View style={styles.footerContainer}>
-          <View style={styles.termsContainer}>
-            <TextScallingFalse style={styles.termsText}>
-              {" "}
-              By clicking Agree & Join you agree to the Strength.
-            </TextScallingFalse>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => setOpenModal14(true)}
-            >
-              <TextScallingFalse style={styles.termsLink}>
-                User Agreement, Privacy Policy, Cookies Policy.
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.signupButtonContainer}>
-            {
-              loading ?
-                <ActivityIndicator size={'small'} />
-                :
-                <SignupButton onPress={() => validateSignupForm()}>
-                  <TextScallingFalse style={styles.signupButtonText}>
-                    Agree & join
+            <View style={styles.genderContainer}>
+              <View style={styles.genderLabelContainer}>
+                <TextScallingFalse style={styles.inputLabel}>
+                  Gender
+                </TextScallingFalse>
+              </View>
+              <View style={styles.genderButtonsContainer}>
+                <TouchableOpacity
+                  onPress={handleFemalePress}
+                  activeOpacity={0.5}
+                  style={[
+                    styles.genderButton,
+                    femaleSelected && styles.genderButtonSelected
+                  ]}
+                >
+                  <TextScallingFalse style={styles.genderButtonText}>
+                    Female
                   </TextScallingFalse>
-                </SignupButton>
-            }
-          </View>
-          <View style={styles.loginContainer}>
-            <TextScallingFalse style={styles.loginText}>
-              Already on Strength?
-            </TextScallingFalse>
-            <TouchableOpacity
-              onPress={() => router.push("/(auth)/login")}
-              activeOpacity={0.5}
-            >
-              <TextScallingFalse style={styles.loginLink}>
-                {" "}
-                Sign in
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      {/* Date picker for iOS (modal) */}
-      {Platform.OS === 'ios' && renderIOSDatePicker()}
-
-      {/* Date picker for Android (inline) */}
-      {Platform.OS === 'android' && isDatePickerVisible && (
-        <DateTimePicker
-          value={getInitialDateValue()}
-          mode="date"
-          display="calendar"
-          onChange={handleDateChange}
-          maximumDate={maxDate}
-        />
-      )}
-
-      {/* Agreements Modal */}
-      <Modal
-        visible={openModal14}
-        animationType="slide"
-        onRequestClose={() => setOpenModal14(false)}
-        transparent={true}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setOpenModal14(false)}
-        >
-          <View style={styles.agreementsModalContainer}>
-            <View style={styles.agreementsModal}>
-              <View style={styles.agreementsModalHeader}>
-                <Text style={styles.agreementsModalTitle}>
-                  Agreements & Policy
-                </Text>
-                <View style={styles.agreementsModalDivider}></View>
-              </View>
-
-              <View style={styles.agreementsModalContent}>
-                <TouchableOpacity
-                  onPress={() =>
-                    Linking.openURL(
-                      "https://strength-sports.webflow.io/resources/instructions"
-                    )
-                  }
-                  activeOpacity={0.5}
-                  style={styles.agreementItem}
-                >
-                  <View style={styles.agreementDot}></View>
-                  <Text style={styles.agreementText}>
-                    User Agreement
-                  </Text>
+                  <View
+                    style={[
+                      styles.genderRadio,
+                      femaleSelected && styles.genderRadioSelected
+                    ]}
+                  />
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() =>
-                    Linking.openURL("https://www.strength.net.in/?privacy")
-                  }
+                  onPress={handleMalePress}
                   activeOpacity={0.5}
-                  style={styles.agreementItem}
+                  style={[
+                    styles.genderButton,
+                    maleSelected && styles.genderButtonSelected
+                  ]}
                 >
-                  <View style={styles.agreementDot}></View>
-                  <Text style={styles.agreementText}>
-                    Privacy Policy
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() =>
-                    Linking.openURL("https://www.strength.net.in/?term")
-                  }
-                  activeOpacity={0.5}
-                  style={styles.agreementItem}
-                >
-                  <View style={styles.agreementDot}></View>
-                  <Text style={styles.agreementText}>
-                    Cookies Policy
-                  </Text>
+                  <TextScallingFalse style={styles.genderButtonText}>
+                    Male
+                  </TextScallingFalse>
+                  <View
+                    style={[
+                      styles.genderRadio,
+                      maleSelected && styles.genderRadioSelected
+                    ]}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
           </View>
-        </TouchableOpacity>
-      </Modal>
+
+          <View style={styles.footerContainer}>
+            <View style={styles.termsContainer}>
+              <TextScallingFalse style={styles.termsText}>
+                {" "}
+                By clicking Agree & Join you agree to the Strength.
+              </TextScallingFalse>
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={() => setOpenModal14(true)}
+              >
+                <TextScallingFalse style={styles.termsLink}>
+                  User Agreement, Privacy Policy, Cookies Policy.
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.signupButtonContainer}>
+              {
+                loading ?
+                  <ActivityIndicator size={'small'} />
+                  :
+                  <SignupButton onPress={() => validateSignupForm()}>
+                    <TextScallingFalse style={styles.signupButtonText}>
+                      Agree & join
+                    </TextScallingFalse>
+                  </SignupButton>
+              }
+            </View>
+            <View style={styles.loginContainer}>
+              <TextScallingFalse style={styles.loginText}>
+                Already on Strength?
+              </TextScallingFalse>
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/login")}
+                activeOpacity={0.5}
+              >
+                <TextScallingFalse style={styles.loginLink}>
+                  {" "}
+                  Sign in
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Date picker for iOS (modal) */}
+        {Platform.OS === 'ios' && renderIOSDatePicker()}
+
+        {/* Date picker for Android (inline) */}
+        {Platform.OS === 'android' && isDatePickerVisible && (
+          <DateTimePicker
+            value={getInitialDateValue()}
+            mode="date"
+            display="calendar"
+            onChange={handleDateChange}
+            maximumDate={maxDate}
+          />
+        )}
+
+        {openModal14 && (
+          <Modal
+            visible={openModal14}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setOpenModal14(false)}
+          >
+            <AgreementsModalView onClose={() => setOpenModal14(false)} />
+          </Modal>
+        )}
       </ScrollView>
     </PageThemeView>
   );

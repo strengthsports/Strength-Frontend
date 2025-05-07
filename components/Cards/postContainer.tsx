@@ -1,17 +1,8 @@
-import React, {
-  useState,
-  useRef,
-  forwardRef,
-  useMemo,
-  memo,
-  useEffect,
-} from "react";
+import React, { useState, useRef, forwardRef, useMemo, useEffect } from "react";
 import {
   View,
   Animated,
   TouchableOpacity,
-  NativeSyntheticEvent,
-  TextLayoutEventData,
   StyleSheet,
   Dimensions,
   Image,
@@ -39,12 +30,13 @@ import { Platform } from "react-native";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import UserInfo from "../ui/atom/UserInfo";
 
 const shadowStyle = Platform.select({
   ios: {
-    shadowColor: "#000000",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.50,
     shadowRadius: 4,
   },
   android: {
@@ -146,31 +138,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           draggableDirection: "down",
         });
       } else if (type === "comment") {
-        // openBottomSheet({
-        //   isVisible: true,
-        //   content: (
-        //     <>
-        //       <CommentModal targetId={item._id} autoFocusKeyboard={true} />
-        //       <StickyInput
-        //         user={user}
-        //         value={commentText}
-        //         onChangeText={handleTextChange}
-        //         onSubmit={handlePostComment}
-        //         isPosting={isPosting}
-        //         replyingTo={replyingTo}
-        //         progress={progress}
-        //         placeholder="Type your comment here"
-        //         autoFocus={true}
-        //       />
-        //     </>
-        //   ),
-        //   height: "80%",
-        //   bgcolor: "#000",
-        //   border: true,
-        //   maxHeight: "100%",
-        //   draggableDirection: "both",
-        // });
-
         <Modal transparent visible={true} animationType="slide">
           <CommentModal targetId={item._id} autoFocusKeyboard={true} />
         </Modal>;
@@ -409,8 +376,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   width: "100%",
                   height: "100%",
                   borderRadius: 100,
-                  borderWidth: 0.5,
-                  borderColor: "#151515",
+                  borderWidth: 1,
+                  borderColor: "#1a1a1a",
                 }}
                 transition={500}
                 cachePolicy="memory-disk"
@@ -420,25 +387,20 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
             {/* Name, Headline, post date */}
             <View className="w-64 flex flex-col gap-y-4 justify-between">
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() =>
-                  user?._id === item.postedBy?._id
-                    ? router.push("/(app)/(tabs)/profile")
-                    : router.push(`/(app)/(profile)/profile/${serializedUser}`)
+              <UserInfo
+                fullName={
+                  item.postedBy.firstName +
+                  " " +
+                  (item.postedBy.lastName !== undefined
+                    ? item.postedBy.lastName
+                    : "")
                 }
-              >
-                <TextScallingFalse className="text-white text-xl font-bold">
-                  {item.postedBy?.firstName} {item.postedBy?.lastName}
-                </TextScallingFalse>
-                <TextScallingFalse
-                  className="text-[#EAEAEA] text-sm"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  @{item.postedBy.username} | {item.postedBy?.headline}
-                </TextScallingFalse>
-              </TouchableOpacity>
+                headline={item.postedBy.headline}
+                username={item.postedBy.username}
+                size="small"
+                numberOfLines={2}
+                leftAlign={true}
+              />
               <View className="flex flex-row items-center">
                 <TextScallingFalse className="text-sm text-neutral-400">
                   {" "}

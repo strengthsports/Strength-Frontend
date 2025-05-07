@@ -25,7 +25,7 @@ function TopBar({
           if (backHandler) {
             backHandler();
           } else {
-            router.push(backRoute);
+            router.back();
           }
         }}
         className="basis-[15%]"

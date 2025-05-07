@@ -41,9 +41,9 @@ import UserInfo from "../ui/atom/UserInfo";
 
 const shadowStyle = Platform.select({
   ios: {
-    shadowColor: "#000000",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.50,
     shadowRadius: 4,
   },
   android: {

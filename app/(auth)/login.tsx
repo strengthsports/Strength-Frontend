@@ -97,6 +97,7 @@ const LoginScreen = () => {
     <PageThemeView>
       <ScrollView
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
         // contentContainerStyle={{ flexGrow: 1}}
         style={{flex: 1}}
       >

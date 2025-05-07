@@ -35,6 +35,7 @@ import { resetFeed } from "~/reduxStore/slices/feed/feedSlice";
 import ChangePasswordForm from "./ChangePasswordForm";
 import CloseAccountView from "./CloseAccountView";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import AgreementsModalView from "./AgreementsModalView";
 
 const index = () => {
   const router = useRouter();
@@ -49,6 +50,7 @@ const index = () => {
   const toggleShowPassword = () => setShowPassword((prevState) => !prevState);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [showCloseAccountPage, setShowCloseAccountPage] = useState(false);
+  const [openModal14, setOpenModal14] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: any) => state?.profile);
@@ -111,7 +113,7 @@ const index = () => {
     <PageThemeView>
       <View style={styles.TopBarView}>
         <TouchableOpacity
-        style={{width: 60, height: 30, justifyContent:'center'}}
+          style={{ width: 60, height: 30, justifyContent: 'center' }}
           activeOpacity={0.5}
           onPress={() => router.back()}
         >
@@ -239,7 +241,7 @@ const index = () => {
       >
         <PageThemeView>
           <View style={styles.TopBarView}>
-            <TouchableOpacity style={{width: 60, height: 30, justifyContent:'center'}} activeOpacity={0.5} onPress={closeModal}>
+            <TouchableOpacity style={{ width: 60, height: 30, justifyContent: 'center' }} activeOpacity={0.5} onPress={closeModal}>
               <BackIcon />
             </TouchableOpacity>
             <TextScallingFalse
@@ -267,7 +269,7 @@ const index = () => {
             <View style={styles.AccountSettingsButtonView}>
               <MaterialIcons name="password" size={26} color="white" />
               <TouchableOpacity
-              className="py-4"
+                className="py-4"
                 onPress={() => {
                   setShowChangePasswordForm(true);
                 }
@@ -282,14 +284,12 @@ const index = () => {
             <View style={styles.AccountSettingsButtonView}>
               <MaterialIcons name="policy" size={26} color="white" />
               <TouchableOpacity
-               className="py-4"
-                onPress={() =>
-                  Linking.openURL("https://strength.net.in/?privacy")
-                }
+                className="py-4"
+                onPress={() => setOpenModal14(true)}
                 activeOpacity={0.7}
               >
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
-                  Privacy policy
+                  Agreements & Policy
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>
@@ -299,7 +299,7 @@ const index = () => {
                 size={26}
                 color="white"
               />
-              <TouchableOpacity  className="py-4" onPress={()=>{setShowCloseAccountPage(true);}} activeOpacity={0.7}>
+              <TouchableOpacity className="py-4" onPress={() => { setShowCloseAccountPage(true); }} activeOpacity={0.7}>
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
                   Close account
                 </TextScallingFalse>
@@ -326,7 +326,7 @@ const index = () => {
             <Modal
               visible={showCloseAccountPage}
               transparent={true}
-              onRequestClose={() => 
+              onRequestClose={() =>
                 setShowCloseAccountPage(false)}
             >
               <CloseAccountView
@@ -334,6 +334,17 @@ const index = () => {
               />
             </Modal>
           )}
+
+         {openModal14 && (
+           <Modal
+           visible={openModal14}
+           animationType="slide"
+           transparent={true}
+           onRequestClose={() => setOpenModal14(false)}
+         >
+           <AgreementsModalView onClose={() => setOpenModal14(false)}/>
+         </Modal>
+         )}
 
         </PageThemeView>
       </Modal>

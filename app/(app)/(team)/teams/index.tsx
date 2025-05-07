@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import SignupButton from "~/components/SignupButton";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import { ThemedText } from "~/components/ThemedText";
 
 const InitiateCreateTeam = () => {
@@ -32,11 +33,7 @@ const InitiateCreateTeam = () => {
       {/* Back Button */}
       <View style={{ paddingHorizontal: 16 }}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Icon
-            name="arrow-back" 
-            size={30} 
-            color="white"
-          />
+         <BackIcon/>
         </TouchableOpacity>
       </View>
 

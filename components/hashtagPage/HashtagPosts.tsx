@@ -1,46 +1,50 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   FlatList,
   RefreshControl,
   Text,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
 import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedApi.hashtag";
 import PostContainer from "~/components/Cards/postContainer";
-import { Colors } from "~/constants/Colors";
 import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
-import PostSkeletonLoader1 from "../skeletonLoaders/PostSkeletonLoader1";
-import { ScrollView } from "react-native";
+import { Colors } from "~/constants/Colors";
+import HashtagNotFound from "../notfound/hashtagNotFound";
 
 type ContentType = "top" | "latest" | "polls" | "media" | "people";
 
-export default function HashtagPosts({ type }: { type: ContentType }) {
-  const { hashtagId } = useLocalSearchParams(); // Get the hashtag from params
-  const hashtag =
-    typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
+const screenWidth = Dimensions.get("window").width;
+
+const HashtagPosts = ({
+  type,
+  hashtag,
+}: {
+  type: ContentType;
+  hashtag: string;
+}) => {
   const { data, error, isLoading, refetch } = useGetHashtagContentsQuery({
     hashtag,
     type,
     limit: 10,
   });
 
-  console.log(`\n\n${type}`, data?.data);
-
   const [refreshing, setRefreshing] = useState(false);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
-  };
+  }, [refetch]);
 
-  const renderItem = useCallback(({ item }: { item: Post }) => {
-    return (
-      <View className="w-screen">
+  const posts = useMemo(() => data?.data || [], [data]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => (
+      <View style={{ width: screenWidth }}>
         <PostContainer item={item} highlightedHashtag={`#${hashtag}`} />
         <Divider
           style={{ marginHorizontal: "auto", width: "100%" }}
@@ -48,41 +52,37 @@ export default function HashtagPosts({ type }: { type: ContentType }) {
           color="#282828"
         />
       </View>
-    );
-  }, []);
+    ),
+    [hashtag]
+  );
 
   if (error) {
-    console.log(error);
     return (
       <View className="justify-center items-center">
-        <Text className="text-red-400">Error</Text>
+        <Text className="text-red-400">Something went wrong.</Text>
       </View>
     );
   }
 
-  return isLoading ? (
-    <ScrollView
-      contentContainerStyle={{
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        width: "100%",
-        flex: 1,
-        backgroundColor: "#000",
-      }}
-    >
-      <PostSkeletonLoader1 />
-      <PostSkeletonLoader1 />
-      <PostSkeletonLoader1 />
-    </ScrollView>
-  ) : !data?.data?.length ? (
-    <View className="justify-center items-center h-20">
-      <TextScallingFalse className="text-[#808080] text-2xl">
-        No posts found for #{hashtag}
-      </TextScallingFalse>
-    </View>
-  ) : (
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color={Colors.themeColor} />
+      </View>
+    );
+  }
+
+  if (!posts.length) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <HashtagNotFound text={hashtag} />
+      </View>
+    );
+  }
+
+  return (
     <FlatList
-      data={data.data}
+      data={posts}
       keyExtractor={(item) => item._id.toString()}
       renderItem={renderItem}
       refreshControl={
@@ -96,7 +96,13 @@ export default function HashtagPosts({ type }: { type: ContentType }) {
           progressBackgroundColor="#181A1B"
         />
       }
-      ListFooterComponent={<View className="mt-20"></View>}
+      initialNumToRender={5}
+      maxToRenderPerBatch={5}
+      windowSize={10}
+      removeClippedSubviews
+      ListFooterComponent={<View className="mt-20" />}
     />
   );
-}
+};
+
+export default React.memo(HashtagPosts);

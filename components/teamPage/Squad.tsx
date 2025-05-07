@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   ScrollView,
-  Text,
   ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
@@ -15,6 +14,7 @@ import ThreeDot from "~/components/SvgIcons/teams/ThreeDot";
 import DownwardDrawer from "@/components/teamPage/DownwardDrawer";
 import Nopic from "../../assets/images/nopic.jpg";
 import UserInfoModal from "../modals/UserInfoModal";
+import TextScallingFalse from "../CentralText";
 
 interface SquadProps {
   teamDetails: any;
@@ -57,7 +57,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="white" />
-        <Text className="text-white mt-4">Loading team details...</Text>
+        <TextScallingFalse className="text-white mt-4">Loading team details...</TextScallingFalse>
       </View>
     );
   }
@@ -96,7 +96,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
       <View key={`section-${sectionKey}`}>
         {/* Only show title if there are members OR if user is admin */}
         {(members.length > 0 || isAdmin) && (
-          <Text
+          <TextScallingFalse
             style={{
               fontFamily: "Sansation-Regular",
               color: "#CECECE",
@@ -106,7 +106,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
             }}
           >
             {title}
-          </Text>
+          </TextScallingFalse>
         )}
         
         <View className="flex mt-6 mb-5 flex-row flex-wrap">
@@ -151,7 +151,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                 onPress={() => handleAddMember(title)}
               >
                 <View className="flex justify-center h-[180] w-[170] border border-gray-700 items-center rounded-lg">
-                  <Text
+                  <TextScallingFalse
                     style={{
                       color: "white",
                       fontSize: 30,
@@ -159,10 +159,10 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
                     }}
                   >
                     +
-                  </Text>
-                  <Text style={{ color: "white", fontFamily: "Sansation-Regular" }}>
+                  </TextScallingFalse>
+                  <TextScallingFalse style={{ color: "white", fontFamily: "Sansation-Regular" }}>
                     Add {title}
-                  </Text>
+                  </TextScallingFalse>
                 </View>
               </TouchableOpacity>
             )

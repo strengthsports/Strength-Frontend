@@ -1,4 +1,11 @@
-import React, { useState, useRef, forwardRef, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  forwardRef,
+  useMemo,
+  useEffect,
+  useCallback,
+} from "react";
 import {
   View,
   Animated,
@@ -213,6 +220,21 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       setActiveIndex(index);
     };
 
+    const goToHashtag = useCallback(
+      (tag: string) => {
+        // string version is faster than object
+        router.push(`/(app)/(post)/hashtag/${tag}/top`);
+      },
+      [router]
+    );
+
+    const goToUser = useCallback(
+      (userId: string) => {
+        router.push(`/(app)/(profile)/profile/${userId}`);
+      },
+      [router]
+    );
+
     // Function to render caption with clickable hashtags and mention tags
     const renderCaptionWithTags = (
       caption: string,
@@ -232,54 +254,46 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         if (!part || remainingChars <= 0) continue;
 
         if (part.startsWith("#")) {
-          if (part.length <= remainingChars) {
-            elements.push(
-              <TextScallingFalse
-                key={i}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(app)/(post)/hashtag/[hashtagId]/(tabs)/top",
-                    params: { hashtagId: part.slice(1) },
-                  })
-                }
-                className={`text-2xl text-[#12956B] ${
-                  highlightedHashtag === part && "font-semibold"
-                } active:bg-gray-600`}
-              >
-                {part}
-              </TextScallingFalse>
-            );
-            remainingChars -= part.length;
-          } else {
+          if (part.length > remainingChars) {
             showSeeMore = true;
-            break;
+            return;
           }
-        } else if (part.startsWith("@")) {
-          const user = taggedUsers.find((u) => u.username === part.slice(1));
-          const serializedUser = encodeURIComponent(
-            JSON.stringify({ id: user?._id, type: user?.type })
+          const tag = part.slice(1);
+          elements.push(
+            <TextScallingFalse
+              key={i}
+              onPress={() => goToHashtag(tag)}
+              className={`text-2xl text-[#12956B] ${
+                highlightedHashtag === part && "font-semibold"
+              } active:bg-gray-600`}
+            >
+              {part}
+            </TextScallingFalse>
           );
-          if (part.length <= remainingChars) {
-            elements.push(
-              <TextScallingFalse
-                key={i}
-                onPress={() =>
-                  serializedUser &&
-                  router.push({
-                    pathname: "/(app)/(profile)/profile/[userId]",
-                    params: { userId: serializedUser },
-                  })
-                }
-                className="text-2xl text-[#12956B] active:bg-gray-600"
-              >
-                {part}
-              </TextScallingFalse>
-            );
-            remainingChars -= part.length;
-          } else {
+          remainingChars -= part.length;
+        } else if (part.startsWith("@")) {
+          const uname = part.slice(1);
+          const user = taggedUsers.find((u) => u.username === uname);
+          if (!user || part.length > remainingChars) {
             showSeeMore = true;
-            break;
+            return;
           }
+          elements.push(
+            <TextScallingFalse
+              key={i}
+              onPress={() =>
+                goToUser(
+                  encodeURIComponent(
+                    JSON.stringify({ id: user._id, type: user.type })
+                  )
+                )
+              }
+              className="text-2xl text-[#12956B] active:bg-gray-600"
+            >
+              {part}
+            </TextScallingFalse>
+          );
+          remainingChars -= part.length;
         } else {
           const allowed = Math.min(remainingChars, part.length);
           const visibleText = part.slice(0, allowed);

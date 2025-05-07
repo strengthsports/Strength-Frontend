@@ -147,7 +147,7 @@ const SuggestionCard = ({
           disabled={onboarding}
           className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
             size === "small" ? "w-16 h-16" : "w-20 h-20"
-          } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
+          } items-center justify-center flex-shrink-0 border-[1px] border-[#181818] z-20 overflow-hidden`}
           style={{ marginTop: "10%" }}
         >
           {user.profilePic ? (

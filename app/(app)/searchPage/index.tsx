@@ -4,13 +4,11 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
-  KeyboardAvoidingView,
   Image,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard, Modal, StyleSheet
+  Modal, 
+  StyleSheet,
+  ActivityIndicator
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSelector, useDispatch } from "react-redux";
@@ -28,7 +26,6 @@ import nopic from "@/assets/images/nopic.jpg";
 import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
 import { createSelector } from "@reduxjs/toolkit";
 import TextScallingFalse from "~/components/CentralText";
-import SearchSkeletonLoader from "~/components/skeletonLoaders/SearchSkeletonLoader";
 import PageThemeView from "~/components/PageThemeView";
 
 // Memoized Redux selectors
@@ -205,10 +202,9 @@ const SearchPage: React.FC = () => {
       {searchText ? (
         <View className="px-5 mt-3">
           {isSearching ? (
-            // <ActivityIndicator size="small" color="white" />
-            Array.from({ length: 14 }).map((_, index) => (
-              <SearchSkeletonLoader key={index} />
-            ))
+            <View style={{paddingTop: 5}}>
+            <ActivityIndicator size="small" color="gray" />
+            </View>
           ) : (
             <FlatList
               data={searchResults}

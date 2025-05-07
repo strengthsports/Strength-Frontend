@@ -128,7 +128,7 @@ const SuggestedSupportScreen: React.FC = () => {
         text1: "Successfully Updated Profile",
         visibilityTime: 1500,
       });
-      router.push("/(app)/(tabs)/home");
+      router.replace("/(app)/(tabs)/home");
     } catch (error: unknown) {
       console.log(error);
       if (error && typeof error === "object" && "message" in error) {
@@ -178,7 +178,7 @@ const SuggestedSupportScreen: React.FC = () => {
         type: "success",
         text1: "Successfully Updated Profile",
       });
-      router.push("/(app)/(tabs)/home");
+      router.replace("/(app)/(tabs)/home");
     } catch (error: unknown) {
       console.log(error);
       if (error && typeof error === "object" && "message" in error) {
@@ -246,15 +246,18 @@ const SuggestedSupportScreen: React.FC = () => {
         ListEmptyComponent={() => (
           <View
             style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
+              height:'100%',
+              width:'100%',
+              alignItems:'center',
               justifyContent: "center",
-              gap: 12,
             }}
           >
-            {Array.from({ length: 8 }).map((_, index) => (
+            {/* {Array.from({ length: 8 }).map((_, index) => (
               <UserCardSkeleton key={index} size="large" />
-            ))}
+            ))} */}
+            <View style={{ transform: [{ scale: 1.5 }] }}>
+            <ActivityIndicator color={'gray'} size={'small'}/>
+            </View>
           </View>
         )}
         onEndReached={loadMoreUsers}

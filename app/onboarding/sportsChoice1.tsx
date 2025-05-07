@@ -28,6 +28,7 @@ import SportsChoiceLoader from "~/components/skeletonLoaders/onboarding/SportsCh
 import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
 import RequestSportModal from "~/components/modals/SportsRequestModal";
 import RequestSuccessfulModal from "~/components/modals/RequestSuccessModal";
+import { ActivityIndicator } from "react-native-paper";
 
 // Define the type of sport that includes a 'logo' property
 export interface Sport {
@@ -58,7 +59,7 @@ const SportsChoice: React.FC = () => {
   );
   const userType = useSelector((state: RootState) => state.profile.user?.type);
   const handleSkipClick = () => {
-    router.push({
+    router.replace({
       pathname: "/onboarding/SetProfile",
     });
   };
@@ -127,7 +128,7 @@ const SportsChoice: React.FC = () => {
 
     console.log("Selected Sports:", selectedArray);
     dispatch(setSelectedSports(selectedArray));
-    router.push({
+    router.replace({
       pathname: "/onboarding/SetProfile",
     });
   };
@@ -242,18 +243,13 @@ const SportsChoice: React.FC = () => {
             // <TextScallingFalse className="text-white">Loading...</TextScallingFalse>
             <View
               style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
                 justifyContent: "center", // or "flex-start"
                 alignItems: "center",
-                gap: 6
+                height:'70%',
+                width:'100%',
               }}
             >
-              {new Array(35).fill(null).map((_, index) => (
-                <View key={index} style={{}}>
-                  <SportsChoiceLoader />
-                </View>
-              ))}
+            <ActivityIndicator size={'small'} color={'gray'}/>
             </View>
           ) : isError ? (
             <TextScallingFalse className="text-red-500">{isError}</TextScallingFalse>

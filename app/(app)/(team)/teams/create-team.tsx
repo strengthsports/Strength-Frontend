@@ -29,6 +29,7 @@ import { createTeam } from "~/reduxStore/slices/team/teamSlice";
 import { fetchUserSuggestions } from "~/reduxStore/slices/team/userSuggestionSlice";
 import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
 import TextScallingFalse from "~/components/CentralText";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -398,8 +399,8 @@ const [formattedDate, setFormattedDate] = useState("");
         <View className="flex-1">
           {/* Header */}
           <View className="position-absolute px-4 py-1 right-0 z-10">
-            <TouchableOpacity onPress={() => router.back()} className="mb-4">
-              <Icon name="arrowleft" size={30} color="white" />
+            <TouchableOpacity onPress={() => router.back()} className="mb-4 mt-2">
+             <BackIcon/>
             </TouchableOpacity>
           </View>
 

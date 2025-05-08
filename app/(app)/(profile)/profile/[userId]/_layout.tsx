@@ -994,9 +994,9 @@ const ProfileLayout = () => {
         animationOut="slideOutRight"
         style={{ margin: 0, padding: 0 }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <PageThemeView>
           <TouchableOpacity
-            className="flex-1 justify-center items-center bg-black"
+            className="flex-1 justify-center items-center"
             activeOpacity={1}
           >
             <View className="w-full h-full justify-start items-center mx-auto">
@@ -1031,7 +1031,7 @@ const ProfileLayout = () => {
               )}
             </View>
           </TouchableOpacity>
-        </SafeAreaView>
+        </PageThemeView>
       </Modal>
     </PageThemeView>
   );

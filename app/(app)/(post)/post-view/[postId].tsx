@@ -38,6 +38,9 @@ import CustomVideoPlayer, {
 } from "~/components/PostContainer/VideoPlayer";
 import { AVPlaybackStatusSuccess } from "expo-av";
 import VideoControls from "~/components/PostContainer/VideoControls";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import { purple100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
+import PageThemeView from "~/components/PageThemeView";
 
 const { width, height } = Dimensions.get("window");
 
@@ -149,7 +152,7 @@ const Post = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <PageThemeView>
       <Pressable
         className="flex-1"
         onPress={() =>
@@ -158,12 +161,12 @@ const Post = () => {
       >
         {/* Header */}
         <View
-          className={`w-full z-50 pt-4 flex-row justify-between items-center px-5 ${
+          className={`w-full z-50 pt-3 flex-row justify-between items-center px-5 ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
         >
-          <TouchableOpacity onPress={() => router.back()}>
-            <AntDesign name="arrowleft" size={24} color="white" />
+          <TouchableOpacity style={{padding:10}} onPress={() => router.back()}>
+            <BackIcon />
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row justify-center items-center gap-x-4"
@@ -188,7 +191,7 @@ const Post = () => {
               {post?.postedBy?.firstName} {post?.postedBy?.lastName}
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity style={{padding:10}}>
             <MaterialIcons name="more-horiz" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -296,7 +299,7 @@ const Post = () => {
           </View>
         </LinearGradient>
       </Pressable>
-    </SafeAreaView>
+    </PageThemeView>
   );
 };
 

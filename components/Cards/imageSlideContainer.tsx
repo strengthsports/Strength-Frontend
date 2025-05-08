@@ -6,13 +6,23 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { View, TouchableOpacity, Dimensions, StyleSheet, Image } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+  Image,
+} from "react-native";
 import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
 import { RelativePathString, useRouter } from "expo-router";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
+import { Post } from "~/types/post";
+import { setCurrentPost } from "~/reduxStore/slices/post/postSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 
 // const borderLeftWidth = Platform.select({
 //   ios: {
@@ -33,7 +43,7 @@ interface CustomImageSliderProps {
   onRemoveImage: (index: number) => void;
   isFeedPage?: boolean;
   isMyActivity?: boolean;
-  postId?: string;
+  post?: Post;
   setIndex: (index: number) => void;
   onDoubleTap?: () => void;
 }
@@ -56,7 +66,7 @@ const ImageSlide = memo(
     isFirstSlide,
     isFeedPage,
     isMyActivity,
-    postId,
+    post,
     onDoubleTap,
   }: {
     uri: string;
@@ -66,10 +76,11 @@ const ImageSlide = memo(
     totalSlides: number;
     isFeedPage?: boolean;
     isMyActivity?: boolean;
-    postId?: string;
+    post?: Post;
     onDoubleTap?: () => any;
   }) => {
     const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
     const [isError, setIsError] = useState(false);
 
     return (
@@ -79,9 +90,10 @@ const ImageSlide = memo(
         }`}
         activeOpacity={0.95}
         onSinglePress={() => {
-          if (isFeedPage && postId) {
+          if (isFeedPage && post) {
+            dispatch(setCurrentPost(post));
             router.push({
-              pathname: `/post-view/${postId}` as RelativePathString,
+              pathname: `/post-view/${post._id}` as RelativePathString,
             });
           }
         }}
@@ -119,7 +131,7 @@ const CustomImageSlider = ({
   onRemoveImage,
   isFeedPage,
   isMyActivity,
-  postId,
+  post,
   setIndex,
   onDoubleTap,
 }: CustomImageSliderProps) => {
@@ -249,7 +261,7 @@ const CustomImageSlider = ({
               totalSlides={images.length}
               isFeedPage={isFeedPage}
               isMyActivity={isMyActivity}
-              postId={postId}
+              post={post}
               onDoubleTap={onDoubleTap}
             />
           ))}

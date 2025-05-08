@@ -43,7 +43,7 @@ const shadowStyle = Platform.select({
   ios: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.50,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
   },
   android: {
@@ -536,7 +536,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   aspectRatio={item.aspectRatio || [3, 2]}
                   images={imageUrls}
                   isFeedPage={true}
-                  postId={item._id}
+                  post={item}
                   setIndex={handleSetActiveIndex}
                   onDoubleTap={handleDoubleTap}
                 />

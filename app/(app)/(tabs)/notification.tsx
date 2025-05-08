@@ -348,7 +348,9 @@ const NotificationCluster = ({
 
 const LoadingIndicator = () => (
   <View className="flex-1 justify-center items-center">
-    <ActivityIndicator size="large" color={Colors.themeColor} />
+    <View style={{ transform: [{ scale: 1.5 }]} }>
+    <ActivityIndicator size="small" color={'gray'} />
+    </View>
   </View>
 );
 

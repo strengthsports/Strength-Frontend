@@ -100,7 +100,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
     processTeams();
   }, [teams]);
 
-  const visibleTeams = showAllTeams ? teamList : teamList.slice(0, 4);
+  const visibleTeams = showAllTeams ? teamList : teamList.slice(0, 5);
 
 
   const isNavigatingRef = useRef(false);
@@ -205,23 +205,21 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
                             {team.sportname}
                           </TextScallingFalse>
                         </View>
-                        <View style={{ backgroundColor: 'grey', width: 3, height: 3, borderRadius: '100%' }} />
-                        <TextScallingFalse style={{ color: 'grey', fontSize: 12, fontWeight: '500', }}>
-                          {team.membersLength} {team.membersLength === 1 ? 'Member' : 'Members'}
-                        </TextScallingFalse>
                       </View>
                     </View>
                   </View>
                 </TouchableOpacity>
               ))}
 
-              {teamList.length > 4 && (
+              {teamList.length > 5 && (
                 <TouchableOpacity
-                  onPress={() => setShowAllTeams(!showAllTeams)}
-                  className="mt-2"
+                  onPress={() => {
+                    router.push('/(app)/(profile)/edit-overview/(modal)/current-team');
+                    handleCloseDrawer();
+                  }}
                 >
-                  <TextScallingFalse className="text-white text-2xl font-semibold">
-                    {showAllTeams ? "See Less" : "See More"}
+                  <TextScallingFalse className="text-2xl font-semibold" style={{ color:'gray'}}>
+                    See all
                   </TextScallingFalse>
                 </TouchableOpacity>
               )}

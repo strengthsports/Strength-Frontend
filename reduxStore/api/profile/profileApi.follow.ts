@@ -1,6 +1,11 @@
 import { profileApi } from "./profileApi";
 import { FollowUser, TargetUser } from "~/types/user";
 
+interface PaginatedRequest extends Partial<TargetUser> {
+  limit?: number;
+  cursor?: string;
+}
+
 export const followApi = profileApi.injectEndpoints({
   endpoints: (builder) => ({
     followUser: builder.mutation<void, FollowUser>({
@@ -61,22 +66,28 @@ export const followApi = profileApi.injectEndpoints({
         { type: "UserProfile", id: followingId },
       ],
     }),
-    findFollowers: builder.query<any, Partial<TargetUser>>({
-      query: (body) => ({
-        url: "/findFollowers",
-        method: "POST",
-        body,
+    fetchFollowers: builder.query<any, PaginatedRequest>({
+      query: ({ limit, cursor, targetUserId }) => ({
+        url: `/findFollowers/${targetUserId}`,
+        params: { limit, ...(cursor && { cursor }) },
       }),
-      transformResponse: (response: { data: any }) => response.data,
+      transformResponse: (response: { data: any }) => ({
+        users: response.data.followers,
+        nextCursor: response.data.nextCursor,
+      }),
+      keepUnusedDataFor: 5,
       providesTags: [{ type: "Followers", id: "LIST" }],
     }),
-    findFollowings: builder.query<any, Partial<TargetUser>>({
-      query: (body) => ({
-        url: "/findFollowings",
-        method: "POST",
-        body,
+    fetchFollowings: builder.query<any, PaginatedRequest>({
+      query: ({ limit, cursor, targetUserId }) => ({
+        url: `/findFollowings/${targetUserId}`,
+        params: { limit, ...(cursor && { cursor }) },
       }),
-      transformResponse: (response: { data: any }) => response.data,
+      transformResponse: (response: { data: any }) => ({
+        users: response.data.followings,
+        nextCursor: response.data.nextCursor,
+      }),
+      keepUnusedDataFor: 5,
       providesTags: [{ type: "Followings", id: "LIST" }],
     }),
   }),
@@ -85,6 +96,6 @@ export const followApi = profileApi.injectEndpoints({
 export const {
   useFollowUserMutation,
   useUnFollowUserMutation,
-  useLazyFindFollowersQuery,
-  useLazyFindFollowingsQuery,
+  useLazyFetchFollowersQuery,
+  useLazyFetchFollowingsQuery,
 } = followApi;

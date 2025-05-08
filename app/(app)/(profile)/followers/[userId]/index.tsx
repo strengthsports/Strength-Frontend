@@ -26,6 +26,8 @@ const FollowerFollowing = memo(() => {
       : null;
   }, [params.userId]);
 
+  console.log("Target data ", params.userId);
+
   const refreshTrigger = useRef(0);
 
   const debouncedRefresh = useRef(
@@ -59,8 +61,7 @@ const FollowerFollowing = memo(() => {
       >
         <UserList
           key={refreshTrigger.current}
-          targetId={targetData.id}
-          targetType={targetData.type}
+          targetId={targetData.userId}
           type={type as PageType}
         />
       </ScrollView>

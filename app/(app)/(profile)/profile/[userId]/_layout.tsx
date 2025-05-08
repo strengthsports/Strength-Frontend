@@ -665,11 +665,17 @@ const ProfileLayout = () => {
                       <View style={{ flexDirection: "row" }}>
                         <TouchableOpacity
                           activeOpacity={0.5}
-                          onPress={() =>
+                          onPress={() => {
+                            const serializedUser = encodeURIComponent(
+                              JSON.stringify({
+                                userId: userId.id,
+                                type: userId.type,
+                              })
+                            );
                             router.push(
-                              `/(app)/(profile)/followers/${params.userId}?pageType=followers`
-                            )
-                          }
+                              `/(app)/(profile)/followers/${serializedUser}?pageType=followers`
+                            );
+                          }}
                         >
                           <TextScallingFalse
                             style={{
@@ -683,11 +689,17 @@ const ProfileLayout = () => {
                         </TouchableOpacity>
                         <TouchableOpacity
                           activeOpacity={0.5}
-                          onPress={() =>
+                          onPress={() => {
+                            const serializedUser = encodeURIComponent(
+                              JSON.stringify({
+                                userId: userId.id,
+                                type: userId.type,
+                              })
+                            );
                             router.push(
-                              `/(app)/(profile)/followers/${params.userId}?pageType=followings`
-                            )
-                          }
+                              `/(app)/(profile)/followers/${serializedUser}?pageType=followings`
+                            );
+                          }}
                         >
                           <TextScallingFalse
                             style={{

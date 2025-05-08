@@ -61,7 +61,6 @@ const Likes = memo(() => {
         <UserList
           key={refreshTrigger.current}
           targetId={targetData.id}
-          targetType={targetData.type}
           type="Likers"
         />
       </ScrollView>

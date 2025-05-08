@@ -10,15 +10,13 @@ const smallFollowText = "text-center text-base text-white";
 const FollowButton = ({
   size = "regular",
   followingStatus,
-  handleFollow,
-  handleUnfollow,
+  handleFollowToggle,
   handleOpenModal,
   onboarding = false,
 }: {
   size: string;
   followingStatus: boolean;
-  handleFollow: () => void;
-  handleUnfollow: () => void;
+  handleFollowToggle: () => void;
   handleOpenModal?: () => void;
   onboarding?: boolean;
 }) => {
@@ -31,13 +29,7 @@ const FollowButton = ({
         borderColor: followingStatus ? "#cacaca" : "#12956B",
       }}
       activeOpacity={0.6}
-      onPress={
-        followingStatus
-          ? onboarding
-            ? handleUnfollow
-            : handleOpenModal
-          : handleFollow
-      }
+      onPress={handleFollowToggle}
     >
       {followingStatus ? (
         <TextScallingFalse

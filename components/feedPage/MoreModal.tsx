@@ -1,7 +1,6 @@
 import { AntDesign, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React, { memo, useState } from "react";
 import {
-  Text,
   TouchableOpacity,
   View,
   ActivityIndicator,
@@ -17,6 +16,8 @@ import TextScallingFalse from "../CentralText";
 import Toast from "react-native-toast-message";
 import { ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PageThemeView from "../PageThemeView";
 
 const modalText = "text-white ml-4 text-4xl";
 const modalOption = "flex-row items-center py-3 px-2 active:bg-neutral-900";
@@ -96,7 +97,7 @@ const MoreModal = memo(
           activeOpacity={0.5}
         >
           <FontAwesome name="share" size={20} color="white" />
-          <Text className={modalText}>Share</Text>
+          <TextScallingFalse className={modalText}>Share</TextScallingFalse>
         </TouchableOpacity>
         {!isOwnPost && (
           <>
@@ -110,24 +111,24 @@ const MoreModal = memo(
                 size={22}
                 color={isReported ? "#808080" : "white"}
               />
-              <Text
+              <TextScallingFalse
                 className={`${
                   isReported ? "text-[#808080]" : "text-white"
                 } ml-4 text-4xl`}
               >
                 {isReported ? "Reported" : "Report"}
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
             <TouchableOpacity
               className={modalOption}
               onPress={followingStatus ? handleUnfollow : handleFollow}
             >
               <FontAwesome name="user-plus" size={19} color="white" />
-              <Text className={modalText}>
+              <TextScallingFalse className={modalText}>
                 {followingStatus
                   ? `Unfollow ${firstName}`
                   : `Follow ${firstName}`}
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
           </>
         )}
@@ -142,7 +143,7 @@ const MoreModal = memo(
             ) : (
               <>
                 <MaterialIcons name="delete" size={22} color="white" />
-                <Text className={modalText}>Delete Post</Text>
+                <TextScallingFalse className={modalText}>Delete Post</TextScallingFalse>
               </>
             )}
           </TouchableOpacity>
@@ -155,8 +156,9 @@ const MoreModal = memo(
           animationType="slide"
           onRequestClose={() => setReportModalOpen(false)}
         >
+          <PageThemeView>
           <TouchableOpacity
-            className="flex-1 justify-start bg-black p-6"
+            className="flex-1 justify-start p-6"
             activeOpacity={1}
           >
             <View>
@@ -169,11 +171,11 @@ const MoreModal = memo(
               </TextScallingFalse>
             </View>
             <View className="flex-1">
-              <View className="mt-4 flex-row justify-between items-center border-b border-[#808080]">
+              <View className="mt-6 flex-row justify-between items-center border-b border-[#fff]">
                 <TextInput editable={false}>
-                  <Text className="text-white">
+                  <TextScallingFalse className="text-white">
                     {selectedOption || "Choose"}
-                  </Text>
+                  </TextScallingFalse>
                 </TextInput>
                 <TouchableOpacity
                   onPress={() =>
@@ -181,7 +183,7 @@ const MoreModal = memo(
                       ? setOptionsVisible(false)
                       : setOptionsVisible(true)
                   }
-                  className="border border-[#808080] px-2.5 py-[0.10rem] rounded-lg"
+                  className="border border-[#808080] px-2.5 py-1.5 rounded-lg mb-2"
                 >
                   {isOptionsVisible ? (
                     <AntDesign
@@ -203,7 +205,7 @@ const MoreModal = memo(
                       <TouchableOpacity
                         onPress={() => handleSelectOption(item)} // set selected option
                       >
-                        <Text className="text-2xl text-white">{item}</Text>
+                        <TextScallingFalse className="text-2xl text-white">{item}</TextScallingFalse>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -219,7 +221,7 @@ const MoreModal = memo(
                   setReportModalOpen(false);
                 }}
               >
-                <TextScallingFalse className="text-4xl text-[#303030]">
+                <TextScallingFalse className="text-4xl text-[#CECECE]">
                   Cancel
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -230,7 +232,7 @@ const MoreModal = memo(
               >
                 <TextScallingFalse
                   className={`text-4xl ${
-                    selectedOption ? "text-[#808080]" : "text-[#303030]"
+                    selectedOption ? "text-[#CF3131]" : "text-[#303030]"
                   }`}
                 >
                   Report
@@ -238,6 +240,7 @@ const MoreModal = memo(
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
+          </PageThemeView>
         </Modal>
       </View>
     );

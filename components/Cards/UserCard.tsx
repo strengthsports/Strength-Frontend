@@ -3,6 +3,10 @@ import { Image, TouchableOpacity, View } from "react-native";
 import TextScallingFalse from "../CentralText";
 import nopic from "@/assets/images/nopic.jpg";
 import FollowButton from "../FollowButton";
+import { useEffect, useState } from "react";
+import { useFollow } from "~/hooks/useFollow";
+import { FollowUser } from "~/types/user";
+import { Alert } from "react-native";
 
 const UserCard = ({ user }: { user: any }) => {
   const router = useRouter();
@@ -10,9 +14,45 @@ const UserCard = ({ user }: { user: any }) => {
     JSON.stringify({ id: user._id, type: user.type })
   );
 
+  // Initialize with member.isFollowing or false if member is null/undefined
+  const [followingStatus, setFollowingStatus] = useState<boolean>(
+    user?.isFollowing ?? false
+  );
+
+  useEffect(() => {
+    setFollowingStatus(user?.isFollowing ?? false);
+  }, [user]);
+
+  const { followUser, unFollowUser } = useFollow();
+
+  const handleFollowToggle = async () => {
+    const wasFollowing = followingStatus;
+    // Optimistic UI update
+    setFollowingStatus(!wasFollowing);
+
+    const followData: FollowUser = {
+      followingId: user._id,
+      followingType: user.type,
+    };
+
+    try {
+      // Execute the appropriate action
+      if (wasFollowing) {
+        await unFollowUser(followData);
+      } else {
+        await followUser(followData);
+      }
+    } catch (err) {
+      // Revert on error
+      setFollowingStatus(wasFollowing);
+      console.error(wasFollowing ? "Unfollow error:" : "Follow error:", err);
+      Alert.alert("Error", `Failed to ${wasFollowing ? "unfollow" : "follow"}`);
+    }
+  };
+
   return (
     <>
-      <View className="flex-row p-2 mt-2 h-[60px]">
+      <View className="flex-row mt-2 h-[60px]">
         <TouchableOpacity
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
@@ -37,21 +77,20 @@ const UserCard = ({ user }: { user: any }) => {
           </TextScallingFalse>
           <TextScallingFalse
             className="text-[#9FAAB5] text-lg mt-[1px]"
-            style={{ width: "85%" }}
             ellipsizeMode="tail"
             numberOfLines={2}
+            style={{ width: "90%" }}
           >
             @{user.username}{" "}
             <TextScallingFalse className="text-lg">|</TextScallingFalse>{" "}
             {user.headline}
           </TextScallingFalse>
         </View>
-        <View>
+        <View className="basis-[22%]">
           <FollowButton
-            followingStatus={true}
+            followingStatus={followingStatus}
             size="small"
-            handleFollow={() => {}}
-            handleUnfollow={() => {}}
+            handleFollowToggle={handleFollowToggle}
             handleOpenModal={() => {}}
           />
         </View>

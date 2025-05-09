@@ -7,6 +7,7 @@ import {
   Platform,
   UIManager,
   LayoutAnimation,
+  Dimensions,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native";
@@ -37,13 +38,17 @@ import CustomVideoPlayer, {
 } from "~/components/PostContainer/VideoPlayer";
 import { AVPlaybackStatusSuccess } from "expo-av";
 import VideoControls from "~/components/PostContainer/VideoControls";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import { purple100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
+import PageThemeView from "~/components/PageThemeView";
 
-const post = () => {
+const { width, height } = Dimensions.get("window");
+
+const Post = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const postId = params?.postId as string; // Extract postId from URL params
-  console.log("Post ID : ", postId);
-  const post = useSelector((state: RootState) => selectPostById(state, postId));
+  const post = useSelector((state: RootState) => state.post.currentPost);
   const dispatch = useDispatch<AppDispatch>();
 
   const serializedUser = encodeURIComponent(
@@ -102,9 +107,7 @@ const post = () => {
   };
 
   const toggleHeaderFooterVisibility = () => {
-    isHeaderFooterVisible
-      ? setHeaderFooterVisible(false)
-      : setHeaderFooterVisible(true);
+    setHeaderFooterVisible(!isHeaderFooterVisible);
   };
 
   const handleLike = () => {
@@ -131,22 +134,39 @@ const post = () => {
     setVideoStatus(status);
   };
 
+  // Calculate the image height based on aspect ratio or use default
+  const getImageHeight = () => {
+    if (post?.aspectRatio) {
+      const aspectRatio = post.aspectRatio[0] / post.aspectRatio[1];
+      return width / aspectRatio;
+    }
+    return (width * 2) / 3; // Default 3:2 aspect ratio
+  };
+
+  if (!post) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-black">
+        <TextScallingFalse className="text-white">Loading...</TextScallingFalse>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <Pressable
-      className="h-screen flex justify-center items-center bg-black"
-      onPress={() =>
-        isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
-      }
-    >
-      <SafeAreaView className="flex-1">
-        {/*testing for iOS issue*/}
+    <PageThemeView>
+      <Pressable
+        className="flex-1"
+        onPress={() =>
+          isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
+        }
+      >
+        {/* Header */}
         <View
-          className={`w-full z-50 pt-4 flex-row justify-between items-center px-5 basis-[6%] transition-opacity ease-in-out ${
+          className={`w-full z-50 pt-3 flex-row justify-between items-center px-5 ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
         >
-          <TouchableOpacity onPress={() => router.back()}>
-            <AntDesign name="arrowleft" size={24} color="white" />
+          <TouchableOpacity style={{padding:10}} onPress={() => router.back()}>
+            <BackIcon />
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row justify-center items-center gap-x-4"
@@ -162,39 +182,31 @@ const post = () => {
                     ? { uri: post.postedBy.profilePic }
                     : nopic
                 }
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: 40, height: 40 }}
                 contentFit="cover"
                 transition={500}
-                placeholder={require("../../../../assets/images/nopic.jpg")}
               />
             </View>
             <TextScallingFalse className="text-white font-light text-4xl">
               {post?.postedBy?.firstName} {post?.postedBy?.lastName}
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity style={{padding:10}}>
             <MaterialIcons name="more-horiz" size={24} color="white" />
           </TouchableOpacity>
         </View>
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Image section */}
+
+        {/* Content area */}
+        <View className="flex-1 justify-center">
+          {/* Media section */}
           <View
-            className="relative w-full"
             style={{
-              aspectRatio: post?.aspectRatio
-                ? post.aspectRatio[0] / post.aspectRatio[1]
-                : 3 / 2,
+              width: width,
+              height: getImageHeight(),
             }}
           >
             {post?.isVideo ? (
-              // When this is a video post, render the CustomVideoPlayer.
+              // Video player
               <CustomVideoPlayer
                 ref={videoPlayerRef}
                 videoUri={post.assets[0].url}
@@ -203,27 +215,30 @@ const post = () => {
                 onPlaybackStatusUpdate={updateVideoStatus}
               />
             ) : (
-              // Otherwise, render your image container (e.g., a Swiper)
-              <Swiper {...swiperConfig} className="w-full h-auto">
-                {post.assets.map((asset: { url: string }) => (
-                  <Image
-                    key={asset.url}
-                    source={{ uri: asset.url }}
-                    style={{ width: "100%", height: "100%" }}
-                    transition={1000}
-                    placeholder={require("../../../../assets/images/nocover.png")}
-                    contentFit="cover"
-                    placeholderContentFit="cover"
-                  />
+              // Image swiper
+              <Swiper {...swiperConfig} style={{ height: getImageHeight() }}>
+                {post.assets.map((asset, index) => (
+                  <View
+                    key={index}
+                    style={{ width: width, height: getImageHeight() }}
+                  >
+                    <Image
+                      source={{ uri: asset.url }}
+                      style={{ width: "100%", height: "100%" }}
+                      contentFit="cover"
+                      transition={1000}
+                    />
+                  </View>
                 ))}
               </Swiper>
             )}
           </View>
-        </ScrollView>
+        </View>
 
+        {/* Video controls */}
         {videoStatus && (
           <View
-            className={`transition-opacity ease-in-out ${
+            className={`absolute bottom-40 left-0 right-0 ${
               !isHeaderFooterVisible ? "opacity-0" : ""
             }`}
           >
@@ -242,7 +257,7 @@ const post = () => {
 
         {/* Interaction Bar */}
         <View
-          className={`transition-opacity ease-in-out ${
+          className={`absolute bottom-20 left-0 right-0 ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
         >
@@ -259,21 +274,16 @@ const post = () => {
           />
         </View>
 
-        {/*Caption Bar */}
+        {/* Caption Bar */}
         <LinearGradient
           colors={["rgba(0,0,0,0.0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,0.8)"]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
-          className={`px-8 pt-4 w-full absolute bottom-[18%] max-h-60 overflow-hidden transition-opacity ease-in-out ${
+          className={`px-8 pt-4 w-full absolute bottom-32 max-h-60 ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
         >
-          <ScrollView
-            className="max-h-full"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ flexGrow: 1 }}
-            onStartShouldSetResponder={() => true}
-          >
+          <View>
             <TextScallingFalse
               className="text-xl leading-5 text-neutral-200"
               numberOfLines={isExpanded ? undefined : 1}
@@ -286,11 +296,11 @@ const post = () => {
             >
               {post?.caption && renderCaptionWithHashtags(post?.caption)}
             </TextScallingFalse>
-          </ScrollView>
+          </View>
         </LinearGradient>
-      </SafeAreaView>
-    </Pressable>
+      </Pressable>
+    </PageThemeView>
   );
 };
 
-export default post;
+export default Post;

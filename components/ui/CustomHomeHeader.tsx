@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import React, { useMemo } from "react";
 import { Image } from "expo-image";
 import AnimatedAddPostBar from "../feedPage/AnimatedAddPostBar";
@@ -7,6 +7,8 @@ import { useSelector } from "react-redux";
 import defaultPic from "../../assets/images/nopic.jpg";
 import { useDrawer } from "~/context/DrawerContext";
 import AddPostContainer from "../modals/AddPostContainer";
+import { useBottomSheet } from "~/context/BottomSheetContext";
+import TextScallingFalse from "../CentralText";
 
 const HEADER_HEIGHT = 60;
 
@@ -20,6 +22,8 @@ const CustomHomeHeader = () => {
   ];
 
   const [message, setMessage] = React.useState(possibleMessages[0]); // Set default message
+  const { openBottomSheet } = useBottomSheet(); // get function from context
+
 
   React.useEffect(() => {
     const randomIndex = Math.floor(Math.random() * possibleMessages.length);
@@ -45,6 +49,35 @@ const CustomHomeHeader = () => {
   // });
 
   const { handleOpenDrawer } = useDrawer();
+  const heightValue = Platform.OS === "ios" ? "27%" : "22%";
+
+  // Define the content separately
+  const messagingBottomSheetConfig = {
+    isVisible: true,
+    content: (
+      <View style={{ paddingVertical: 15, paddingHorizontal: 20 }}>
+        <TextScallingFalse style={{ color: "white", fontSize: 20, fontWeight: 'bold' }}>
+          Messaging Coming Soon
+        </TextScallingFalse>
+        <TextScallingFalse
+          style={{
+            color: "gray",
+            fontSize: 15,
+            fontWeight: "400",
+            paddingVertical: 10,
+            lineHeight: 20,
+          }}
+        >
+          We're currently working on bringing messaging to our platform. Stay tuned chatting with teammates and friends will be available in a future update!
+        </TextScallingFalse>
+      </View>
+    ),
+    height: heightValue,
+    maxHeight: heightValue,
+    bgcolor: "#151515",
+    border: false,
+    draggableDirection: "down",
+  };
 
   return (
     <>
@@ -67,7 +100,8 @@ const CustomHomeHeader = () => {
         <View style={{ flex: 1 }}>{memoizedAddPostBar}</View>
 
         {/* Message Icon */}
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => openBottomSheet(messagingBottomSheetConfig)}>
           <MaterialCommunityIcons
             name="message-reply-text-outline"
             size={27.5}

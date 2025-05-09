@@ -140,7 +140,7 @@ const PostDetailsPage = () => {
   const params = useLocalSearchParams();
   const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
-  const post = useSelector((state: RootState) => selectPostById(state, postId));
+  const post = useSelector((state: RootState) => state.post.currentPost);
 
   // Comment state management
   const [comments, setComments] = useState<Comment[]>([]);
@@ -330,17 +330,6 @@ const PostDetailsPage = () => {
     setReplyingTo({ commentId: comment._id, name: replyTag });
     textInputRef.current?.focus();
   }, []);
-
-  // Handle text change in comment input
-  const handleTextChange = useCallback(
-    (text: string) => {
-      setCommentText(text);
-      if (text === "" && replyingTo) {
-        setReplyingTo(null);
-      }
-    },
-    [replyingTo]
-  );
 
   // Handle posting a new comment or reply
   const handlePostComment = useCallback(async () => {

@@ -210,6 +210,7 @@ const SearchPage: React.FC = () => {
               data={searchResults}
               renderItem={renderSearchResult}
               keyExtractor={(item) => item._id}
+              keyboardShouldPersistTaps="handled"
             />
           )}
         </View>
@@ -283,6 +284,7 @@ const SearchResultItem = memo(
     <TouchableOpacity
       onPress={() => onPress(item)}
       className="flex-row items-center py-2 px-3"
+      activeOpacity={0.7}
     >
       <Image
         source={item?.profilePic?.trim() ? { uri: item.profilePic } : nopic}

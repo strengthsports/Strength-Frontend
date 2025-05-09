@@ -98,6 +98,7 @@
     "react-native-screens": "~4.1.0",
     "react-native-shimmer-placeholder": "^2.0.9",
     "react-native-skeleton-placeholder": "^5.2.4",
+    "react-native-spinkit": "^1.5.1",
     "react-native-sse": "^1.2.1",
     "react-native-svg": "^15.11.2",
     "react-native-swiper": "^1.6.0",

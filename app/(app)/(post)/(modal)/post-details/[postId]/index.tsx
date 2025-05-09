@@ -33,6 +33,7 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Comment, Post } from "~/types/post";
 import { useLocalSearchParams } from "expo-router";
 import {
+  deleteComment,
   postComment,
   selectPostById,
 } from "~/reduxStore/slices/feed/feedSlice";
@@ -405,6 +406,18 @@ const PostDetailsPage = () => {
     }
   }, [commentText, dispatch, post._id, replyingTo, isPosting]);
 
+  // Handle delete a comment
+  const handleDeleteComment = useCallback(
+    (comment) => {
+      dispatch(deleteComment({ postId, commentId: comment._id }));
+      setComments((prevComments) =>
+        prevComments.filter((c) => c._id !== comment._id)
+      );
+      showFeedback(`Comment deleted`, "success");
+    },
+    [postId, dispatch]
+  );
+
   // Animate the progress bar while posting
   useEffect(() => {
     if (isPosting) {
@@ -436,6 +449,8 @@ const PostDetailsPage = () => {
             targetId={post._id}
             targetType="Post"
             onReply={handleReply}
+            isOwnComment={user?._id === item.postedBy._id}
+            onDelete={handleDeleteComment}
           />
 
           {item.commentsCount > 0 && (

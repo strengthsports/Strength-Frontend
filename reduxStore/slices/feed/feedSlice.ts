@@ -197,6 +197,54 @@ export const toggleLike = createAsyncThunk(
   }
 );
 
+// Delete Post
+export const deletePost = createAsyncThunk(
+  "feed/deletePost",
+  async (
+    { postId }: { postId: string },
+    { getState, dispatch, rejectWithValue }
+  ) => {
+    const state = getState() as RootState;
+    const post = selectPostById(state, postId);
+
+    if (!post) throw new Error("Post not found");
+
+    // Determine which adapter to update
+    const feedPost = selectFeedPostById(state, postId);
+    const isFeedPost = feedPost?._id === postId; // Strict check
+    console.log(isFeedPost);
+    const adapterAction = isFeedPost ? removeFeedPost : removeNonFeedPost;
+
+    dispatch(adapterAction(postId));
+
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+      console.log("Token : ", token);
+      // Actual API call
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({ postId }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete post");
+    } catch (error) {
+      // Rollback on error
+      dispatch(adapterAction(postId));
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to delete post"
+      );
+    }
+  }
+);
+
 // Post Comment
 export const postComment = createAsyncThunk(
   "feed/postComment",
@@ -258,6 +306,60 @@ export const postComment = createAsyncThunk(
 );
 
 // Delete Comment
+export const deleteComment = createAsyncThunk(
+  "feed/deleteComment",
+  async (
+    { postId, commentId }: { postId: string; commentId: string | undefined },
+    { getState, dispatch, rejectWithValue }
+  ) => {
+    const state = getState() as RootState;
+    let post;
+    let updatedPost;
+    post = selectPostById(state, postId);
+    // Optimistic update
+    updatedPost = {
+      ...post,
+      commentsCount: post.commentsCount - 1,
+    };
+
+    const feedPost = selectFeedPostById(state, postId);
+    const isFeedPost = feedPost?._id === postId;
+    const adapterAction = isFeedPost ? updateFeedPost : updateNonFeedPost;
+
+    dispatch(adapterAction(updatedPost));
+
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Authorization token not found");
+      console.log("Token : ", token);
+
+      // Actual API call
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/comment`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ postId, commentId }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to post comment");
+
+      return response.json();
+    } catch (error: any) {
+      // Rollback on error
+      if (post) {
+        dispatch(updateFeedPost(post));
+      }
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to comment on post"
+      );
+    }
+  }
+);
 
 // Vote in poll
 export const voteInPoll = createAsyncThunk(
@@ -388,6 +490,12 @@ const feedSlice = createSlice({
     addNonFeedPost: (state, action: PayloadAction<Post[]>) => {
       nonFeedPostsAdapter.upsertMany(state.nonFeedPosts, action.payload);
     },
+    removeFeedPost: (state, action: PayloadAction<string>) => {
+      feedPostsAdapter.removeOne(state.feedPosts, action.payload);
+    },
+    removeNonFeedPost: (state, action: PayloadAction<string>) => {
+      nonFeedPostsAdapter.removeOne(state.nonFeedPosts, action.payload);
+    },
     resetFeed: () => initialState,
   },
   extraReducers: (builder) => {
@@ -461,6 +569,8 @@ export const {
   updateAllFeedPostsReportStatus,
   updateNonFeedPost,
   addNonFeedPost,
+  removeFeedPost,
+  removeNonFeedPost,
   resetFeed,
 } = feedSlice.actions;
 

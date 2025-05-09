@@ -62,11 +62,14 @@ export const fetchFeedPosts = createAsyncThunk<
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
 
-    const limit = String(params.limit || 10);
-    const cursor = String(params.cursor || 0); // <-- Add cursor param
+    // Build query string
+    const queryParams = new URLSearchParams({
+      limit: String(params.limit || 10),
+      ...(params.cursor && { cursor: params.cursor }), // Only add cursor if provided
+    });
 
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/get-feed?limit=${limit}&cursor=${cursor}`, // <-- Attach cursor
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/get-feed?${queryParams}`, // <-- Attach cursor
       {
         method: "GET",
         headers: {

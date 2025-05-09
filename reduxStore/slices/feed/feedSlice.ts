@@ -11,35 +11,54 @@ import type { RootState, AppDispatch } from "../../index";
 import { getToken } from "~/utils/secureStore";
 
 // Create entity adapters
-const postsAdapter = createEntityAdapter<Post, string>({
+// Feed posts adapter
+const feedPostsAdapter = createEntityAdapter<Post, string>({
   selectId: (post) => post._id,
   sortComparer: (a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 });
 
+// Non-Feed posts adapter
+const nonFeedPostsAdapter = createEntityAdapter<Post, string>({
+  selectId: (post) => post._id,
+});
+
 interface FeedState {
-  posts: ReturnType<typeof postsAdapter.getInitialState>;
+  feedPosts: ReturnType<typeof feedPostsAdapter.getInitialState>;
+  nonFeedPosts: ReturnType<typeof nonFeedPostsAdapter.getInitialState>;
   loading: boolean;
   error: string | null;
   cursor: string;
   hasMore: boolean;
+  nonFeedLoading: boolean;
+  nonFeedError: string | null;
+  nonFeedCursor: string;
+  nonFeedHasMore: boolean;
+  lastQueryKey: string | null;
 }
 
 const initialState: FeedState = {
-  posts: postsAdapter.getInitialState(),
+  feedPosts: feedPostsAdapter.getInitialState(),
+  nonFeedPosts: nonFeedPostsAdapter.getInitialState(),
   loading: false,
   error: null,
   cursor: "",
   hasMore: false,
+  nonFeedLoading: false,
+  nonFeedError: null,
+  nonFeedCursor: "",
+  nonFeedHasMore: false,
+  lastQueryKey: null,
 };
 
 // Fetch feed posts
 export const fetchFeedPosts = createAsyncThunk<
-  { posts: Post[]; nextCursor: string; hasMore: boolean }, // <-- Note: Now nextCursor included
-  { limit?: number; cursor?: string }, // <-- Accept cursor also
+  { posts: Post[]; nextCursor: string; hasMore: boolean },
+  { limit?: number; cursor?: string },
   { state: RootState; dispatch: AppDispatch }
 >("feed/fetchPosts", async (params, { rejectWithValue }) => {
   try {
+    console.log("Called");
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
 
@@ -69,62 +88,49 @@ export const fetchFeedPosts = createAsyncThunk<
   }
 });
 
-// Fetch specific user's posts
-export const fetchUserPosts = createAsyncThunk<
-  { posts: Post[]; lastTimestamp: string | null; nextPage: number },
+// Fetch non-feed posts
+export const fetchNonFeedPosts = createAsyncThunk<
+  { posts: Post[]; nextCursor: string; hasMore: boolean },
   {
-    postedBy: string;
-    postedByType: string;
+    userId: string;
+    type: string;
     limit?: number;
-    skip?: number;
-    lastTimestamp?: string | null;
+    cursor?: string;
+    reset?: boolean;
   },
   { state: RootState; dispatch: AppDispatch }
 >("feed/fetchUserPosts", async (params, { rejectWithValue }) => {
   try {
+    console.log("Called");
     const token = await getToken("accessToken");
-    if (!token) throw new Error("Authorization token not found");
+    if (!token) throw new Error("Token not found");
 
-    // Destructure parameters
-    const {
-      postedBy,
-      postedByType,
-      limit = 10,
-      skip = 0,
-      lastTimestamp = null,
-    } = params;
+    // Build query string
+    const queryParams = new URLSearchParams({
+      limit: String(params.limit || 10),
+      type: params.type,
+      ...(params.cursor && { cursor: params.cursor }), // Only add cursor if provided
+    });
 
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/other-user?skip=${skip}&limit=${limit}`,
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/${params.userId}?${queryParams}`,
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          postedBy,
-          postedByType,
-        }),
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    // console.log("Posts : ", data.data);
+    const data: any = await response.json();
+    console.log("Data ", data);
 
     return {
-      posts: data.data.formattedPosts,
-      lastTimestamp: data.data.lastTimestamp,
-      nextPage: data.data.nextPage,
+      posts: data.data || [],
+      nextCursor: data.nextCursor ?? null,
+      hasMore: data.hasMore, // <-- Read next cursor from backend
     };
   } catch (err: any) {
-    return rejectWithValue(
-      err instanceof Error ? err.message : "Failed to fetch user's posts"
-    );
+    return rejectWithValue(err.message || "Failed to fetch feed");
   }
 });
 
@@ -147,8 +153,14 @@ export const toggleLike = createAsyncThunk(
       likesCount: post.likesCount + (post.isLiked ? -1 : 1),
     };
 
-    // Update Redux state immediately
-    dispatch(updatePost(updatedPost));
+    // Determine which adapter to update
+    // FIX: Explicitly check if the post exists in feedPosts
+    const feedPost = selectFeedPostById(state, targetId);
+    const isFeedPost = feedPost?._id === targetId; // Strict check
+    console.log(isFeedPost);
+    const adapterAction = isFeedPost ? updateFeedPost : updateNonFeedPost;
+
+    dispatch(adapterAction(updatedPost));
 
     let reqType = post.isLiked ? "DELETE" : "POST";
 
@@ -174,7 +186,7 @@ export const toggleLike = createAsyncThunk(
       return updatedPost;
     } catch (error) {
       // Rollback on error
-      dispatch(updatePost(post));
+      dispatch(adapterAction(post));
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to like post"
       );
@@ -205,7 +217,7 @@ export const postComment = createAsyncThunk(
     };
 
     // Update Redux state immediately
-    dispatch(updatePost(updatedPost));
+    dispatch(updateFeedPost(updatedPost));
 
     try {
       const token = await getToken("accessToken");
@@ -233,7 +245,7 @@ export const postComment = createAsyncThunk(
     } catch (error: any) {
       // Rollback on error
       if (post) {
-        dispatch(updatePost(post));
+        dispatch(updateFeedPost(post));
       }
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to comment on post"
@@ -269,7 +281,7 @@ export const voteInPoll = createAsyncThunk(
       };
 
       // Update Redux state immediately
-      dispatch(updatePost(updatedPost));
+      dispatch(updateFeedPost(updatedPost));
     }
 
     try {
@@ -297,7 +309,7 @@ export const voteInPoll = createAsyncThunk(
     } catch (error: any) {
       // Rollback on error
       if (targetType === "Post" && post) {
-        dispatch(updatePost(post));
+        dispatch(updateFeedPost(post));
       }
       console.log(error);
       return rejectWithValue(
@@ -311,16 +323,16 @@ const feedSlice = createSlice({
   name: "feed",
   initialState,
   reducers: {
-    updatePost: (state, action: PayloadAction<Post>) => {
-      postsAdapter.updateOne(state.posts, {
+    updateFeedPost: (state, action: PayloadAction<Post>) => {
+      feedPostsAdapter.updateOne(state.feedPosts, {
         id: action.payload._id,
         changes: action.payload,
       });
     },
-    mergePosts: (state, action: PayloadAction<Post[]>) => {
-      postsAdapter.upsertMany(state.posts, action.payload);
+    mergeFeedPosts: (state, action: PayloadAction<Post[]>) => {
+      feedPostsAdapter.upsertMany(state.feedPosts, action.payload);
     },
-    updateAllPostsFollowStatus: (
+    updateAllFeedPostsFollowStatus: (
       state,
       action: PayloadAction<{
         userId: string;
@@ -330,7 +342,7 @@ const feedSlice = createSlice({
       const { userId, isFollowing } = action.payload;
 
       // Find all posts by this user
-      const updates = Object.values(state.posts.entities)
+      const updates = Object.values(state.feedPosts.entities)
         .filter((post) => post?.postedBy._id === userId)
         .map((post) => ({
           id: post._id,
@@ -339,10 +351,10 @@ const feedSlice = createSlice({
 
       // Update all matching posts
       if (updates.length > 0) {
-        postsAdapter.updateMany(state.posts, updates);
+        feedPostsAdapter.updateMany(state.feedPosts, updates);
       }
     },
-    updateAllPostsReportStatus: (
+    updateAllFeedPostsReportStatus: (
       state,
       action: PayloadAction<{
         postId: string;
@@ -352,7 +364,7 @@ const feedSlice = createSlice({
       const { postId, isReported } = action.payload;
 
       // Find all posts by this postId
-      const updates = Object.values(state.posts.entities)
+      const updates = Object.values(state.feedPosts.entities)
         .filter((post) => post?._id === postId)
         .map((post) => ({
           id: post._id,
@@ -361,8 +373,17 @@ const feedSlice = createSlice({
 
       // Update all matching posts
       if (updates.length > 0) {
-        postsAdapter.updateMany(state.posts, updates);
+        feedPostsAdapter.updateMany(state.feedPosts, updates);
       }
+    },
+    updateNonFeedPost: (state, action: PayloadAction<Post>) => {
+      nonFeedPostsAdapter.updateOne(state.nonFeedPosts, {
+        id: action.payload._id,
+        changes: action.payload,
+      });
+    },
+    addNonFeedPost: (state, action: PayloadAction<Post[]>) => {
+      nonFeedPostsAdapter.upsertMany(state.nonFeedPosts, action.payload);
     },
     resetFeed: () => initialState,
   },
@@ -379,7 +400,7 @@ const feedSlice = createSlice({
         console.log("\n\nNextCursor : ", nextCursor);
         console.log("\n\nHasmore : ", hasMore);
 
-        postsAdapter.upsertMany(state.posts, posts);
+        feedPostsAdapter.upsertMany(state.feedPosts, posts);
 
         state.hasMore = hasMore;
         state.cursor = nextCursor; // <-- Set nextCursor for future fetches
@@ -389,40 +410,74 @@ const feedSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch user specific posts
-      .addCase(fetchUserPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // Fetch user posts
+      .addCase(fetchNonFeedPosts.pending, (state) => {
+        state.nonFeedLoading = true;
+        state.nonFeedError = null;
       })
-      .addCase(fetchUserPosts.fulfilled, (state, action) => {
-        const { posts } = action.payload;
+      .addCase(fetchNonFeedPosts.fulfilled, (state, action) => {
+        const { posts, nextCursor, hasMore } = action.payload;
+        const { userId, type, reset } = action.meta.arg;
         console.log("\n\nPosts : ", posts);
+        console.log("\n\nNextCursor : ", nextCursor);
+        console.log("\n\nHasmore : ", hasMore);
 
-        postsAdapter.upsertMany(state.posts, posts);
-        state.loading = false;
+        // Create a unique key for this query combination
+        const queryKey = `${userId}-${type}`;
+
+        // Reset state if:
+        // 1. It's a forced reset (reset: true)
+        // 2. We're fetching without cursor (initial load)
+        // 3. The queryKey changed from previous fetch
+        const shouldReset =
+          reset || !action.meta.arg.cursor || state.lastQueryKey !== queryKey;
+
+        if (shouldReset) {
+          nonFeedPostsAdapter.removeAll(state.nonFeedPosts);
+        }
+
+        // Upsert new posts
+        nonFeedPostsAdapter.upsertMany(state.nonFeedPosts, posts);
+
+        state.nonFeedHasMore = hasMore;
+        state.nonFeedCursor = nextCursor; // <-- Set nextCursor for future fetches
+        state.nonFeedLoading = false;
+        state.lastQueryKey = queryKey;
       })
-      .addCase(fetchUserPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      .addCase(fetchNonFeedPosts.rejected, (state, action) => {
+        state.nonFeedLoading = false;
+        state.nonFeedError = action.payload as string;
       });
-    // Add
   },
 });
 
 export const {
-  updatePost,
-  mergePosts,
-  updateAllPostsFollowStatus,
-  updateAllPostsReportStatus,
+  updateFeedPost,
+  mergeFeedPosts,
+  updateAllFeedPostsFollowStatus,
+  updateAllFeedPostsReportStatus,
+  updateNonFeedPost,
+  addNonFeedPost,
   resetFeed,
 } = feedSlice.actions;
 
-export const { selectAll: selectAllPosts, selectById: selectPostById } =
-  postsAdapter.getSelectors((state: RootState) => state.feed.posts);
+export const { selectAll: selectAllFeedPosts, selectById: selectFeedPostById } =
+  feedPostsAdapter.getSelectors((state: RootState) => state.feed.feedPosts);
+
+export const {
+  selectAll: selectAllNonFeedPosts,
+  selectById: selectNonFeedPostById,
+} = nonFeedPostsAdapter.getSelectors(
+  (state: RootState) => state.feed.nonFeedPosts
+);
+
+// Unified selector (checks both adapters)
+export const selectPostById = (state: RootState, postId: string) =>
+  selectFeedPostById(state, postId) || selectNonFeedPostById(state, postId);
 
 export const selectPostsByUserId = createSelector(
   [
-    postsAdapter.getSelectors().selectAll,
+    feedPostsAdapter.getSelectors().selectAll,
     (state: RootState, userId: string) => userId,
   ],
   (allPosts, userId) => {
@@ -442,6 +497,21 @@ export const selectFeedState = createSelector(
     error,
     cursor,
     hasMore,
+  })
+);
+
+export const selectNonFeedState = createSelector(
+  [
+    (state: RootState) => state.feed.nonFeedLoading,
+    (state: RootState) => state.feed.nonFeedError,
+    (state: RootState) => state.feed.nonFeedCursor,
+    (state: RootState) => state.feed.nonFeedHasMore,
+  ],
+  (nonFeedLoading, nonFeedError, nonFeedCursor, nonFeedHasMore) => ({
+    nonFeedLoading,
+    nonFeedError,
+    nonFeedCursor,
+    nonFeedHasMore,
   })
 );
 

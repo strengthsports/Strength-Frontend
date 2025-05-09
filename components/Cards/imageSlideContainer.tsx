@@ -91,7 +91,7 @@ const ImageSlide = memo(
         activeOpacity={0.95}
         onSinglePress={() => {
           if (isFeedPage && post) {
-            dispatch(setCurrentPost(post));
+            // dispatch(setCurrentPost(post));
             router.push({
               pathname: `/post-view/${post._id}` as RelativePathString,
             });

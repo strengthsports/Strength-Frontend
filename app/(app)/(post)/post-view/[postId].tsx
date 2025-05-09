@@ -39,13 +39,14 @@ import CustomVideoPlayer, {
 import { AVPlaybackStatusSuccess } from "expo-av";
 import VideoControls from "~/components/PostContainer/VideoControls";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const Post = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const postId = params?.postId as string; // Extract postId from URL params
-  const post = useSelector((state: RootState) => state.post.currentPost);
+  // const post = useSelector((state: RootState) => state.post.currentPost);
+  const post = useSelector((state: RootState) => selectPostById(state, postId));
   const dispatch = useDispatch<AppDispatch>();
 
   const serializedUser = encodeURIComponent(
@@ -78,7 +79,10 @@ const Post = () => {
             key={index}
             onPress={() =>
               router.push(
-                `/(app)/(post)/hashtag/${word.substring(1, word.length)}`
+                `/(app)/(post)/hashtag/${word.substring(
+                  1,
+                  word.length
+                )}` as RelativePathString
               )
             }
             className={`text-xl text-[#12956B]`}

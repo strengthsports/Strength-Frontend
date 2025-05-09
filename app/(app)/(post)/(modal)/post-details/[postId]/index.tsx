@@ -140,7 +140,7 @@ const PostDetailsPage = () => {
   const params = useLocalSearchParams();
   const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
-  const post = useSelector((state: RootState) => state.post.currentPost);
+  const post = useSelector((state: RootState) => selectPostById(state, postId));
 
   // Comment state management
   const [comments, setComments] = useState<Comment[]>([]);

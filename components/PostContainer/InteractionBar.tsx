@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, Text } from "react-native";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { RelativePathString, useRouter } from "expo-router";
 import { AntDesign, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { Platform } from "react-native";
@@ -53,6 +53,8 @@ const InteractionBar = ({
     _id: postId,
   } = post;
 
+  const [localIsLiked, setLocalIsLiked] = useState(isLiked);
+  const [localLikesCount, setLocalLikesCount] = useState(likesCount);
   const serializedData = encodeURIComponent(
     JSON.stringify({ id: post._id, type: "Post" })
   );
@@ -66,6 +68,20 @@ const InteractionBar = ({
       });
     }
   };
+
+  // const handleLike = () => {
+  //   //Optimistic local update + API call
+  //   const newIsLiked = !isLiked;
+  //   const newLikesCount = likesCount + (newIsLiked ? 1 : -1);
+
+  //   // Optimistic update
+  //   setLocalIsLiked(newIsLiked);
+  //   setLocalLikesCount(newLikesCount);
+
+  //   // console.log("Feed Page false like called");
+  //   onPressLike();
+  //   // }
+  // };
 
   return (
     <View

@@ -41,6 +41,7 @@ import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
 import AlertModal from "~/components/modals/AlertModal";
 import { Sport } from "./SelectSports";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -938,25 +939,24 @@ const EditProfile = () => {
 
   
   return (
-    <SafeAreaView>
       <PageThemeView>
         <ScrollView
           style={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Top Header */}
-          <View className="h-12 w-full flex-row justify-between items-center px-5">
+          <View className="h-14 w-full flex-row justify-between items-center px-5">
             {/* Back button */}
             <TouchableOpacity
             onPress={handleBackPress}
               className="basis-[20%]"
             >
-              <TextScallingFalse className="text-[#808080] text-4xl font-normal">
+              <TextScallingFalse className="text-[#fff] text-4xl font-normal">
                 Back
               </TextScallingFalse>
             </TouchableOpacity>
             {/* Heading */}
-            <TextScallingFalse className="flex-grow text-center text-white font-light text-5xl">
+            <TextScallingFalse className="flex-grow text-center text-white font-light text-4xl">
               Edit profile
             </TextScallingFalse>
             {/* Save button */}
@@ -977,7 +977,7 @@ const EditProfile = () => {
                 <TextScallingFalse
                   className={`${Array.from(finalUploadData.entries()).length
                       ? "text-[#12956B]"
-                      : "text-[#808080]"
+                      : "text-[#303030]"
                     } text-4xl font-medium`}
                 >
                   Save
@@ -1291,7 +1291,7 @@ const EditProfile = () => {
           onRequestClose={closeModal}
         >
           <View className="flex-1">
-            <SafeAreaView className="bg-black h-full">
+            <PageThemeView>
               {/* Modal Header */}
               <View
                 className="flex-row justify-between items-center p-4"
@@ -1302,7 +1302,7 @@ const EditProfile = () => {
                     className="w-[50px] h-[40px] justify-center"
                     onPress={closeModal}
                   >
-                    <AntDesign name="arrowleft" size={28} color="white" />
+                    <BackIcon />
                   </TouchableOpacity>
                   <TextScallingFalse className="text-white text-5xl font-medium">
                     {label}
@@ -1601,11 +1601,10 @@ const EditProfile = () => {
                   ""
                 )}
               </View>
-            </SafeAreaView>
+            </PageThemeView>
           </View>
         </Modal>
       </PageThemeView>
-    </SafeAreaView>
   );
 };
 

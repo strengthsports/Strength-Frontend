@@ -287,7 +287,7 @@ const Community = () => {
         {allLoading ? (
           <View style={{width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}}>
             <View style={{ transform: [{ scale: 1.5 }]} }>
-            <ActivityIndicator color={'grey'} size={'small'} />
+           <ActivityIndicator size="small" color="#12956B"/>
             </View>
           </View>
         ) : (

@@ -115,6 +115,7 @@ const ImageSlide = memo(
             borderBottomWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
             borderLeftWidth: !isMyActivity && isFirstSlide ? 0.5 : 0,
             borderColor: "#2F2F2F",
+            backgroundColor:'black'
           }}
         />
         {!isFeedPage && !isMyActivity && (

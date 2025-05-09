@@ -9,6 +9,7 @@ import {
   BackHandler,
   Modal as RNModal,
   ActivityIndicator,
+  Platform
 } from "react-native";
 import Modal from "react-native-modal";
 import { Slot, useLocalSearchParams } from "expo-router";
@@ -52,7 +53,7 @@ import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
 import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
 import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useBottomSheet } from "~/context/BottomSheetContext";
 
 // Define the context type
 interface ProfileContextType {
@@ -190,17 +191,35 @@ const ProfileLayout = () => {
   };
 
   //handle message
-  const handleMessage = () => {
-    if (!followingStatus) {
-      setSettingsModalVisible({ status: true, message: "Message" });
-    } else {
-      // router.push("/");
-      return (
-        <View>
-          <UnderDevelopmentModal />
-        </View>
-      );
-    }
+  const heightValue = Platform.OS === "ios" ? "27%" : "22%";
+  const { openBottomSheet } = useBottomSheet();
+
+  // Define the content separately
+  const messagingBottomSheetConfig = {
+    isVisible: true,
+    content: (
+      <View style={{ paddingVertical: 15, paddingHorizontal: 20 }}>
+        <TextScallingFalse style={{ color: "white", fontSize: 20, fontWeight: 'bold' }}>
+          Messaging Coming Soon
+        </TextScallingFalse>
+        <TextScallingFalse
+          style={{
+            color: "gray",
+            fontSize: 15,
+            fontWeight: "400",
+            paddingVertical: 10,
+            lineHeight: 20,
+          }}
+        >
+          We're currently working on bringing messaging to our platform. Stay tuned chatting with teammates and friends will be available in a future update!
+        </TextScallingFalse>
+      </View>
+    ),
+    height: heightValue,
+    maxHeight: heightValue,
+    bgcolor: "#151515",
+    border: false,
+    draggableDirection: "down",
   };
 
   //handle settings modal
@@ -776,7 +795,7 @@ const ProfileLayout = () => {
                 <TouchableOpacity
                   activeOpacity={0.5}
                   className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
-                  onPress={handleMessage}
+                  onPress={() => openBottomSheet(messagingBottomSheetConfig)}
                 >
                   <TextScallingFalse
                     style={{
@@ -994,9 +1013,9 @@ const ProfileLayout = () => {
         animationOut="slideOutRight"
         style={{ margin: 0, padding: 0 }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <PageThemeView>
           <TouchableOpacity
-            className="flex-1 justify-center items-center bg-black"
+            className="flex-1 justify-center items-center"
             activeOpacity={1}
           >
             <View className="w-full h-full justify-start items-center mx-auto">
@@ -1031,7 +1050,7 @@ const ProfileLayout = () => {
               )}
             </View>
           </TouchableOpacity>
-        </SafeAreaView>
+        </PageThemeView>
       </Modal>
     </PageThemeView>
   );

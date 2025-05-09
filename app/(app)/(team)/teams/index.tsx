@@ -31,7 +31,7 @@ const InitiateCreateTeam = () => {
       }}
     >
       {/* Back Button */}
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={{ padding: 14 }}>
         <TouchableOpacity onPress={() => router.back()}>
          <BackIcon/>
         </TouchableOpacity>
@@ -57,7 +57,7 @@ const InitiateCreateTeam = () => {
       {/* Action Buttons */}
       <View
         style={{
-          marginTop: 30,
+          marginTop: 25,
           alignItems: "center",
           justifyContent: "center",
           flex: 1,
@@ -76,7 +76,7 @@ const InitiateCreateTeam = () => {
         {/* Join Team Link */}
         <TouchableOpacity>
           <ThemedText
-            style={{ color: "#A0AEC0", textAlign: "center", fontSize: 16 }}
+            style={{ color: "#909090", textAlign: "center", fontSize: 16 }}
           >
             Join an existing team
           </ThemedText>

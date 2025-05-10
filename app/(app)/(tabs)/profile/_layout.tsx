@@ -48,22 +48,14 @@ import { RootState } from "~/reduxStore";
 import { Platform } from "react-native";
 import { Share } from "react-native";
 import { FontAwesome6 } from "@expo/vector-icons";
+import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 
-const ProfileOptionsBottomSheet = ({
-  onClose,
-  onNavigate,
-  onShare,
-}: {
-  onClose: () => void;
-  onNavigate: (path: string) => void;
-  onShare: () => void;
-}) => {
+const ProfileOptionsBottomSheet = ({ onNavigate, onShare }: any) => {
   return (
     <View style={styles.bottomSheetContainer}>
       <TouchableOpacity
         onPress={() => {
           onNavigate("/(app)/(settings)/settings");
-          onClose();
         }}
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
@@ -77,7 +69,6 @@ const ProfileOptionsBottomSheet = ({
       <TouchableOpacity
         onPress={() => {
           onShare();
-          onClose();
         }}
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
@@ -90,9 +81,7 @@ const ProfileOptionsBottomSheet = ({
 
       <TouchableOpacity
         onPress={() => {
-          // TODO: to be replaced with the actual path
           onNavigate("/(app)/(profile)/manage-teams");
-          onClose();
         }}
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
@@ -124,6 +113,10 @@ const ProfileLayout = () => {
   const [isPicEditModalVisible, setPicEditModalVisible] =
     useState<PicModalType>({ status: false, message: "" });
   const [refreshing, setRefreshing] = useState(false);
+  const [isProfileOptionslVisible, setProfileOptionsVisible] = useState({
+    status: false,
+    message: "",
+  });
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -169,22 +162,28 @@ const ProfileLayout = () => {
     }
   };
 
-  const handleOpenProfileOptions = () => {
-    openBottomSheet({
-      isVisible: true,
-      content: (
-        <ProfileOptionsBottomSheet
-          onClose={closeBottomSheet}
-          onNavigate={(path) => router.push(path as any)}
-          onShare={handleShareProfile}
-        />
-      ),
-      height: "28%",
-      bgcolor: "#151515",
-      border: false,
-      maxHeight: 250,
-      draggableDirection: "down",
-    });
+  // const handleOpenProfileOptions = () => {
+  //   openBottomSheet({
+  //     isVisible: true,
+  //     content: (
+  //       <ProfileOptionsBottomSheet
+  //         onClose={closeBottomSheet}
+  //         onNavigate={(path) => router.push(path as any)}
+  //         onShare={handleShareProfile}
+  //       />
+  //     ),
+  //     height: "28%",
+  //     bgcolor: "#151515",
+  //     border: false,
+  //     maxHeight: 250,
+  //     draggableDirection: "down",
+  //   });
+  // };
+
+  //handle settings modal
+
+  const handleOpenProfileOptions = (optionType: string) => {
+    setProfileOptionsVisible({ status: true, message: optionType });
   };
 
   const handleRemovePic = async (picType: string) => {
@@ -797,6 +796,20 @@ const ProfileLayout = () => {
           </TouchableOpacity>
         </Modal>
       </ScrollView>
+
+      <ModalLayout1
+        onClose={() =>
+          setProfileOptionsVisible((prev) => ({ ...prev, status: false }))
+        }
+        heightValue={4.5}
+        visible={isProfileOptionslVisible.status}
+        bgcolor="#151515"
+      >
+        <ProfileOptionsBottomSheet
+          onNavigate={(path: any) => router.push(path as any)}
+          onShare={handleShareProfile}
+        />
+      </ModalLayout1>
     </PageThemeView>
   );
 };
@@ -817,16 +830,13 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   bottomSheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 15,
-    paddingBottom: Platform.OS === "ios" ? 30 : 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   bottomSheetOption: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 15,
+    paddingVertical: 10,
     gap: 15,
   },
   bottomSheetText: {

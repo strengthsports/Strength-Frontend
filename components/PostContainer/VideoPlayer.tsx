@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useEvent } from "expo";
 
 // Default sample video - replace with actual user video
@@ -17,10 +17,13 @@ const DEFAULT_VIDEO =
 
 export default function VideoPlayer({
   videoSource = DEFAULT_VIDEO,
+  onRemove,
   editable = false,
-}) {
+}: any) {
   // State for the post text/caption
   const [isMuted, setIsMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const animationRef = useRef(null);
 
   // Create video player instance with proper cleanup
   const player = useVideoPlayer(videoSource, (player) => {
@@ -51,16 +54,9 @@ export default function VideoPlayer({
   const { isPlaying } = useEvent(player, "playingChange", {
     isPlaying: player.playing,
   });
-  const { status } = useEvent(player, "statusChange", {
-    status: player.status,
-  });
-  const { currentTime, duration } = useEvent(player, "timeUpdate", {
-    currentTime: 0,
-    duration: player.duration || 0,
-  });
 
   // Configure time updates with proper cleanup
-  React.useEffect(() => {
+  useEffect(() => {
     if (isPlayerValid()) {
       player.timeUpdateEventInterval = 0.25; // Update 4 times a second
     }
@@ -73,8 +69,27 @@ export default function VideoPlayer({
     };
   }, [player]);
 
-  // Convert progress to percentage
-  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+  // Start animation loop to track currentTime
+  useEffect(() => {
+    const updateProgress = () => {
+      if (player) {
+        setCurrentTime(player.currentTime); // Directly read from player
+        animationRef.current = requestAnimationFrame(updateProgress);
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [player]);
+
+  // Calculate progress percentage
+  const progressPercentage =
+    player?.duration > 0 ? (currentTime / player.duration) * 100 : 0;
 
   // Add component unmount handler
   useEffect(() => {
@@ -202,6 +217,15 @@ export default function VideoPlayer({
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Remove video */}
+          <TouchableOpacity
+            onPress={onRemove}
+            className="absolute top-2 right-2 bg-black/50 rounded-full p-1 z-10"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialCommunityIcons name="close" size={20} color="white" />
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

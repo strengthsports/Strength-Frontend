@@ -982,7 +982,15 @@ export default function AddPostContainer({
             )}
 
             {/* Only render VideoPlayer when there is a video */}
-            {isTypeVideo && isVideoTrimmed && <VideoPlayer />}
+            {isTypeVideo && isVideoTrimmed && (
+              <VideoPlayer
+                videoSource={pickedVideoUri as string}
+                onRemove={() => {
+                  setTypeVideo(false);
+                  setPickedVideoUri("");
+                }}
+              />
+            )}
 
             {/* Pagination */}
             {/* {pickedImageUris.length > 1 && (

@@ -1,205 +1,313 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import {
-  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
-  StyleProp,
-  ViewStyle,
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
 } from "react-native";
-import { Video, ResizeMode, AVPlaybackStatusSuccess } from "expo-av";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { RelativePathString } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useEvent } from "expo";
 
-type VideoPlayerProps = {
-  videoUri: string;
-  postId?: string;
-  autoPlay: boolean;
-  isFeedPage?: boolean;
-  onPlaybackStatusUpdate?: (status: AVPlaybackStatusSuccess) => void;
-  containerStyle?: StyleProp<ViewStyle>;
-  videoStyle?: StyleProp<ViewStyle>;
-  resizeMode?: ResizeMode;
-};
+// Default sample video - replace with actual user video
+const DEFAULT_VIDEO =
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
-export type VideoPlayerHandle = {
-  play: () => Promise<void>;
-  pause: () => Promise<void>;
-  toggleMute: () => Promise<void>;
-  seek: (position: number) => Promise<void>;
-  getStatus: () => AVPlaybackStatusSuccess | null;
-};
+export default function VideoPlayer({
+  videoSource = DEFAULT_VIDEO,
+  editable = false,
+}) {
+  // State for the post text/caption
+  const [isMuted, setIsMuted] = useState(false);
 
-const CustomVideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
-  (
-    {
-      videoUri,
-      postId,
-      autoPlay,
-      isFeedPage = false,
-      onPlaybackStatusUpdate,
-      containerStyle,
-      videoStyle,
-      resizeMode = ResizeMode.COVER,
-    },
-    ref
-  ) => {
-    const videoRef = useRef<Video | null>(null);
-    const router = useRouter();
-    const [status, setStatus] = useState<AVPlaybackStatusSuccess | null>(null);
-    const [loading, setLoading] = useState(true);
+  // Create video player instance with proper cleanup
+  const player = useVideoPlayer(videoSource, (player) => {
+    player.loop = true;
+    player.volume = 1.0;
+    player.muted = isMuted;
 
-    const player = useVideoPlayer(videoUri, (player) => {
-      player.loop = true;
-      autoPlay && player.play();
-    });
+    // Return cleanup function
+    return () => {
+      // Make sure player is properly disposed
+      player.pause();
+    };
+  });
 
-    const { isPlaying } = useEvent(player, "playingChange", {
-      isPlaying: player.playing,
-    });
+  // Safety check to prevent operations on released player
+  const isPlayerValid = () => {
+    try {
+      // Access a property to test if player is valid
+      const _ = player.status;
+      return true;
+    } catch (e) {
+      console.log("Player is no longer valid:", e);
+      return false;
+    }
+  };
 
-    // Expose methods via ref
-    useImperativeHandle(ref, () => ({
-      play: async () => {
-        await videoRef.current?.playAsync();
-      },
-      pause: async () => {
-        await videoRef.current?.pauseAsync();
-      },
-      toggleMute: async () => {
-        if (videoRef.current && status) {
-          await videoRef.current.setIsMutedAsync(!status.isMuted);
+  // Video player state using events with safety checks
+  const { isPlaying } = useEvent(player, "playingChange", {
+    isPlaying: player.playing,
+  });
+  const { status } = useEvent(player, "statusChange", {
+    status: player.status,
+  });
+  const { currentTime, duration } = useEvent(player, "timeUpdate", {
+    currentTime: 0,
+    duration: player.duration || 0,
+  });
+
+  // Configure time updates with proper cleanup
+  React.useEffect(() => {
+    if (isPlayerValid()) {
+      player.timeUpdateEventInterval = 0.25; // Update 4 times a second
+    }
+
+    return () => {
+      // Important cleanup to prevent the "shared object released" error
+      if (isPlayerValid()) {
+        player.timeUpdateEventInterval = 0;
+      }
+    };
+  }, [player]);
+
+  // Convert progress to percentage
+  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  // Add component unmount handler
+  useEffect(() => {
+    return () => {
+      // Final cleanup when component unmounts
+      if (isPlayerValid()) {
+        try {
+          player.pause();
+          // Reset any other player properties as needed
+        } catch (error) {
+          console.log("Cleanup error:", error);
         }
-      },
-      seek: async (position: number) => {
-        if (videoRef.current) {
-          await videoRef.current.setPositionAsync(position);
-        }
-      },
-      getStatus: () => status,
-    }));
+      }
+    };
+  }, []);
 
-    // useEffect(() => {
-    //   if (videoRef.current) {
-    //     if (autoPlay) {
-    //       videoRef.current.playAsync();
-    //       videoRef.current.setIsMutedAsync(true);
-    //     } else {
-    //       videoRef.current.pauseAsync();
-    //     }
-    //   }
-    // }, [autoPlay]);
+  // Toggle mute with safety check
+  const handleToggleMute = () => {
+    if (isPlayerValid()) {
+      setIsMuted(!isMuted);
+      player.muted = !isMuted;
+    }
+  };
 
-    // const handlePlaybackStatusUpdate = (
-    //   playbackStatus: AVPlaybackStatusSuccess
-    // ) => {
-    //   setStatus(playbackStatus);
+  // Safe method to toggle play/pause
+  const togglePlayPause = () => {
+    if (!isPlayerValid()) return;
 
-    //   const isBuffering =
-    //     playbackStatus.isBuffering || !playbackStatus.isLoaded;
-    //   setLoading(isBuffering);
+    try {
+      if (isPlaying) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    } catch (error) {
+      console.error("Error toggling play/pause:", error);
+    }
+  };
 
-    //   if (onPlaybackStatusUpdate) {
-    //     onPlaybackStatusUpdate(playbackStatus);
-    //   }
-    // };
+  // Safe method to replay video
+  const handleReplay = () => {
+    if (!isPlayerValid()) return;
 
-    const renderFeedControls = () => (
-      <TouchableOpacity
-        style={styles.muteButton}
-        onPress={async () => {
-          if (videoRef.current && status) {
-            await videoRef.current.setIsMutedAsync(!status.isMuted);
-          }
-        }}
-      >
-        <Ionicons
-          name={status?.isMuted ? "volume-mute" : "volume-high"}
-          size={12}
-          color="#fff"
-        />
-      </TouchableOpacity>
-    );
+    try {
+      player.replay();
+    } catch (error) {
+      console.error("Error replaying video:", error);
+    }
+  };
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.container,
-          isFeedPage && styles.feedContainer,
-          containerStyle,
-        ]}
-        className={isFeedPage ? "ml-2" : "ml-0"}
-        activeOpacity={0.7}
-        onPress={() => {
-          isFeedPage &&
-            postId &&
-            router.push({
-              pathname: `/post-view/${postId}` as RelativePathString,
-            });
-        }}
-      >
-        <VideoView
-          player={player}
-          style={[
-            styles.video,
-            isFeedPage && styles.feedVideoStyle,
-            videoStyle,
-          ]}
-        />
+  // Safe method to change playback rate
+  const togglePlaybackRate = () => {
+    if (!isPlayerValid()) return;
 
-        {loading && (
-          <ActivityIndicator style={styles.loader} size="large" color="#fff" />
-        )}
+    try {
+      player.playbackRate = player.playbackRate === 1.0 ? 1.5 : 1.0;
+    } catch (error) {
+      console.error("Error changing playback rate:", error);
+    }
+  };
 
-        {isFeedPage && renderFeedControls()}
-      </TouchableOpacity>
-    );
-  }
-);
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Video container with 16:9 aspect ratio */}
+        <View style={styles.videoContainer}>
+          <VideoView
+            style={styles.video}
+            player={player}
+            contentFit="cover"
+            nativeControls={false}
+          />
+
+          {/* Video progress bar */}
+          <View style={styles.progressBarContainer}>
+            <View
+              style={[styles.progressBar, { width: `${progressPercentage}%` }]}
+            />
+          </View>
+
+          {/* Overlay controls that appear on video */}
+          <View style={styles.videoOverlay}>
+            {/* Play/Pause button in center */}
+            <TouchableOpacity onPress={togglePlayPause}>
+              <View>
+                {isPlaying ? (
+                  <View style={styles.pauseIcon}>
+                    <View style={styles.pauseBar} />
+                    <View style={styles.pauseBar} />
+                  </View>
+                ) : (
+                  <View style={styles.playIcon} />
+                )}
+              </View>
+            </TouchableOpacity>
+
+            {/* Bottom controls */}
+            <View style={styles.videoControls}>
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={handleToggleMute}
+              >
+                {isMuted ? (
+                  <MaterialIcons name="volume-off" size={20} color="white" />
+                ) : (
+                  <MaterialIcons name="volume-up" size={20} color="white" />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={handleReplay}
+              >
+                <MaterialIcons name="replay" size={20} color="white" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={togglePlaybackRate}
+              >
+                <MaterialIcons name="fast-forward" size={20} color="white" />
+                <Text style={styles.speedText}>
+                  {player.playbackRate === 1.0 ? "1x" : "1.5x"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    backgroundColor: "#000000",
-    position: "relative",
+    flex: 1,
+    backgroundColor: "#000",
   },
-  feedContainer: {
-    aspectRatio: 16 / 9,
-    height: undefined,
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  header: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  videoContainer: {
+    width: "100%",
+    aspectRatio: 16 / 9, // 16:9 aspect ratio
+    position: "relative",
+    backgroundColor: "#000",
+    marginBottom: 10,
   },
   video: {
     flex: 1,
-    width: "100%",
+    backgroundColor: "#000",
   },
-  feedVideoStyle: {
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
-    borderColor: "#2F2F2F",
+  videoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  loader: {
+  playIcon: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 20,
+    borderLeftColor: "white",
+    borderTopWidth: 15,
+    borderTopColor: "transparent",
+    borderBottomWidth: 15,
+    borderBottomColor: "transparent",
+    marginLeft: 6,
+  },
+  pauseIcon: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 24,
+    height: 24,
+  },
+  pauseBar: {
+    width: 6,
+    height: 20,
+    backgroundColor: "white",
+    marginHorizontal: 3,
+  },
+  progressBarContainer: {
     position: "absolute",
-    alignSelf: "center",
-    top: "45%",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    zIndex: 5,
   },
-  muteButton: {
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#12956B",
+  },
+  videoControls: {
     position: "absolute",
-    bottom: 10,
-    right: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 8,
+    bottom: 8,
+    right: 8,
+    flexDirection: "row",
+    padding: 2,
     borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  controlButton: {
+    width: 36,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 2,
+  },
+  speedText: {
+    color: "white",
+    fontSize: 10,
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 2,
+    borderRadius: 4,
   },
 });
-
-export default CustomVideoPlayer;

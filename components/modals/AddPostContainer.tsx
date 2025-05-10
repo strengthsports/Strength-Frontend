@@ -67,6 +67,8 @@ import {
 } from "react-native-reanimated";
 import { StyleSheet } from "react-native";
 import MentionHashtagInput2 from "../MentionHashtagInput2";
+import VideoPlayerScreen from "../PostContainer/VideoPlayer";
+import VideoPlayer from "../PostContainer/VideoPlayer";
 // Memoized sub-components for better performance
 const Figure = React.memo(
   ({
@@ -980,12 +982,7 @@ export default function AddPostContainer({
             )}
 
             {/* Only render VideoPlayer when there is a video */}
-            {isTypeVideo && isVideoTrimmed && (
-              <CustomVideoPlayer
-                autoPlay={true}
-                videoUri={pickedVideoUri as string}
-              />
-            )}
+            {isTypeVideo && isVideoTrimmed && <VideoPlayer />}
 
             {/* Pagination */}
             {/* {pickedImageUris.length > 1 && (

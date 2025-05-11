@@ -6,7 +6,13 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { View, TouchableOpacity, Dimensions, StyleSheet, Image } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+  Image,
+} from "react-native";
 import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";
@@ -86,6 +92,14 @@ const ImageSlide = memo(
           }
         }}
         onDoublePress={onDoubleTap}
+        style={{
+          borderTopLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
+          borderBottomLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          borderLeftWidth: !isMyActivity && isFirstSlide ? 1 : 0,
+          borderColor: "#222222",
+        }}
       >
         <Image
           source={
@@ -99,10 +113,6 @@ const ImageSlide = memo(
             inset: 0,
             borderTopLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
             borderBottomLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
-            borderTopWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
-            borderBottomWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
-            borderLeftWidth: !isMyActivity && isFirstSlide ? 0.5 : 0,
-            borderColor: "#2F2F2F",
           }}
         />
         {!isFeedPage && !isMyActivity && (

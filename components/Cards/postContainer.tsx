@@ -43,7 +43,7 @@ const shadowStyle = Platform.select({
   ios: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.50,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
   },
   android: {

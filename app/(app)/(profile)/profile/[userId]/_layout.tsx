@@ -53,6 +53,8 @@ import Header from "~/components/profilePage/Header";
 import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
 import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { calculateAge } from "~/utils/calculateAge";
+import { Platform } from "react-native";
 
 // Define the context type
 interface ProfileContextType {
@@ -65,6 +67,19 @@ export const ProfileContext = createContext<ProfileContextType>({
   profileData: null,
   isLoading: false,
   error: null,
+});
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 10,
+    shadowColor: "#000",
+  },
 });
 
 // Main function
@@ -343,42 +358,44 @@ const ProfileLayout = () => {
                 zIndex: 1,
               }}
             >
-              <View
-                style={{
-                  width: responsiveWidth(31),
-                  height: responsiveHeight(15),
-                  backgroundColor: "black",
-                  borderRadius: 100,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+              {/* <View
+                style={[
+                  {
+                    borderRadius: responsiveWidth(30) / 2,
+                    overflow: "hidden",
+                  },
+                  shadowStyle,
+                ]}
+              > */}
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() =>
+                  setPicModalVisible({
+                    message: "profilePic",
+                    status: true,
+                  })
+                }
+                disabled={!profileData?.profilePic}
+                style={shadowStyle}
               >
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() =>
-                    setPicModalVisible({
-                      message: "profilePic",
-                      status: true,
-                    })
+                <Image
+                  source={
+                    profileData?.profilePic
+                      ? { uri: profileData?.profilePic }
+                      : nopic
                   }
-                  disabled={!profileData?.profilePic}
-                >
-                  <Image
-                    source={
-                      profileData?.profilePic
-                        ? { uri: profileData?.profilePic }
-                        : nopic
-                    }
-                    style={{
-                      width: responsiveWidth(29.6),
-                      height: responsiveHeight(14.4),
-                      borderRadius: 100,
-                    }}
-                    className="lg:w-14 lg:h-14"
-                  />
-                </TouchableOpacity>
-              </View>
+                  style={{
+                    width: responsiveWidth(30),
+                    height: responsiveWidth(30),
+                    borderRadius: responsiveWidth(30) / 2,
+                    borderColor: "#1C1C1C",
+                    borderWidth: 1.5,
+                  }}
+                  className="lg:w-14 lg:h-14"
+                />
+              </TouchableOpacity>
             </View>
+            {/* </View> */}
           </View>
 
           {/* user info */}
@@ -484,7 +501,7 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Age: {profileData?.age}
+                              Age: {calculateAge(profileData?.dateOfBirth)}{" "}
                               <TextScallingFalse style={{ color: "grey" }}>
                                 (
                                 {dateFormatter(
@@ -1059,8 +1076,8 @@ const Tabs = ({
   const tabs = [
     { name: "Overview", path: `/profile/${params}` },
     { name: "Activity", path: `/profile/${params}/activity` },
-    { name: "Tags", path: `/profile/${params}/tags` },
     { name: "Media", path: `/profile/${params}/media` },
+    { name: "Mentions", path: `/profile/${params}/tags` },
   ];
 
   return (

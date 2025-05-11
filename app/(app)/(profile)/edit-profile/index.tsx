@@ -1,4 +1,3 @@
-'use client';
 import {
   StyleSheet,
   Modal,
@@ -11,9 +10,10 @@ import {
   Platform,
   Keyboard,
   BackHandler,
+  FlatList,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -41,6 +41,9 @@ import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
 import AlertModal from "~/components/modals/AlertModal";
 import { Sport } from "./SelectSports";
+import debounce from "lodash/debounce";
+
+const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -153,6 +156,9 @@ const EditProfile = () => {
       : ""
   );
   const [isLocationError, setLocationError] = useState("");
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [addressDetails, setAddressDetails] = useState<any>(null);
   const [isAlertModalSet, setAlertModal] = useState<boolean>(false);
 
   // Profile pic and cover pic modal
@@ -187,6 +193,83 @@ const EditProfile = () => {
 
   const [initialValue, setInitialValue] = useState<string>("");
   const [initialMeasurement, setInitialMeasurement] = useState<number>(0);
+
+  const getPlacePredictions = useRef(
+    debounce(async (text: string) => {
+      if (!text) {
+        setPredictions([]);
+        setShowSuggestions(false);
+        return;
+      }
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+            text
+          )}&key=${apiKey}`
+        );
+        const data = await response.json();
+        if (data.status === "OK") {
+          setPredictions(data.predictions);
+        } else {
+          setPredictions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching place predictions:", error);
+        setPredictions([]);
+      }
+    }, 300)
+  ).current;
+
+  const handlePlaceSelect = async (place: any) => {
+    try {
+      setShowSuggestions(false);
+      setInputValue(place.description);
+      setPredictions([]);
+
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&key=${apiKey}`
+      );
+      const data = await response.json();
+
+      if (data.status === "OK") {
+        const result = data.result;
+        const location = result.geometry.location;
+        const addressComponents = result.address_components || [];
+
+        const getComponent = (type: string) => {
+          return (
+            addressComponents.find((c: any) => c.types.includes(type))
+              ?.long_name || ""
+          );
+        };
+
+        const city =
+          getComponent("locality") ||
+          getComponent("administrative_area_level_2") ||
+          getComponent("postal_town") ||
+          "Unknown City";
+        const state =
+          getComponent("administrative_area_level_1") || "Unknown State";
+        const country = getComponent("country") || "Unknown Country";
+
+        const addressData = {
+          city,
+          state,
+          country,
+          coordinates: [location.lng, location.lat],
+          formattedAddress: place.description,
+        };
+
+        setAddressDetails(addressData);
+        setInputValue(place.description);
+      } else {
+        showToast("Failed to get place details");
+      }
+    } catch (error) {
+      console.error("Error fetching place details:", error);
+      showToast("Error fetching place details");
+    }
+  };
 
   // Modal toggle functions
   const closeModal = () => setModalVisible(false);
@@ -247,16 +330,16 @@ const EditProfile = () => {
           initialKg = initialLbs / 2.20462;
           selectedUnit = "pounds";
         }
-        setWeightInKg(initialKg > 0 ? initialKg.toFixed(2) : "");
-        setWeightInLbs(initialLbs > 0 ? initialLbs.toFixed(2) : "");
+        setWeightInKg(initialKg > 0 ? initialKg.toFixed(0) : "");
+        setWeightInLbs(initialLbs > 0 ? initialLbs.toFixed(0) : "");
 
         //calculate initial measurement in a base unit (kg)
         const baseKg =
           parsed.unit === "kg"
             ? parsed.value
             : parsed.unit === "lbs"
-              ? parsed.value / 2.20462
-              : 0;
+            ? parsed.value / 2.20462
+            : 0;
         setInitialMeasurement(baseKg);
       }
 
@@ -455,34 +538,44 @@ const EditProfile = () => {
 
     // Handle specific fields
     if (field === "address") {
-      //address field
-      const parsedAddress = parseAddress(value); //parse the input value
-      if (parsedAddress) {
-        const { city, state, country } = parsedAddress;
+      if (inputValue === initialValue) {
+        closeModal();
+        return;
+      } else if (addressDetails) {
         setFormData((prev) => ({
           ...prev,
-          address: { city, state, country },
+          address: {
+            city: addressDetails.city,
+            state: addressDetails.state,
+            country: addressDetails.country,
+          },
+          location: { coordinates: addressDetails.coordinates },
         }));
-        setAddressPickup(value); //reflect the confirmed address in the UI
+        setAddressPickup(addressDetails.formattedAddress);
 
-        //sync with redux
-        setAddress({
-          city,
-          state,
-          country,
-          location: { coordinates: address?.coordinates || [] }, // Use fetched coordinates if available
-        });
+        finalUploadData.set("city", addressDetails.city);
+        finalUploadData.set("state", addressDetails.state);
+        finalUploadData.set("country", addressDetails.country);
+        finalUploadData.set(
+          "location",
+          JSON.stringify({
+            type: "Point",
+            coordinates: addressDetails.coordinates,
+          })
+        );
 
-        // Update finalUploadData
-        finalUploadData.set("city", city);
-        finalUploadData.set("state", state);
-        finalUploadData.set("country", country);
-        if (address?.coordinates) {
-          finalUploadData.set("latitude", address.coordinates[0].toString());
-          finalUploadData.set("longitude", address.coordinates[1].toString());
-        }
+        dispatch(
+          setAddress({
+            city: addressDetails.city,
+            state: addressDetails.state,
+            country: addressDetails.country,
+            location: { coordinates: addressDetails.coordinates },
+          })
+        );
       } else {
-        showToast("Please enter address in format: city, state, country");
+        showToast(
+          "Please select a valid location from suggestions or use current location"
+        );
         return;
       }
     } else if (field === "height") {
@@ -649,7 +742,8 @@ const EditProfile = () => {
     if (address) {
       const formattedAddress = `${address.city}, ${address.state}, ${address.country}`;
       setAddressPickup(formattedAddress);
-      setInputValue(formattedAddress); // Update input for review. not update formData.address here, let the user confirm it
+      setInputValue(formattedAddress);
+      setAddressDetails(address);
     }
   }, [address]);
 
@@ -788,13 +882,18 @@ const EditProfile = () => {
 
   const handleCentimetersChange = useCallback(
     (value: string) => {
-      setHeightInCentimeters(value);
-      if (value === "") {
+      let processedValue = value
+        .replace(/[^0-9.]/g, "") // Remove non-numeric except decimal
+        .replace(/(\.\d{2})\d+/, "$1") // Limit to 2 decimal places
+        .replace(/^(\d*\.?)|(\d*)\.?/g, "$1$2"); // Prevent multiple decimals
+
+      setHeightInCentimeters(processedValue);
+      if (processedValue === "") {
         setHeightFeet("");
         setHeightInches("");
         setHeightInMeters("");
       } else {
-        const cm = parseFloat(value) || 0;
+        const cm = parseFloat(processedValue) || 0;
         const totalInches = cm / 2.54;
         const feet = Math.floor(totalInches / 12);
         const inches = totalInches % 12;
@@ -809,13 +908,18 @@ const EditProfile = () => {
 
   const handleMetersChange = useCallback(
     (value: string) => {
-      setHeightInMeters(value);
-      if (value === "") {
+      let processedValue = value
+        .replace(/[^0-9.]/g, "")
+        .replace(/(\.\d{2})\d+/, "$1")
+        .replace(/^(\d*\.?)|(\d*)\.?/g, "$1$2");
+
+      setHeightInMeters(processedValue);
+      if (processedValue === "") {
         setHeightFeet("");
         setHeightInches("");
         setHeightInCentimeters("");
       } else {
-        const meters = parseFloat(value) || 0;
+        const meters = parseFloat(processedValue) || 0;
         const cm = meters * 100;
         const totalInches = cm / 2.54;
         const feet = Math.floor(totalInches / 12);
@@ -915,28 +1019,26 @@ const EditProfile = () => {
   const maxDOB = new Date();
   maxDOB.setFullYear(today.getFullYear() - 13); // must be born before today minus 13 years
 
-
   const handleBackPress = () => {
     if (!Array.from(finalUploadData.entries()).length) {
       router.back(); // No unsaved changes — go back
-      return false;  // Allow default back behavior (for system back)
+      return false; // Allow default back behavior (for system back)
     } else {
       setAlertModal(true); // Unsaved changes — show alert modal
-      return true;  // Prevent default system back
+      return true; // Prevent default system back
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-  
+      BackHandler.addEventListener("hardwareBackPress", handleBackPress);
+
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+        BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
       };
     }, [finalUploadData])
   );
 
-  
   return (
     <SafeAreaView>
       <PageThemeView>
@@ -947,10 +1049,7 @@ const EditProfile = () => {
           {/* Top Header */}
           <View className="h-12 w-full flex-row justify-between items-center px-5">
             {/* Back button */}
-            <TouchableOpacity
-            onPress={handleBackPress}
-              className="basis-[20%]"
-            >
+            <TouchableOpacity onPress={handleBackPress} className="basis-[20%]">
               <TextScallingFalse className="text-[#808080] text-4xl font-normal">
                 Back
               </TextScallingFalse>
@@ -975,10 +1074,11 @@ const EditProfile = () => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${Array.from(finalUploadData.entries()).length
+                  className={`${
+                    Array.from(finalUploadData.entries()).length
                       ? "text-[#12956B]"
                       : "text-[#808080]"
-                    } text-4xl font-medium`}
+                  } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -1494,8 +1594,9 @@ const EditProfile = () => {
                       {label}
                     </TextScallingFalse>
                     <View
-                      className={`flex-row border-b border-white ${picType === "headline" ? "" : "h-[50px]"
-                        }`}
+                      className={`flex-row border-b border-white ${
+                        picType === "headline" ? "" : "h-[50px]"
+                      }`}
                     >
                       <TextInput
                         value={inputValue}
@@ -1521,7 +1622,9 @@ const EditProfile = () => {
                           }
                           setInputValue(text);
                           if (picType === "address") {
-                            setAddressPickup(text); //sync addressPickup with input
+                            setAddressPickup(text);
+                            getPlacePredictions(text);
+                            setShowSuggestions(true);
                           }
                         }}
                         placeholder={placeholder}
@@ -1547,6 +1650,25 @@ const EditProfile = () => {
                         {inputValue.length} / 20
                       </TextScallingFalse>
                     )}
+                    {picType === "address" &&
+                      showSuggestions &&
+                      predictions.length > 0 && (
+                        <View style={{ maxHeight: 200 }}>
+                          <FlatList
+                            data={predictions}
+                            keyExtractor={(item) => item.place_id}
+                            renderItem={({ item }) => (
+                              <TouchableOpacity
+                                onPress={() => handlePlaceSelect(item)}
+                              >
+                                <TextScallingFalse className="text-white text-3xl font-light padding-2">
+                                  {item.description}
+                                </TextScallingFalse>
+                              </TouchableOpacity>
+                            )}
+                          />
+                        </View>
+                      )}
                   </>
                 )}
 
@@ -1792,8 +1914,9 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
-      }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${
+      !isLast ? "border-b border-[#3030309a]" : ""
+    }`}
   >
     <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
       {label}
@@ -1804,24 +1927,25 @@ const FormField = ({
       className="flex-row items-center justify-between h-full w-2/3"
     >
       <TextScallingFalse
-        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
-          }`}
+        className={`text-2xl font-light ${
+          value ? "text-white" : "text-gray-500"
+        }`}
       >
         {isDate
           ? dateFormatter(value, "date")
           : type === "favouriteSports"
-            ? Array.isArray(value)
-              ? value
+          ? Array.isArray(value)
+            ? value
                 .map((sport) =>
                   typeof sport === "object" ? sport.name : sport
                 )
                 .join(", ")
-              : "Select sports"
-            : type === "address"
-              ? value?.city && value?.state && value?.country
-                ? `${value.city}, ${value.state}, ${value.country}`
-                : ""
-              : value || placeholder}
+            : "Select sports"
+          : type === "address"
+          ? value?.city && value?.state && value?.country
+            ? `${value.city}, ${value.state}, ${value.country}`
+            : ""
+          : value || placeholder}
       </TextScallingFalse>
       {icon && <View className="">{icon}</View>}
     </TouchableOpacity>
@@ -1848,6 +1972,9 @@ const MeasurementInput = ({
 }) => {
   // Validation logic for height and weight
   const handleInputChange = (text: string) => {
+    if (field === "kilograms" || field === "pounds") {
+      text = text.replace(/[^0-9]/g, "");
+    }
     const numericValue = parseFloat(text);
 
     if (isNaN(numericValue)) {
@@ -1904,22 +2031,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-                ? "Cm"
-                : field === "meters"
-                  ? "m"
-                  : field === "kilograms"
-                    ? "kg"
-                    : "lbs"}
+              ? "Cm"
+              : field === "meters"
+              ? "m"
+              : field === "kilograms"
+              ? "kg"
+              : "lbs"}
           </TextScallingFalse>
         </View>
         <CustomButton
           field={
             field as
-            | "feetInches"
-            | "centimeters"
-            | "meters"
-            | "kilograms"
-            | "pounds"
+              | "feetInches"
+              | "centimeters"
+              | "meters"
+              | "kilograms"
+              | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

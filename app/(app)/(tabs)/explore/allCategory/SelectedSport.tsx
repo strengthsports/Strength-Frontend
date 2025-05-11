@@ -94,7 +94,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     isFetching: isCricketLiveFetching,
     refetch: refetchLiveCricket,
   } = useGetCricketLiveMatchesQuery({});
-  const { liveMatches: liveCricketMatches } = cricketLiveData || {};
+  const { liveMatches: liveCricketMatches = [] } = cricketLiveData || {};
 
   const {
     data: cricketNextData,
@@ -108,7 +108,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     isFetching: isCricketRecentFetching,
     refetch: refetchRecentCricket,
   } = useGetCricketRecentMatchesQuery({});
-  const { recentMatches: recentCricketMatches } = cricketRecentData || {};
+  const { recentMatches: recentCricketMatches = [] } = cricketRecentData || {};
 
   const renderCricketMatches = () => {
     return (

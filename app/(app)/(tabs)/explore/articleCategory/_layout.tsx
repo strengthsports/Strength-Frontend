@@ -12,7 +12,7 @@ const SelectedSport = lazy(() => import("./SelectedSport"));
 const DefaultContent = lazy(
   () =>
     new Promise<{ default: React.FC<{ sportsName: string }> }>((resolve) =>
-      resolve({ default: () => <ComingSoon text="More" /> })
+      resolve({ default: () => <ComingSoon text="More Sports" /> })
     )
 );
 

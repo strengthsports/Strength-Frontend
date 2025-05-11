@@ -6,35 +6,66 @@ import { countryCodes } from "~/constants/countryCodes";
 
 interface MatchCardProps {
   match: {
-    match_id: number;
-    series: string;
-    match_type: string;
-    match_status: string;
-    venue: string;
-    current_inning?: number;
-    matchs: string;
+    matchInfo: {
+      matchId: number;
+      seriesId: number;
+      seriesName: string;
+      matchDesc: string;
+      matchFormat: string;
+      startDate: string; // Epoch string
+      endDate: string; // Epoch string
+      state: string; // "In Progress", "Complete"
+      status: string; // "Day 1: 1st Session" or "Cook Islands won by 3 wkts"
+      stateTitle: string; // "In Progress" or "CIS Won"
 
-    team_a: string;
-    team_a_short: string;
-    team_a_scores: string;
-    team_a_over: string;
-    team_a_img: string;
-    team_a_id: number;
+      team1: {
+        teamId: number;
+        teamName: string;
+        teamSName: string;
+        imageId: number;
+      };
+      team2: {
+        teamId: number;
+        teamName: string;
+        teamSName: string;
+        imageId: number;
+      };
 
-    team_b: string;
-    team_b_short: string;
-    team_b_scores: string;
-    team_b_over: string;
-    team_b_img: string;
-    team_b_id: number;
+      venueInfo: {
+        id: number;
+        ground: string;
+        city: string;
+        timezone: string;
+        latitude: string;
+        longitude: string;
+      };
 
-    balling_team?: string;
-    toss?: string;
-    result?: string;
-    match_date: string;
-    match_time: string;
-    need_run_ball?: string;
+      currBatTeamId?: number;
+      seriesStartDt: string;
+      seriesEndDt: string;
+      isTimeAnnounced: boolean;
+    };
+
+    matchScore: {
+      team1Score?: {
+        inngs1?: {
+          inningsId: number;
+          runs: number;
+          wickets: number;
+          overs: number; // may appear as 7.6 or 19.6
+        };
+      };
+      team2Score?: {
+        inngs1?: {
+          inningsId: number;
+          runs: number;
+          wickets: number;
+          overs: number;
+        };
+      };
+    };
   };
+
   isLive?: boolean;
 }
 
@@ -60,71 +91,24 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
     }
   }, [isLive, opacityValue]);
 
-  const isMatchFinished = match.match_status === "Finished";
+  const isMatchComplete = match.matchInfo?.state === "Complete";
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
 
   const determineScore = ({
-    teamScore,
+    teamRun,
+    teamWicket,
     teamOver,
   }: {
-    teamScore: string;
-    teamOver: string;
+    teamRun: number;
+    teamWicket: number;
+    teamOver: number;
   }) => {
-    if (teamScore === "" && teamOver === "") return "Yet to bat";
-    return `${teamScore} (${teamOver})`;
-  };
-
-  const determineBattingTeam = ({
-    teamId,
-    ballingTeamId,
-  }: {
-    teamId: Number;
-    ballingTeamId: string;
-  }) => {
-    const ballingTeamIdNum = ballingTeamId ? parseInt(ballingTeamId) : 0;
-    return teamId === ballingTeamIdNum ? "transparent" : "green";
-  };
-
-  const filterTossData = ({
-    tossData,
-    teamA,
-    teamB,
-    teamA_short,
-    teamB_short,
-  }: {
-    tossData: string;
-    teamA: string;
-    teamB: string;
-    teamA_short: string;
-    teamB_short: string;
-  }): string | null => {
-    const filteredTossData = tossData
-      .replace("have won the toss and have ", "")
-      .trim();
-    return filteredTossData.includes(teamA)
-      ? filteredTossData.replace(teamA, teamA_short)
-      : filteredTossData.replace(teamB, teamB_short);
-  };
-
-  const filterTargetData = ({
-    needRunData,
-    teamA,
-    teamB,
-    teamA_short,
-    teamB_short,
-  }: {
-    needRunData: string;
-    teamA: string;
-    teamB: string;
-    teamA_short: string;
-    teamB_short: string;
-  }): string | null => {
-    return needRunData.includes(teamA)
-      ? needRunData.replace(teamA, teamA_short).trim()
-      : needRunData.replace(teamB, teamB_short).trim();
+    return teamRun && teamWicket && teamOver
+      ? `${teamRun}-${teamWicket} (${teamOver})`
+      : "yet to bat";
   };
 
   const filterResultData = ({
@@ -166,7 +150,7 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >
-            {match.series}
+            {match.matchInfo?.seriesName}
           </TextScallingFalse>
         </TouchableOpacity>
 
@@ -176,7 +160,7 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
             {"\u25B6"} Cricket
           </TextScallingFalse>
           <TextScallingFalse className="text-[#919191] text-base">
-            {" \u2022 "} {match.match_type}
+            {" \u2022 "} {match.matchInfo?.matchFormat}
           </TextScallingFalse>
         </View>
       </View>
@@ -207,8 +191,8 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
         {/* Team 1 */}
         <View className="flex-row items-center justify-between mt-2 mb-1">
           <NameFlagSubCard
-            flag={match.team_a_img}
-            teamName={match.team_a_short}
+            flag={match.matchInfo?.team1?.teamName}
+            teamName={match.matchInfo?.team1?.teamSName}
           />
           <TextScallingFalse
             className="ml-2"
@@ -216,25 +200,23 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
             ellipsizeMode="tail"
             style={{
               fontSize: 12,
-              color: match.team_a_scores === "" ? "#464646" : "white",
+              color: match.matchScore?.team1Score ? "white" : "#464646",
             }}
           >
             {determineScore({
-              teamScore: match.team_a_scores,
-              teamOver: match.team_a_over,
+              teamRun: match.matchScore?.team1Score?.inngs1?.runs ?? 0,
+              teamWicket: match.matchScore?.team1Score?.inngs1?.wickets ?? 0,
+              teamOver: match.matchScore?.team1Score?.inngs1?.overs ?? 0,
             })}
-            {!isMatchFinished && (
+            {!isMatchComplete && (
               <TextScallingFalse
                 style={{
                   fontSize: 9,
                   color:
-                    match.team_a_scores === ""
-                      ? "transparent"
-                      : match?.balling_team &&
-                        determineBattingTeam({
-                          teamId: match.team_a_id,
-                          ballingTeamId: match?.balling_team,
-                        }),
+                    match.matchInfo?.currBatTeamId ===
+                    match.matchInfo?.team1?.teamId
+                      ? "green"
+                      : "transparent",
                 }}
               >
                 {" "}
@@ -247,8 +229,8 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
         {/* Team 2 */}
         <View className="flex-row items-center justify-between mt-1 mb-2">
           <NameFlagSubCard
-            flag={match.team_b_img}
-            teamName={match.team_b_short}
+            flag={match.matchInfo?.team2?.teamName}
+            teamName={match.matchInfo?.team2?.teamSName}
           />
           <TextScallingFalse
             className="ml-2"
@@ -256,25 +238,23 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
             ellipsizeMode="tail"
             style={{
               fontSize: 12,
-              color: match.team_b_scores === "" ? "#464646" : "white",
+              color: match.matchScore?.team2Score ? "white" : "#464646",
             }}
           >
             {determineScore({
-              teamScore: match.team_b_scores,
-              teamOver: match.team_b_over,
+              teamRun: match.matchScore?.team2Score?.inngs1?.runs ?? 0,
+              teamWicket: match.matchScore?.team2Score?.inngs1?.wickets ?? 0,
+              teamOver: match.matchScore?.team2Score?.inngs1?.overs ?? 0,
             })}
-            {!isMatchFinished && (
+            {!isMatchComplete && (
               <TextScallingFalse
                 style={{
                   fontSize: 9,
                   color:
-                    match.team_a_scores === ""
-                      ? "transparent"
-                      : match?.balling_team &&
-                        determineBattingTeam({
-                          teamId: match.team_b_id,
-                          ballingTeamId: match?.balling_team,
-                        }),
+                    match.matchInfo?.currBatTeamId ===
+                    match.matchInfo?.team2?.teamId
+                      ? "green"
+                      : "transparent",
                 }}
               >
                 {" "}
@@ -284,43 +264,20 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
           </TextScallingFalse>
         </View>
       </View>
+
       {/* Match Status */}
       <View className="px-5 pt-2">
-        {isLive
-          ? match.current_inning && match.current_inning === 1
-            ? match.toss && (
-                <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
-                  {filterTossData({
-                    tossData: match.toss,
-                    teamA: match.team_a,
-                    teamB: match.team_b,
-                    teamA_short: match.team_a_short,
-                    teamB_short: match.team_b_short,
-                  })}
-                </TextScallingFalse>
-              )
-            : match.need_run_ball && (
-                <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
-                  {filterTargetData({
-                    needRunData: match.need_run_ball,
-                    teamA: match.team_a,
-                    teamB: match.team_b,
-                    teamA_short: match.team_a_short,
-                    teamB_short: match.team_b_short,
-                  })}
-                </TextScallingFalse>
-              )
-          : match.result && (
-              <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
-                {filterResultData({
-                  result: match.result,
-                  teamA: match.team_a,
-                  teamB: match.team_b,
-                  teamA_short: match.team_a_short,
-                  teamB_short: match.team_b_short,
-                })}
-              </TextScallingFalse>
-            )}
+        {match.matchInfo?.status && (
+          <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
+            {filterResultData({
+              result: match.matchInfo?.status,
+              teamA: match.matchInfo.team1.teamName,
+              teamB: match.matchInfo.team2.teamName,
+              teamA_short: match.matchInfo.team1.teamSName,
+              teamB_short: match.matchInfo.team2.teamSName,
+            })}
+          </TextScallingFalse>
+        )}
       </View>
     </>
   );

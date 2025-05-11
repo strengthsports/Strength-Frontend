@@ -39,7 +39,9 @@ const CricketMatch = ({
     <View className="mt-4">
       <FlatList
         data={combinedMatches}
-        keyExtractor={(item) => item?.match_id.toString()}
+        keyExtractor={(item) =>
+          `${item.type}-${item?.matchInfo?.matchId.toString()}`
+        }
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}

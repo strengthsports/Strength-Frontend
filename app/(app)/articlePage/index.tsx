@@ -16,6 +16,7 @@ import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -141,7 +142,7 @@ const ArticlePage = () => {
       <View className="flex-1 bg-black">
         <View className="flex-row items-center justify-between px-4 pt-3">
           <TouchableOpacity onPress={() => router.back()} className="ml-1">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+            <BackIcon />
           </TouchableOpacity>
           <TextScallingFalse className="text-white text-3xl font-bold">
             {validSportsName} articles

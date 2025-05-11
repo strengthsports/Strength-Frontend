@@ -108,14 +108,39 @@ export const createTeam = createAsyncThunk<
     const token = await getToken("accessToken");
 
     const formData = new FormData();
-    const datee = convertToDate(teamData.establishedOn);
+    
+    // Append all required fields
     formData.append("name", teamData.name);
     formData.append("sport", teamData.sport);
-    formData.append("establishedOn", datee);
     formData.append("gender", teamData.gender);
-    formData.append("description", teamData.description);
-    formData.append("address", JSON.stringify(teamData.address)); // Address needs to be a string
-    formData.append("assets", teamData.logo);
+    formData.append("description", teamData.description || "");
+    
+    // Handle establishedOn date - ensure it's in ISO format
+    if (teamData.establishedOn) {
+      formData.append("establishedOn", new Date(teamData.establishedOn).toISOString());
+    }
+    
+    // Handle location/address
+    if (teamData.address) {
+      formData.append("location", JSON.stringify({
+        city: teamData.address.city,
+        state: teamData.address.state,
+        country: teamData.address.country,
+        location: teamData.address.location
+      }));
+    }
+    
+    // Append logo file if exists
+    if (teamData.logo) {
+      formData.append("assets", {
+        uri: teamData.logo.uri,
+        name: teamData.logo.name || "logo.jpg",
+        type: teamData.logo.type || "image/jpeg",
+      });
+    }
+
+    
+    console.log("Sending Data to backend--->",JSON.stringify(teamData, null, 2));
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
@@ -129,6 +154,7 @@ export const createTeam = createAsyncThunk<
     );
 
     const data = await response.json();
+    console.log("data recieved -->",data);
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Something went wrong!");

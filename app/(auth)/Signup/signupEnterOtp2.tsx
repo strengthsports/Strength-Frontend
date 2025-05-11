@@ -88,7 +88,7 @@ const SignupEnterOtp2 = () => {
       ).unwrap();
 
       feedback(response.message || "OTP verified successfully!", "success");
-      router.push("/Signup/signupEnterUsername3"); // Navigate to the next screen
+      router.replace("/Signup/signupEnterUsername3"); // Navigate to the next screen
 
       // handleNextScreen(); // Navigate to the next screen on success
     } catch (err: any) {

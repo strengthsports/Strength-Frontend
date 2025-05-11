@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/reduxStore";
 import { setTeamDescription } from "~/reduxStore/slices/team/teamSlice";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 const EditDescription = () => {
   const router = useRouter();
@@ -35,7 +36,7 @@ const EditDescription = () => {
         {/* Header Section */}
         <View className="flex-row items-center px-4 bg-black h-14 border-gray-700">
           <TouchableOpacity onPress={() => router.back()}>
-            <Icon name="arrowleft" size={28} color="white" />
+            <BackIcon/>
           </TouchableOpacity>
         </View>
 

@@ -75,7 +75,7 @@ const SwipperSkeletonLoader = () => {
         <View>
           <ShimmerEffect
             width={postWidth}
-            height={240}
+            height={220}
           />
         </View>
       </View>

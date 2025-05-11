@@ -95,7 +95,7 @@ const signupSetPassword5 = () => {
       
     dispatch(setAuthState());
       feedback(result.message, "success");
-      router.push("/Signup/signupAccountCreated6");
+      router.replace("/Signup/signupAccountCreated6");
     } catch (error) {
       console.error("Signup error:", error);
       feedback("Something went wrong. Please try again.", "error");

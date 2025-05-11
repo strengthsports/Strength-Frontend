@@ -1,7 +1,6 @@
 import { AntDesign, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React, { memo, useState } from "react";
 import {
-  Text,
   TouchableOpacity,
   View,
   ActivityIndicator,
@@ -17,8 +16,13 @@ import TextScallingFalse from "../CentralText";
 import Toast from "react-native-toast-message";
 import { ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PageThemeView from "../PageThemeView";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
+import { deletePost } from "~/reduxStore/slices/feed/feedSlice";
 
-const modalText = "text-white ml-4 text-4xl";
+const modalText = "text-white ml-4 text-4xl font-[500px]";
 const modalOption = "flex-row items-center py-3 px-2 active:bg-neutral-900";
 
 const MoreModal = memo(
@@ -40,7 +44,7 @@ const MoreModal = memo(
     handleUnfollow?: () => void;
   }) => {
     const isAndroid = Platform.OS === "android";
-    const [deletePost, { isLoading }] = useDeletePostMutation(); // Use the delete mutation
+    const dispatch = useDispatch<AppDispatch>();
     const [isDeleting, setIsDeleting] = useState(false);
     const [isReportModalOpen, setReportModalOpen] = useState(false);
     const [isOptionsVisible, setOptionsVisible] = useState(false);
@@ -51,7 +55,7 @@ const MoreModal = memo(
     const handleDeletePost = async () => {
       try {
         setIsDeleting(true);
-        await deletePost(postId).unwrap(); // Trigger the delete mutation
+        dispatch(deletePost({ postId })); // Trigger the delete mutation
         // onDelete()
         showFeedback("Post deleted successfully!", "success");
       } catch (error) {
@@ -96,7 +100,7 @@ const MoreModal = memo(
           activeOpacity={0.5}
         >
           <FontAwesome name="share" size={20} color="white" />
-          <Text className={modalText}>Share</Text>
+          <TextScallingFalse className={modalText}>Share</TextScallingFalse>
         </TouchableOpacity>
         {!isOwnPost && (
           <>
@@ -110,24 +114,24 @@ const MoreModal = memo(
                 size={22}
                 color={isReported ? "#808080" : "white"}
               />
-              <Text
+              <TextScallingFalse
                 className={`${
                   isReported ? "text-[#808080]" : "text-white"
                 } ml-4 text-4xl`}
               >
                 {isReported ? "Reported" : "Report"}
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
             <TouchableOpacity
               className={modalOption}
               onPress={followingStatus ? handleUnfollow : handleFollow}
             >
               <FontAwesome name="user-plus" size={19} color="white" />
-              <Text className={modalText}>
+              <TextScallingFalse className={modalText}>
                 {followingStatus
                   ? `Unfollow ${firstName}`
                   : `Follow ${firstName}`}
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
           </>
         )}
@@ -135,14 +139,16 @@ const MoreModal = memo(
           <TouchableOpacity
             className={modalOption}
             onPress={handleDeletePost}
-            disabled={isLoading || isDeleting}
+            disabled={isDeleting}
           >
-            {isLoading || isDeleting ? (
+            {isDeleting ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
               <>
                 <MaterialIcons name="delete" size={22} color="white" />
-                <Text className={modalText}>Delete Post</Text>
+                <TextScallingFalse className={modalText}>
+                  Delete Post
+                </TextScallingFalse>
               </>
             )}
           </TouchableOpacity>
@@ -155,89 +161,93 @@ const MoreModal = memo(
           animationType="slide"
           onRequestClose={() => setReportModalOpen(false)}
         >
-          <TouchableOpacity
-            className="flex-1 justify-start bg-black p-6"
-            activeOpacity={1}
-          >
-            <View>
-              <TextScallingFalse className="text-white text-6xl mb-4">
-                Report Post
-              </TextScallingFalse>
-              <TextScallingFalse className="text-white font-light">
-                Select the reason to help protect and uphold your priorities and
-                the integrity of the sports community as a whole
-              </TextScallingFalse>
-            </View>
-            <View className="flex-1">
-              <View className="mt-4 flex-row justify-between items-center border-b border-[#808080]">
-                <TextInput editable={false}>
-                  <Text className="text-white">
-                    {selectedOption || "Choose"}
-                  </Text>
-                </TextInput>
+          <PageThemeView>
+            <TouchableOpacity
+              className="flex-1 justify-start p-6"
+              activeOpacity={1}
+            >
+              <View>
+                <TextScallingFalse className="text-white text-6xl mb-4">
+                  Report Post
+                </TextScallingFalse>
+                <TextScallingFalse className="text-white font-light">
+                  Select the reason to help protect and uphold your priorities
+                  and the integrity of the sports community as a whole
+                </TextScallingFalse>
+              </View>
+              <View className="flex-1">
+                <View className="mt-6 flex-row justify-between items-center border-b border-[#fff]">
+                  <TextInput editable={false}>
+                    <TextScallingFalse className="text-white">
+                      {selectedOption || "Choose"}
+                    </TextScallingFalse>
+                  </TextInput>
+                  <TouchableOpacity
+                    onPress={() =>
+                      isOptionsVisible
+                        ? setOptionsVisible(false)
+                        : setOptionsVisible(true)
+                    }
+                    className="border border-[#808080] px-2.5 py-1.5 rounded-lg mb-2"
+                  >
+                    {isOptionsVisible ? (
+                      <AntDesign
+                        name="close"
+                        onPress={() => setOptionsVisible(false)}
+                        size={14}
+                        color="white"
+                      />
+                    ) : (
+                      <AntDesign name="down" size={14} color="white" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {isOptionsVisible && (
+                  <FlatList
+                    data={options}
+                    renderItem={({ item }) => (
+                      <View className="py-2.5 border-b border-[#808080]">
+                        <TouchableOpacity
+                          onPress={() => handleSelectOption(item)} // set selected option
+                        >
+                          <TextScallingFalse className="text-2xl text-white">
+                            {item}
+                          </TextScallingFalse>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                  />
+                )}
+              </View>
+              <View className="flex-row justify-around items-center">
                 <TouchableOpacity
-                  onPress={() =>
-                    isOptionsVisible
-                      ? setOptionsVisible(false)
-                      : setOptionsVisible(true)
-                  }
-                  className="border border-[#808080] px-2.5 py-[0.10rem] rounded-lg"
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setSelectedOption("");
+                    setReportModalOpen(false);
+                  }}
                 >
-                  {isOptionsVisible ? (
-                    <AntDesign
-                      name="close"
-                      onPress={() => setOptionsVisible(false)}
-                      size={14}
-                      color="white"
-                    />
-                  ) : (
-                    <AntDesign name="down" size={14} color="white" />
-                  )}
+                  <TextScallingFalse className="text-4xl text-[#CECECE]">
+                    Cancel
+                  </TextScallingFalse>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={handleReport}
+                  disabled={!selectedOption}
+                >
+                  <TextScallingFalse
+                    className={`text-4xl ${
+                      selectedOption ? "text-[#CF3131]" : "text-[#303030]"
+                    }`}
+                  >
+                    Report
+                  </TextScallingFalse>
                 </TouchableOpacity>
               </View>
-              {isOptionsVisible && (
-                <FlatList
-                  data={options}
-                  renderItem={({ item }) => (
-                    <View className="py-2.5 border-b border-[#808080]">
-                      <TouchableOpacity
-                        onPress={() => handleSelectOption(item)} // set selected option
-                      >
-                        <Text className="text-2xl text-white">{item}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  keyExtractor={(item, index) => index.toString()}
-                />
-              )}
-            </View>
-            <View className="flex-row justify-around items-center">
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  setSelectedOption("");
-                  setReportModalOpen(false);
-                }}
-              >
-                <TextScallingFalse className="text-4xl text-[#303030]">
-                  Cancel
-                </TextScallingFalse>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleReport}
-                disabled={!selectedOption}
-              >
-                <TextScallingFalse
-                  className={`text-4xl ${
-                    selectedOption ? "text-[#808080]" : "text-[#303030]"
-                  }`}
-                >
-                  Report
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </PageThemeView>
         </Modal>
       </View>
     );

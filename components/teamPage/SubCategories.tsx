@@ -8,6 +8,7 @@ import {
   SairaExtraCondensed_500Medium,
 } from "@expo-google-fonts/saira-extra-condensed";
 import AppLoading from "expo-app-loading";
+import TextScallingFalse from "../CentralText";
 
 const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
   const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("ABOUT");
@@ -76,12 +77,12 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
             }`}
             onPress={() => handleTabChange("ABOUT")}
           >
-            <Text
+            <TextScallingFalse
               className="text-white text-[21px] mt-1"
               style={{ fontFamily: "SairaExtraCondensed_500Medium" }}
             >
               ABOUT
-            </Text>
+            </TextScallingFalse>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -90,12 +91,12 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
             }`}
             onPress={() => handleTabChange("SQUAD")}
           >
-            <Text
+            <TextScallingFalse
               className="text-white text-[21px] mt-1"
               style={{ fontFamily: "SairaExtraCondensed_500Medium" }}
             >
               SQUAD
-            </Text>
+            </TextScallingFalse>
           </TouchableOpacity>
         </View>
       </View>

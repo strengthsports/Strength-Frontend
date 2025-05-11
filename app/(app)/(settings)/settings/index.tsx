@@ -32,6 +32,10 @@ import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Platform } from "react-native";
 import { resetFeed } from "~/reduxStore/slices/feed/feedSlice";
+import ChangePasswordForm from "./ChangePasswordForm";
+import CloseAccountView from "./CloseAccountView";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import AgreementsModalView from "./AgreementsModalView";
 
 const index = () => {
   const router = useRouter();
@@ -44,6 +48,9 @@ const index = () => {
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => setShowPassword((prevState) => !prevState);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
+  const [showCloseAccountPage, setShowCloseAccountPage] = useState(false);
+  const [openModal14, setOpenModal14] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: any) => state?.profile);
@@ -55,22 +62,22 @@ const index = () => {
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-            type: "error",
-            text1: "Logged out successfully",
-            visibilityTime: 1500,
-            autoHide: true,
-          });
+          type: "error",
+          text1: "Logged out successfully",
+          visibilityTime: 1500,
+          autoHide: true,
+        });
       dispatch(resetFeed());
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-            type: "error",
-            text1: "Logged out successfully",
-            visibilityTime: 1500,
-            autoHide: true,
-          });
+          type: "error",
+          text1: "Logged out successfully",
+          visibilityTime: 1500,
+          autoHide: true,
+        });
     }
   };
 
@@ -101,25 +108,23 @@ const index = () => {
     setModalVisible4(true);
   };
 
-  const handleChangePassword = async () => {
-    //logic for change password
-  };
 
   return (
     <PageThemeView>
       <View style={styles.TopBarView}>
         <TouchableOpacity
+          style={{ width: 60, height: 30, justifyContent: 'center' }}
           activeOpacity={0.5}
-          onPress={() => router.push("/profile")}
+          onPress={() => router.back()}
         >
-          <AntDesign name="arrowleft" size={28} color="white" />
+          <BackIcon />
         </TouchableOpacity>
         <TextScallingFalse
           style={{ color: "white", fontSize: 20, fontWeight: "300" }}
         >
           Settings
         </TextScallingFalse>
-        <View style={{ width: 29, height: 8 }} />
+        <View style={{ width: 60, height: 8 }} />
       </View>
       <View
         style={{
@@ -141,7 +146,7 @@ const index = () => {
             borderColor: "white",
           }}
         />
-        <View style={{ paddingVertical: 17, width: 220}}>
+        <View style={{ paddingVertical: 17, width: 220 }}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 18, fontWeight: "600" }}
           >
@@ -236,8 +241,8 @@ const index = () => {
       >
         <PageThemeView>
           <View style={styles.TopBarView}>
-            <TouchableOpacity activeOpacity={0.5} onPress={closeModal}>
-              <AntDesign name="arrowleft" size={28} color="white" />
+            <TouchableOpacity style={{ width: 60, height: 30, justifyContent: 'center' }} activeOpacity={0.5} onPress={closeModal}>
+              <BackIcon />
             </TouchableOpacity>
             <TextScallingFalse
               style={{
@@ -251,21 +256,23 @@ const index = () => {
             >
               Account Settings
             </TextScallingFalse>
-            <View style={{ width: 29, height: 8 }} />
+            <View style={{ width: 60, height: 8 }} />
           </View>
           <View
             style={{
               width: "100%",
               paddingHorizontal: 30,
               paddingVertical: 40,
-              gap: 25,
+              gap: 6,
             }}
           >
             <View style={styles.AccountSettingsButtonView}>
               <MaterialIcons name="password" size={26} color="white" />
               <TouchableOpacity
-                onPress={() =>
-                  router.push("/(app)/(settings)/settings/change-password")
+                className="py-4"
+                onPress={() => {
+                  setShowChangePasswordForm(true);
+                }
                 }
                 activeOpacity={0.7}
               >
@@ -277,13 +284,12 @@ const index = () => {
             <View style={styles.AccountSettingsButtonView}>
               <MaterialIcons name="policy" size={26} color="white" />
               <TouchableOpacity
-                onPress={() =>
-                  Linking.openURL("https://strength.net.in/?privacy")
-                }
+                className="py-4"
+                onPress={() => setOpenModal14(true)}
                 activeOpacity={0.7}
               >
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
-                  Privacy policy
+                  Agreements & Policy
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>
@@ -293,15 +299,57 @@ const index = () => {
                 size={26}
                 color="white"
               />
-              <TouchableOpacity onPress={openModal3} activeOpacity={0.7}>
+              <TouchableOpacity className="py-4" onPress={() => { setShowCloseAccountPage(true); }} activeOpacity={0.7}>
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
                   Close account
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>
           </View>
+
+          {showChangePasswordForm && (
+            <Modal
+              visible={showChangePasswordForm}
+              transparent={true}
+            >
+              <ChangePasswordForm
+                onSuccess={() => {
+                  setShowChangePasswordForm(false);
+                  setModalVisible(true);
+                }}
+                onCancel={() => setShowChangePasswordForm(false)}
+              />
+            </Modal>
+          )}
+
+          {showCloseAccountPage && (
+            <Modal
+              visible={showCloseAccountPage}
+              transparent={true}
+              onRequestClose={() =>
+                setShowCloseAccountPage(false)}
+            >
+              <CloseAccountView
+                onClose={() => setShowCloseAccountPage(false)}
+              />
+            </Modal>
+          )}
+
+         {openModal14 && (
+           <Modal
+           visible={openModal14}
+           animationType="slide"
+           transparent={true}
+           onRequestClose={() => setOpenModal14(false)}
+         >
+           <AgreementsModalView onClose={() => setOpenModal14(false)}/>
+         </Modal>
+         )}
+
         </PageThemeView>
       </Modal>
+
+
 
       {/* Change Password Modal */}
       {/* <Modal
@@ -420,7 +468,7 @@ const index = () => {
       </Modal> */}
 
       {/* Close Account Modal */}
-      <Modal
+      {/* <Modal
         visible={isModalVisible3}
         transparent={true}
         onRequestClose={closeModal3}
@@ -521,10 +569,10 @@ const index = () => {
             </View>
           </View>
         </PageThemeView>
-      </Modal>
+      </Modal> */}
 
       {/* Close Account Confirm Password Modal */}
-      <Modal
+      {/* <Modal
         visible={isModalVisible4}
         transparent={true}
         onRequestClose={closeModal4}
@@ -625,7 +673,7 @@ const index = () => {
             </View>
           </View>
         </PageThemeView>
-      </Modal>
+      </Modal> */}
     </PageThemeView>
   );
 };

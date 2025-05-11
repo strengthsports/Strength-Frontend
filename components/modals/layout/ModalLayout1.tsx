@@ -17,11 +17,13 @@ const ModalLayout1 = ({
   onClose,
   children,
   heightValue,
+  bgcolor,
 }: {
   visible: boolean;
   onClose: () => void;
   children: ReactNode;
   heightValue?: number;
+  bgcolor?: string;
 }) => {
   const screenHeight = Dimensions.get("window").height;
   const translateY = new Animated.Value(0);
@@ -63,28 +65,19 @@ const ModalLayout1 = ({
         {/* Drawer */}
         <Animated.View
           style={[
-            styles.drawer,
+            styles.bottomsheet,
             {
               height: screenHeight / (heightValue || 2),
               transform: [{ translateY }],
+              backgroundColor: bgcolor || "#1C1D23",
             },
           ]}
         >
           {/* Drag handle area */}
-          <View
-            {...panResponder.panHandlers}
-            style={styles.dragHandleContainer}
-          >
-            <Divider
-              color="#545454"
-              marginVertical={1}
-              thickness={4.5}
-              style={{
-                width: "20%",
-                marginHorizontal: "auto",
-                borderRadius: 20,
-              }}
-            />
+          <View {...panResponder.panHandlers}>
+            <View style={styles.dragHandle}>
+              <View style={styles.handle} />
+            </View>
           </View>
           {/* Content area */}
           <View style={styles.contentContainer}>{children}</View>
@@ -103,21 +96,26 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
   },
-  drawer: {
+  bottomsheet: {
     width: "100%",
-    backgroundColor: "#1C1D23",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     paddingHorizontal: 25,
     paddingVertical: 20,
   },
-  // New style: drag area for the pan responder
-  dragHandleContainer: {
-    paddingVertical: 5,
-    // Optionally add a backgroundColor or other styling to indicate the drag area
-  },
   contentContainer: {
     flex: 1,
+  },
+  dragHandle: {
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  handle: {
+    width: 40,
+    height: 5,
+    backgroundColor: "#555",
+    borderRadius: 3,
   },
 });
 

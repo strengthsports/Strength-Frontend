@@ -55,7 +55,7 @@ const signupAccountCreated6 = () => {
           alignItems: "center",
         }}
       >
-        <SignupButton onPress={() => router.push("/onboarding/sportsChoice1")}>
+        <SignupButton onPress={() => router.replace("/onboarding/sportsChoice1")}>
           <TextScallingFalse
             style={{ color: "white", fontSize: 16, fontWeight: "600" }}
           >

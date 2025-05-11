@@ -20,10 +20,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import TeamEntry from "~/components/profilePage/TeamEntry";
 import { AppDispatch, RootState } from "~/reduxStore";
-import {
-  fetchUserPosts,
-  selectPostsByUserId,
-} from "~/reduxStore/slices/feed/feedSlice";
+import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
 import MembersSection from "~/components/profilePage/MembersSection";
 import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
 import { Member } from "~/types/user";
@@ -66,13 +63,13 @@ const Overview = () => {
   );
 
   // Get filtered posts from Redux
-  const userPosts = useSelector((state: RootState) =>
-    selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
-  );
-  const postsWithImages = useMemo(
-    () => userPosts?.filter((post) => post.assets.length > 0) || [],
-    [userPosts]
-  );
+  // const userPosts = useSelector((state: RootState) =>
+  //   // selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
+  // );
+  // const postsWithImages = useMemo(
+  //   () => userPosts?.filter((post) => post.assets.length > 0) || [],
+  //   [userPosts]
+  // );
 
   // Get associates list
   // const associates = useSelector(
@@ -80,16 +77,16 @@ const Overview = () => {
   // );
 
   // Fetch initial posts
-  useEffect(() => {
-    dispatch(
-      fetchUserPosts({
-        postedBy: fetchedUserId.id,
-        postedByType: fetchedUserId.type,
-        limit: 10,
-        skip: 0,
-      })
-    );
-  }, [fetchedUserId, dispatch]);
+  // useEffect(() => {
+  //   dispatch(
+  //     fetchUserPosts({
+  //       postedBy: fetchedUserId.id,
+  //       postedByType: fetchedUserId.type,
+  //       limit: 10,
+  //       skip: 0,
+  //     })
+  //   );
+  // }, [fetchedUserId, dispatch]);
 
   // Fetch page associates
   const { data: associates } = useGetPageMembersQuery({
@@ -309,7 +306,7 @@ const Overview = () => {
         </View>
       )}
 
-      {/* recent posts */}
+      {/* recent posts
       {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
@@ -320,7 +317,7 @@ const Overview = () => {
           }}
           scaleFactor={scaleFactor}
         />
-      )}
+      )} */}
 
       {/* members */}
       {profileData?.type === "Page" && coaches?.length > 0 && (

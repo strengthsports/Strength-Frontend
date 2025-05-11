@@ -195,7 +195,7 @@ const signupEnterLocation4 = () => {
 
     feedback("Address Successfully Set", "success");
     setIsLoading(false); // 👈 Important! Stop loading when success happens
-    router.push("/Signup/signupSetPassword5");
+    router.replace("/Signup/signupSetPassword5");
   };
 
 

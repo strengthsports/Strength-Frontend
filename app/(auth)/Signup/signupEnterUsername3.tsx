@@ -79,7 +79,7 @@ const signupEnterUsername3 = () => {
     }
     // Navigate to the next screen if validation passes
     setIsLoading(false);
-    router.push("/Signup/signupEnterLocation4");
+    router.replace("/Signup/signupEnterLocation4");
   };
 
   return (

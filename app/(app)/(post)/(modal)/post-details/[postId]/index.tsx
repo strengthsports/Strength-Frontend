@@ -33,6 +33,7 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Comment, Post } from "~/types/post";
 import { useLocalSearchParams } from "expo-router";
 import {
+  deleteComment,
   postComment,
   selectPostById,
 } from "~/reduxStore/slices/feed/feedSlice";
@@ -42,6 +43,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import PageThemeView from "~/components/PageThemeView";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { showFeedback } from "~/utils/feedbackToast";
+import CommentInput from "~/components/comment/CommentInput";
 
 const MAX_HEIGHT = 80;
 
@@ -330,17 +332,6 @@ const PostDetailsPage = () => {
     textInputRef.current?.focus();
   }, []);
 
-  // Handle text change in comment input
-  const handleTextChange = useCallback(
-    (text: string) => {
-      setCommentText(text);
-      if (text === "" && replyingTo) {
-        setReplyingTo(null);
-      }
-    },
-    [replyingTo]
-  );
-
   // Handle posting a new comment or reply
   const handlePostComment = useCallback(async () => {
     if (!commentText.trim() || isPosting) return;
@@ -415,6 +406,18 @@ const PostDetailsPage = () => {
     }
   }, [commentText, dispatch, post._id, replyingTo, isPosting]);
 
+  // Handle delete a comment
+  const handleDeleteComment = useCallback(
+    (comment) => {
+      dispatch(deleteComment({ postId, commentId: comment._id }));
+      setComments((prevComments) =>
+        prevComments.filter((c) => c._id !== comment._id)
+      );
+      showFeedback(`Comment deleted`, "success");
+    },
+    [postId, dispatch]
+  );
+
   // Animate the progress bar while posting
   useEffect(() => {
     if (isPosting) {
@@ -446,6 +449,8 @@ const PostDetailsPage = () => {
             targetId={post._id}
             targetType="Post"
             onReply={handleReply}
+            isOwnComment={user?._id === item.postedBy._id}
+            onDelete={handleDeleteComment}
           />
 
           {item.commentsCount > 0 && (
@@ -543,72 +548,16 @@ const PostDetailsPage = () => {
                 }}
               />
             )}
-            <View className="bg-black p-2">
-              <View
-                className={`w-full flex-row ${
-                  inputHeight <= 40
-                    ? "items-center rounded-full"
-                    : "items-end rounded-2xl"
-                } bg-neutral-900 px-4 py-1.5`}
-              >
-                <Image
-                  source={user?.profilePic ? { uri: user.profilePic } : nopic}
-                  className="w-10 h-10 rounded-full"
-                  resizeMode="cover"
-                />
-                {replyingTo && (
-                  <TouchableOpacity
-                    onPress={() => setReplyingTo(null)}
-                    className="flex-row items-center bg-neutral-800 px-2 py-1 rounded-lg ml-2"
-                  >
-                    <TextScallingFalse className="text-theme mr-1">
-                      {replyingTo.name}
-                    </TextScallingFalse>
-                    <MaterialIcons
-                      name="close"
-                      size={14}
-                      color={Colors.themeColor}
-                    />
-                  </TouchableOpacity>
-                )}
-                <TextInput
-                  ref={textInputRef}
-                  placeholder="Type your comment here"
-                  className="flex-1 px-4 bg-neutral-900 text-white"
-                  style={{
-                    height: Math.min(Math.max(40, inputHeight), MAX_HEIGHT),
-                    maxHeight: MAX_HEIGHT,
-                  }}
-                  multiline={true}
-                  textAlignVertical="top"
-                  onContentSizeChange={(event) =>
-                    setInputHeight(
-                      Math.min(event.nativeEvent.contentSize.height, MAX_HEIGHT)
-                    )
-                  }
-                  scrollEnabled={inputHeight >= MAX_HEIGHT}
-                  placeholderTextColor="grey"
-                  cursorColor={Colors.themeColor}
-                  value={commentText}
-                  onChangeText={handleTextChange}
-                />
-                <TouchableOpacity
-                  onPress={handlePostComment}
-                  disabled={isPosting || !commentText.trim()}
-                  className="p-1"
-                >
-                  <MaterialIcons
-                    name="send"
-                    size={22}
-                    color={
-                      isPosting || !commentText.trim()
-                        ? "#565656"
-                        : Colors.themeColor
-                    }
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+            <CommentInput
+              handlePostComment={handlePostComment}
+              isPosting={isPosting}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              user={user}
+              textInputRef={textInputRef}
+              commentText={commentText}
+              setCommentText={setCommentText}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>

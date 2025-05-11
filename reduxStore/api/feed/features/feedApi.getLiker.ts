@@ -9,25 +9,22 @@ export interface Liker {
   type: string;
 }
 
-interface FetchLikersResponse {
-  data: {
-    liker: Liker;
-  }[];
-}
-
 export const likerApi = feedApi.injectEndpoints({
   endpoints: (builder) => ({
     fetchLikers: builder.query<
-      FetchLikersResponse,
-      { targetId: string; targetType: string }
+      any,
+      { targetId: string; limit: number; cursor?: string | null }
     >({
-      query: ({ targetId, targetType }) => ({
-        url: "/post/fetch-likes",
-        method: "POST",
-        body: { targetId, targetType },
+      query: ({ targetId, limit, cursor }) => ({
+        url: `/post/${targetId}/fetch-likes`,
+        params: { limit, ...(cursor && { cursor }) },
+      }),
+      transformResponse: (response: { data: any }) => ({
+        users: response.data.likers,
+        nextCursor: response.data.nextCursor,
       }),
     }),
   }),
 });
 
-export const { useFetchLikersQuery } = likerApi;
+export const { useLazyFetchLikersQuery } = likerApi;

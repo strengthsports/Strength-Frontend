@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, SectionList, ActivityIndicator } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { setHasNewNotification } from "~/reduxStore/slices/notification/notificationSlice";
+import {
+  resetCount,
+  setHasNewNotification,
+} from "~/reduxStore/slices/notification/notificationSlice";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
 import GroupedNotificationCard from "~/components/notificationPage/GroupedNotificationCard";
 import moment from "moment";
@@ -17,6 +20,8 @@ import {
 } from "~/reduxStore/api/notificationApi";
 import { TouchableOpacity } from "react-native";
 import NotificationNotFound from "~/components/notfound/notificationNotFound";
+import TextScallingFalse from "~/components/CentralText";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 
 type GroupedSection = {
   title: string;
@@ -34,8 +39,8 @@ export type Cluster = {
 const tabs = [
   { id: "All", label: "All" },
   { id: "Teams", label: "Teams" },
+  { id: "MyPosts", label: "My Posts" },
   { id: "Tags", label: "Mentions" },
-  { id: "Other", label: "Other" },
 ];
 
 // Add this helper function to map tabs to notification types
@@ -104,11 +109,12 @@ const NotificationPage = () => {
           ?.map((n) => n._id) || [];
 
       console.log("📝 Unread IDs:", unreadIds); // Log IDs being processed
-
+      dispatch(resetCount());
       if (unreadIds.length > 0) {
         console.log("🔵 Marking as read...");
         await markAsRead({ notificationIds: unreadIds }).unwrap();
         dispatch(setHasNewNotification(false));
+        dispatch(resetCount());
         console.log("✅ Marked as read. hasNewNotification set to false");
       }
     };
@@ -245,25 +251,28 @@ const NotificationPage = () => {
     .filter((section) => section.data.length > 0);
 
   return (
-    <SafeAreaView className="flex-1 p-6 pb-16 bg-black">
+    <SafeAreaView className="flex-1 px-6 pt-6 bg-black">
       <View className="mb-4">
-        <Text className="text-6xl font-normal text-white mb-4">
-          Notifications
-        </Text>
+        <View className="w-full flex-row justify-between items-center">
+          <TextScallingFalse className="text-6xl font-normal text-white">
+            Notifications
+          </TextScallingFalse>
+          <MaterialCommunityIcons name="tune-variant" color="#fff" size={20} />
+        </View>
         {/* Category Navbar */}
-        <View className="flex-row justify-start gap-x-2 border-b border-[#121212] pb-2">
+        <View className="flex-row justify-start gap-x-3 border-b border-[#121212] pb-2 mt-4">
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
-              className={`px-5 py-2 rounded-full border border-neutral-800 ${
+              className={`px-5 py-2.5 rounded-xl border border-[#2c2c2c] ${
                 activeTab === tab.id ? "bg-neutral-800" : ""
               }`}
               activeOpacity={0.7}
             >
               <Text
                 className={`text-lg font-medium ${
-                  activeTab === tab.id ? "text-white" : "text-gray-400"
+                  activeTab === tab.id ? "text-white" : "text-[#BFBFBF]"
                 }`}
               >
                 {tab.label}
@@ -339,7 +348,9 @@ const NotificationCluster = ({
 
 const LoadingIndicator = () => (
   <View className="flex-1 justify-center items-center">
-    <ActivityIndicator size="large" color={Colors.themeColor} />
+    <View style={{ transform: [{ scale: 1.5 }]} }>
+    <ActivityIndicator size="small" color={'gray'} />
+    </View>
   </View>
 );
 

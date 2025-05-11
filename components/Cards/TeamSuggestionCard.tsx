@@ -75,8 +75,8 @@ const TeamSuggestionCard = ({
 
   return (
     <View
-      className={`bg-black rounded-xl p-4 mb-4 relative border justify-between ${
-        size === "small" ? "w-[150px] h-[180px]" : "w-full h-[200px]"
+      className={`bg-black rounded-xl p-5 mb-4 relative border justify-between ${
+        size === "small" ? "w-[150px] h-[180px]" : "w-full h-[180px]"
       } border-[#323232] overflow-hidden`}
     >
       {/* Close Button */}
@@ -90,15 +90,15 @@ const TeamSuggestionCard = ({
 
       <View className="flex-col">
         {/* Details section */}
-        <View className="basis-[80%] flex-row gap-x-2">
+        <View className="basis-[80%] flex-row gap-x-3">
           {/* Profile Image */}
           <TouchableOpacity
             activeOpacity={0.5}
             onPress={() => router.push(`/(app)/(team)/teams/${team._id}`)}
             disabled={onboarding}
-            className={`bg-white rounded-xl ${
-              size === "small" ? "w-12 h-12" : "w-16 h-16"
-            } items-center justify-center flex-shrink-0 border border-black z-20 overflow-hidden`}
+            className={`rounded-[10px] ${
+              size === "small" ? "w-[50px] h-[50px]" : "w-[60px] h-[60px]"
+            } items-center justify-center flex-shrink-0 border-[2px] border-[#181818] z-20 overflow-hidden`}
           >
             <Image
               source={team.logo ? { uri: team.logo.url } : nopic}
@@ -112,7 +112,7 @@ const TeamSuggestionCard = ({
             <View>
               <TextScallingFalse
                 className={`text-white ${
-                  size === "small" ? "text-xl" : "text-2xl"
+                  size === "small" ? "text-2xl" : "text-3xl"
                 } font-semibold`}
               >
                 {team.name}
@@ -147,12 +147,12 @@ const TeamSuggestionCard = ({
         {/* Follow/Unfollow button */}
         <View className="basis-[20%]">
           <TouchableOpacity
-            className="border-[0.5px] rounded-3xl px-8 py-2 border-[#DEDEDE]"
+            className="border-[1px] rounded-3xl px-8 border-[#555555]"
             activeOpacity={0.6}
             onPress={followingStatus ? handleUnfollow : handleFollow}
           >
             {followingStatus ? (
-              <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
+              <TextScallingFalse className="text-2xl text-center text-[#DEDEDE]">
                 <Entypo
                   className="mr-4"
                   name="check"
@@ -162,7 +162,7 @@ const TeamSuggestionCard = ({
                 Supporting
               </TextScallingFalse>
             ) : (
-              <TextScallingFalse className="text-center text-2xl text-[#DEDEDE]">
+              <TextScallingFalse className="text-2xl text-center text-[#DEDEDE]">
                 Support
               </TextScallingFalse>
             )}

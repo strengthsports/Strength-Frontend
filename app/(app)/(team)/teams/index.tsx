@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import SignupButton from "~/components/SignupButton";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import { ThemedText } from "~/components/ThemedText";
 
 const InitiateCreateTeam = () => {
@@ -30,13 +31,9 @@ const InitiateCreateTeam = () => {
       }}
     >
       {/* Back Button */}
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={{ padding: 14 }}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Icon
-            name="arrow-back" 
-            size={30} 
-            color="white"
-          />
+         <BackIcon/>
         </TouchableOpacity>
       </View>
 
@@ -60,7 +57,7 @@ const InitiateCreateTeam = () => {
       {/* Action Buttons */}
       <View
         style={{
-          marginTop: 30,
+          marginTop: 25,
           alignItems: "center",
           justifyContent: "center",
           flex: 1,
@@ -79,7 +76,7 @@ const InitiateCreateTeam = () => {
         {/* Join Team Link */}
         <TouchableOpacity>
           <ThemedText
-            style={{ color: "#A0AEC0", textAlign: "center", fontSize: 16 }}
+            style={{ color: "#909090", textAlign: "center", fontSize: 16 }}
           >
             Join an existing team
           </ThemedText>

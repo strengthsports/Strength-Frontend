@@ -89,7 +89,7 @@ const Members: React.FC = () => {
     if (lowerRole.includes("bowl")) return "Bowlers";
     if (lowerRole.includes("bat")) return "Batters";
     if (lowerRole.includes("all") || lowerRole.includes("round")) return "All-Rounders";
-    if (lowerRole.includes("keep")) return "keepers";
+    if (lowerRole.includes("keep")) return "Keepers";
     
     // If no match found, capitalize the original role
     return capitalizeWords(role);

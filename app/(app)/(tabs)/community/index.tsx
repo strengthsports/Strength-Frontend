@@ -33,6 +33,12 @@ import { debounce } from "~/utils/debounce";
 import { SuggestionUser } from "~/types/user";
 import { SuggestTeam } from "~/types/team";
 import PageThemeView from "~/components/PageThemeView";
+import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
+import RightArrow from "~/components/SvgIcons/teams/RightArrow";
+import SeeMore from "~/components/SvgIcons/Common_Icons/SeeMore";
+import UserCardSkeleton from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
+import SearchSkeletonLoader from "~/components/skeletonLoaders/SearchSkeletonLoader";
+import SingleLineTextSkeleton from "~/components/skeletonLoaders/SingleLineTextSkeleton";
 
 const DEBOUNCE_DELAY = 1000;
 
@@ -164,6 +170,8 @@ const Community = () => {
         hasMore: boolean;
       };
     }) => {
+      const isLoading = item.type === "User" && item.data.length === 0;
+      
       const filteredData = item.data.filter(
         (user) => !removedUserIds.has(user._id)
       );
@@ -172,11 +180,11 @@ const Community = () => {
       const isSingleColumn = item.type === "Page" || item.type === "Team";
 
       return (
-        <View className="mt-4 pb-6 border-b-[2px] border-[#1E1E1E]">
-          <Text className="text-white text-3xl font-medium ml-2 mb-2 capitalize">
+        <View className="mt-4 pb-6 border-b-[1px] mb-3 border-[#1E1E1E]">
+          <TextScallingFalse className="text-white text-3xl font-medium ml-2 mb-2 capitalize">
             {item.title}
-          </Text>
-          <FlatList
+          </TextScallingFalse>
+            <FlatList
             data={filteredData}
             keyExtractor={(user) => user._id}
             renderItem={({ item }) =>
@@ -213,16 +221,20 @@ const Community = () => {
             }
             ListFooterComponent={
               <TouchableOpacity
-                className="mt-4 self-center rounded-full"
+                className="mt-7 self-center" style={{justifyContent:'center', alignItems:'center', height: 30, flexDirection:'row', gap: 10}}
+                activeOpacity={0.5}
                 onPress={() =>
                   router.push(
                     `/(app)/(tabs)/community/more?filter=${item.type.toLowerCase()}` as RelativePathString
                   )
                 }
               >
-                <Text className="text-white text-2xl font-normal">
-                  See more {`>`}
-                </Text>
+                <TextScallingFalse className="text-white text-2xl font-normal">
+                  See more
+                </TextScallingFalse>
+                <View style={{marginTop: 2}}>
+                <SeeMore />
+                </View>
               </TouchableOpacity>
             }
             showsVerticalScrollIndicator={false}
@@ -273,8 +285,10 @@ const Community = () => {
 
       <View className="px-4 pb-20">
         {allLoading ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#12956B" />
+          <View style={{width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}}>
+            <View style={{ transform: [{ scale: 1.5 }]} }>
+           <ActivityIndicator size="small" color="#12956B"/>
+            </View>
           </View>
         ) : (
           <FlatList

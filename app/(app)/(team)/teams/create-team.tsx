@@ -10,6 +10,8 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
+import { Modal,StyleSheet} from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as ImagePicker from "expo-image-picker";
 import { NavigationProp } from "@react-navigation/native";
 import AddMembersModal from "@/components/teamPage/AddMembersModal";
@@ -27,6 +29,7 @@ import { createTeam } from "~/reduxStore/slices/team/teamSlice";
 import { fetchUserSuggestions } from "~/reduxStore/slices/team/userSuggestionSlice";
 import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
 import TextScallingFalse from "~/components/CentralText";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -87,9 +90,12 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     _id: "123",
     logo: "12345",
   });
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+const [formattedDate, setFormattedDate] = useState("");
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
+  // const [selectedDate, setSelectedDate] = useState("");
   const [locationModal, setLocationModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
@@ -393,8 +399,8 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
         <View className="flex-1">
           {/* Header */}
           <View className="position-absolute px-4 py-1 right-0 z-10">
-            <TouchableOpacity onPress={() => router.back()} className="mb-4">
-              <Icon name="arrowleft" size={30} color="white" />
+            <TouchableOpacity onPress={() => router.back()} className="mb-4 mt-2">
+             <BackIcon/>
             </TouchableOpacity>
           </View>
 
@@ -537,36 +543,99 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
                   onSave={handleSaveLocation}
                 />
 
-                {/* Established */}
+              {/* Established On Field */}
                 <View className="mt-4">
-                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
-                    Established On*
-                  </TextScallingFalse>
-                  <TouchableOpacity
-                    className="border border-[#515151] rounded-lg flex-row items-center p-4"
-                    onPress={() => setShow(true)}
-                  >
-                    <TextScallingFalse
-                      className={`flex-1 ${
-                        selectedDate ? "text-white" : "text-gray-400"
-                      }`}
-                    >
-                      {selectedDate || "MM/YYYY"}
-                    </TextScallingFalse>
-                    <Icon name="calendar" size={20} color="#b0b0b0" />
-                  </TouchableOpacity>
+  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
+    Established On*
+  </TextScallingFalse>
+  <TouchableOpacity
+    className="border border-[#515151] rounded-lg flex-row items-center justify-between p-4"
+    onPress={() => setIsDatePickerVisible(true)}
+  >
+    <TextScallingFalse className={`${formattedDate ? "text-white" : "text-gray-400"}`}>
+      {formattedDate || "Select date"}
+    </TextScallingFalse>
+    <MaterialCommunityIcons name="calendar-month-outline" size={20} color="#b0b0b0" />
+  </TouchableOpacity>
 
-                  {show && (
-                    <DateTimePicker
-                      value={date}
-                      mode="date"
-                      display="spinner"
-                      onChange={onChange}
-                      themeVariant="dark"
-                      maximumDate={new Date()}
-                    />
-                  )}
-                  
+  {/* Platform-specific date picker */}
+  {Platform.OS === 'ios' ? (
+    <Modal
+      visible={isDatePickerVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setIsDatePickerVisible(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setIsDatePickerVisible(false)}
+      >
+        <View style={styles.datePickerContainer}>
+          <View style={styles.datePickerHeader}>
+            <TouchableOpacity onPress={() => setIsDatePickerVisible(false)}>
+              <TextScallingFalse style={styles.datePickerHeaderButton}>Cancel</TextScallingFalse>
+            </TouchableOpacity>
+            
+            <TextScallingFalse style={styles.datePickerHeaderTitle}>Established Date</TextScallingFalse>
+            
+            <TouchableOpacity onPress={() => {
+              const formatted = selectedDate.toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+              });
+              setFormattedDate(formatted);
+              setFormData(prev => ({
+                ...prev,
+                establishedOn: selectedDate.toISOString()
+              }));
+              setIsDatePickerVisible(false);
+            }}>
+              <TextScallingFalse style={styles.datePickerHeaderButtonDone}>Done</TextScallingFalse>
+            </TouchableOpacity>
+          </View>
+
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="spinner"
+            onChange={(event, date) => {
+              if (date) {
+                setSelectedDate(date);
+              }
+            }}
+            themeVariant="dark"
+            maximumDate={new Date()}
+            style={styles.iosDatePicker}
+          />
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  ) : (
+    isDatePickerVisible && (
+      <DateTimePicker
+        value={selectedDate}
+        mode="date"
+        display="default"
+        onChange={(event, date) => {
+          setIsDatePickerVisible(false);
+          if (date) {
+            setSelectedDate(date);
+            const formatted = date.toLocaleDateString('en-US', {
+              month: 'long',
+              year: 'numeric'
+            });
+            setFormattedDate(formatted);
+            setFormData(prev => ({
+              ...prev,
+              establishedOn: date.toISOString()
+            }));
+          }
+        }}
+        maximumDate={new Date()}
+      />
+    )
+  )}
                 </View>
 
                 {/* Gender Selection */}
@@ -703,5 +772,43 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  datePickerContainer: {
+    backgroundColor: '#1E1E1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  datePickerHeaderButton: {
+    color: 'white',
+    fontSize: 16,
+  },
+  datePickerHeaderButtonDone: {
+    color: '#12956B',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  datePickerHeaderTitle: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  iosDatePicker: {
+    height: 200,
+  },
+});
 
 export default CreateTeam;

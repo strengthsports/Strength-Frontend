@@ -10,8 +10,10 @@ import {
   ToastAndroid,
   Platform,
   Keyboard,
+  BackHandler,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -39,6 +41,7 @@ import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
 import AlertModal from "~/components/modals/AlertModal";
 import { Sport } from "./SelectSports";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -253,8 +256,8 @@ const EditProfile = () => {
           parsed.unit === "kg"
             ? parsed.value
             : parsed.unit === "lbs"
-            ? parsed.value / 2.20462
-            : 0;
+              ? parsed.value / 2.20462
+              : 0;
         setInitialMeasurement(baseKg);
       }
 
@@ -913,38 +916,47 @@ const EditProfile = () => {
   const maxDOB = new Date();
   maxDOB.setFullYear(today.getFullYear() - 13); // must be born before today minus 13 years
 
+
+  const handleBackPress = () => {
+    if (!Array.from(finalUploadData.entries()).length) {
+      router.back(); // No unsaved changes — go back
+      return false;  // Allow default back behavior (for system back)
+    } else {
+      setAlertModal(true); // Unsaved changes — show alert modal
+      return true;  // Prevent default system back
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+  
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+      };
+    }, [finalUploadData])
+  );
+
+  
   return (
-    <SafeAreaView>
       <PageThemeView>
         <ScrollView
           style={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Top Header */}
-          <View className="h-12 w-full flex-row justify-between items-center px-5">
+          <View className="h-14 w-full flex-row justify-between items-center px-5">
             {/* Back button */}
             <TouchableOpacity
-            onPress={() => {
-              if (!Array.from(finalUploadData.entries()).length) {
-                const start = performance.now(); // Start timer
-                router.replace("/profile");
-            
-                // You can't measure after `router.push` directly since it's async & render happens elsewhere,
-                // so use a navigation listener in the profile screen itself.
-                console.log("Navigation started at:", start);
-              } else {
-                setAlertModal(true);
-              }
-            }}
-            
+            onPress={handleBackPress}
               className="basis-[20%]"
             >
-              <TextScallingFalse className="text-[#808080] text-4xl font-normal">
+              <TextScallingFalse className="text-[#fff] text-4xl font-normal">
                 Back
               </TextScallingFalse>
             </TouchableOpacity>
             {/* Heading */}
-            <TextScallingFalse className="flex-grow text-center text-white font-light text-5xl">
+            <TextScallingFalse className="flex-grow text-center text-white font-light text-4xl">
               Edit profile
             </TextScallingFalse>
             {/* Save button */}
@@ -963,11 +975,10 @@ const EditProfile = () => {
                 disabled={!Array.from(finalUploadData.entries()).length}
               >
                 <TextScallingFalse
-                  className={`${
-                    Array.from(finalUploadData.entries()).length
+                  className={`${Array.from(finalUploadData.entries()).length
                       ? "text-[#12956B]"
-                      : "text-[#808080]"
-                  } text-4xl font-medium`}
+                      : "text-[#303030]"
+                    } text-4xl font-medium`}
                 >
                   Save
                 </TextScallingFalse>
@@ -1107,7 +1118,7 @@ const EditProfile = () => {
               alertConfig={{
                 title: "Discard changes?",
                 message: "If you go back now, you will lose your changes.",
-                confirmAction: () => router.push("/profile"),
+                confirmAction: () => router.back(),
                 discardAction: () => setAlertModal(false),
                 confirmMessage: "Discard",
                 cancelMessage: "Continue",
@@ -1280,7 +1291,7 @@ const EditProfile = () => {
           onRequestClose={closeModal}
         >
           <View className="flex-1">
-            <SafeAreaView className="bg-black h-full">
+            <PageThemeView>
               {/* Modal Header */}
               <View
                 className="flex-row justify-between items-center p-4"
@@ -1291,7 +1302,7 @@ const EditProfile = () => {
                     className="w-[50px] h-[40px] justify-center"
                     onPress={closeModal}
                   >
-                    <AntDesign name="arrowleft" size={28} color="white" />
+                    <BackIcon />
                   </TouchableOpacity>
                   <TextScallingFalse className="text-white text-5xl font-medium">
                     {label}
@@ -1483,9 +1494,8 @@ const EditProfile = () => {
                       {label}
                     </TextScallingFalse>
                     <View
-                      className={`flex-row border-b border-white ${
-                        picType === "headline" ? "" : "h-[50px]"
-                      }`}
+                      className={`flex-row border-b border-white ${picType === "headline" ? "" : "h-[50px]"
+                        }`}
                     >
                       <TextInput
                         value={inputValue}
@@ -1591,11 +1601,10 @@ const EditProfile = () => {
                   ""
                 )}
               </View>
-            </SafeAreaView>
+            </PageThemeView>
           </View>
         </Modal>
       </PageThemeView>
-    </SafeAreaView>
   );
 };
 
@@ -1782,9 +1791,8 @@ const FormField = ({
   isDate?: boolean;
 }) => (
   <View
-    className={`flex-row items-center justify-between px-6 h-16 ${
-      !isLast ? "border-b border-[#3030309a]" : ""
-    }`}
+    className={`flex-row items-center justify-between px-6 h-16 ${!isLast ? "border-b border-[#3030309a]" : ""
+      }`}
   >
     <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
       {label}
@@ -1795,25 +1803,24 @@ const FormField = ({
       className="flex-row items-center justify-between h-full w-2/3"
     >
       <TextScallingFalse
-        className={`text-2xl font-light ${
-          value ? "text-white" : "text-gray-500"
-        }`}
+        className={`text-2xl font-light ${value ? "text-white" : "text-gray-500"
+          }`}
       >
         {isDate
           ? dateFormatter(value, "date")
           : type === "favouriteSports"
-          ? Array.isArray(value)
-            ? value
+            ? Array.isArray(value)
+              ? value
                 .map((sport) =>
                   typeof sport === "object" ? sport.name : sport
                 )
                 .join(", ")
-            : "Select sports"
-          : type === "address"
-          ? value?.city && value?.state && value?.country
-            ? `${value.city}, ${value.state}, ${value.country}`
-            : ""
-          : value || placeholder}
+              : "Select sports"
+            : type === "address"
+              ? value?.city && value?.state && value?.country
+                ? `${value.city}, ${value.state}, ${value.country}`
+                : ""
+              : value || placeholder}
       </TextScallingFalse>
       {icon && <View className="">{icon}</View>}
     </TouchableOpacity>
@@ -1896,22 +1903,22 @@ const MeasurementInput = ({
             {field === "feetInches"
               ? "ft"
               : field === "centimeters"
-              ? "Cm"
-              : field === "meters"
-              ? "m"
-              : field === "kilograms"
-              ? "kg"
-              : "lbs"}
+                ? "Cm"
+                : field === "meters"
+                  ? "m"
+                  : field === "kilograms"
+                    ? "kg"
+                    : "lbs"}
           </TextScallingFalse>
         </View>
         <CustomButton
           field={
             field as
-              | "feetInches"
-              | "centimeters"
-              | "meters"
-              | "kilograms"
-              | "pounds"
+            | "feetInches"
+            | "centimeters"
+            | "meters"
+            | "kilograms"
+            | "pounds"
           }
           selectedField={selectedField || ""}
           toggleSelectedField={toggleField}

@@ -57,7 +57,9 @@ const TrendingAll = () => {
   const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
-      return <SwipperSkeletonLoader />;
+      return (
+        <SwipperSkeletonLoader />
+      );
     }
 
     if (error) {
@@ -218,7 +220,7 @@ const TrendingAll = () => {
     if (isLoading) {
       return (
         <View className="mt-5">
-          <ScoresSkeletonLoader />
+          <ActivityIndicator color={'white'} size={'small'}/>
         </View>
       );
     }

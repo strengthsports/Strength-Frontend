@@ -212,7 +212,9 @@ const Comments = () => {
           Error loading comments: {error}
         </TextScallingFalse>
         <TouchableOpacity onPress={handleRefresh} style={styles.retryButton}>
-          <Text style={styles.retryButtonText}>Retry</Text>
+          <TextScallingFalse style={styles.retryButtonText}>
+            Retry
+          </TextScallingFalse>
         </TouchableOpacity>
       </View>
     );

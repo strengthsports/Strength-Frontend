@@ -158,9 +158,8 @@ const ProfileLayout = () => {
       // TODO: need modification of the profile url
       const profileUrl = `strength://profile/${user?._id}`;
       const result = await Share.share({
-        message: `Check out ${
-          user?.firstName || "this"
-        } profile on Strength! ${profileUrl}`,
+        message: `Check out ${user?.firstName || "this"
+          } profile on Strength! ${profileUrl}`,
         url: Platform.OS === "ios" ? profileUrl : undefined,
         title: "Share Profile",
       });
@@ -229,18 +228,6 @@ const ProfileLayout = () => {
       return firstSportName;
     }
   };
-
-  //added part to test and check performance
-  useEffect(() => {
-    const end = performance.now(); // End timer
-    console.log("Profile screen rendered at:", end);
-  }, []);
-
-  //added part to test and check performance
-  useEffect(() => {
-    const end = performance.now(); // End timer
-    console.log("Profile screen rendered at:", end);
-  }, []);
 
   return (
     <PageThemeView>
@@ -577,9 +564,8 @@ const ProfileLayout = () => {
                       width: "100%",
                     }}
                   >
-                    {`${user?.address?.city || "undefined"}, ${
-                      user?.address?.state || "undefined"
-                    }, ${user?.address?.country || "undefined"}`}
+                    {`${user?.address?.city || "undefined"}, ${user?.address?.state || "undefined"
+                      }, ${user?.address?.country || "undefined"}`}
                   </TextScallingFalse>
                 </View>
                 <View style={{ flexDirection: "row" }}>
@@ -726,15 +712,13 @@ const ProfileLayout = () => {
             return (
               <Pressable
                 key={tab.name}
-                className={`py-2 px-5 ${
-                  isActive ? "border-b-2 border-[#12956B]" : ""
-                }`}
+                className={`py-2 px-5 ${isActive ? "border-b-2 border-[#12956B]" : ""
+                  }`}
                 onPress={() => handleTabPress(tab.segment)}
               >
                 <TextScallingFalse
-                  className={`text-[1.1rem] ${
-                    isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
-                  }`}
+                  className={`text-[1.1rem] ${isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
+                    }`}
                 >
                   {tab.name}
                 </TextScallingFalse>

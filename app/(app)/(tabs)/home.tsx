@@ -42,6 +42,7 @@ import UploadProgressBar from "~/components/UploadProgressBar";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { setUploadingCompleted } from "~/reduxStore/slices/post/postSlice";
 import RunningLoader from "~/components/skeletonLoaders/PostSkeletonLoader1";
+import FeedTopFtu from "~/components/ui/FTU/feedPage/FeedTopFtu";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -91,6 +92,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
+  const profile = useSelector((state: RootState) => state.profile);
 
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
@@ -212,11 +214,11 @@ const Home = () => {
   if (loading && !cursor) {
     return (
       <PageThemeView>
-      <CustomHomeHeader />
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#12956B"/>
-      </View>
-    </PageThemeView>    
+        <CustomHomeHeader />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#12956B" />
+        </View>
+      </PageThemeView>
     );
   }
 
@@ -251,6 +253,10 @@ const Home = () => {
             }
             onEndReached={handleLoadMore}
             onEndReachedThreshold={2}
+            ListHeaderComponent={
+              // Show FeedTopFtu if at least one state is false, hide if all are true
+              !(profile?.hasVisitedEditProfile && profile?.hasVisitedEditOverview && profile?.hasVisitedCommunity) && <FeedTopFtu />
+            }
             ListEmptyComponent={<EmptyComponent error={error} />}
             ListFooterComponent={
               <ListFooterComponent isLoading={isLoading} hasMore={hasMore} />

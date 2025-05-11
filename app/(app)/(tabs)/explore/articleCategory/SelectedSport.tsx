@@ -17,6 +17,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     isLoading,
     refetch: refetchSportArticles,
   } = useGetSportArticleQuery(sportsName);
+  const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
       return (
@@ -33,7 +34,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
         </TextScallingFalse>
       );
     }
-    return <SwiperTop swiperData={articles ?? []} />;
+    return <SwiperTop swiperData={topFiveArticles ?? []} />;
   };
 
   const renderArticles = () => {

@@ -44,7 +44,7 @@ const CricketMatch = ({
         }
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 10 }}
         renderItem={({ item }) => (
           <View className="h-[164px] w-[290px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
             {isLoading ? (

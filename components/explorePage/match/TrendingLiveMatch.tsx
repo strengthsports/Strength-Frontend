@@ -99,7 +99,7 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 12 }}
       />
     </View>
   );

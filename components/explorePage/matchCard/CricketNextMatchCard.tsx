@@ -104,9 +104,9 @@ const CricketNextMatchCard = ({
       {/* <View className="w-full h-full rounded-t-2xl bg-neutral-700" > */}
 
       {/* Title Section */}
-      <View className="px-6 pt-3 mt-[0.7] pb-2 w-full h-16 rounded-t-xl bg-[#262626]">
+      <View className="px-6 pt-3 mt-[0.7] pb-2 w-full rounded-t-xl bg-[#262626]">
         <TouchableOpacity
-          className="flex-row items-center w-4/5 gap-2"
+          className="flex-row items-center gap-2"
           onPress={toggleNumberOfLines}
         >
           <View className="py-1 pl-1">
@@ -116,7 +116,7 @@ const CricketNextMatchCard = ({
             />
           </View>
           <TextScallingFalse
-            className="text-white text-3xl w-4/5"
+            className="text-white text-3xl "
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >

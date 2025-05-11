@@ -57,9 +57,7 @@ const TrendingAll = () => {
   const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
-      return (
-        <SwipperSkeletonLoader />
-      );
+      return <SwipperSkeletonLoader />;
     }
 
     if (error) {
@@ -107,7 +105,7 @@ const TrendingAll = () => {
       );
 
     return (
-      <View className="mt-10">
+      <View className="mt-8">
         <Hashtag
           setModalVisible={setModalVisible}
           data={hashtagData.slice(0, 3)}
@@ -140,7 +138,7 @@ const TrendingAll = () => {
 
   const renderMatches = () => {
     return (
-      <View className="flex-row items-center pl-3 mt-10">
+      <View className="flex-row items-center pl-3.5 mt-10">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Matches
         </TextScallingFalse>
@@ -220,7 +218,7 @@ const TrendingAll = () => {
     if (isLoading) {
       return (
         <View className="mt-5">
-          <ActivityIndicator color={'white'} size={'small'}/>
+          <ActivityIndicator color={"white"} size={"small"} />
         </View>
       );
     }
@@ -295,7 +293,7 @@ const TrendingAll = () => {
 
   const sections = [
     { type: "swiper", content: renderSwiper() },
-    { type: "divider", content: <View className="h-[0.6px] bg-neutral-600" /> },
+    { type: "divider", content: <View className="h-[1px] bg-[#1C1C1C]" /> },
     { type: "hashtags", content: renderHashtags() },
     { type: "discoverPeople", content: <DiscoverPeopleList /> },
     { type: "matches", content: renderMatches() },

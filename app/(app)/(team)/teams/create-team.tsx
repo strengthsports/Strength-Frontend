@@ -316,8 +316,11 @@ const [formattedDate, setFormattedDate] = useState("");
         autoHide: false
       });
 
+      console.log("Result-->");
       // Create the team
       const result = await dispatch(createTeam(formData)).unwrap();
+
+      
       
       if (!result.success || !result.data?._id) {
         throw new Error('Team creation failed - no ID returned');

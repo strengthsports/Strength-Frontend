@@ -174,7 +174,7 @@ const CurrentTeamsScreen = () => {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.back()} className=" w-20 h-8 ">
               <BackIcon />
             </TouchableOpacity>
             {/* <TouchableOpacity style={styles.doneButton}>

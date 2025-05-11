@@ -33,7 +33,7 @@ const UserInfo = ({
         {"\n"}
       </TextScallingFalse>
       <TextScallingFalse
-        className={`text-[#919191] ${size === "small" ? "text-sm" : "text-sm"}`}
+        className={`text-[#cecece] ${size === "small" ? "text-sm" : "text-sm"}`}
       >
         @{username} <TextScallingFalse className="text-lg">|</TextScallingFalse>{" "}
         {headline}

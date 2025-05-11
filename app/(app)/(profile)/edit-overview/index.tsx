@@ -37,6 +37,7 @@ import DownArrow from "~/components/SvgIcons/Edit-Overview/DownArrow";
 import isEqual from "lodash.isequal";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import { useDispatch, useSelector } from "react-redux";
+import SearchIcon from "~/components/SvgIcons/Common_Icons/SearchIcon";
 
 interface SelectedSport {
   sportsId: string;
@@ -442,7 +443,6 @@ function EditOverview() {
     );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <PageThemeView>
         <TopBar heading="Edit Overview" backHandler={handleBackPress}>
           {isLocalLoading ? (
@@ -461,7 +461,7 @@ function EditOverview() {
                   JSON.stringify(initialSportsData) ===
                     JSON.stringify(finalSelectedSports) &&
                   initialAbout === user?.about
-                    ? "text-[#808080]"
+                    ? "text-[#303030]"
                     : "text-[#12956B]"
                 } text-4xl text-right`}
               >
@@ -484,7 +484,7 @@ function EditOverview() {
                 : "Enhance Your Profile"}
             </TextScallingFalse>
             <TextScallingFalse
-              style={{ color: "white", fontSize: 13, fontWeight: "300" }}
+              style={{ color: "#cecece", fontSize: 13, fontWeight: "400", paddingTop: 2 }}
             >
               Your overview is your canvas to share key details about your
               sports
@@ -965,19 +965,14 @@ function EditOverview() {
             <View className="w-full justify-center items-center flex-row mx-auto h-[80px]">
               <TextInput
                 placeholder="Search for sports"
-                placeholderTextColor={"grey"}
-                className="bg-[#181818] w-3/4 h-12 pl-5 rounded-l-md text-white"
+                placeholderTextColor={"#B4B4B4"}
+                className="bg-[#212121] w-4/5 h-12 pl-5 rounded-l-md text-white"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 cursorColor="#12956B"
               />
-              <View className="bg-[#181818] h-12 w-12 justify-center rounded-r-md">
-                <Feather
-                  name="search"
-                  style={{ paddingLeft: 10 }}
-                  size={23}
-                  color="grey"
-                />
+              <View className="bg-[#212121] h-12 pl-2 w-12 justify-center rounded-r-md">
+               <SearchIcon />
               </View>
             </View>
             {/* Sports options */}
@@ -1064,7 +1059,7 @@ function EditOverview() {
           transparent
           onRequestClose={handleCloseAboutModal}
         >
-          <SafeAreaView className="bg-black h-full">
+          <PageThemeView>
             {/* Modal Header */}
             <View className="flex-row justify-between items-center h-12 px-5 border-b border-gray-800">
               <View className="flex-row items-center">
@@ -1079,7 +1074,7 @@ function EditOverview() {
                 <MaterialIcons
                   name="done"
                   size={28}
-                  color={initialAbout === user?.about ? "grey" : "#12956B"}
+                  color={initialAbout === user?.about ? "Black" : "#12956B"}
                 />
               </TouchableOpacity>
             </View>
@@ -1105,14 +1100,13 @@ function EditOverview() {
                 />
               </View>
             </View>
-          </SafeAreaView>
+          </PageThemeView>
         </Modal>
 
         {/* {isUserInfoModalOpen && (
           <UserInfoModal isUserInfoModalOpen={isUserInfoModalOpen} />
         )} */}
       </PageThemeView>
-    </SafeAreaView>
   );
 }
 

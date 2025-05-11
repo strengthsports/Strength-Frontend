@@ -18,7 +18,7 @@ import { showFeedback } from "~/utils/feedbackToast";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { postComment } from "~/reduxStore/slices/feed/feedSlice";
+import { deleteComment, postComment } from "~/reduxStore/slices/feed/feedSlice";
 import {
   useLazyFetchCommentsQuery,
   useLazyFetchRepliesQuery,
@@ -451,6 +451,18 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
     }
   }, [commentText, dispatch, targetId, replyingTo, isPosting, user]);
 
+  // Handle delete a comment
+  const handleDeleteComment = useCallback(
+    (comment) => {
+      dispatch(deleteComment({ postId: targetId, commentId: comment._id }));
+      setComments((prevComments) =>
+        prevComments.filter((c) => c._id !== comment._id)
+      );
+      showFeedback(`Comment deleted`, "success");
+    },
+    [targetId, dispatch]
+  );
+
   // Animate the progress bar while posting
   useEffect(() => {
     if (isPosting) {
@@ -482,6 +494,8 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
             targetId={targetId}
             targetType="Post"
             onReply={handleReply}
+            isOwnComment={user?._id === item.postedBy._id}
+            onDelete={handleDeleteComment}
           />
 
           {item.commentsCount > 0 && (

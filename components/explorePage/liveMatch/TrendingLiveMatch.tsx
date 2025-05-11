@@ -33,6 +33,7 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
 }) => {
   const isLoading =
     isCricketFetching || isFootballFetching || isBasketballFetching;
+  console.log("live cricket matches", liveCricketMatches);
 
   // Combine and mark the type of match
   const combinedMatches = [

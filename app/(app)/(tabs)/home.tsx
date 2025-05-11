@@ -24,7 +24,7 @@ import { Divider } from "react-native-elements";
 import {
   fetchFeedPosts,
   resetFeed,
-  selectAllPosts,
+  selectAllFeedPosts,
   selectFeedState,
 } from "~/reduxStore/slices/feed/feedSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,7 +32,6 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "~/components/CentralText";
-import { useScroll } from "~/context/ScrollContext";
 import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
 import debounce from "lodash.debounce";
 import eventBus from "~/utils/eventBus";
@@ -41,6 +40,7 @@ import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader
 import UploadProgressBar from "~/components/UploadProgressBar";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { setUploadingCompleted } from "~/reduxStore/slices/post/postSlice";
+import RunningLoader from "~/components/skeletonLoaders/PostSkeletonLoader1";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -86,7 +86,7 @@ const Home = () => {
   const { isUploadingCompleted } = useSelector(
     (state: RootState) => state.post
   );
-  const posts = useSelector(selectAllPosts);
+  const posts = useSelector(selectAllFeedPosts);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
@@ -211,22 +211,11 @@ const Home = () => {
   if (loading && !cursor) {
     return (
       <PageThemeView>
-        <CustomHomeHeader />
-        <ScrollView
-          contentContainerStyle={{
-            marginTop: 65,
-            alignItems: "flex-start",
-            justifyContent: "flex-start",
-            width: "100%",
-            flex: 1,
-            backgroundColor: "#000",
-          }}
-        >
-          <PostSkeletonLoader1 />
-          <PostSkeletonLoader1 />
-          <PostSkeletonLoader1 />
-        </ScrollView>
-      </PageThemeView>
+      <CustomHomeHeader />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" color="#12956B"/>
+      </View>
+    </PageThemeView>    
     );
   }
 

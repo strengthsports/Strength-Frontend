@@ -36,8 +36,9 @@ const CricketNextMatch: React.FC<NextCricketMatchProps> = ({
             ) : (
               <View className="border border-[#454545] rounded-xl">
                 <CricketNextMatchCard
-                  series={item.series}
-                  groupedMatches={item.matches}
+                  seriesId={item.seriesId}
+                  seriesName={item.seriesName}
+                  matches={item.matches}
                 />
               </View>
             )}

@@ -91,7 +91,7 @@ const ImageSlide = memo(
         activeOpacity={0.95}
         onSinglePress={() => {
           if (isFeedPage && post) {
-            dispatch(setCurrentPost(post));
+            // dispatch(setCurrentPost(post));
             router.push({
               pathname: `/post-view/${post._id}` as RelativePathString,
             });
@@ -115,6 +115,7 @@ const ImageSlide = memo(
             borderBottomWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
             borderLeftWidth: !isMyActivity && isFirstSlide ? 0.5 : 0,
             borderColor: "#2F2F2F",
+            backgroundColor:'black'
           }}
         />
         {!isFeedPage && !isMyActivity && (

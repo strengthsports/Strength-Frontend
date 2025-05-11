@@ -24,7 +24,7 @@ import { Divider } from "react-native-elements";
 import {
   fetchFeedPosts,
   resetFeed,
-  selectAllPosts,
+  selectAllFeedPosts,
   selectFeedState,
 } from "~/reduxStore/slices/feed/feedSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,7 +32,6 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "~/components/CentralText";
-import { useScroll } from "~/context/ScrollContext";
 import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
 import debounce from "lodash.debounce";
 import eventBus from "~/utils/eventBus";
@@ -88,7 +87,7 @@ const Home = () => {
   const { isUploadingCompleted } = useSelector(
     (state: RootState) => state.post
   );
-  const posts = useSelector(selectAllPosts);
+  const posts = useSelector(selectAllFeedPosts);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);

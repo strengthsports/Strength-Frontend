@@ -33,22 +33,21 @@ import { Image } from "expo-image";
 import InteractionBar from "~/components/PostContainer/InteractionBar";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { selectPostById, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
-import CustomVideoPlayer, {
-  VideoPlayerHandle,
-} from "~/components/PostContainer/VideoPlayer";
 import { AVPlaybackStatusSuccess } from "expo-av";
 import VideoControls from "~/components/PostContainer/VideoControls";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import { purple100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 import PageThemeView from "~/components/PageThemeView";
+import VideoPlayer from "~/components/PostContainer/VideoPlayer";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const Post = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const postId = params?.postId as string; // Extract postId from URL params
-  const post = useSelector((state: RootState) => state.post.currentPost);
+  // const post = useSelector((state: RootState) => state.post.currentPost);
+  const post = useSelector((state: RootState) => selectPostById(state, postId));
   const dispatch = useDispatch<AppDispatch>();
 
   const serializedUser = encodeURIComponent(
@@ -59,7 +58,6 @@ const Post = () => {
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
 
-  const videoPlayerRef = useRef<VideoPlayerHandle>(null);
   const [videoStatus, setVideoStatus] =
     useState<AVPlaybackStatusSuccess | null>(null);
 
@@ -81,7 +79,10 @@ const Post = () => {
             key={index}
             onPress={() =>
               router.push(
-                `/(app)/(post)/hashtag/${word.substring(1, word.length)}`
+                `/(app)/(post)/hashtag/${word.substring(
+                  1,
+                  word.length
+                )}` as RelativePathString
               )
             }
             className={`text-xl text-[#12956B]`}
@@ -112,22 +113,6 @@ const Post = () => {
 
   const handleLike = () => {
     dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
-  };
-
-  const handlePlayPause = async () => {
-    if (videoStatus?.isPlaying) {
-      await videoPlayerRef.current?.pause();
-    } else {
-      await videoPlayerRef.current?.play();
-    }
-  };
-
-  const handleSeek = (position: number) => {
-    videoPlayerRef.current?.seek(position);
-  };
-
-  const handleToggleMute = () => {
-    videoPlayerRef.current?.toggleMute();
   };
 
   const updateVideoStatus = (status: AVPlaybackStatusSuccess) => {
@@ -165,7 +150,10 @@ const Post = () => {
             !isHeaderFooterVisible && "opacity-0"
           }`}
         >
-          <TouchableOpacity style={{padding:10}} onPress={() => router.back()}>
+          <TouchableOpacity
+            style={{ padding: 10 }}
+            onPress={() => router.back()}
+          >
             <BackIcon />
           </TouchableOpacity>
           <TouchableOpacity
@@ -191,7 +179,7 @@ const Post = () => {
               {post?.postedBy?.firstName} {post?.postedBy?.lastName}
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity style={{padding:10}}>
+          <TouchableOpacity style={{ padding: 10 }}>
             <MaterialIcons name="more-horiz" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -207,13 +195,7 @@ const Post = () => {
           >
             {post?.isVideo ? (
               // Video player
-              <CustomVideoPlayer
-                ref={videoPlayerRef}
-                videoUri={post.assets[0].url}
-                autoPlay={true}
-                isFeedPage={false}
-                onPlaybackStatusUpdate={updateVideoStatus}
-              />
+              <VideoPlayer videoSource={post.assets[0].url} />
             ) : (
               // Image swiper
               <Swiper {...swiperConfig} style={{ height: getImageHeight() }}>
@@ -236,7 +218,7 @@ const Post = () => {
         </View>
 
         {/* Video controls */}
-        {videoStatus && (
+        {/* {videoStatus && (
           <View
             className={`absolute bottom-40 left-0 right-0 ${
               !isHeaderFooterVisible ? "opacity-0" : ""
@@ -253,7 +235,7 @@ const Post = () => {
               onToggleMute={handleToggleMute}
             />
           </View>
-        )}
+        )} */}
 
         {/* Interaction Bar */}
         <View

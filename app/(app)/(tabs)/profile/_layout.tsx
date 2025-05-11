@@ -48,6 +48,8 @@ import { RootState } from "~/reduxStore";
 import { Platform } from "react-native";
 import { Share } from "react-native";
 import { FontAwesome6 } from "@expo/vector-icons";
+import { calculateAge } from "~/utils/calculateAge";
+import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 
 const ProfileOptionsBottomSheet = ({
   onClose,
@@ -63,7 +65,6 @@ const ProfileOptionsBottomSheet = ({
       <TouchableOpacity
         onPress={() => {
           onNavigate("/(app)/(settings)/settings");
-          onClose();
         }}
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
@@ -77,7 +78,6 @@ const ProfileOptionsBottomSheet = ({
       <TouchableOpacity
         onPress={() => {
           onShare();
-          onClose();
         }}
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
@@ -90,8 +90,7 @@ const ProfileOptionsBottomSheet = ({
 
       <TouchableOpacity
         onPress={() => {
-          // TODO: to be replaced with the actual path
-          onNavigate("/(app)/(profile)/manage-teams");
+          onNavigate("/(app)/(profile)/edit-overview/(modal)/current-team");
           onClose();
         }}
         style={styles.bottomSheetOption}
@@ -105,6 +104,19 @@ const ProfileOptionsBottomSheet = ({
     </View>
   );
 };
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 15,
+    shadowColor: "#000",
+  },
+});
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -124,6 +136,10 @@ const ProfileLayout = () => {
   const [isPicEditModalVisible, setPicEditModalVisible] =
     useState<PicModalType>({ status: false, message: "" });
   const [refreshing, setRefreshing] = useState(false);
+  const [isProfileOptionslVisible, setProfileOptionsVisible] = useState({
+    status: false,
+    message: "",
+  });
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -139,8 +155,8 @@ const ProfileLayout = () => {
     () => [
       { name: "Overview", segment: "index" },
       { name: "Activity", segment: "activity" },
-      { name: "Tags", segment: "tags" },
       { name: "Media", segment: "media" },
+      { name: "Mentions", segment: "tags" },
     ],
     []
   );
@@ -168,22 +184,28 @@ const ProfileLayout = () => {
     }
   };
 
-  const handleOpenProfileOptions = () => {
-    openBottomSheet({
-      isVisible: true,
-      content: (
-        <ProfileOptionsBottomSheet
-          onClose={closeBottomSheet}
-          onNavigate={(path) => router.push(path as any)}
-          onShare={handleShareProfile}
-        />
-      ),
-      height: "28%",
-      bgcolor: "#151515",
-      border: false,
-      maxHeight: 250,
-      draggableDirection: "down",
-    });
+  // const handleOpenProfileOptions = () => {
+  //   openBottomSheet({
+  //     isVisible: true,
+  //     content: (
+  //       <ProfileOptionsBottomSheet
+  //         onClose={closeBottomSheet}
+  //         onNavigate={(path) => router.push(path as any)}
+  //         onShare={handleShareProfile}
+  //       />
+  //     ),
+  //     height: "28%",
+  //     bgcolor: "#151515",
+  //     border: false,
+  //     maxHeight: 250,
+  //     draggableDirection: "down",
+  //   });
+  // };
+
+  //handle settings modal
+
+  const handleOpenProfileOptions = (optionType: string) => {
+    setProfileOptionsVisible({ status: true, message: optionType });
   };
 
   const handleRemovePic = async (picType: string) => {
@@ -193,7 +215,9 @@ const ProfileLayout = () => {
   const handleOpenPostContainer = () => {
     dispatch(setAddPostContainerOpen(true));
   };
-  // console.log(user);
+  // console.log("****---------->", user.createdTeams);
+  // console.log("#####---------->", user.joinedTeams);
+
   const handlePress = async () => {
     if (user?.websiteLink) {
       const supported = await Linking.canOpenURL(user.websiteLink);
@@ -266,39 +290,40 @@ const ProfileLayout = () => {
             className="absolute h-full flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]"
             style={{ zIndex: 1 }}
           >
-            <View
-              style={{
-                width: responsiveWidth(31),
-                height: responsiveHeight(15),
-                backgroundColor: "black",
-                borderRadius: 100,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              className="lg:w-14 lg:h-14"
+            {/* <View
+              style={[
+                {
+                  borderRadius: responsiveWidth(30) / 2,
+                  overflow: "hidden",
+                },
+                shadowStyle,
+              ]}
+            > */}
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() =>
+                setPicEditModalVisible({
+                  message: "profilePic",
+                  status: true,
+                })
+              }
+              style={shadowStyle}
             >
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() =>
-                  setPicEditModalVisible({
-                    message: "profilePic",
-                    status: true,
-                  })
-                }
-              >
-                <Image
-                  source={user?.profilePic ? { uri: user?.profilePic } : nopic}
-                  style={{
-                    width: responsiveWidth(29.6),
-                    height: responsiveHeight(14.4),
-                    borderRadius: 100,
-                  }}
-                  className="lg:w-14 lg:h-14"
-                />
-              </TouchableOpacity>
-            </View>
+              <Image
+                source={user?.profilePic ? { uri: user?.profilePic } : nopic}
+                style={{
+                  width: responsiveWidth(30),
+                  height: responsiveWidth(30),
+                  borderRadius: responsiveWidth(30) / 2,
+                  borderColor: "#1C1C1C",
+                  borderWidth: 1.5,
+                }}
+                className="lg:w-14 lg:h-14"
+              />
+            </TouchableOpacity>
           </View>
         </View>
+        {/* </View> */}
 
         <View className="w-full lg:w-[600px] mx-auto items-center pt-[2%]">
           <View
@@ -384,7 +409,7 @@ const ProfileLayout = () => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Age: {user?.age}{" "}
+                        Age: {calculateAge(user?.dateOfBirth)}{" "}
                         <TextScallingFalse style={{ color: "grey" }}>
                           ({dateFormatter(user?.dateOfBirth, "text")})
                         </TextScallingFalse>
@@ -433,20 +458,44 @@ const ProfileLayout = () => {
                         size={responsiveDotSize}
                         color="white"
                       />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Teams:{" "}
-                        {user?.createdTeams?.length > 0 &&
-                          user.createdTeams.map((team: any) => (
-                            <TextScallingFalse
-                              key={team?.team?._id}
-                              style={{ color: "grey" }}
-                            >
-                              {" "}
-                              {team.name}
-                            </TextScallingFalse>
-                          ))}
-                      </TextScallingFalse>
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          router.push(
+                            "/(app)/(profile)/edit-overview/(modal)/current-team"
+                          )
+                        }
+                      >
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          {(() => {
+                            const allTeams = [
+                              ...(user.createdTeams || []).map(
+                                (t: any) => t.team?.name
+                              ),
+                              ...(user.joinedTeams || []).map(
+                                (t: any) => t.team?.name
+                              ),
+                            ].filter(Boolean);
+
+                            const teamCount = allTeams.length;
+
+                            if (teamCount === 0) return "Teams: No teams";
+
+                            return (
+                              <>
+                                <TextScallingFalse style={{ color: "white" }}>
+                                  {`${teamCount === 1 ? "Team" : "Teams"}: `}
+                                  {allTeams[0]}
+                                </TextScallingFalse>
+                                <TextScallingFalse style={{ color: "grey" }}>
+                                  {teamCount > 1 ? ` +${teamCount - 1}` : ""}
+                                </TextScallingFalse>
+                              </>
+                            );
+                          })()}
+                        </TextScallingFalse>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
@@ -781,6 +830,20 @@ const ProfileLayout = () => {
           </TouchableOpacity>
         </Modal>
       </ScrollView>
+
+      <ModalLayout1
+        onClose={() =>
+          setProfileOptionsVisible((prev) => ({ ...prev, status: false }))
+        }
+        heightValue={4.5}
+        visible={isProfileOptionslVisible.status}
+        bgcolor="#151515"
+      >
+        <ProfileOptionsBottomSheet
+          onNavigate={(path: any) => router.push(path as any)}
+          onShare={handleShareProfile}
+        />
+      </ModalLayout1>
     </PageThemeView>
   );
 };
@@ -801,16 +864,13 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   bottomSheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 15,
-    paddingBottom: Platform.OS === "ios" ? 30 : 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   bottomSheetOption: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 15,
+    paddingVertical: 10,
     gap: 15,
   },
   bottomSheetText: {

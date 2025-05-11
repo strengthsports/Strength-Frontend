@@ -28,7 +28,7 @@ const TrendingMatch = () => {
   const [refreshing, setRefreshing] = useState(false);
   const renderMatches = () => {
     return (
-      <View className="flex-row items-center pl-3 mt-3">
+      <View className="flex-row items-center pl-3.5 mt-3">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Matches
         </TextScallingFalse>
@@ -45,7 +45,7 @@ const TrendingMatch = () => {
   const renderDontMiss = () => {
     return (
       <View className="flex-row items-center justify-between pl-4 mt-7 mb-6">
-        <TextScallingFalse className="text-white text-5xl font-bold">
+        <TextScallingFalse className="text-white text-3xl font-bold">
           Don’t Miss
         </TextScallingFalse>
       </View>
@@ -57,7 +57,7 @@ const TrendingMatch = () => {
     isFetching: isCricketLiveFetching,
     refetch: refetchLiveCricket,
   } = useGetCricketLiveMatchesQuery({});
-  const { liveMatches: liveCricketMatches } = cricketLiveData || {};
+  const { liveMatches: liveCricketMatches = [] } = cricketLiveData || {};
 
   const {
     data: cricketNextData,

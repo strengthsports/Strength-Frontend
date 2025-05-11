@@ -9,12 +9,14 @@ import {
   Dimensions,
   useWindowDimensions,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
+import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -60,6 +62,15 @@ const ArticlePage = () => {
     error,
     isLoading,
   } = useGetSportArticleQuery(validSportsName);
+
+  useEffect(() => {
+    if (articles && articles.length > 0) {
+      const index = articles.findIndex((item) => item._id === String(id));
+      if (index !== -1) {
+        setCurrentIndex(index);
+      }
+    }
+  }, [articles, id]);
 
   const { width } = useWindowDimensions();
 
@@ -131,7 +142,7 @@ const ArticlePage = () => {
       <View className="flex-1 bg-black">
         <View className="flex-row items-center justify-between px-4 pt-3">
           <TouchableOpacity onPress={() => router.back()} className="ml-1">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+            <BackIcon />
           </TouchableOpacity>
           <TextScallingFalse className="text-white text-3xl font-bold">
             {validSportsName} articles
@@ -141,22 +152,65 @@ const ArticlePage = () => {
           </TouchableOpacity>
         </View>
         {/* 👇 Dot Indicators */}
+
         <View className="flex-row justify-center items-center mt-1">
-          {articles?.map((_, index) => (
-            <View
-              key={index}
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: 5,
-                backgroundColor: currentIndex === index ? "#fff" : "#000",
-                borderColor: "#fff",
-                borderWidth: 1,
-                marginHorizontal: 4,
-                opacity: currentIndex === index ? 1 : 0.7,
-              }}
-            />
-          ))}
+          <AnimatedDotsCarousel
+            length={articles.length}
+            currentIndex={currentIndex as number}
+            maxIndicators={10}
+            interpolateOpacityAndColor={true}
+            activeIndicatorConfig={{
+              color: "#FFFFFF",
+              margin: 3,
+              opacity: 1,
+              size: 6,
+              borderColor: "#fff",
+              borderWidth: 1,
+            }}
+            inactiveIndicatorConfig={{
+              color: "#000",
+              margin: 3,
+              opacity: 0.5,
+              size: 6,
+              borderColor: "#fff",
+              borderWidth: 1,
+            }}
+            decreasingDots={[
+              {
+                config: {
+                  color: "#000000",
+                  margin: 3,
+                  opacity: 0.5,
+                  size: 5,
+                  borderColor: "#fff",
+                  borderWidth: 1,
+                },
+                quantity: 1,
+              },
+              {
+                config: {
+                  color: "#000000",
+                  margin: 3,
+                  opacity: 0.5,
+                  size: 4,
+                  borderColor: "#fff",
+                  borderWidth: 1,
+                },
+                quantity: 1,
+              },
+              {
+                config: {
+                  color: "#000000",
+                  margin: 3,
+                  opacity: 0.5,
+                  size: 3,
+                  borderColor: "#fff",
+                  borderWidth: 1,
+                },
+                quantity: 1,
+              },
+            ]}
+          />
         </View>
 
         <View className="h-[0.8px] bg-[#404040] mt-3" />

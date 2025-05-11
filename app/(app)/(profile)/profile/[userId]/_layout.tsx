@@ -9,7 +9,7 @@ import {
   BackHandler,
   Modal as RNModal,
   ActivityIndicator,
-  Platform
+  Platform,
 } from "react-native";
 import Modal from "react-native-modal";
 import { Slot, useLocalSearchParams } from "expo-router";
@@ -51,9 +51,9 @@ import { AppDispatch } from "~/reduxStore";
 import PicModal from "~/components/profilePage/PicModal";
 import { PicModalType } from "~/types/others";
 import Header from "~/components/profilePage/Header";
-import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
-import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 import { useBottomSheet } from "~/context/BottomSheetContext";
+import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
+import { calculateAge } from "~/utils/calculateAge";
 
 // Define the context type
 interface ProfileContextType {
@@ -66,6 +66,19 @@ export const ProfileContext = createContext<ProfileContextType>({
   profileData: null,
   isLoading: false,
   error: null,
+});
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 10,
+    shadowColor: "#000",
+  },
 });
 
 // Main function
@@ -199,7 +212,9 @@ const ProfileLayout = () => {
     isVisible: true,
     content: (
       <View style={{ paddingVertical: 15, paddingHorizontal: 20 }}>
-        <TextScallingFalse style={{ color: "white", fontSize: 20, fontWeight: 'bold' }}>
+        <TextScallingFalse
+          style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
+        >
           Messaging Coming Soon
         </TextScallingFalse>
         <TextScallingFalse
@@ -211,7 +226,9 @@ const ProfileLayout = () => {
             lineHeight: 20,
           }}
         >
-          We're currently working on bringing messaging to our platform. Stay tuned chatting with teammates and friends will be available in a future update!
+          We're currently working on bringing messaging to our platform. Stay
+          tuned chatting with teammates and friends will be available in a
+          future update!
         </TextScallingFalse>
       </View>
     ),
@@ -257,17 +274,6 @@ const ProfileLayout = () => {
 
     await reportUser(reportData);
   };
-
-  // Error component
-  // if (error) {
-  //   return (
-  //     <View>
-  //       <TextScallingFalse className="text-red-500">
-  //         {error as string}
-  //       </TextScallingFalse>
-  //     </View>
-  //   );
-  // }
 
   // better error handling
   if (error) {
@@ -362,42 +368,44 @@ const ProfileLayout = () => {
                 zIndex: 1,
               }}
             >
-              <View
-                style={{
-                  width: responsiveWidth(31),
-                  height: responsiveHeight(15),
-                  backgroundColor: "black",
-                  borderRadius: 100,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+              {/* <View
+                style={[
+                  {
+                    borderRadius: responsiveWidth(30) / 2,
+                    overflow: "hidden",
+                  },
+                  shadowStyle,
+                ]}
+              > */}
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() =>
+                  setPicModalVisible({
+                    message: "profilePic",
+                    status: true,
+                  })
+                }
+                disabled={!profileData?.profilePic}
+                style={shadowStyle}
               >
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() =>
-                    setPicModalVisible({
-                      message: "profilePic",
-                      status: true,
-                    })
+                <Image
+                  source={
+                    profileData?.profilePic
+                      ? { uri: profileData?.profilePic }
+                      : nopic
                   }
-                  disabled={!profileData?.profilePic}
-                >
-                  <Image
-                    source={
-                      profileData?.profilePic
-                        ? { uri: profileData?.profilePic }
-                        : nopic
-                    }
-                    style={{
-                      width: responsiveWidth(29.6),
-                      height: responsiveHeight(14.4),
-                      borderRadius: 100,
-                    }}
-                    className="lg:w-14 lg:h-14"
-                  />
-                </TouchableOpacity>
-              </View>
+                  style={{
+                    width: responsiveWidth(30),
+                    height: responsiveWidth(30),
+                    borderRadius: responsiveWidth(30) / 2,
+                    borderColor: "#1C1C1C",
+                    borderWidth: 1.5,
+                  }}
+                  className="lg:w-14 lg:h-14"
+                />
+              </TouchableOpacity>
             </View>
+            {/* </View> */}
           </View>
 
           {/* user info */}
@@ -503,7 +511,7 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Age: {profileData?.age}
+                              Age: {calculateAge(profileData?.dateOfBirth)}{" "}
                               <TextScallingFalse style={{ color: "grey" }}>
                                 (
                                 {dateFormatter(
@@ -795,7 +803,7 @@ const ProfileLayout = () => {
                 <TouchableOpacity
                   activeOpacity={0.5}
                   className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
-                  onPress={() => openBottomSheet(messagingBottomSheetConfig)}
+                  onPress={() => handleOpenSettingsModal("Message")}
                 >
                   <TextScallingFalse
                     style={{
@@ -856,151 +864,148 @@ const ProfileLayout = () => {
       )}
 
       {/* Settings modal */}
-      <RNModal
-        visible={isSettingsModalVisible.status}
-        animationType="slide"
-        onRequestClose={() =>
+      <ModalLayout1
+        onClose={() =>
           setSettingsModalVisible((prev) => ({ ...prev, status: false }))
         }
-        transparent={true}
+        heightValue={4.2}
+        visible={isSettingsModalVisible.status}
+        bgcolor="#151515"
       >
-        <TouchableOpacity
-          className="flex-1 justify-end items-center bg-black/20"
-          activeOpacity={1}
-          onPress={() =>
-            setSettingsModalVisible((prev) => ({ ...prev, status: false }))
-          }
-        >
-          <View
-            className="w-full mx-auto bg-[#1D1D1D] rounded-t-3xl p-5 pt-3 border-t-[0.5px] border-x-[0.5px] border-neutral-700"
-            onStartShouldSetResponder={() => true}
-          >
-            <Divider
-              className="w-16 self-center rounded-full bg-neutral-700 mb-8"
-              width={4}
-            />
-            {isSettingsModalVisible.message === "" ? (
-              <View className="flex gap-y-4">
-                {/* block */}
+        <View className="pt-6">
+          {isSettingsModalVisible.message === "" ? (
+            <View className="flex gap-y-4">
+              {/* block */}
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={handleBlock}
+                className="items-center flex-row gap-x-3"
+              >
+                <MaterialIcons
+                  name="block"
+                  size={22}
+                  color="white"
+                  className="basis-[6%]"
+                />
+                <TextScallingFalse className=" flex-1 text-white ml-4 text-4xl font-medium">
+                  Block this profile
+                </TextScallingFalse>
+              </TouchableOpacity>
+              {/* report */}
+              <TouchableOpacity
+                className="items-center flex-row gap-x-3"
+                onPress={handleReport}
+                disabled={isReported}
+              >
+                <MaterialIcons
+                  name="report-problem"
+                  size={22}
+                  color={isReported ? "#808080" : "white"}
+                  className="basis-[6%]"
+                />
+                <TextScallingFalse
+                  className={`${
+                    isReported ? "text-[#808080]" : "text-white"
+                  } ml-4 text-4xl font-medium flex-1`}
+                >
+                  {isReported ? "Reported this profile" : "Report this profile"}
+                </TextScallingFalse>
+              </TouchableOpacity>
+              {/* follow/unfollow */}
+              {followingStatus ? (
+                <TouchableOpacity
+                  className="flex-row items-center gap-x-3"
+                  onPress={handleUnfollow}
+                >
+                  <Entypo
+                    name="cross"
+                    size={22}
+                    color="white"
+                    className="basis-[6%]"
+                  />
+                  <TextScallingFalse className="text-white ml-4 text-4xl font-medium flex-1">
+                    Unfollow {profileData?.firstName}
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="flex-row items-center gap-x-3"
+                  onPress={handleFollow}
+                >
+                  <FontAwesome6
+                    name="plus"
+                    size={22}
+                    color="white"
+                    className="basis-[6%]"
+                  />
+                  <TextScallingFalse className="text-white ml-4 text-4xl font-medium flex-1">
+                    Follow {profileData?.firstName}
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : isSettingsModalVisible.message === "Unfollow" ? (
+            <View>
+              <TextScallingFalse className="text-white text-xl font-medium">
+                Unfollow {profileData?.firstName || ""}
+              </TextScallingFalse>
+              <TextScallingFalse className="text-white mt-1 font-light text-sm">
+                Stop seeing posts from {profileData?.firstName || ""} on your
+                feed. {profileData?.firstName || ""} won't be notified that
+                you've unfollowed
+              </TextScallingFalse>
+              <View className="items-center justify-evenly flex-row mt-5">
+                {/* cancel unfollow */}
                 <TouchableOpacity
                   activeOpacity={0.5}
-                  onPress={handleBlock}
-                  className="items-center flex-row gap-x-3"
-                >
-                  <MaterialIcons name="block" size={22} color="white" />
-                  <TextScallingFalse className="text-white font-normal text-3xl">
-                    Block this profile
-                  </TextScallingFalse>
-                </TouchableOpacity>
-                {/* report */}
-                <TouchableOpacity
-                  className="items-center flex-row gap-x-3"
-                  onPress={handleReport}
-                  disabled={isReported}
-                >
-                  <MaterialIcons
-                    name="report-problem"
-                    size={22}
-                    color={isReported ? "#808080" : "white"}
-                  />
-                  <TextScallingFalse
-                    className={`${
-                      isReported ? "text-[#808080]" : "text-white"
-                    } font-normal text-3xl`}
-                  >
-                    {isReported
-                      ? "Reported this profile"
-                      : "Report this profile"}
-                  </TextScallingFalse>
-                </TouchableOpacity>
-                {/* follow/unfollow */}
-                {followingStatus ? (
-                  <TouchableOpacity
-                    className="flex-row items-center gap-x-3"
-                    onPress={handleUnfollow}
-                  >
-                    <Entypo name="cross" size={22} color="white" />
-                    <TextScallingFalse className="text-white font-normal text-3xl">
-                      Unfollow {profileData?.firstName}
-                    </TextScallingFalse>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    className="flex-row items-center gap-x-3"
-                    onPress={handleFollow}
-                  >
-                    <FontAwesome6 name="plus" size={22} color="white" />
-                    <TextScallingFalse className="text-white font-normal text-3xl">
-                      Follow {profileData?.firstName}
-                    </TextScallingFalse>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : isSettingsModalVisible.message === "Unfollow" ? (
-              <View>
-                <TextScallingFalse className="text-white text-xl font-semibold">
-                  Unfollow {profileData?.firstName || ""}
-                </TextScallingFalse>
-                <TextScallingFalse className="text-white mt-1 font-light text-sm">
-                  Stop seeing posts from {profileData?.firstName || ""} on your
-                  feed. {profileData?.firstName || ""} won't be notified that
-                  you've unfollowed
-                </TextScallingFalse>
-                <View className="items-center justify-evenly flex-row mt-5">
-                  {/* cancel unfollow */}
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    className="px-14 py-1.5 justify-center items-center border rounded-xl border-[#12956B]"
-                    onPress={() =>
-                      setSettingsModalVisible((prev) => ({
-                        ...prev,
-                        status: false,
-                      }))
-                    }
-                  >
-                    <TextScallingFalse className="text-[#12956B] text-[1rem] font-medium">
-                      Cancel
-                    </TextScallingFalse>
-                  </TouchableOpacity>
-                  {/* do unfollow */}
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    className="px-14 py-1.5 justify-center items-center bg-[#12956B] border rounded-xl border-[#12956B]"
-                    onPress={handleUnfollow}
-                  >
-                    <TextScallingFalse className="text-white text-[1rem] font-medium">
-                      Unfollow
-                    </TextScallingFalse>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
-              <View>
-                <TextScallingFalse className="text-white font-semibold text-xl">
-                  Follow {profileData?.firstName} to Message
-                </TextScallingFalse>
-                <TextScallingFalse className="text-white font-normal mt-2">
-                  Unlock Messaging Power: Follow Friends and Athletes for a good
-                  Career Growth in your Choosen Sports game
-                </TextScallingFalse>
-                <TouchableOpacity
+                  className="px-14 py-1.5 justify-center items-center border rounded-xl border-[#12956B]"
                   onPress={() =>
                     setSettingsModalVisible((prev) => ({
                       ...prev,
                       status: false,
                     }))
                   }
-                  className="w-5/12 py-1.5 mt-4 rounded-lg border border-[#12956B] justify-center items-center"
                 >
-                  <TextScallingFalse className="text-[#12956B] font-medium">
-                    Close
+                  <TextScallingFalse className="text-[#12956B] text-[1rem] font-medium">
+                    Cancel
+                  </TextScallingFalse>
+                </TouchableOpacity>
+                {/* do unfollow */}
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  className="px-14 py-1.5 justify-center items-center bg-[#12956B] border rounded-xl border-[#12956B]"
+                  onPress={handleUnfollow}
+                >
+                  <TextScallingFalse className="text-white text-[1rem] font-medium">
+                    Unfollow
                   </TextScallingFalse>
                 </TouchableOpacity>
               </View>
-            )}
-          </View>
-        </TouchableOpacity>
-      </RNModal>
+            </View>
+          ) : (
+            <View style={{ paddingHorizontal: 20 }}>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
+              >
+                Messaging Coming Soon
+              </TextScallingFalse>
+              <TextScallingFalse
+                style={{
+                  color: "gray",
+                  fontSize: 15,
+                  fontWeight: "400",
+                  paddingVertical: 10,
+                  lineHeight: 20,
+                }}
+              >
+                We're currently working on bringing messaging to our platform.
+                Stay tuned chatting with teammates and friends will be available
+                in a future update!
+              </TextScallingFalse>
+            </View>
+          )}
+        </View>
+      </ModalLayout1>
 
       {/* Profile/Cover Pic modal */}
       <Modal
@@ -1075,6 +1080,18 @@ const styles = StyleSheet.create({
   loader: {
     marginVertical: 20,
   },
+  dragHandle: {
+    width: "100%",
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  handle: {
+    width: 40,
+    height: 5,
+    backgroundColor: "#555",
+    borderRadius: 3,
+  },
 });
 
 // Tabs component
@@ -1090,8 +1107,8 @@ const Tabs = ({
   const tabs = [
     { name: "Overview", path: `/profile/${params}` },
     { name: "Activity", path: `/profile/${params}/activity` },
-    { name: "Tags", path: `/profile/${params}/tags` },
     { name: "Media", path: `/profile/${params}/media` },
+    { name: "Mentions", path: `/profile/${params}/tags` },
   ];
 
   return (

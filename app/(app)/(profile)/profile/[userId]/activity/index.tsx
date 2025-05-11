@@ -1,126 +1,16 @@
-import {
-  ActivityIndicator,
-  FlatList,
-  Platform,
-  StyleSheet,
-  View,
-} from "react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
-import TextScallingFalse from "~/components/CentralText";
-import { Divider } from "react-native-elements";
-import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/types/post";
-import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post"; // adjust path accordingly
+import React, { useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
+import ActivityPage from "~/components/profilePage/ActivityPage";
 
 const Posts = () => {
   const params = useLocalSearchParams();
-  const isAndroid = Platform.OS === "android";
-
   const fetchedUserId = useMemo(() => {
     return params.userId
       ? JSON.parse(decodeURIComponent(params?.userId as string))
       : null;
   }, [params.userId]);
 
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
-
-  const [trigger, { isLoading, isFetching, isError, error }] =
-    useLazyGetUserPostsByCategoryQuery();
-
-  console.log(cursor);
-
-  const fetchPosts = async (isInitial = false) => {
-    const res = await trigger({
-      userId: fetchedUserId.id,
-      type: "all", // or "recent" / "polls" etc.
-      limit: 10,
-      cursor: isInitial ? null : cursor,
-    }).unwrap();
-
-    if (res) {
-      setPosts((prev) => (isInitial ? res.data : [...prev, ...res.data]));
-      setCursor(res.nextCursor);
-    }
-  };
-
-  useEffect(() => {
-    if (fetchedUserId?.id) {
-      fetchPosts(true); // fetch first time
-    }
-  }, [fetchedUserId?.id]);
-
-  const handleLoadMore = () => {
-    if (!isFetching && cursor !== null) {
-      setIsFetchingMore(true);
-      fetchPosts().finally(() => setIsFetchingMore(false));
-    }
-  };
-
-  const renderItem = useCallback(
-    ({ item }: { item: Post }) => (
-      <View className="w-screen">
-        <PostContainer isVisible={true} item={item} isMyActivity={true} />
-        <Divider style={{ width: "100%" }} width={0.4} color="#282828" />
-      </View>
-    ),
-    []
-  );
-
-  const MemoizedEmptyComponent = useCallback(() => {
-    return (
-      <View className="flex justify-center items-center flex-1 p-4">
-        {isLoading ? (
-          <ActivityIndicator color="#12956B" size={22} />
-        ) : (
-          <TextScallingFalse className="text-white text-center">
-            No posts available
-          </TextScallingFalse>
-        )}
-      </View>
-    );
-  }, [isLoading]);
-
-  if (error || isError)
-    return (
-      <View className="flex justify-center items-center">
-        <TextScallingFalse className="text-red-500">
-          Error loading posts
-        </TextScallingFalse>
-      </View>
-    );
-
-  return (
-    <View className="mt-4">
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item._id}
-        initialNumToRender={5}
-        removeClippedSubviews={isAndroid}
-        windowSize={11}
-        renderItem={renderItem}
-        ListEmptyComponent={MemoizedEmptyComponent}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        bounces={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        ListFooterComponent={
-          isFetchingMore ? (
-            <ActivityIndicator
-              size="small"
-              color="#12956B"
-              style={{ marginVertical: 10 }}
-            />
-          ) : null
-        }
-      />
-    </View>
-  );
+  return <ActivityPage userId={fetchedUserId.id} type="all" />;
 };
 
 export default Posts;
-
-const styles = StyleSheet.create({});

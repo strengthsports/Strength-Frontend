@@ -24,22 +24,26 @@ const Hashtag: React.FC<HashtagProps> = ({ data, setModalVisible }) => {
   return (
     <>
       {data.map((hashData) => (
-        <TouchableOpacity activeOpacity={0.7}
-          key={hashData._id} 
-          onPress={() => { 
+        <TouchableOpacity
+          activeOpacity={0.7}
+          key={hashData._id}
+          onPress={() => {
             router.push(`/(app)/(post)/hashtag/${hashData.hashtag}`);
             setModalVisible(false);
           }}
         >
-          <View className="px-3 flex-row">
+          <View className="px-4 flex-row">
             {/* Index */}
-            <TextScallingFalse className="text-theme text-5xl font-semibold mr-6 mt-0.5">
+            <TextScallingFalse className="text-theme text-5xl font-semibold mr-6 mt-1">
               {count++}
             </TextScallingFalse>
 
             {/* Hashtag and Posts Count */}
             <View className="flex-col justify-center">
-              <TextScallingFalse className="text-white text-4xl" style={{fontWeight:'500'}}>
+              <TextScallingFalse
+                className="text-white text-4xl"
+                style={{ fontWeight: "500" }}
+              >
                 #{hashData.hashtag}
               </TextScallingFalse>
               <TextScallingFalse className="text-[#6E6E6E] text-2xl">

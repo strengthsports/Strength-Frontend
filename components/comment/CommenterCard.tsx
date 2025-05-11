@@ -4,25 +4,36 @@ import { Image, Modal, TouchableOpacity } from "react-native";
 import { View } from "react-native";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import { deleteComment, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 import TextScallingFalse from "../CentralText";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Comment } from "~/types/post";
 import nopic from "@/assets/images/nopic.jpg";
 import { formatTimeAgo } from "~/utils/formatTime";
 import { toggleLikeComment } from "~/api/like/toggleLikeComment";
+import ModalLayout1 from "../modals/layout/ModalLayout1";
 
 interface CommenterCardProps {
   comment: Comment;
   targetId: string;
   targetType: string;
   onReply?: (comment: Comment) => void;
+  onDelete?: (comment: Comment) => void;
   parent?: Comment;
+  isOwnComment?: boolean;
 }
 
 // Memoized CommenterCard component
 export const CommenterCard = memo(
-  ({ comment, targetId, targetType, onReply, parent }: CommenterCardProps) => {
+  ({
+    comment,
+    targetId,
+    targetType,
+    onReply,
+    onDelete,
+    parent,
+    isOwnComment,
+  }: CommenterCardProps) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
@@ -83,20 +94,60 @@ export const CommenterCard = memo(
           bg-neutral-900 py-2`}
         >
           <View className="absolute right-3 top-2 flex flex-row items-center gap-2">
-            <TextScallingFalse className="text-xs text-neutral-300">
+            <TextScallingFalse className="text-xs text-neutral-300 right-8">
               {formatTimeAgo(comment?.createdAt)}
             </TextScallingFalse>
-            <TouchableOpacity onPress={() => setIsReportModalVisible(true)}>
+            <TouchableOpacity
+              onPress={() => setIsReportModalVisible(true)}
+              className="p-2 absolute -right-2"
+            >
               <MaterialIcons name="more-horiz" size={16} color="white" />
               {isReportModalVisible && (
-                <Modal
+                <ModalLayout1
                   visible={isReportModalVisible}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={() => setIsReportModalVisible(false)}
+                  onClose={() => setIsReportModalVisible(false)}
+                  heightValue={8}
+                  bgcolor="#151515"
                 >
-                  {/* Report modal code here */}
-                </Modal>
+                  <View className="flex gap-y-4 pt-6">
+                    {!isOwnComment ? (
+                      <TouchableOpacity
+                        className="items-center flex-row gap-x-3"
+                        // onPress={handleReport}
+                        // disabled={isReported}
+                      >
+                        <MaterialIcons
+                          name="report-problem"
+                          size={22}
+                          color={"white"}
+                          className="basis-[6%]"
+                        />
+                        <TextScallingFalse
+                          className={`${
+                            false ? "text-[#808080]" : "text-white"
+                          } ml-4 text-4xl font-medium flex-1`}
+                        >
+                          {false ? "Reported" : "Report"}
+                        </TextScallingFalse>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        className="flex-row items-center gap-x-3"
+                        onPress={() => onDelete && onDelete(comment)}
+                      >
+                        <MaterialIcons
+                          name="delete"
+                          size={22}
+                          color={"white"}
+                          className="basis-[6%]"
+                        />
+                        <TextScallingFalse className="text-white ml-4 text-4xl font-medium flex-1">
+                          Delete
+                        </TextScallingFalse>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </ModalLayout1>
               )}
             </TouchableOpacity>
           </View>

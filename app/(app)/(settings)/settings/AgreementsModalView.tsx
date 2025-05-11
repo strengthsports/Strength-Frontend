@@ -30,7 +30,7 @@ const AgreementsModalView: React.FC<AgreementsModalViewProps> = ({ onClose }) =>
                         <TouchableOpacity
                             onPress={() =>
                                 Linking.openURL(
-                                    "https://strength-sports.webflow.io/resources/instructions"
+                                    "https://www.yourstrength.in/user-agreement"
                                 )
                             }
                             activeOpacity={0.5}
@@ -42,24 +42,13 @@ const AgreementsModalView: React.FC<AgreementsModalViewProps> = ({ onClose }) =>
 
                         <TouchableOpacity
                             onPress={() =>
-                                Linking.openURL("https://www.strength.net.in/?privacy")
+                                Linking.openURL("https://www.yourstrength.in/privacy-policy")
                             }
                             activeOpacity={0.5}
                             style={styles.agreementItem}
                         >
                             <View style={styles.agreementDot} />
                             <Text style={styles.agreementText}>Privacy Policy</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() =>
-                                Linking.openURL("https://www.strength.net.in/?term")
-                            }
-                            activeOpacity={0.5}
-                            style={styles.agreementItem}
-                        >
-                            <View style={styles.agreementDot} />
-                            <Text style={styles.agreementText}>Cookies Policy</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

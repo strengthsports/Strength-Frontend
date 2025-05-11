@@ -41,6 +41,7 @@ import { setAddress } from "~/reduxStore/slices/user/onboardingSlice";
 import UploadImg from "~/components/SvgIcons/Edit-Profile/UploadImg";
 import AlertModal from "~/components/modals/AlertModal";
 import { Sport } from "./SelectSports";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import debounce from "lodash/debounce";
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
@@ -1040,657 +1041,658 @@ const EditProfile = () => {
   );
 
   return (
-    <SafeAreaView>
-      <PageThemeView>
-        <ScrollView
-          style={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Top Header */}
-          <View className="h-12 w-full flex-row justify-between items-center px-5">
-            {/* Back button */}
-            <TouchableOpacity onPress={handleBackPress} className="basis-[20%]">
-              <TextScallingFalse className="text-[#808080] text-4xl font-normal">
-                Back
+    <PageThemeView>
+      <ScrollView style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        {/* Top Header */}
+        <View className="h-14 w-full flex-row justify-between items-center px-5">
+          {/* Back button */}
+          <TouchableOpacity onPress={handleBackPress} className="basis-[20%]">
+            <TextScallingFalse className="text-[#fff] text-4xl font-normal">
+              Back
+            </TextScallingFalse>
+          </TouchableOpacity>
+          {/* Heading */}
+          <TextScallingFalse className="flex-grow text-center text-white font-light text-4xl">
+            Edit profile
+          </TextScallingFalse>
+          {/* Save button */}
+          {isLoading ? (
+            <View className="basis-[20%] items-end">
+              <ActivityIndicator
+                size="small"
+                color="#12956B"
+                style={styles.loader}
+              />
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={handleFormSubmit}
+              className="basis-[20%] items-end"
+              disabled={!Array.from(finalUploadData.entries()).length}
+            >
+              <TextScallingFalse
+                className={`${
+                  Array.from(finalUploadData.entries()).length
+                    ? "text-[#12956B]"
+                    : "text-[#303030]"
+                } text-4xl font-medium`}
+              >
+                Save
               </TextScallingFalse>
             </TouchableOpacity>
-            {/* Heading */}
-            <TextScallingFalse className="flex-grow text-center text-white font-light text-5xl">
-              Edit profile
-            </TextScallingFalse>
-            {/* Save button */}
-            {isLoading ? (
-              <View className="basis-[20%] items-end">
-                <ActivityIndicator
-                  size="small"
-                  color="#12956B"
-                  style={styles.loader}
-                />
-              </View>
-            ) : (
-              <TouchableOpacity
-                onPress={handleFormSubmit}
-                className="basis-[20%] items-end"
-                disabled={!Array.from(finalUploadData.entries()).length}
-              >
-                <TextScallingFalse
-                  className={`${
-                    Array.from(finalUploadData.entries()).length
-                      ? "text-[#12956B]"
-                      : "text-[#808080]"
-                  } text-4xl font-medium`}
-                >
-                  Save
-                </TextScallingFalse>
-              </TouchableOpacity>
-            )}
-          </View>
+          )}
+        </View>
 
-          {/* Profile and cover image */}
-          <View
-            style={{
-              position: "relative",
-              width: "100%",
-              height: 137,
-              marginBottom: 96,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+        {/* Profile and cover image */}
+        <View
+          style={{
+            position: "relative",
+            width: "100%",
+            height: 137,
+            marginBottom: 96,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {/* cover pic */}
+          <TouchableOpacity
+            onPress={() => togglePicModal("coverPic")}
+            activeOpacity={0.9}
+            className="bg-black h-full w-full"
           >
-            {/* cover pic */}
-            <TouchableOpacity
-              onPress={() => togglePicModal("coverPic")}
-              activeOpacity={0.9}
-              className="bg-black h-full w-full"
-            >
-              {coverImage ? (
-                <Image
-                  source={{ uri: coverImage as string }}
-                  style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  }}
-                  style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                  resizeMode="cover"
-                />
-              )}
-              <MaterialCommunityIcons
-                className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
-                name="camera-plus-outline"
-                size={30}
-                color="white"
+            {coverImage ? (
+              <Image
+                source={{ uri: coverImage as string }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                resizeMode="cover"
               />
-            </TouchableOpacity>
-            {/* profile pic */}
-            <TouchableOpacity
-              onPress={() => togglePicModal("profilePic")}
-              activeOpacity={0.9}
-              className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full  border-2 border-black"
-            >
-              {profileImage ? (
-                <Image
-                  source={{ uri: profileImage as string }}
-                  className="w-full h-full opacity-50 rounded-full bg-cover"
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  }}
-                  className="w-full h-full opacity-50 rounded-full bg-cover"
-                />
-              )}
-              <MaterialCommunityIcons
-                className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
-                name="camera-plus-outline"
-                size={30}
-                color="white"
+            ) : (
+              <Image
+                source={{
+                  uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }}
+                style={{ width: "100%", height: "100%", opacity: 0.5 }}
+                resizeMode="cover"
               />
-            </TouchableOpacity>
-          </View>
+            )}
+            <MaterialCommunityIcons
+              className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
+              name="camera-plus-outline"
+              size={30}
+              color="white"
+            />
+          </TouchableOpacity>
+          {/* profile pic */}
+          <TouchableOpacity
+            onPress={() => togglePicModal("profilePic")}
+            activeOpacity={0.9}
+            className="absolute bg-black w-[132px] h-[132px] top-[50%] right-[5%] rounded-full  border-2 border-black"
+          >
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage as string }}
+                className="w-full h-full opacity-50 rounded-full bg-cover"
+              />
+            ) : (
+              <Image
+                source={{
+                  uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }}
+                className="w-full h-full opacity-50 rounded-full bg-cover"
+              />
+            )}
+            <MaterialCommunityIcons
+              className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
+              name="camera-plus-outline"
+              size={30}
+              color="white"
+            />
+          </TouchableOpacity>
+        </View>
 
-          {/* Form Part */}
-          {/* first name */}
-          <View className="flex-row items-center justify-between px-6 h-[50px] border-b border-[#3030309a]">
+        {/* Form Part */}
+        {/* first name */}
+        <View className="flex-row items-center justify-between px-6 h-[50px] border-b border-[#3030309a]">
+          <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
+            {user?.type === "User" ? "First Name*" : "Page Name*"}
+          </TextScallingFalse>
+          <TextInput
+            placeholder="enter your first name"
+            placeholderTextColor={"grey"}
+            className="text-2xl font-light h-full flex-grow text-white pl-0"
+            onChangeText={(text) => {
+              setFormData({ ...formData, firstName: text });
+              finalUploadData.set("firstName", text);
+            }}
+            value={formData.firstName}
+          />
+        </View>
+        {/* last name */}
+        {user?.type === "User" && (
+          <View className="flex-row items-center justify-between px-6 h-14 border-b border-[#3030309a]">
             <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
-              {user?.type === "User" ? "First Name*" : "Page Name*"}
+              Last Name*
             </TextScallingFalse>
             <TextInput
               placeholder="enter your first name"
               placeholderTextColor={"grey"}
               className="text-2xl font-light h-full flex-grow text-white pl-0"
               onChangeText={(text) => {
-                setFormData({ ...formData, firstName: text });
-                finalUploadData.set("firstName", text);
+                setFormData({ ...formData, lastName: text });
+                finalUploadData.set("lastName", text);
               }}
-              value={formData.firstName}
+              value={formData.lastName}
             />
           </View>
-          {/* last name */}
-          {user?.type === "User" && (
-            <View className="flex-row items-center justify-between px-6 h-14 border-b border-[#3030309a]">
-              <TextScallingFalse className="text-white text-4xl font-medium w-1/3">
-                Last Name*
-              </TextScallingFalse>
-              <TextInput
-                placeholder="enter your first name"
-                placeholderTextColor={"grey"}
-                className="text-2xl font-light h-full flex-grow text-white pl-0"
-                onChangeText={(text) => {
-                  setFormData({ ...formData, lastName: text });
-                  finalUploadData.set("lastName", text);
-                }}
-                value={formData.lastName}
-              />
-            </View>
-          )}
-          {/* username, dob, location, height, weight */}
-          {formConfig.map(
-            ({ type, label, icon, placeholder }, index: Number) => (
-              <FormField
-                key={type}
-                type={type}
-                label={label}
-                value={formData[type as keyof UserData] || ""}
-                isDate={type === "dateOfBirth" && true}
-                placeholder={placeholder || "not given"}
-                onPress={() => {
-                  if (type === "favouriteSports") {
-                    router.push("/edit-profile/SelectSports");
-                  } else {
-                    openModal(type as PicType);
-                  }
-                }}
-                icon={icon}
-                isLast={index === formConfig.length - 1}
-              />
-            )
-          )}
+        )}
+        {/* username, dob, location, height, weight */}
+        {formConfig.map(({ type, label, icon, placeholder }, index: Number) => (
+          <FormField
+            key={type}
+            type={type}
+            label={label}
+            value={formData[type as keyof UserData] || ""}
+            isDate={type === "dateOfBirth" && true}
+            placeholder={placeholder || "not given"}
+            onPress={() => {
+              if (type === "favouriteSports") {
+                router.push("/edit-profile/SelectSports");
+              } else {
+                openModal(type as PicType);
+              }
+            }}
+            icon={icon}
+            isLast={index === formConfig.length - 1}
+          />
+        ))}
 
-          {/* Alert Modal */}
-          {isAlertModalSet && (
-            <AlertModal
-              isVisible={isAlertModalSet}
-              alertConfig={{
-                title: "Discard changes?",
-                message: "If you go back now, you will lose your changes.",
-                confirmAction: () => router.back(),
-                discardAction: () => setAlertModal(false),
-                confirmMessage: "Discard",
-                cancelMessage: "Continue",
-                discardButtonColor: {
-                  bg: "transparent",
-                  text: "#FF0000",
-                },
-                cancelButtonColor: {
-                  bg: "transparent",
-                  text: "#808080",
-                },
-              }}
-            />
-          )}
+        {/* Alert Modal */}
+        {isAlertModalSet && (
+          <AlertModal
+            isVisible={isAlertModalSet}
+            alertConfig={{
+              title: "Discard changes?",
+              message: "If you go back now, you will lose your changes.",
+              confirmAction: () => router.back(),
+              discardAction: () => setAlertModal(false),
+              confirmMessage: "Discard",
+              cancelMessage: "Continue",
+              discardButtonColor: {
+                bg: "transparent",
+                text: "#FF0000",
+              },
+              cancelButtonColor: {
+                bg: "transparent",
+                text: "#808080",
+              },
+            }}
+          />
+        )}
 
-          {/* Profile pic, cover pic modal */}
-          <Modal
-            visible={picModalVisible.coverPic}
-            onRequestClose={() => togglePicModal("coverPic")}
-            transparent={true}
-            animationType="slide"
-          >
-            <TouchableOpacity
-              className="flex-1 justify-end items-center bg-black/40"
-              activeOpacity={1}
-              onPress={() => togglePicModal("coverPic")}
-            >
-              <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto">
-                <View className="justify-center items-center p-5 gap-1">
-                  <TextScallingFalse
-                    style={{ color: "white", fontSize: 13, fontWeight: "500" }}
-                  >
-                    Add your Cover Picture
-                  </TextScallingFalse>
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: "white",
-                      width: "28%",
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    width: "100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 20,
-                    marginBottom: "3%",
-                  }}
-                >
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={{
-                      flexDirection: "row",
-                      gap: "3%",
-                      paddingHorizontal: 35,
-                    }}
-                    onPress={() => pickImage("cover")}
-                  >
-                    <View className="w-[20%] justify-center items-center border border-gray-500 rounded-[15px]">
-                      <UploadImg />
-                    </View>
-                    <View>
-                      <TextScallingFalse
-                        style={{
-                          color: "white",
-                          fontSize: 16,
-                          fontWeight: "semibold",
-                        }}
-                      >
-                        Upload your Cover Picture
-                      </TextScallingFalse>
-                      <TextScallingFalse
-                        style={{
-                          color: "white",
-                          fontSize: 13,
-                          fontWeight: "300",
-                        }}
-                      >
-                        Add a cover photo that represents your sports journey,
-                        passion, or team spirit. Make your profile stand out!
-                      </TextScallingFalse>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </Modal>
-          <Modal
-            visible={picModalVisible.profilePic}
-            onRequestClose={() => togglePicModal("profilePic")}
-            transparent={true}
-            animationType="slide"
-          >
-            <TouchableOpacity
-              className="flex-1 justify-end items-center bg-black/40"
-              activeOpacity={1}
-              onPress={() => togglePicModal("profilePic")}
-            >
-              <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto">
-                <View className="justify-center items-center p-5 gap-1">
-                  <TextScallingFalse
-                    style={{ color: "white", fontSize: 13, fontWeight: "500" }}
-                  >
-                    Add your Profile Picture
-                  </TextScallingFalse>
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: "white",
-                      width: "28%",
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    width: "100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 20,
-                    marginBottom: "3%",
-                  }}
-                >
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={{
-                      flexDirection: "row",
-                      gap: "3%",
-                      paddingHorizontal: 35,
-                    }}
-                    onPress={() => pickImage("profile")}
-                  >
-                    <View className="w-[20%] justify-center items-center border border-gray-500 rounded-[15px]">
-                      <UploadImg />
-                    </View>
-                    <View>
-                      <TextScallingFalse
-                        style={{
-                          color: "white",
-                          fontSize: 16,
-                          fontWeight: "semibold",
-                        }}
-                      >
-                        Upload your Profile Picture
-                      </TextScallingFalse>
-                      <TextScallingFalse
-                        style={{
-                          color: "white",
-                          fontSize: 13,
-                          fontWeight: "300",
-                        }}
-                      >
-                        Your profile picture is your identity in the sports
-                        community. Choose an image that represents you best!
-                      </TextScallingFalse>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </Modal>
-        </ScrollView>
-
-        {/* Edit Modal */}
+        {/* Profile pic, cover pic modal */}
         <Modal
-          visible={isModalVisible}
+          visible={picModalVisible.coverPic}
+          onRequestClose={() => togglePicModal("coverPic")}
+          transparent={true}
           animationType="slide"
-          transparent
-          onRequestClose={closeModal}
         >
-          <View className="flex-1">
-            <SafeAreaView className="bg-black h-full">
-              {/* Modal Header */}
-              <View
-                className="flex-row justify-between items-center p-4"
-                style={{ borderBottomColor: "#252525", borderWidth: 0.7 }}
-              >
-                <View className="flex-row items-center">
-                  <TouchableOpacity
-                    className="w-[50px] h-[40px] justify-center"
-                    onPress={closeModal}
-                  >
-                    <AntDesign name="arrowleft" size={28} color="white" />
-                  </TouchableOpacity>
-                  <TextScallingFalse className="text-white text-5xl font-medium">
-                    {label}
-                  </TextScallingFalse>
-                </View>
-                <TouchableOpacity
-                  onPress={() => handleDone(picType, inputValue)}
-                  disabled={!hasChanges}
-                  className="w-[60px] justify-end items-end"
+          <TouchableOpacity
+            className="flex-1 justify-end items-center bg-black/40"
+            activeOpacity={1}
+            onPress={() => togglePicModal("coverPic")}
+          >
+            <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto">
+              <View className="justify-center items-center p-5 gap-1">
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 13, fontWeight: "500" }}
                 >
-                  <MaterialIcons
-                    name="done"
-                    size={28}
-                    color={hasChanges ? "#12956B" : ""}
-                  />
-                </TouchableOpacity>
+                  Add your Cover Picture
+                </TextScallingFalse>
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: "white",
+                    width: "28%",
+                  }}
+                />
               </View>
-
-              {/* Modal Content */}
-              <View className="p-5">
-                {["height", "weight"].includes(picType) ? (
-                  <>
-                    {picType === "height" && (
-                      <>
-                        <View className="flex-row items-center justify-between w-full mb-4">
-                          <TextScallingFalse className="text-white text-3xl font-light basis-[50%]">
-                            {unit1 || "In Feet & Inches [approx.]-"}
-                          </TextScallingFalse>
-                          <View className="flex-row basis-[45%] items-center">
-                            <View className="relative items-center mr-1">
-                              <TextInput
-                                value={heightFeet}
-                                onChangeText={handleFeetChange}
-                                keyboardType="numeric"
-                                maxLength={1}
-                                className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-[54px] h-9 text-center"
-                                style={{ paddingRight: 28 }}
-                              />
-                              <TextScallingFalse
-                                style={{ top: 6 }}
-                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
-                              >
-                                ft
-                              </TextScallingFalse>
-                            </View>
-                            <View className="relative items-center mr-1">
-                              <TextInput
-                                value={heightInches}
-                                onChangeText={handleInchesChange}
-                                keyboardType="numeric"
-                                maxLength={2}
-                                className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-[54px] h-9 text-center"
-                                style={{ paddingRight: 28 }}
-                              />
-                              <TextScallingFalse
-                                style={{ top: 6 }}
-                                className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
-                              >
-                                in
-                              </TextScallingFalse>
-                            </View>
-                            <CustomButton
-                              field={"feetInches"}
-                              selectedField={selectedField || ""}
-                              toggleSelectedField={() =>
-                                toggleSelectedField("feetInches")
-                              }
-                              renderFieldValue={() =>
-                                `${heightFeet || 0} ft ${heightInches || 0} in`
-                              }
-                            />
-                          </View>
-                        </View>
-                        <MeasurementInput
-                          unit={unit2 || ""}
-                          value={heightInCentimeters}
-                          onChange={handleCentimetersChange}
-                          field="centimeters"
-                          selectedField={selectedField || ""}
-                          toggleField={() => toggleSelectedField("centimeters")}
-                          renderFieldValue={() =>
-                            renderFieldValue("centimeters")
-                          }
-                        />
-                        <MeasurementInput
-                          unit={unit3 || ""}
-                          value={heightInMeters}
-                          onChange={handleMetersChange}
-                          field="meters"
-                          selectedField={selectedField || ""}
-                          toggleField={() => toggleSelectedField("meters")}
-                          renderFieldValue={() => renderFieldValue("meters")}
-                        />
-                      </>
-                    )}
-                    {picType === "weight" && (
-                      <>
-                        <MeasurementInput
-                          unit={unit1 || ""}
-                          value={weightInKg}
-                          onChange={handleKgChange}
-                          field="kilograms"
-                          selectedField={selectedField || ""}
-                          toggleField={() => toggleSelectedField("kilograms")}
-                          renderFieldValue={() => renderFieldValue("kilograms")}
-                        />
-                        <MeasurementInput
-                          unit={unit3 || ""}
-                          value={weightInLbs}
-                          onChange={handleLbsChange}
-                          field="pounds"
-                          selectedField={selectedField || ""}
-                          toggleField={() => toggleSelectedField("pounds")}
-                          renderFieldValue={() => renderFieldValue("pounds")}
-                        />
-                      </>
-                    )}
-                  </>
-                ) : picType === "dateOfBirth" ? (
-                  <>
-                    <TextScallingFalse className="text-gray-500 text-xl mb-5">
-                      {label}
-                    </TextScallingFalse>
-                    <View
+              <View
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 20,
+                  marginBottom: "3%",
+                }}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: "row",
+                    gap: "3%",
+                    paddingHorizontal: 35,
+                  }}
+                  onPress={() => pickImage("cover")}
+                >
+                  <View className="w-[20%] justify-center items-center border border-gray-500 rounded-[15px]">
+                    <UploadImg />
+                  </View>
+                  <View>
+                    <TextScallingFalse
                       style={{
-                        flexDirection: "row",
-                        borderBottomWidth: 1,
-                        height: 31,
-                        borderColor: "white",
+                        color: "white",
+                        fontSize: 16,
+                        fontWeight: "semibold",
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={() => setIsDatePickerVisible(true)}
-                        activeOpacity={0.7}
-                        style={{ width: "90%", justifyContent: "center" }}
-                      >
-                        <TextScallingFalse className="text-white text-4xl flex-1 pl-0 pb-0">
-                          {dateFormatter(new Date(inputValue), "date")}
-                        </TextScallingFalse>
-                      </TouchableOpacity>
-                      {picType === "dateOfBirth" && (
-                        <TouchableOpacity
-                          onPress={() => setIsDatePickerVisible(true)}
-                          className="w-[10%] justify-center items-center"
-                          activeOpacity={0.5}
-                        >
-                          <AntDesign name="calendar" size={22} color="white" />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    <TextScallingFalse className="text-gray-500 text-base mt-4">
-                      {description}
+                      Upload your Cover Picture
                     </TextScallingFalse>
-                    {/* Date picker component */}
-                    {isDatePickerVisible && (
-                      <View
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          paddingTop: 30,
-                          alignItems: "center",
-                        }}
-                      >
-                        <DateTimePicker
-                          value={inputValue ? new Date(inputValue) : maxDOB}
-                          mode="date"
-                          display={
-                            Platform.OS === "ios" ? "spinner" : "default"
-                          }
-                          maximumDate={maxDOB} // restrict to users at least 13
-                          onChange={(event, selectedDate) => {
-                            if (selectedDate) {
-                              const formattedDate = selectedDate
-                                .toISOString()
-                                .split("T")[0];
-                              setInputValue(formattedDate);
-                            }
-                            if (Platform.OS === "android") {
-                              setIsDatePickerVisible(false);
-                            }
-                          }}
-                        />
-                      </View>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <TextScallingFalse className="text-gray-500 text-xl">
-                      {label}
-                    </TextScallingFalse>
-                    <View
-                      className={`flex-row border-b border-white ${
-                        picType === "headline" ? "" : "h-[50px]"
-                      }`}
+                    <TextScallingFalse
+                      style={{
+                        color: "white",
+                        fontSize: 13,
+                        fontWeight: "300",
+                      }}
                     >
-                      <TextInput
-                        value={inputValue}
-                        onChangeText={(text) => {
-                          let newText = text;
+                      Add a cover photo that represents your sports journey,
+                      passion, or team spirit. Make your profile stand out!
+                    </TextScallingFalse>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+        <Modal
+          visible={picModalVisible.profilePic}
+          onRequestClose={() => togglePicModal("profilePic")}
+          transparent={true}
+          animationType="slide"
+        >
+          <TouchableOpacity
+            className="flex-1 justify-end items-center bg-black/40"
+            activeOpacity={1}
+            onPress={() => togglePicModal("profilePic")}
+          >
+            <View className="w-full bg-[#1D1D1D] rounded-tl-2xl rounded-tr-2xl mx-auto">
+              <View className="justify-center items-center p-5 gap-1">
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 13, fontWeight: "500" }}
+                >
+                  Add your Profile Picture
+                </TextScallingFalse>
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: "white",
+                    width: "28%",
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 20,
+                  marginBottom: "3%",
+                }}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: "row",
+                    gap: "3%",
+                    paddingHorizontal: 35,
+                  }}
+                  onPress={() => pickImage("profile")}
+                >
+                  <View className="w-[20%] justify-center items-center border border-gray-500 rounded-[15px]">
+                    <UploadImg />
+                  </View>
+                  <View>
+                    <TextScallingFalse
+                      style={{
+                        color: "white",
+                        fontSize: 16,
+                        fontWeight: "semibold",
+                      }}
+                    >
+                      Upload your Profile Picture
+                    </TextScallingFalse>
+                    <TextScallingFalse
+                      style={{
+                        color: "white",
+                        fontSize: 13,
+                        fontWeight: "300",
+                      }}
+                    >
+                      Your profile picture is your identity in the sports
+                      community. Choose an image that represents you best!
+                    </TextScallingFalse>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </ScrollView>
 
-                          if (picType === "username") {
-                            // Remove spaces and force lowercase
-                            newText = text.replace(/\s/g, "").toLowerCase();
+      {/* Edit Modal */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={closeModal}
+      >
+        <View className="flex-1">
+          <PageThemeView>
+            {/* Modal Header */}
+            <View
+              className="flex-row justify-between items-center p-4"
+              style={{ borderBottomColor: "#252525", borderWidth: 0.7 }}
+            >
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  className="w-[50px] h-[40px] justify-center"
+                  onPress={closeModal}
+                >
+                  <BackIcon />
+                </TouchableOpacity>
+                <TextScallingFalse className="text-white text-5xl font-medium">
+                  {label}
+                </TextScallingFalse>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleDone(picType, inputValue)}
+                disabled={!hasChanges}
+                className="w-[60px] justify-end items-end"
+              >
+                <MaterialIcons
+                  name="done"
+                  size={28}
+                  color={hasChanges ? "#12956B" : ""}
+                />
+              </TouchableOpacity>
+            </View>
 
-                            // Enforce max length
-                            if (newText.length > 20) {
-                              return;
+            {/* Modal Content */}
+            <View className="p-5">
+              {["height", "weight"].includes(picType) ? (
+                <>
+                  {picType === "height" && (
+                    <>
+                      <View className="flex-row items-center justify-between w-full mb-4">
+                        <TextScallingFalse className="text-white text-3xl font-light basis-[50%]">
+                          {unit1 || "In Feet & Inches [approx.]-"}
+                        </TextScallingFalse>
+                        <View className="flex-row basis-[45%] items-center">
+                          <View className="relative items-center mr-1">
+                            <TextInput
+                              value={heightFeet}
+                              onChangeText={handleFeetChange}
+                              keyboardType="numeric"
+                              maxLength={1}
+                              className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-[54px] h-9 text-center"
+                              style={{ paddingRight: 28 }}
+                            />
+                            <TextScallingFalse
+                              style={{ top: 6 }}
+                              className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
+                            >
+                              ft
+                            </TextScallingFalse>
+                          </View>
+                          <View className="relative items-center mr-1">
+                            <TextInput
+                              value={heightInches}
+                              onChangeText={handleInchesChange}
+                              keyboardType="numeric"
+                              maxLength={2}
+                              className="bg-[#1E1E1E] text-white text-2xl font-normal rounded px-2 py-2 w-[54px] h-9 text-center"
+                              style={{ paddingRight: 28 }}
+                            />
+                            <TextScallingFalse
+                              style={{ top: 6 }}
+                              className="absolute right-2 text-white text-2xl font-semibold  pointer-events-none"
+                            >
+                              in
+                            </TextScallingFalse>
+                          </View>
+                          <CustomButton
+                            field={"feetInches"}
+                            selectedField={selectedField || ""}
+                            toggleSelectedField={() =>
+                              toggleSelectedField("feetInches")
                             }
-
-                            setInputValue(newText);
-                            return;
-                          }
-
-                          if (picType === "headline" && text.length > 60) {
-                            // Prevent exceeding the limit
-                            return;
-                          }
-                          setInputValue(text);
-                          if (picType === "address") {
-                            setAddressPickup(text);
-                            getPlacePredictions(text);
-                            setShowSuggestions(true);
-                          }
-                        }}
-                        placeholder={placeholder}
-                        placeholderTextColor="gray"
-                        className="text-white text-4xl flex-1 pl-0 pb-0 w-80%"
-                        style={{ lineHeight: 25 }}
-                        maxLength={picType === "headline" ? 60 : undefined} // Apply maxLength conditionally
-                        multiline={picType === "headline"}
-                        numberOfLines={picType === "headline" ? 2 : 1}
-                        autoCapitalize="none"
-                      />
-                    </View>
-                    {/* Character Counter (Only shown if picType is "headline") */}
-                    {picType === "headline" && (
-                      <TextScallingFalse className="text-gray-500 text-sm mt-1">
-                        {inputValue.length} / 60
-                      </TextScallingFalse>
-                    )}
-
-                    {/* Character Counter (Only shown if picType is "username") */}
-                    {picType === "username" && (
-                      <TextScallingFalse className="text-gray-500 text-sm mt-1">
-                        {inputValue.length} / 20
-                      </TextScallingFalse>
-                    )}
-                    {picType === "address" &&
-                      showSuggestions &&
-                      predictions.length > 0 && (
-                        <View style={{ maxHeight: 200 }}>
-                          <FlatList
-                            data={predictions}
-                            keyExtractor={(item) => item.place_id}
-                            renderItem={({ item }) => (
-                              <TouchableOpacity
-                                onPress={() => handlePlaceSelect(item)}
-                              >
-                                <TextScallingFalse className="text-white text-3xl font-light padding-2">
-                                  {item.description}
-                                </TextScallingFalse>
-                              </TouchableOpacity>
-                            )}
+                            renderFieldValue={() =>
+                              `${heightFeet || 0} ft ${heightInches || 0} in`
+                            }
                           />
                         </View>
-                      )}
-                  </>
-                )}
-
-                {picType === "dateOfBirth" ? null : (
+                      </View>
+                      <MeasurementInput
+                        unit={unit2 || ""}
+                        value={heightInCentimeters}
+                        onChange={handleCentimetersChange}
+                        field="centimeters"
+                        selectedField={selectedField || ""}
+                        toggleField={() => toggleSelectedField("centimeters")}
+                        renderFieldValue={() => renderFieldValue("centimeters")}
+                      />
+                      <MeasurementInput
+                        unit={unit3 || ""}
+                        value={heightInMeters}
+                        onChange={handleMetersChange}
+                        field="meters"
+                        selectedField={selectedField || ""}
+                        toggleField={() => toggleSelectedField("meters")}
+                        renderFieldValue={() => renderFieldValue("meters")}
+                      />
+                    </>
+                  )}
+                  {picType === "weight" && (
+                    <>
+                      <MeasurementInput
+                        unit={unit1 || ""}
+                        value={weightInKg}
+                        onChange={handleKgChange}
+                        field="kilograms"
+                        selectedField={selectedField || ""}
+                        toggleField={() => toggleSelectedField("kilograms")}
+                        renderFieldValue={() => renderFieldValue("kilograms")}
+                      />
+                      <MeasurementInput
+                        unit={unit3 || ""}
+                        value={weightInLbs}
+                        onChange={handleLbsChange}
+                        field="pounds"
+                        selectedField={selectedField || ""}
+                        toggleField={() => toggleSelectedField("pounds")}
+                        renderFieldValue={() => renderFieldValue("pounds")}
+                      />
+                    </>
+                  )}
+                </>
+              ) : picType === "dateOfBirth" ? (
+                <>
+                  <TextScallingFalse className="text-gray-500 text-xl mb-5">
+                    {label}
+                  </TextScallingFalse>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      borderBottomWidth: 1,
+                      height: 31,
+                      borderColor: "white",
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => setIsDatePickerVisible(true)}
+                      activeOpacity={0.7}
+                      style={{ width: "90%", justifyContent: "center" }}
+                    >
+                      <TextScallingFalse className="text-white text-4xl flex-1 pl-0 pb-0">
+                        {dateFormatter(new Date(inputValue), "date")}
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                    {picType === "dateOfBirth" && (
+                      <TouchableOpacity
+                        onPress={() => setIsDatePickerVisible(true)}
+                        className="w-[10%] justify-center items-center"
+                        activeOpacity={0.5}
+                      >
+                        <AntDesign name="calendar" size={22} color="white" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <TextScallingFalse className="text-gray-500 text-base mt-4">
                     {description}
                   </TextScallingFalse>
-                )}
-                {picType === "websiteLink" && (
-                  <TouchableOpacity className="self-center">
-                    <TextScallingFalse className="text-[#D44044] text-xl mt-4">
-                      Remove Link
-                    </TextScallingFalse>
-                  </TouchableOpacity>
-                )}
-                {picType === "address" ? (
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    className="flex-row w-1/2 justify-center items-center h-10 gap-[5%] mt-[5%] border-[0.3px] border-white self-center rounded-xl"
-                    onPress={getAddress}
+                  {/* Date picker component */}
+                  {isDatePickerVisible && (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        paddingTop: 30,
+                        alignItems: "center",
+                      }}
+                    >
+                      <DateTimePicker
+                        value={inputValue ? new Date(inputValue) : maxDOB}
+                        mode="date"
+                        display={Platform.OS === "ios" ? "spinner" : "default"}
+                        maximumDate={maxDOB} // restrict to users at least 13
+                        onChange={(event, selectedDate) => {
+                          if (selectedDate) {
+                            const formattedDate = selectedDate
+                              .toISOString()
+                              .split("T")[0];
+                            setInputValue(formattedDate);
+                          }
+                          if (Platform.OS === "android") {
+                            setIsDatePickerVisible(false);
+                          }
+                        }}
+                      />
+                    </View>
+                  )}
+                </>
+              ) : (
+                <>
+                  <TextScallingFalse className="text-gray-500 text-xl">
+                    {label}
+                  </TextScallingFalse>
+                  <View
+                    className={`flex-row border-b border-white ${
+                      picType === "headline" ? "" : "h-[50px]"
+                    }`}
                   >
-                    {loading ? (
+                    <TextInput
+                      value={inputValue}
+                      onChangeText={(text) => {
+                        let newText = text;
+
+                        if (picType === "username") {
+                          // Remove spaces and force lowercase
+                          newText = text.replace(/\s/g, "").toLowerCase();
+
+                          // Enforce max length
+                          if (newText.length > 20) {
+                            return;
+                          }
+
+                          setInputValue(newText);
+                          return;
+                        }
+
+                        if (picType === "headline" && text.length > 60) {
+                          // Prevent exceeding the limit
+                          return;
+                        }
+                        setInputValue(text);
+                        if (picType === "address") {
+                          setAddressPickup(text);
+                          getPlacePredictions(text);
+                          setShowSuggestions(true);
+                        }
+                      }}
+                      placeholder={placeholder}
+                      placeholderTextColor="gray"
+                      className="text-white text-4xl flex-1 pl-0 pb-0 w-80%"
+                      style={{ lineHeight: 25 }}
+                      maxLength={picType === "headline" ? 60 : undefined} // Apply maxLength conditionally
+                      multiline={picType === "headline"}
+                      numberOfLines={picType === "headline" ? 2 : 1}
+                      autoCapitalize="none"
+                    />
+                  </View>
+                  {/* Character Counter (Only shown if picType is "headline") */}
+                  {picType === "headline" && (
+                    <TextScallingFalse className="text-gray-500 text-sm mt-1">
+                      {inputValue.length} / 60
+                    </TextScallingFalse>
+                  )}
+
+                  {/* Character Counter (Only shown if picType is "username") */}
+                  {picType === "username" && (
+                    <TextScallingFalse className="text-gray-500 text-sm mt-1">
+                      {inputValue.length} / 20
+                    </TextScallingFalse>
+                  )}
+                  {picType === "address" &&
+                    showSuggestions &&
+                    predictions.length > 0 && (
+                      <View style={{ maxHeight: 200 }}>
+                        <FlatList
+                          data={predictions}
+                          keyExtractor={(item) => item.place_id}
+                          renderItem={({ item }) => (
+                            <TouchableOpacity
+                              onPress={() => handlePlaceSelect(item)}
+                            >
+                              <TextScallingFalse className="text-white text-3xl font-light padding-2">
+                                {item.description}
+                              </TextScallingFalse>
+                            </TouchableOpacity>
+                          )}
+                        />
+                      </View>
+                    )}
+                </>
+              )}
+
+              {picType === "dateOfBirth" ? null : (
+                <TextScallingFalse className="text-gray-500 text-base mt-4">
+                  {description}
+                </TextScallingFalse>
+              )}
+              {picType === "websiteLink" && (
+                <TouchableOpacity className="self-center">
+                  <TextScallingFalse className="text-[#D44044] text-xl mt-4">
+                    Remove Link
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              )}
+              {picType === "address" ? (
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  className="flex-row w-1/2 justify-center items-center h-10 gap-[5%] mt-[5%] border-[0.3px] border-white self-center rounded-xl"
+                  onPress={getAddress}
+                >
+                  {loading ? (
+                    <TextScallingFalse
+                      style={{
+                        color: "grey",
+                        fontSize: 11,
+                        fontWeight: "400",
+                      }}
+                    >
+                      Fetching current location...
+                    </TextScallingFalse>
+                  ) : (
+                    <>
                       <TextScallingFalse
                         style={{
                           color: "grey",
@@ -1698,36 +1700,24 @@ const EditProfile = () => {
                           fontWeight: "400",
                         }}
                       >
-                        Fetching current location...
+                        Use my current location
                       </TextScallingFalse>
-                    ) : (
-                      <>
-                        <TextScallingFalse
-                          style={{
-                            color: "grey",
-                            fontSize: 11,
-                            fontWeight: "400",
-                          }}
-                        >
-                          Use my current location
-                        </TextScallingFalse>
-                        <FontAwesome5
-                          name="map-marker-alt"
-                          size={13}
-                          color="grey"
-                        />
-                      </>
-                    )}
-                  </TouchableOpacity>
-                ) : (
-                  ""
-                )}
-              </View>
-            </SafeAreaView>
-          </View>
-        </Modal>
-      </PageThemeView>
-    </SafeAreaView>
+                      <FontAwesome5
+                        name="map-marker-alt"
+                        size={13}
+                        color="grey"
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              ) : (
+                ""
+              )}
+            </View>
+          </PageThemeView>
+        </View>
+      </Modal>
+    </PageThemeView>
   );
 };
 

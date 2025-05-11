@@ -37,7 +37,7 @@ export default function ActivityTabLayout() {
   };
 
   return (
-    <View className="mr-2 bg-black">
+    <View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

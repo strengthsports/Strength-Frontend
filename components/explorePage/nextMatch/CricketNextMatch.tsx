@@ -28,7 +28,7 @@ const CricketNextMatch: React.FC<NextCricketMatchProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View className="min-h-56 w-full mr-5 mb-5 px-3">
+          <View className="min-h-56 w-full mr-5 mb-5 px-4">
             {isFetching ? (
               <View className="h-full flex justify-center self-center items-center">
                 <ActivityIndicator size="large" color={Colors.themeColor} />
@@ -36,8 +36,9 @@ const CricketNextMatch: React.FC<NextCricketMatchProps> = ({
             ) : (
               <View className="border border-[#454545] rounded-xl">
                 <CricketNextMatchCard
-                  series={item.series}
-                  groupedMatches={item.matches}
+                  seriesId={item.seriesId}
+                  seriesName={item.seriesName}
+                  matches={item.matches}
                 />
               </View>
             )}

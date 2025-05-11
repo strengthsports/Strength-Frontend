@@ -148,7 +148,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 left: 0,
                 right: 0,
                 height: 112, // 28 * 4 (since Tailwind unit is 4px by default)
-              }}
+              }}
             />
             <View className="absolute bottom-9 px-4">
               <TextScallingFalse

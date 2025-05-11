@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, Text } from "react-native";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { RelativePathString, useRouter } from "expo-router";
 import { AntDesign, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { Platform } from "react-native";
@@ -7,6 +7,9 @@ import TextScallingFalse from "../CentralText";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 import { useShare } from "~/hooks/useShare";
 import { Post } from "~/types/post";
+import { setCurrentPost } from "~/reduxStore/slices/post/postSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "~/reduxStore";
 
 const interactionBtn = `flex flex-row justify-between items-center gap-2 bg-black px-4 py-[6px] rounded-3xl`;
 const shadowStyle = Platform.select({
@@ -39,6 +42,7 @@ const InteractionBar = ({
   isFeedPage?: boolean;
 }) => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const { sharePost } = useShare();
   const {
     caption,
@@ -49,6 +53,8 @@ const InteractionBar = ({
     _id: postId,
   } = post;
 
+  const [localIsLiked, setLocalIsLiked] = useState(isLiked);
+  const [localLikesCount, setLocalLikesCount] = useState(likesCount);
   const serializedData = encodeURIComponent(
     JSON.stringify({ id: post._id, type: "Post" })
   );
@@ -62,6 +68,20 @@ const InteractionBar = ({
       });
     }
   };
+
+  // const handleLike = () => {
+  //   //Optimistic local update + API call
+  //   const newIsLiked = !isLiked;
+  //   const newLikesCount = likesCount + (newIsLiked ? 1 : -1);
+
+  //   // Optimistic update
+  //   setLocalIsLiked(newIsLiked);
+  //   setLocalLikesCount(newLikesCount);
+
+  //   // console.log("Feed Page false like called");
+  //   onPressLike();
+  //   // }
+  // };
 
   return (
     <View
@@ -148,10 +168,12 @@ const InteractionBar = ({
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
           onPress={() => {
-            isFeedPage &&
+            if (isFeedPage) {
+              dispatch(setCurrentPost(post));
               router.push({
                 pathname: `/post-details/${postId}` as RelativePathString,
               });
+            }
           }}
         >
           <TextScallingFalse className="text-base text-white font-light">
@@ -190,11 +212,14 @@ const InteractionBar = ({
         <TouchableOpacity
           className="flex flex-row items-center gap-2 relative"
           onPress={() => {
-            !isFeedPage
-              ? router.push({
-                  pathname: `/post-details/${postId}` as RelativePathString,
-                })
-              : onPressComment();
+            if (!isFeedPage) {
+              dispatch(setCurrentPost(post));
+              router.push({
+                pathname: `/post-details/${postId}` as RelativePathString,
+              });
+            } else {
+              onPressComment();
+            }
           }}
         >
           <View className={interactionBtn} style={shadowStyle}>

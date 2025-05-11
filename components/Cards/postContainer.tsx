@@ -38,6 +38,7 @@ import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
 import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import UserInfo from "../ui/atom/UserInfo";
+import { RelativePathString } from "expo-router";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -483,7 +484,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 className="flex-1 relative overflow-hidden ml-2"
                 activeOpacity={0.95}
                 onSinglePress={() => {
-                  if (isFeedPage && item) {
+                  if (item) {
                     router.push({
                       pathname: `/post-view/${item._id}` as RelativePathString,
                     });
@@ -536,7 +537,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   aspectRatio={item.aspectRatio || [3, 2]}
                   images={imageUrls}
                   isFeedPage={true}
-                  postId={item._id}
+                  post={item}
                   setIndex={handleSetActiveIndex}
                   onDoubleTap={handleDoubleTap}
                 />

@@ -24,10 +24,11 @@ const Hashtag: React.FC<HashtagProps> = ({ data, setModalVisible }) => {
   return (
     <>
       {data.map((hashData) => (
-        <TouchableOpacity activeOpacity={0.7}
-          key={hashData._id} 
-          onPress={() => { 
-            router.push(`/(app)/(post)/hashtag/${hashData.hashtag}`);
+        <TouchableOpacity
+          activeOpacity={0.7}
+          key={hashData._id}
+          onPress={() => {
+            router.push(`/home/hashtag/${hashData.hashtag}/top`);
             setModalVisible(false);
           }}
         >
@@ -39,7 +40,10 @@ const Hashtag: React.FC<HashtagProps> = ({ data, setModalVisible }) => {
 
             {/* Hashtag and Posts Count */}
             <View className="flex-col justify-center">
-              <TextScallingFalse className="text-white text-4xl" style={{fontWeight:'500'}}>
+              <TextScallingFalse
+                className="text-white text-4xl"
+                style={{ fontWeight: "500" }}
+              >
                 #{hashData.hashtag}
               </TextScallingFalse>
               <TextScallingFalse className="text-[#6E6E6E] text-2xl">

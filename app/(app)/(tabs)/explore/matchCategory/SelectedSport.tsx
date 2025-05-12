@@ -5,6 +5,7 @@ import TextScallingFalse from "~/components/CentralText";
 import {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
+  useGetCricketNextMatchesBySeriesQuery,
   useGetCricketRecentMatchesQuery,
 } from "~/reduxStore/api/explore/cricketApi";
 import {
@@ -19,6 +20,7 @@ import {
 } from "~/reduxStore/api/explore/basketballApi";
 import CricketLiveMatch from "~/components/explorePage/liveMatch/CricketLiveMatch";
 import CricketNextMatch from "~/components/explorePage/nextMatch/CricketNextMatch";
+import CricketNextBySeriesMatch from "~/components/explorePage/nextMatch/CricketNextBySeriesMatch";
 import FootballLiveMatch from "~/components/explorePage/liveMatch/FootballLiveMatch";
 import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMatch";
 import BasketballRecentMatch from "~/components/explorePage/recentMatch/BasketballRecentMatch";
@@ -77,6 +79,14 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
   const { nextMatches: nextCricketMatches = [] } = cricketNextData || {};
 
   const {
+    data: cricketNextBySeriesData,
+    isFetching: isCricketNextBySeriesFetching,
+    refetch: refetchNextBySeriesCricket,
+  } = useGetCricketNextMatchesBySeriesQuery(9237);
+  const { seriesMatches: nextBySeriesCricketMatches = [] } =
+    cricketNextBySeriesData || {};
+
+  const {
     data: cricketRecentData,
     isFetching: isCricketRecentFetching,
     refetch: refetchRecentCricket,
@@ -99,6 +109,15 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       <CricketNextMatch
         nextMatches={nextCricketMatches}
         isFetching={isCricketNextFetching}
+      />
+    );
+  };
+
+  const renderCricketNextBySeriesMatches = () => {
+    return (
+      <CricketNextBySeriesMatch
+        nextMatches={nextBySeriesCricketMatches}
+        isFetching={isCricketNextBySeriesFetching}
       />
     );
   };
@@ -205,12 +224,16 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
 
   sections.push({ type: "dontMiss", content: renderDontMiss() });
 
-  if (sportsName === "Cricket")
+  if (sportsName === "Cricket") {
     sections.push({
       type: "CricketNextMatches",
       content: renderCricketNextMatches(),
     });
-  else if (sportsName === "Football")
+    sections.push({
+      type: "CricketNextBySeriesMatches",
+      content: renderCricketNextBySeriesMatches(),
+    });
+  } else if (sportsName === "Football")
     sections.push({
       type: "FootballNextMatches",
       content: renderFootballNextMatches(),
@@ -227,6 +250,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       await Promise.all([
         refetchLiveCricket(),
         refetchNextCricket(),
+        refetchNextBySeriesCricket(),
         // refetchRecentCricket(),
         refetchLiveFootball(),
         refetchNextFootball(),

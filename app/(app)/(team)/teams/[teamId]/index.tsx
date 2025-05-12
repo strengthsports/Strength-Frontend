@@ -281,27 +281,27 @@ const TeamPage: React.FC = () => {
   }, [isAdmin, teamData.membersCount, teamId, router, handleDeleteTeam]);
 
   return (
-    <ScrollView style={styles.container}
-    showsVerticalScrollIndicator={false}
-    refreshControl={
-      <RefreshControl
+    <View style={styles.container}
+   >
+      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId}>
+       
+
+        <ScrollView
+           showsVerticalScrollIndicator={false}
+           refreshControl={
+          <RefreshControl
         refreshing={refreshing}
         onRefresh={onRefresh}
         tintColor="#fff"
         colors={["#fff"]}
         progressViewOffset={40}
       />
-    }>
-      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId}>
-       
-
-        <ScrollView
-       
+    }
           ref={scrollViewRef}
           style={styles.squadContainer}
           contentContainerStyle={styles.scrollContent}
          
-          showsVerticalScrollIndicator={false}
+          // showsVerticalScrollIndicator={false}
         >
           {loading && !refreshing ? (
             <ActivityIndicator
@@ -337,7 +337,7 @@ const TeamPage: React.FC = () => {
         isAdmin={isAdmin}
         onInvitePress={handleInvitePress}
       />
-    </ScrollView>
+    </View>
   );
 };
 

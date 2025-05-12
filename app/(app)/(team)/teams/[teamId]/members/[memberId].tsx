@@ -19,6 +19,7 @@ import {
   fetchTeamDetails,
   changeUserPosition,
   changeUserRole,
+  removeTeamMember,
 } from "~/reduxStore/slices/team/teamSlice";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "~/configs/toastConfig";
@@ -586,6 +587,7 @@ const MemberDetails = () => {
     [team, parsedMember, memberPosition, executePositionChange]
   );
 
+
   const handleRemovePosition = useCallback(async () => {
     if (!team || !team._id) {
       showToastMessage("Missing team data", "error");
@@ -617,31 +619,44 @@ const MemberDetails = () => {
     }
   }, [team, parsedMember, dispatch]);
 
+
+
   // Handle removing member from team
-  const handleRemoveFromTeam = useCallback(() => {
-    showAlert(
-      "Remove Member",
-      "Are you sure you want to remove this member from the team?",
-      async () => {
-        setIsUpdating(true);
-        try {
-          // Implement the actual member removal logic here
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          showToastMessage("Member has been removed from the team");
-          router.back();
-        } catch (error) {
-          console.error("Failed to remove member:", error);
-          showToastMessage(
-            "Could not remove member. Please try again.",
-            "error"
-          );
-        } finally {
-          setIsUpdating(false);
-        }
-      },
-      "Remove"
-    );
-  }, [router]);
+const handleRemoveFromTeam = useCallback(() => {
+  if (!teamId || !parsedMember?._id) {
+    showToastMessage("Missing team or member data", "error");
+    return;
+  }
+
+  showAlert(
+    "Remove Member",
+    `Are you sure you want to remove ${parsedMember.firstName} ${parsedMember.lastName} from the team?`,
+    async () => {
+      setIsUpdating(true);
+      try {
+        await dispatch(
+          removeTeamMember({
+            teamId: teamId,
+            userId: parsedMember._id,
+          })
+        ).unwrap();
+
+        showToastMessage("Member has been removed from the team");
+        router.back();
+      } catch (error: any) {
+        console.error("Failed to remove member:", error);
+        showToastMessage(
+          error.message || "Could not remove member. Please try again.",
+          "error"
+        );
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    "Remove",
+    true
+  );
+}, [teamId, parsedMember, dispatch, router]);
 
   // Handle admin transfer
   const handleTransferAdmin = useCallback(() => {

@@ -50,6 +50,9 @@ export const cricketApi = createApi({
     getCricketNextMatches: builder.query({
       query: () => `/matches/v1/upcoming`,
       transformResponse: (response: any) => {
+        if (!response || !Array.isArray(response.typeMatches))
+          return { nextMatches: [] };
+
         const typeMatches = Array.isArray(response.typeMatches)
           ? response.typeMatches
           : [];
@@ -83,8 +86,42 @@ export const cricketApi = createApi({
         return { nextMatches: allMatches };
       },
     }),
+    getCricketNextMatchesBySeries: builder.query({
+      query: (seriesId) => `/series/v1/${seriesId}`,
+      transformResponse: (response: any) => {
+        const matchDetails = Array.isArray(response.matchDetails)
+          ? response.matchDetails
+          : [];
+
+        const allMatches: any[] = [];
+
+        let extractedSeriesId = "";
+        let extractedSeriesName = "";
+        // Extract matches of same series
+        matchDetails.forEach((matchDetail: any) => {
+          const matches = matchDetail?.matchDetailsMap?.match || [];
+
+          if (Array.isArray(matches)) {
+            if (!extractedSeriesId && matches[0]?.matchInfo) {
+              extractedSeriesId = matches[0].matchInfo.seriesId;
+              extractedSeriesName = matches[0].matchInfo.seriesName;
+            }
+            allMatches.push(...matches); // flatten and extract matches
+          }
+        });
+
+        const filteredMatches = allMatches.filter((match) =>
+          ["Upcoming", "Abandon"].includes(match?.matchInfo?.state)
+        );
+
+        console.log("Filtered matches", filteredMatches);
+        return {
+          seriesMatches: filteredMatches,
+        };
+      },
+    }),
     getCricketRecentMatches: builder.query({
-      query: () => `matches/v1/recent`,
+      query: () => `/matches/v1/recent`,
       transformResponse: (response: any) => {
         const typeMatches = Array.isArray(response.typeMatches)
           ? response.typeMatches
@@ -93,7 +130,7 @@ export const cricketApi = createApi({
         // Extract recent matches
         const allMatches: any[] = [];
 
-        // Extract live matches
+        // Extract recent matches
         typeMatches.forEach((typeMatch: any) => {
           const seriesMatches = typeMatch?.seriesMatches || [];
 
@@ -121,5 +158,6 @@ export const cricketApi = createApi({
 export const {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
+  useGetCricketNextMatchesBySeriesQuery,
   useGetCricketRecentMatchesQuery,
 } = cricketApi;

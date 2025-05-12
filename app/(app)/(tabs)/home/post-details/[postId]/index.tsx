@@ -5,10 +5,11 @@ import React, {
   useRef,
   useState,
   useMemo,
+  useLayoutEffect,
 } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import PostContainer from "~/components/Cards/postContainer";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -138,6 +139,7 @@ const ReplySection = memo(
 const PostDetailsPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
   const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
@@ -178,6 +180,20 @@ const PostDetailsPage = () => {
       </SafeAreaView>
     );
   }
+
+  useLayoutEffect(() => {
+    const tabParent = navigation.getParent();
+
+    tabParent?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
+
+    return () => {
+      tabParent?.setOptions({
+        tabBarStyle: undefined,
+      });
+    };
+  }, [navigation]);
 
   // Initial comments load
   const loadComments = useCallback(

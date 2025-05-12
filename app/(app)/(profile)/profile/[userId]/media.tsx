@@ -10,7 +10,7 @@ const Media = () => {
       : null;
   }, [params.userId]);
 
-  return <MediaPage userId={fetchedUserId.id} />;
+  return <MediaPage userId={fetchedUserId.id} pageType="Activity" />;
 };
 
 export default Media;

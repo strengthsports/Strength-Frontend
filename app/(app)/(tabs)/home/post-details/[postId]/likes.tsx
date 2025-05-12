@@ -5,22 +5,40 @@ import {
   Dimensions,
   ScrollView,
 } from "react-native";
-import React, { useState, useCallback, memo, useRef, useMemo } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import React, {
+  useState,
+  useCallback,
+  memo,
+  useRef,
+  useMemo,
+  useLayoutEffect,
+} from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import UserList from "~/components/ui/UserList";
 import TopBar from "~/components/TopBar";
 import PageThemeView from "~/components/PageThemeView";
 import { debounce } from "@/utils/debounce";
 
 const DEBOUNCE_DELAY = 1000;
-const { height } = Dimensions.get("window");
 
 const Likes = memo(() => {
   const params = useLocalSearchParams();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
+  useLayoutEffect(() => {
+    const tabParent = navigation.getParent();
 
-  console.log(params);
+    tabParent?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
+
+    return () => {
+      tabParent?.setOptions({
+        tabBarStyle: undefined,
+      });
+    };
+  }, [navigation]);
 
   const targetData = useMemo(() => {
     return params.postId

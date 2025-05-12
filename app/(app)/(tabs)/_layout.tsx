@@ -97,7 +97,7 @@ const tabs = [
     name: "home",
     title: "Home",
     icon: HomeIcon,
-    href: "/(app)/(tabs)/home",
+    href: "(app)/(tabs)/home", // ⬅️ Correct route to the drawer-wrapped stack
   },
   {
     name: "explore",
@@ -173,100 +173,98 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
-      <DrawerProvider>
-        <Tabs
-          screenOptions={{
-            tabBarActiveTintColor: "#12956B",
-            tabBarInactiveTintColor: "#CECECE",
-            headerShown: false,
-            tabBarStyle: Platform.select({
-              ios: {
-                position: "absolute",
-                height: 75,
-                paddingTop: 20,
-                borderTopLeftRadius: 10,
-                borderTopRightRadius: 10,
-                overflow: "hidden",
-                backgroundColor: "black",
-                borderColor: "black",
-                borderWidth: 0.5,
-              },
-              default: {
-                height: 55,
-                paddingBottom: 0,
-                borderTopLeftRadius: 10,
-                borderTopRightRadius: 10,
-                overflow: "hidden",
-                backgroundColor: "black",
-                borderWidth: 0.5,
-                borderColor: "black",
-                paddingTop: 5,
-              },
-            }),
-          }}
-        >
-          {tabs.map(({ name, title, icon: Icon, href }) => (
-            <Tabs.Screen
-              key={name}
-              name={name}
-              options={{
-                title,
-                tabBarButton: ({ onPress, accessibilityState }) => {
-                  const isSelected = accessibilityState?.selected;
-                  const isNotificationTab = name === "notification";
-                  const isHomeTab = name === "home";
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: "#12956B",
+          tabBarInactiveTintColor: "#CECECE",
+          headerShown: false,
+          tabBarStyle: Platform.select({
+            ios: {
+              position: "absolute",
+              height: 75,
+              paddingTop: 20,
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+              overflow: "hidden",
+              backgroundColor: "black",
+              borderColor: "black",
+              borderWidth: 0.5,
+            },
+            default: {
+              height: 55,
+              paddingBottom: 0,
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+              overflow: "hidden",
+              backgroundColor: "black",
+              borderWidth: 0.5,
+              borderColor: "black",
+              paddingTop: 5,
+            },
+          }),
+        }}
+      >
+        {tabs.map(({ name, title, icon: Icon, href }) => (
+          <Tabs.Screen
+            key={name}
+            name={name}
+            options={{
+              title,
+              tabBarButton: ({ onPress, accessibilityState }) => {
+                const isSelected = accessibilityState?.selected;
+                const isNotificationTab = name === "notification";
+                const isHomeTab = name === "home";
 
-                  const handlePress = (event: GestureResponderEvent) => {
-                    // First call the original onPress
-                    onPress?.(event);
+                const handlePress = (event: GestureResponderEvent) => {
+                  // First call the original onPress
+                  onPress?.(event);
 
-                    if (isHomeTab && isSelected) {
-                      eventBus.emit("scrollToTop");
-                    }
-                  };
+                  if (isHomeTab && isSelected) {
+                    eventBus.emit("scrollToTop");
+                  }
+                };
 
-                  return (
-                    <TouchableOpacity
-                      onPress={handlePress}
-                      activeOpacity={0.4}
+                return (
+                  <TouchableOpacity
+                    onPress={handlePress}
+                    activeOpacity={0.4}
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 40,
+                    }}
+                  >
+                    {/* Wrap icon and text in relative view */}
+                    <View style={{ position: "relative" }}>
+                      <Icon color={isSelected ? "#12956B" : "#CECECE"} />
+
+                      {/* Notification badge */}
+                      {isNotificationTab && notificationCount > 0 && (
+                        <View style={styles.notificationDot}>
+                          <Text style={styles.notificationText}>
+                            {notificationCount > 9 ? "9+" : notificationCount}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text
                       style={{
-                        flex: 1,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: 40,
+                        fontSize: 9,
+                        fontWeight: "500",
+                        color: isSelected ? "#12956B" : "#CECECE",
+                        marginTop: 2,
                       }}
                     >
-                      {/* Wrap icon and text in relative view */}
-                      <View style={{ position: "relative" }}>
-                        <Icon color={isSelected ? "#12956B" : "#CECECE"} />
-
-                        {/* Notification badge */}
-                        {isNotificationTab && notificationCount > 0 && (
-                          <View style={styles.notificationDot}>
-                            <Text style={styles.notificationText}>
-                              {notificationCount > 9 ? "9+" : notificationCount}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text
-                        style={{
-                          fontSize: 9,
-                          fontWeight: "500",
-                          color: isSelected ? "#12956B" : "#CECECE",
-                          marginTop: 2,
-                        }}
-                      >
-                        {title}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                },
-              }}
-            />
-          ))}
-        </Tabs>
-      </DrawerProvider>
+                      {title}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              },
+            }}
+          />
+        ))}
+      </Tabs>
     </View>
   );
 }

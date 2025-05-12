@@ -1,4 +1,4 @@
-import 'react-native-get-random-values';
+import "react-native-get-random-values";
 import { Redirect } from "expo-router";
 import LoginScreen from "./(auth)/login";
 import "../global.css";
@@ -8,34 +8,24 @@ import { AppDispatch, RootState } from "@/reduxStore";
 import { useEffect } from "react";
 import { initializeAuth } from "~/reduxStore/slices/user/authSlice";
 import * as SplashScreen from "expo-splash-screen";
-import { getToken } from "~/utils/secureStore";
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
-
+if (!__DEV__) {
+  console.log = () => {};
+  console.error = () => {};
+  console.warn = () => {};
+}
 export default function Index() {
   verifyInstallation();
 
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoggedIn, status } = useSelector((state: RootState) => state.auth);
+  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   console.log("islogin -", isLoggedIn);
-  // console.log('status -', status)
   useEffect(() => {
     // Dispatch the async thunk to initialize authentication
     dispatch(initializeAuth());
   }, [dispatch]);
-
-  // useEffect(() => {
-  //   // Hide the splash screen only when authentication is initialized
-  //   if (status === 1 ) {
-  //     SplashScreen.hideAsync();
-  //   }
-  // }, [status]);
-
-  // if (status === 0) {
-  //   // Optional: Add a placeholder while auth is initializing
-  //   return null;
-  // }
 
   if (isLoggedIn) {
     return <Redirect href="/(app)/(tabs)/home" />;

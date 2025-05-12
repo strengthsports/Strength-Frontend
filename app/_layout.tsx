@@ -1,12 +1,11 @@
-import 'react-native-get-random-values';
+import "react-native-get-random-values";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { StatusBar } from "react-native";
+import { Dimensions, StatusBar } from "react-native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -19,8 +18,11 @@ import { toastConfig } from "@/configs/toastConfig";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import * as NavigationBar from "expo-navigation-bar";
+import { Drawer } from "expo-router/drawer";
+import CustomDrawer2 from "~/components/ui/CustomDrawer2";
 
 SplashScreen.preventAutoHideAsync();
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -47,12 +49,19 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={DarkTheme}>
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
             <PaperProvider>
-              <Stack
-                screenOptions={{ headerShown: false, animation: "fade" }}
+              <Drawer
+                screenOptions={{
+                  headerShown: false,
+                  drawerStyle: {
+                    width: SCREEN_WIDTH * 0.69,
+                    backgroundColor: "black",
+                  },
+                }}
+                drawerContent={(props) => <CustomDrawer2 />}
               />
               <StatusBar barStyle="light-content" backgroundColor="black" />
               <Toast config={toastConfig} />

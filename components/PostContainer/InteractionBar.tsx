@@ -1,15 +1,12 @@
-import { View, TouchableOpacity, Text } from "react-native";
-import React, { memo, useState } from "react";
-import { RelativePathString, useRouter } from "expo-router";
+import { View, TouchableOpacity } from "react-native";
+import React, { memo } from "react";
+import { Link, RelativePathString } from "expo-router";
 import { AntDesign, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { Platform } from "react-native";
 import TextScallingFalse from "../CentralText";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 import { useShare } from "~/hooks/useShare";
 import { Post } from "~/types/post";
-import { setCurrentPost } from "~/reduxStore/slices/post/postSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "~/reduxStore";
 
 const interactionBtn = `flex flex-row justify-between items-center gap-2 bg-black px-4 py-[6px] rounded-3xl`;
 const shadowStyle = Platform.select({
@@ -41,8 +38,6 @@ const InteractionBar = ({
   isPostContainer?: boolean;
   isFeedPage?: boolean;
 }) => {
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
   const { sharePost } = useShare();
   const {
     caption,
@@ -53,8 +48,6 @@ const InteractionBar = ({
     _id: postId,
   } = post;
 
-  const [localIsLiked, setLocalIsLiked] = useState(isLiked);
-  const [localLikesCount, setLocalLikesCount] = useState(likesCount);
   const serializedData = encodeURIComponent(
     JSON.stringify({ id: post._id, type: "Post" })
   );
@@ -68,20 +61,6 @@ const InteractionBar = ({
       });
     }
   };
-
-  // const handleLike = () => {
-  //   //Optimistic local update + API call
-  //   const newIsLiked = !isLiked;
-  //   const newLikesCount = likesCount + (newIsLiked ? 1 : -1);
-
-  //   // Optimistic update
-  //   setLocalIsLiked(newIsLiked);
-  //   setLocalLikesCount(newLikesCount);
-
-  //   // console.log("Feed Page false like called");
-  //   onPressLike();
-  //   // }
-  // };
 
   return (
     <View
@@ -98,17 +77,23 @@ const InteractionBar = ({
         } py-3 flex flex-row justify-between items-center`}
       >
         {/* like count */}
-        <TouchableOpacity
+        <Link
+          href={
+            `/home/post-details/${serializedData}/likes` as RelativePathString
+          }
           className="flex flex-row items-center gap-2"
-          onPress={() => {
-            router.push(`/post-details/${serializedData}/likes`);
-          }}
+          asChild
         >
-          <AntDesign name="like1" size={16} color="#fbbf24" />
-          <TextScallingFalse className="text-base text-white font-light">
-            {likesCount} {likesCount > 1 ? "Likes" : "Like"}
-          </TextScallingFalse>
-        </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <AntDesign name="like1" size={16} color="#fbbf24" />
+            <TextScallingFalse className="text-base text-white font-light">
+              {likesCount} {likesCount > 1 ? "Likes" : "Like"}
+            </TextScallingFalse>
+          </TouchableOpacity>
+        </Link>
 
         {isPostContainer && assets && assets.length > 1 ? (
           <View className="flex-row justify-center">
@@ -165,28 +150,32 @@ const InteractionBar = ({
         )}
 
         {/* comment count */}
-        <TouchableOpacity
-          className="flex flex-row items-center gap-2"
-          onPress={() => {
-            if (isFeedPage) {
-              dispatch(setCurrentPost(post));
-              router.push({
-                pathname: `/post-details/${postId}` as RelativePathString,
-              });
-            }
-          }}
-        >
-          <TextScallingFalse className="text-base text-white font-light">
-            {commentsCount} Comments
-          </TextScallingFalse>
-        </TouchableOpacity>
+        {isFeedPage ? (
+          <Link
+            href={`/home/post-details/${postId}` as RelativePathString}
+            className="flex flex-row items-center gap-2"
+            asChild
+          >
+            <TouchableOpacity activeOpacity={0.7}>
+              <TextScallingFalse className="text-base text-white font-light">
+                {commentsCount} Comments
+              </TextScallingFalse>
+            </TouchableOpacity>
+          </Link>
+        ) : (
+          <TouchableOpacity disabled>
+            <TextScallingFalse className="text-base text-white font-light">
+              {commentsCount} Comments
+            </TextScallingFalse>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* actions */}
       <View
         className={`w-[80%] mx-auto py-5 mb-1 flex flex-row ${
           isPostContainer ? "justify-end" : "justify-center"
-        } gap-x-4 items-center border-t-[0.5px] border-[#5C5C5C]`}
+        } gap-x-4 items-center border-t-[0.5px] border-[#626262]`}
       >
         {/* like */}
         <TouchableOpacity
@@ -197,38 +186,53 @@ const InteractionBar = ({
             <AntDesign
               name={isLiked ? "like1" : "like2"}
               size={16}
-              color={isLiked ? "#FABE25" : "white"}
+              color={isLiked ? "#FABE25" : "#D2D2D2"}
             />
             <TextScallingFalse
-              className={`text-base ${
-                isLiked ? "text-amber-400" : "text-white"
-              }`}
+              className="text-base"
+              style={{
+                color: isLiked ? "#fbbf24" : "#E3E3E3",
+              }}
             >
               {isLiked ? "Liked" : "Like"}
             </TextScallingFalse>
           </View>
         </TouchableOpacity>
         {/* comment now */}
-        <TouchableOpacity
-          className="flex flex-row items-center gap-2 relative"
-          onPress={() => {
-            if (!isFeedPage) {
-              dispatch(setCurrentPost(post));
-              router.push({
-                pathname: `/post-details/${postId}` as RelativePathString,
-              });
-            } else {
-              onPressComment();
-            }
-          }}
-        >
-          <View className={interactionBtn} style={shadowStyle}>
-            <Feather name="message-square" size={16} color="white" />
-            <TextScallingFalse className="text-base text-white">
-              Comment
-            </TextScallingFalse>
-          </View>
-        </TouchableOpacity>
+        {isFeedPage ? (
+          <TouchableOpacity
+            className="flex flex-row items-center gap-2 relative"
+            onPress={onPressComment}
+          >
+            <View className={interactionBtn} style={shadowStyle}>
+              <Feather name="message-square" size={16} color="#D2D2D2" />
+              <TextScallingFalse
+                className="text-base"
+                style={{ color: "#E3E3E3" }}
+              >
+                Comment
+              </TextScallingFalse>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <Link
+            href={`/home/post-details/${postId}` as RelativePathString}
+            className="flex flex-row items-center gap-2 relative"
+            asChild
+          >
+            <TouchableOpacity className="flex flex-row items-center gap-2 relative">
+              <View className={interactionBtn} style={shadowStyle}>
+                <Feather name="message-square" size={16} color="#D2D2D2" />
+                <TextScallingFalse
+                  className="text-base"
+                  style={{ color: "#E3E3E3" }}
+                >
+                  Comment
+                </TextScallingFalse>
+              </View>
+            </TouchableOpacity>
+          </Link>
+        )}
         {/* share */}
         <TouchableOpacity
           className="mr-3 flex flex-row items-center gap-2 relative"
@@ -236,8 +240,11 @@ const InteractionBar = ({
         >
           {/* The main button */}
           <View className={interactionBtn} style={shadowStyle}>
-            <FontAwesome5 name="location-arrow" size={16} color="white" />
-            <TextScallingFalse className="text-base text-white">
+            <FontAwesome5 name="location-arrow" size={16} color="#D2D2D2" />
+            <TextScallingFalse
+              className="text-base"
+              style={{ color: "#E3E3E3" }}
+            >
               Share
             </TextScallingFalse>
           </View>

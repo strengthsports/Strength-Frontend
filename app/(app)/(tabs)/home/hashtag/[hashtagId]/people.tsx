@@ -1,8 +1,6 @@
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedApi.hashtag";
-import { useFollow } from "~/hooks/useFollow";
-import { FollowUser } from "~/types/user";
 import { Colors } from "~/constants/Colors";
 import TextScallingFalse from "~/components/CentralText";
 import UserCard from "~/components/Cards/UserCard";
@@ -16,50 +14,14 @@ const PeopleScreen = ({ hashtag }: { hashtag: string }) => {
     type: "people",
   });
 
-  const { followUser, unFollowUser } = useFollow();
-
-  const [followingMap, setFollowingMap] = useState<{ [key: string]: boolean }>(
-    {}
-  );
-
   useEffect(() => {
     if (data?.data) {
       const map: { [key: string]: boolean } = {};
       data.data.forEach((item: any) => {
         map[item._id] = item.isFollowing;
       });
-      setFollowingMap(map);
     }
   }, [data]);
-
-  const handleFollowToggle = async (item: any) => {
-    const currentlyFollowing = followingMap[item._id];
-    const followData: FollowUser = {
-      followingId: item._id,
-      followingType: item.type || "User",
-    };
-
-    try {
-      // Optimistic update
-      setFollowingMap((prev) => ({
-        ...prev,
-        [item._id]: !currentlyFollowing,
-      }));
-
-      if (currentlyFollowing) {
-        await unFollowUser(followData, true);
-      } else {
-        await followUser(followData, true);
-      }
-    } catch (err) {
-      // Revert on error
-      setFollowingMap((prev) => ({
-        ...prev,
-        [item._id]: currentlyFollowing,
-      }));
-      console.error("Follow toggle error:", err);
-    }
-  };
 
   const renderFollowerItem = ({ item }: { item: any }) => (
     <UserCard user={item} />

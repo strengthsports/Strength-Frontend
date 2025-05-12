@@ -1,4 +1,11 @@
-import { useState, useMemo, Suspense, lazy } from "react";
+import {
+  useState,
+  useMemo,
+  Suspense,
+  lazy,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
@@ -6,7 +13,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import PageThemeView from "~/components/PageThemeView";
 import SearchBar from "~/components/search/searchbar";
 import TextScallingFalse from "~/components/CentralText";
@@ -21,13 +28,39 @@ const TABS = [
 
 export default function HashtagLayout() {
   const { hashtagId } = useLocalSearchParams();
+  const navigation = useNavigation();
   const hashtag =
     typeof hashtagId === "string" ? hashtagId : hashtagId?.[0] || "";
 
+  // Active tab of hashtag page navigation
   const [activeTab, setActiveTab] = useState("Top");
   const ActiveComponent = useMemo(() => {
     return TABS.find((t) => t.key === activeTab)?.component;
   }, [activeTab]);
+
+  useLayoutEffect(() => {
+    console.log("Called");
+    const tabParent = navigation.getParent();
+
+    tabParent?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
+
+    return () => {
+      tabParent?.setOptions({
+        tabBarStyle: undefined,
+      });
+    };
+  }, [navigation]);
+
+  useEffect(() => {
+    const state = navigation.getState();
+    console.log("Current stack state:", state);
+    console.log(
+      "Current screen:",
+      navigation.getState().routes[navigation.getState().index].name
+    );
+  }, []);
 
   return (
     <PageThemeView>

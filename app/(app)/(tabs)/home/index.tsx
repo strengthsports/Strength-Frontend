@@ -41,6 +41,8 @@ import UploadProgressBar from "~/components/UploadProgressBar";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { setUploadingCompleted } from "~/reduxStore/slices/post/postSlice";
 import RunningLoader from "~/components/skeletonLoaders/PostSkeletonLoader1";
+import AddPostContainer from "~/components/modals/AddPostContainer";
+import { Link } from "expo-router";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -82,6 +84,8 @@ const ListFooterComponent = memo(
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { isAddPostContainerOpen } = useSelector((state: any) => state?.post);
+  console.log(isAddPostContainerOpen);
   const { loading, error, cursor, hasMore } = useSelector(selectFeedState);
   const { isUploadingCompleted } = useSelector(
     (state: RootState) => state.post
@@ -121,7 +125,7 @@ const Home = () => {
   useEffect(() => {
     if (isUploadingCompleted) {
       setTimeout(() => {
-        handleRefresh();
+        // handleRefresh();
       }, 500);
       dispatch(setUploadingCompleted(false));
     }
@@ -211,11 +215,13 @@ const Home = () => {
   if (loading && !cursor) {
     return (
       <PageThemeView>
-      <CustomHomeHeader />
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#12956B"/>
-      </View>
-    </PageThemeView>    
+        <CustomHomeHeader />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color="#12956B" />
+        </View>
+      </PageThemeView>
     );
   }
 
@@ -259,6 +265,11 @@ const Home = () => {
           />
         </GestureHandlerRootView>
       )}
+      {/* Add Post container modal */}
+      <AddPostContainer
+        text="What's on your mind"
+        isAddPostContainerOpen={isAddPostContainerOpen}
+      />
     </PageThemeView>
   );
 };

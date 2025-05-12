@@ -1,6 +1,5 @@
 import {
   StyleSheet,
-  Text,
   View,
   Image,
   FlatList,
@@ -8,18 +7,18 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, { memo, useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { router, Href } from "expo-router";
-import { AppDispatch, RootState } from "~/reduxStore";
+import { AppDispatch } from "~/reduxStore";
 import { Post } from "~/types/post";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
 import { BlurView } from "expo-blur";
-import { useLazyGetUserPostsByCategoryQuery } from "~/reduxStore/api/profile/profileApi.post";
 import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
 import {
+  fetchHashtagContents,
   fetchNonFeedPosts,
   selectAllNonFeedPosts,
   selectNonFeedState,
@@ -34,14 +33,18 @@ interface MediaItem {
   hasMultipleAssets: boolean;
 }
 
+type MediaPageType = "Activity" | "Hashtag";
+
 interface MediaPageProps {
-  userId: string;
+  pageType: MediaPageType;
+  userId?: string;
+  hashtag?: string;
 }
 
 const iconContainerSize = 22;
 const iconSizeInsideCircle = 18;
 
-const MediaPage = ({ userId }: MediaPageProps) => {
+const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
@@ -66,24 +69,50 @@ const MediaPage = ({ userId }: MediaPageProps) => {
           reset: true,
         })
       );
+    } else if (hashtag) {
+      console.log("Hashtag : ", hashtag);
+      dispatch(
+        fetchHashtagContents({
+          limit: 10,
+          type: "media",
+          hashtag,
+          reset: true,
+        })
+      );
     }
   }, [dispatch, userId]);
 
   // For subsequent loads
   const handleLoadMore = useCallback(() => {
-    console.log("Load more conditions:", {
-      cursor: nonFeedCursor,
-      loading: nonFeedLoading,
-    });
     setIsInitialLoad(false);
-    if (nonFeedCursor && !nonFeedLoading && !isLoadingMore) {
+    if (
+      nonFeedCursor &&
+      !nonFeedLoading &&
+      !isLoadingMore &&
+      pageType === "Activity"
+    ) {
       setIsLoadingMore(true);
       dispatch(
         fetchNonFeedPosts({
           limit: 10,
           cursor: nonFeedCursor,
           type: "media",
-          userId: userId,
+          userId: userId as string,
+        })
+      ).finally(() => setIsLoadingMore(false));
+    } else if (
+      nonFeedCursor &&
+      !nonFeedLoading &&
+      !isLoadingMore &&
+      pageType === "Hashtag"
+    ) {
+      setIsLoadingMore(true);
+      dispatch(
+        fetchHashtagContents({
+          limit: 10,
+          cursor: nonFeedCursor,
+          type: "media",
+          hashtag: hashtag as string,
         })
       ).finally(() => setIsLoadingMore(false));
     }
@@ -183,7 +212,7 @@ const MediaPage = ({ userId }: MediaPageProps) => {
     const handlePress = () => {
       if (item.postId) {
         router.push({
-          pathname: "/post-details/[postId]",
+          pathname: "/home/post-details/[postId]",
           params: { postId: item.postId },
         } as Href);
       } else {
@@ -247,13 +276,7 @@ const MediaPage = ({ userId }: MediaPageProps) => {
   const MemoizedEmptyComponent = useCallback(() => {
     return (
       <View className="flex justify-center items-center flex-1 p-4">
-        {nonFeedLoading ? (
-          <ActivityIndicator color="#12956B" size={22} />
-        ) : (
-          <TextScallingFalse className="text-white text-center">
-            No posts available
-          </TextScallingFalse>
-        )}
+        {nonFeedLoading && <ActivityIndicator color="#12956B" size={22} />}
       </View>
     );
   }, [nonFeedLoading]);

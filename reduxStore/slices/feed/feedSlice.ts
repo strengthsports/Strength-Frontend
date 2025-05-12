@@ -58,7 +58,7 @@ export const fetchFeedPosts = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch }
 >("feed/fetchPosts", async (params, { rejectWithValue }) => {
   try {
-    console.log("Called");
+    console.log("Feed Called");
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
 
@@ -104,7 +104,7 @@ export const fetchNonFeedPosts = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch }
 >("feed/fetchUserPosts", async (params, { rejectWithValue }) => {
   try {
-    console.log("Called");
+    console.log("User posts Called");
     const token = await getToken("accessToken");
     if (!token) throw new Error("Token not found");
 
@@ -134,6 +134,50 @@ export const fetchNonFeedPosts = createAsyncThunk<
     };
   } catch (err: any) {
     return rejectWithValue(err.message || "Failed to fetch feed");
+  }
+});
+
+export const fetchHashtagContents = createAsyncThunk<
+  { data: any; nextCursor: string },
+  {
+    hashtag: string;
+    type: string;
+    limit?: number;
+    cursor?: string | null;
+    reset?: boolean;
+  },
+  { state: RootState; dispatch: AppDispatch }
+>("feed/fetchHashtagContents", async (params, { rejectWithValue }) => {
+  try {
+    console.log("Hashtag posts Called");
+    const token = await getToken("accessToken");
+    if (!token) throw new Error("Token not found");
+
+    // Build query string
+    const queryParams = new URLSearchParams({
+      limit: String(params.limit || 10),
+      hashtag: params.hashtag,
+      ...(params.cursor && { cursor: params.cursor }), // Only add cursor if provided
+    });
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/hashtag/${params.type}?${queryParams}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data: any = await response.json();
+    // console.log("Data ", data);
+
+    return {
+      data: data.data || [],
+      nextCursor: data.nextCursor ?? null,
+    };
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Failed to fetch hashtag contents");
   }
 });
 
@@ -437,6 +481,9 @@ const feedSlice = createSlice({
     mergeFeedPosts: (state, action: PayloadAction<Post[]>) => {
       feedPostsAdapter.upsertMany(state.feedPosts, action.payload);
     },
+    addPost: (state, action: PayloadAction<Post>) => {
+      feedPostsAdapter.addOne(state.feedPosts, action.payload);
+    },
     updateAllFeedPostsFollowStatus: (
       state,
       action: PayloadAction<{
@@ -558,6 +605,40 @@ const feedSlice = createSlice({
       .addCase(fetchNonFeedPosts.rejected, (state, action) => {
         state.nonFeedLoading = false;
         state.nonFeedError = action.payload as string;
+      })
+      // Fetch hashtag contents
+      .addCase(fetchHashtagContents.pending, (state, action) => {
+        const { hashtag, type, reset, cursor = "initial" } = action.meta.arg;
+        // Create a unique key for this query combination
+        const queryKey = `${hashtag}-${type}-${cursor}`;
+        console.log(queryKey);
+
+        // Reset state if:
+        // 1. It's a forced reset (reset: true)
+        // 2. We're fetching without cursor (initial load)
+        // 3. The queryKey changed from previous fetch
+        const shouldReset =
+          reset || !action.meta.arg.cursor || state.lastQueryKey !== queryKey;
+
+        if (shouldReset) {
+          nonFeedPostsAdapter.removeAll(state.nonFeedPosts);
+          state.nonFeedCursor = "";
+        }
+        state.nonFeedLoading = true;
+        state.nonFeedError = null;
+      })
+      .addCase(fetchHashtagContents.fulfilled, (state, action) => {
+        const { data, nextCursor } = action.payload;
+        console.log(data);
+        // Upsert new posts
+        nonFeedPostsAdapter.upsertMany(state.nonFeedPosts, data);
+
+        state.nonFeedCursor = nextCursor; // <-- Set nextCursor for future fetches
+        state.nonFeedLoading = false;
+      })
+      .addCase(fetchHashtagContents.rejected, (state, action) => {
+        state.nonFeedLoading = false;
+        state.nonFeedError = action.payload as string;
       });
   },
 });
@@ -565,6 +646,7 @@ const feedSlice = createSlice({
 export const {
   updateFeedPost,
   mergeFeedPosts,
+  addPost,
   updateAllFeedPostsFollowStatus,
   updateAllFeedPostsReportStatus,
   updateNonFeedPost,
@@ -619,12 +701,20 @@ export const selectNonFeedState = createSelector(
     (state: RootState) => state.feed.nonFeedError,
     (state: RootState) => state.feed.nonFeedCursor,
     (state: RootState) => state.feed.nonFeedHasMore,
+    (state: RootState) => state.feed.lastQueryKey,
   ],
-  (nonFeedLoading, nonFeedError, nonFeedCursor, nonFeedHasMore) => ({
+  (
     nonFeedLoading,
     nonFeedError,
     nonFeedCursor,
     nonFeedHasMore,
+    lastQueryKey
+  ) => ({
+    nonFeedLoading,
+    nonFeedError,
+    nonFeedCursor,
+    nonFeedHasMore,
+    lastQueryKey,
   })
 );
 

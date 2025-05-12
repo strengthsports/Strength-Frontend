@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
 import TextScallingFalse from "../CentralText";
+import { useRouter } from "expo-router";
 
 const AnimatedAddPostBar = ({
   suggestionText = "What's on your mind...",
@@ -12,33 +13,11 @@ const AnimatedAddPostBar = ({
   suggestionText: string;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  // Use layout animation approach instead of mixing native and JS drivers
-  // const containerWidthAnim = useRef(new Animated.Value(37)).current;
-  // const textOpacityAnim = useRef(new Animated.Value(0)).current;
-
-  // useEffect(() => {
-  //   // Animation should run only once
-  //   Animated.parallel([
-  //     // Expand the width
-  //     Animated.timing(containerWidthAnim, {
-  //       toValue: 280, // Fixed width in pixels instead of percentage
-  //       duration: 400,
-  //       easing: Easing.out(Easing.ease),
-  //       useNativeDriver: false, // Width changes must use JS driver
-  //     }),
-
-  //     // Fade in text
-  //     Animated.timing(textOpacityAnim, {
-  //       toValue: 1,
-  //       duration: 350,
-  //       delay: 100,
-  //       useNativeDriver: false, // Consistent with other animations
-  //     }),
-  //   ]).start();
-  // }, []); // Empty dependency array ensures this runs only once
+  const router = useRouter();
 
   const handleOpenAddPostContainer = () => {
-    dispatch(setAddPostContainerOpen(true));
+    // dispatch(setAddPostContainerOpen(true));
+    router.push("/home/add-post");
   };
 
   return (

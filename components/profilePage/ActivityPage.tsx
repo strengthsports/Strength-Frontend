@@ -25,6 +25,7 @@ interface ActivityPageProps {
 }
 
 const ActivityPage = ({ userId, type }: ActivityPageProps) => {
+  console.log("Page rendered ");
   const dispatch = useDispatch<AppDispatch>();
   const isAndroid = Platform.OS === "android";
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -38,7 +39,6 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
   useEffect(() => {
     setIsInitialLoad(true);
     if (userId) {
-      console.log("User id : ", userId);
       dispatch(
         fetchNonFeedPosts({
           limit: 10,
@@ -115,14 +115,14 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
           keyExtractor={(item) => item._id}
           initialNumToRender={5}
           removeClippedSubviews={isAndroid}
-          windowSize={11}
+          windowSize={5}
           renderItem={renderItem}
           ListEmptyComponent={MemoizedEmptyComponent}
           onEndReached={({ distanceFromEnd }) => {
             if (distanceFromEnd < 0) return;
             handleLoadMore();
           }}
-          onEndReachedThreshold={0.6}
+          onEndReachedThreshold={0.1}
           ListFooterComponent={
             nonFeedLoading || isLoadingMore ? (
               <ActivityIndicator
@@ -139,7 +139,7 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
   );
 };
 
-export default ActivityPage;
+export default React.memo(ActivityPage);
 
 const styles = StyleSheet.create({
   fullScreenLoader: {

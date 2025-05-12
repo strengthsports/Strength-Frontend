@@ -9,19 +9,14 @@ import {
   LayoutAnimation,
   Dimensions,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import {
   RelativePathString,
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
-import {
-  AntDesign,
-  Feather,
-  FontAwesome5,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
 import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
@@ -39,12 +34,14 @@ import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import { purple100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 import PageThemeView from "~/components/PageThemeView";
 import VideoPlayer from "~/components/PostContainer/VideoPlayer";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
 const Post = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const navigation = useNavigation();
   const postId = params?.postId as string; // Extract postId from URL params
   // const post = useSelector((state: RootState) => state.post.currentPost);
   const post = useSelector((state: RootState) => selectPostById(state, postId));
@@ -58,8 +55,19 @@ const Post = () => {
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
 
-  const [videoStatus, setVideoStatus] =
-    useState<AVPlaybackStatusSuccess | null>(null);
+  useLayoutEffect(() => {
+    const tabParent = navigation.getParent();
+
+    tabParent?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
+
+    return () => {
+      tabParent?.setOptions({
+        tabBarStyle: undefined,
+      });
+    };
+  }, [navigation]);
 
   // Enable LayoutAnimation on Android
   useEffect(() => {
@@ -115,10 +123,6 @@ const Post = () => {
     dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
   };
 
-  const updateVideoStatus = (status: AVPlaybackStatusSuccess) => {
-    setVideoStatus(status);
-  };
-
   // Calculate the image height based on aspect ratio or use default
   const getImageHeight = () => {
     if (post?.aspectRatio) {
@@ -139,16 +143,23 @@ const Post = () => {
   return (
     <PageThemeView>
       <Pressable
-        className="flex-1"
+        style={{
+          flex: 1,
+          flexDirection: "column",
+        }}
         onPress={() =>
           isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
         }
       >
         {/* Header */}
         <View
-          className={`w-full z-50 pt-3 flex-row justify-between items-center px-5 ${
+          className={`w-full z-50 flex-row justify-between items-center ${
             !isHeaderFooterVisible && "opacity-0"
           }`}
+          style={{
+            flex: 0.1,
+            paddingHorizontal: 10,
+          }}
         >
           <TouchableOpacity
             style={{ padding: 10 }}
@@ -185,7 +196,12 @@ const Post = () => {
         </View>
 
         {/* Content area */}
-        <View className="flex-1 justify-center">
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+          }}
+        >
           {/* Media section */}
           <View
             style={{
@@ -202,7 +218,10 @@ const Post = () => {
                 {post.assets.map((asset, index) => (
                   <View
                     key={index}
-                    style={{ width: width, height: getImageHeight() }}
+                    style={{
+                      width: width,
+                      height: getImageHeight(),
+                    }}
                   >
                     <Image
                       source={{ uri: asset.url }}
@@ -217,31 +236,13 @@ const Post = () => {
           </View>
         </View>
 
-        {/* Video controls */}
-        {/* {videoStatus && (
-          <View
-            className={`absolute bottom-40 left-0 right-0 ${
-              !isHeaderFooterVisible ? "opacity-0" : ""
-            }`}
-          >
-            <VideoControls
-              isPlaying={videoStatus.isPlaying}
-              isBuffering={videoStatus.isBuffering}
-              positionMillis={videoStatus.positionMillis}
-              durationMillis={videoStatus.durationMillis as number}
-              isMuted={videoStatus.isMuted}
-              onPlayPause={handlePlayPause}
-              onSeek={handleSeek}
-              onToggleMute={handleToggleMute}
-            />
-          </View>
-        )} */}
-
         {/* Interaction Bar */}
         <View
-          className={`absolute bottom-20 left-0 right-0 ${
-            !isHeaderFooterVisible && "opacity-0"
-          }`}
+          className={`${!isHeaderFooterVisible && "opacity-0"}`}
+          style={{
+            flex: 0.25,
+            justifyContent: "center",
+          }}
         >
           <InteractionBar
             post={post}
@@ -261,11 +262,16 @@ const Post = () => {
           colors={["rgba(0,0,0,0.0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,0.8)"]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
-          className={`px-8 pt-4 w-full absolute bottom-32 max-h-60 ${
-            !isHeaderFooterVisible && "opacity-0"
-          }`}
+          style={{
+            paddingHorizontal: 32,
+            paddingTop: 16,
+            position: "absolute",
+            bottom: 150,
+            zIndex: 20,
+          }}
+          className={`w-full max-h-60 ${!isHeaderFooterVisible && "opacity-0"}`}
         >
-          <View>
+          <ScrollView>
             <TextScallingFalse
               className="text-xl leading-5 text-neutral-200"
               numberOfLines={isExpanded ? undefined : 1}
@@ -278,7 +284,7 @@ const Post = () => {
             >
               {post?.caption && renderCaptionWithHashtags(post?.caption)}
             </TextScallingFalse>
-          </View>
+          </ScrollView>
         </LinearGradient>
       </Pressable>
     </PageThemeView>

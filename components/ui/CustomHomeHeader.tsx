@@ -9,12 +9,14 @@ import { useDrawer } from "~/context/DrawerContext";
 import AddPostContainer from "../modals/AddPostContainer";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import TextScallingFalse from "../CentralText";
+import { useNavigation } from "@react-navigation/native";
+import type { DrawerNavigationProp } from "@react-navigation/drawer";
 
 const HEADER_HEIGHT = 60;
 
 const CustomHomeHeader = () => {
   const { user } = useSelector((state: any) => state?.profile);
-  const { isAddPostContainerOpen } = useSelector((state: any) => state?.post);
+  const navigation = useNavigation<DrawerNavigationProp<any>>();
   const possibleMessages = [
     "What's going on...",
     "What's on your mind...",
@@ -23,7 +25,6 @@ const CustomHomeHeader = () => {
 
   const [message, setMessage] = React.useState(possibleMessages[0]); // Set default message
   const { openBottomSheet } = useBottomSheet(); // get function from context
-
 
   React.useEffect(() => {
     const randomIndex = Math.floor(Math.random() * possibleMessages.length);
@@ -35,20 +36,10 @@ const CustomHomeHeader = () => {
     return <AnimatedAddPostBar suggestionText={message} />;
   }, [message]);
 
-  // Get the shared scrollY animated value
-  // const { scrollY } = useScroll();
-
-  // Clamp the scroll value between 0 and HEADER_HEIGHT.
-  // const clampedScrollY = Animated.diffClamp(scrollY, 0, HEADER_HEIGHT);
-
-  // Interpolate to get a translateY value that moves the header up as you scroll down.
-  // const headerTranslateY = clampedScrollY.interpolate({
-  //   inputRange: [0, HEADER_HEIGHT],
-  //   outputRange: [0, -HEADER_HEIGHT],
-  //   extrapolate: "clamp",
-  // });
-
-  const { handleOpenDrawer } = useDrawer();
+  // const { handleOpenDrawer } = useDrawer();
+  const handleOpenDrawer = () => {
+    navigation.openDrawer();
+  };
   const heightValue = Platform.OS === "ios" ? "27%" : "22%";
 
   // Define the content separately
@@ -56,7 +47,9 @@ const CustomHomeHeader = () => {
     isVisible: true,
     content: (
       <View style={{ paddingVertical: 15, paddingHorizontal: 20 }}>
-        <TextScallingFalse style={{ color: "white", fontSize: 20, fontWeight: 'bold' }}>
+        <TextScallingFalse
+          style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
+        >
           Messaging Coming Soon
         </TextScallingFalse>
         <TextScallingFalse
@@ -68,7 +61,9 @@ const CustomHomeHeader = () => {
             lineHeight: 20,
           }}
         >
-          We're currently working on bringing messaging to our platform. Stay tuned chatting with teammates and friends will be available in a future update!
+          We're currently working on bringing messaging to our platform. Stay
+          tuned chatting with teammates and friends will be available in a
+          future update!
         </TextScallingFalse>
       </View>
     ),
@@ -101,7 +96,8 @@ const CustomHomeHeader = () => {
 
         {/* Message Icon */}
         <TouchableOpacity
-          onPress={() => openBottomSheet(messagingBottomSheetConfig)}>
+          onPress={() => openBottomSheet(messagingBottomSheetConfig)}
+        >
           <MaterialCommunityIcons
             name="message-reply-text-outline"
             size={27.5}
@@ -109,12 +105,6 @@ const CustomHomeHeader = () => {
           />
         </TouchableOpacity>
       </View>
-
-      {/* Add Post container modal */}
-      <AddPostContainer
-        text={message}
-        isAddPostContainerOpen={isAddPostContainerOpen}
-      />
     </>
   );
 };

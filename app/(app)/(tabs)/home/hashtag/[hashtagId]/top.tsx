@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import HashtagPosts from "~/components/hashtagPage/HashtagPosts";
 import { View, Text, ActivityIndicator } from "react-native";
-import { ScrollView } from "react-native";
-import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 import { Colors } from "~/constants/Colors";
 
 const TopScreen = ({ hashtag }: { hashtag: string }) => {

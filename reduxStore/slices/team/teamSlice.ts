@@ -771,32 +771,43 @@ const teamSlice = createSlice({
       //   state.error = action.payload || "Failed to remove team member";
       // })
 
-      .addCase(removeTeamMember.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(removeTeamMember.fulfilled, (state, action) => {
-      state.loading = false;
-      // Remove the user from the team members if team exists
-      if (state.team) {
-        state.team.members = state.team.members.filter(
-          (member: any) => member.user._id !== action.meta.arg.userId
-        );
-        // Also remove from admin and coach arrays if present
-        state.team.admin = state.team.admin.filter(
-          (adminId: any) => adminId.toString() !== action.meta.arg.userId
-        );
-        state.team.coach = state.team.coach.filter(
-          (coachId: any) => coachId.toString() !== action.meta.arg.userId
-        );
-        // Update members length
-        state.team.membersLength = state.team.members.length;
-      }
-    })
-    .addCase(removeTeamMember.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload || "Failed to remove team member";
-    })
+ .addCase(removeTeamMember.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(removeTeamMember.fulfilled, (state, action) => {
+  state.loading = false;
+  
+  if (state.team) {
+    // Safely remove member from all possible arrays
+    const userId = action.payload.userId;
+
+    // Handle members array
+    if (state.team.members) {
+      state.team.members = state.team.members.filter(
+        (member: any) => member.user?._id !== userId
+      );
+    }
+
+    // Handle admin array (assuming it's an array of user objects)
+    if (state.team.admin) {
+      state.team.admin = state.team.admin.filter(
+        (admin: any) => admin._id !== userId
+      );
+    }
+
+
+
+    // Update members length if exists
+    if (state.team.membersLength) {
+      state.team.membersLength--;
+    }
+  }
+})
+.addCase(removeTeamMember.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to remove team member";
+})
 
 
       .addCase(joinTeam.pending, (state) => {

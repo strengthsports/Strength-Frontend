@@ -331,11 +331,16 @@ const MemberDetails = () => {
   }, [team?.members, user, isTeamOwner]);
 
   // Initialize data once
-  useEffect(() => {
-    if (teamId) {
-      dispatch(fetchTeamDetails(teamId));
-    }
-  }, [teamId, dispatch]);
+useEffect(() => {
+  if (teamId) {
+    dispatch(fetchTeamDetails(teamId));
+  }
+  
+  // Cleanup function
+  return () => {
+    // Reset any relevant state if needed
+  };
+}, [teamId, dispatch]);
 
   // Set available roles once team data is loaded
   useEffect(() => {
@@ -373,6 +378,7 @@ const MemberDetails = () => {
     switch (type) {
       case "success":
         showSuccess(message);
+       
         break;
       case "error":
         showError(message);
@@ -627,22 +633,33 @@ const handleRemoveFromTeam = useCallback(() => {
     showToastMessage("Missing team or member data", "error");
     return;
   }
-
+  
   showAlert(
     "Remove Member",
     `Are you sure you want to remove ${parsedMember.firstName} ${parsedMember.lastName} from the team?`,
     async () => {
       setIsUpdating(true);
       try {
-        await dispatch(
+        const result = await dispatch(
           removeTeamMember({
             teamId: teamId,
             userId: parsedMember._id,
           })
         ).unwrap();
 
-        showToastMessage("Member has been removed from the team");
-        router.back();
+        if (result.success) {
+          showToastMessage(result.message || `${parsedMember.firstName} ${parsedMember.lastName} removed successfully`, "success");
+          
+          // Force refresh team details
+          await dispatch(fetchTeamDetails(teamId));
+          
+          // Navigate back after state is updated
+          setTimeout(() => {
+            router.back();
+          }, 1000);
+        } else {
+          showToastMessage(`${parsedMember.firstName} ${parsedMember.lastName} removed successfully` || "Failed to remove member", "error");
+        }
       } catch (error: any) {
         console.error("Failed to remove member:", error);
         showToastMessage(
@@ -656,7 +673,7 @@ const handleRemoveFromTeam = useCallback(() => {
     "Remove",
     true
   );
-}, [teamId, parsedMember, dispatch, router]);
+}, [teamId, parsedMember, dispatch]);
 
   // Handle admin transfer
   const handleTransferAdmin = useCallback(() => {
@@ -799,7 +816,7 @@ const handleRemoveFromTeam = useCallback(() => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() =>  router.back()}>
           <BackIcon />
         </TouchableOpacity>
 
@@ -891,7 +908,11 @@ const handleRemoveFromTeam = useCallback(() => {
       />
 
       {/* Toast Component */}
-      <Toast config={toastConfig} />
+      <Toast
+       config={toastConfig}
+         topOffset={50} 
+  visibilityTime={2000} 
+  autoHide={true} />
     </PageThemeView>
   );
 };

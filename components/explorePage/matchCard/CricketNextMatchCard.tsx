@@ -104,19 +104,19 @@ const CricketNextMatchCard = ({
       {/* <View className="w-full h-full rounded-t-2xl bg-neutral-700" > */}
 
       {/* Title Section */}
-      <View className="px-6 pt-3 mt-[0.7] pb-2 w-full rounded-t-xl bg-[#262626]">
+      <View className="px-6 pt-3 pb-2 w-full rounded-t-xl bg-[#262626]">
         <TouchableOpacity
           className="flex-row items-center gap-2"
           onPress={toggleNumberOfLines}
         >
-          <View className="py-1 pl-1">
+          <View className="py-1">
             <Image
               source={iplImg}
-              className="w-[24px] h-[14px] rounded-[2px] self-center"
+              className="w-[24px] h-[16px] rounded-[2px]"
             />
           </View>
           <TextScallingFalse
-            className="text-white text-3xl "
+            className="text-white text-3xl w-[88%]"
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >
@@ -125,9 +125,9 @@ const CricketNextMatchCard = ({
         </TouchableOpacity>
 
         {/* Game Type and Round */}
-        <View className="flex-row items-center p-1">
-          <TextScallingFalse className="text-theme text-base font-bold">
-            {"\u25B6"} Cricket{" "}
+        <View className="flex-row items-center mt-2">
+          <TextScallingFalse className="text-theme text-base font-semibold">
+            {"\u25B6"}  Cricket{" "}
           </TextScallingFalse>
         </View>
       </View>
@@ -135,7 +135,7 @@ const CricketNextMatchCard = ({
       {matches &&
         matches.map((match) => (
           <View key={match.matchInfo.matchId}>
-            <View className="h-[0.8] bg-neutral-700" />
+            <View className="h-[1px] bg-[#262626]" />
 
             <View className="pl-6 pt-5">
               <TextScallingFalse className="text-[#9E9E9E] text-base">

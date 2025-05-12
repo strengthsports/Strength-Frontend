@@ -154,19 +154,19 @@ const FootballNextMatchCard = ({
   return (
     <>
       {/* Title Section */}
-      <View className="px-4 pt-3 mt-[0.7] pb-2 w-full h-16 rounded-t-xl bg-[#262626]">
+      <View className="px-4 pt-3 pb-2 w-full h-16 rounded-t-xl bg-[#262626]">
         <TouchableOpacity
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}
         >
-          <View className="py-1 pl-1">
+          <View className="py-1">
             <Image
               source={{ uri: groupedMatches[0].league.logo }}
-              className="w-[24px] h-[14px] rounded-[2px] self-center"
+              className="w-[24px] h-[16px] rounded-[2px] self-center"
             />
           </View>
           <TextScallingFalse
-            className="text-white text-3xl w-4/5"
+            className="text-white text-3xl w-[88%]"
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >
@@ -175,15 +175,15 @@ const FootballNextMatchCard = ({
         </TouchableOpacity>
 
         {/* Game Type and Round */}
-        <View className="flex-row items-center p-1">
-          <TextScallingFalse className="text-theme text-base font-bold">
-            {"\u25B6"} Football{" "}
+        <View className="flex-row items-center mt-2">
+          <TextScallingFalse className="text-theme text-base font-semibold">
+            {"\u25B6"}  Football{" "}
           </TextScallingFalse>
         </View>
       </View>
       {groupedMatches.map((match) => (
         <View key={match.fixture.id}>
-          <View className="h-[0.8] bg-neutral-700" />
+          <View className="h-[1px] bg-[#262626]" />
 
           <View className="pl-6 pt-5">
             <TextScallingFalse className="text-[#9E9E9E] text-base">

@@ -98,6 +98,14 @@ const ImageSlide = memo(
           }
         }}
         onDoublePress={onDoubleTap}
+        style={{
+          borderTopLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
+          borderBottomLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          borderLeftWidth: !isMyActivity && isFirstSlide ? 1 : 0,
+          borderColor: "#222222",
+        }}
       >
         <Image
           source={
@@ -111,11 +119,6 @@ const ImageSlide = memo(
             inset: 0,
             borderTopLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
             borderBottomLeftRadius: !isMyActivity && isFirstSlide ? 16 : 0,
-            borderTopWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
-            borderBottomWidth: !isMyActivity && isFirstSlide ? 0.5 : 0.4,
-            borderLeftWidth: !isMyActivity && isFirstSlide ? 0.5 : 0,
-            borderColor: "#2F2F2F",
-            backgroundColor:'black'
           }}
         />
         {!isFeedPage && !isMyActivity && (

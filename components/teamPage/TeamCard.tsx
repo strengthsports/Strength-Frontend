@@ -140,53 +140,53 @@ const TeamCard: React.FC<TeamCardProps> = ({
         </View>
 
         {/* Captain */}
-        <View className="flex flex-row items-center justify-between h-12 bg-[#191919] px-1 mt-1 text-white">
-          <View className="flex-1">
-            <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+        <View className="flex flex-row items-start justify-between py-3 bg-[#191919] text-white  px-1 mt-1">
+          <View className="flex-1 flex-row items-center">
+            <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[160px]">
               CAPTAIN
             </TextScallingFalse>
-          </View>
-          <View className="flex-1 justify-center items-center">
             <View className="w-[14px] border-t-2 border-white"></View>
           </View>
-          <View className="flex-1">
-            <TextScallingFalse className="text-white text-right mr-4 text-3xl">
+           <View className="flex-1">
+            <View className="ml-5">
+              <TextScallingFalse className="text-white text-right mr-4   text-3xl">
               {captain}
             </TextScallingFalse>
+             </View>
           </View>
         </View>
 
         {/* Vice Captain */}
-        <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-1 mt-1">
-          <View className="flex-1">
-            <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+        <View className="flex flex-row items-start justify-between py-3 bg-[#191919] text-white px-1 mt-1">
+          <View className="flex-1 flex-row items-center">
+            <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[160px]">
               VICE CAPTAIN
             </TextScallingFalse>
+              <View className="w-[14px] border-t-2 border-white"></View>
           </View>
-          <View className="flex-1 justify-center items-center">
-            <View className="w-[14px] border-t-2 border-white"></View>
-          </View>
-          <View className="flex-1">
-            <TextScallingFalse className="text-white text-right mr-4 text-3xl">
+         <View className="flex-1">
+            <View className="ml-5">
+              <TextScallingFalse className="text-white text-right mr-4   text-3xl">
               {viceCapt}
             </TextScallingFalse>
+             </View>
           </View>
         </View>
 
         {/* Location */}
-        <View className="flex flex-row items-center justify-between h-12 bg-[#191919] text-white px-1 mt-1 rounded-b-[10px]">
-          <View className="flex-1">
-            <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[200px]">
+        <View className="flex flex-row items-start justify-between  py-3 bg-[#191919] text-white px-1 mt-1 rounded-b-[10px]">
+          <View className="flex-1 flex-row items-center">
+            <TextScallingFalse className="text-left ml-4 text-white font-bold text-2xl w-[160px]">
               LOCATION
             </TextScallingFalse>
-          </View>
-          <View className="flex-1 justify-center items-center">
-            <View className="w-[14px] border-t-2 border-white"></View>
+             <View className="w-[14px]   border-t-2 border-white"></View>
           </View>
           <View className="flex-1">
-            <TextScallingFalse className="text-white text-right mr-4 text-3xl">
-              {location}
+            <View className="ml-5">
+              <TextScallingFalse className="text-white text-right mr-4   text-3xl">
+             {location}
             </TextScallingFalse>
+             </View>
           </View>
         </View>
       </View>

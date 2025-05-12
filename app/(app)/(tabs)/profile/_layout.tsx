@@ -48,9 +48,18 @@ import { RootState } from "~/reduxStore";
 import { Platform } from "react-native";
 import { Share } from "react-native";
 import { FontAwesome6 } from "@expo/vector-icons";
+import { calculateAge } from "~/utils/calculateAge";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 
-const ProfileOptionsBottomSheet = ({ onNavigate, onShare }: any) => {
+const ProfileOptionsBottomSheet = ({
+  onClose,
+  onNavigate,
+  onShare,
+}: {
+  onClose: () => void;
+  onNavigate: (path: string) => void;
+  onShare: () => void;
+}) => {
   return (
     <View style={styles.bottomSheetContainer}>
       <TouchableOpacity
@@ -81,7 +90,8 @@ const ProfileOptionsBottomSheet = ({ onNavigate, onShare }: any) => {
 
       <TouchableOpacity
         onPress={() => {
-          onNavigate("/(app)/(profile)/manage-teams");
+          onNavigate("/(app)/(profile)/edit-overview/(modal)/current-team");
+          onClose();
         }}
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
@@ -94,6 +104,19 @@ const ProfileOptionsBottomSheet = ({ onNavigate, onShare }: any) => {
     </View>
   );
 };
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 15,
+    shadowColor: "#000",
+  },
+});
 
 const ProfileLayout = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -132,8 +155,8 @@ const ProfileLayout = () => {
     () => [
       { name: "Overview", segment: "index" },
       { name: "Activity", segment: "activity" },
-      { name: "Tags", segment: "tags" },
       { name: "Media", segment: "media" },
+      { name: "Mentions", segment: "tags" },
     ],
     []
   );
@@ -151,9 +174,8 @@ const ProfileLayout = () => {
       // TODO: need modification of the profile url
       const profileUrl = `strength://profile/${user?._id}`;
       const result = await Share.share({
-        message: `Check out ${
-          user?.firstName || "this"
-        } profile on Strength! ${profileUrl}`,
+        message: `Check out ${user?.firstName || "this"
+          } profile on Strength! ${profileUrl}`,
         url: Platform.OS === "ios" ? profileUrl : undefined,
         title: "Share Profile",
       });
@@ -193,7 +215,9 @@ const ProfileLayout = () => {
   const handleOpenPostContainer = () => {
     dispatch(setAddPostContainerOpen(true));
   };
-  // console.log(user);
+  // console.log("****---------->", user.createdTeams);
+  // console.log("#####---------->", user.joinedTeams);
+
   const handlePress = async () => {
     if (user?.websiteLink) {
       const supported = await Linking.canOpenURL(user.websiteLink);
@@ -228,18 +252,6 @@ const ProfileLayout = () => {
       return firstSportName;
     }
   };
-
-  //added part to test and check performance
-  useEffect(() => {
-    const end = performance.now(); // End timer
-    console.log("Profile screen rendered at:", end);
-  }, []);
-
-  //added part to test and check performance
-  useEffect(() => {
-    const end = performance.now(); // End timer
-    console.log("Profile screen rendered at:", end);
-  }, []);
 
   return (
     <PageThemeView>
@@ -278,39 +290,40 @@ const ProfileLayout = () => {
             className="absolute h-full flex items-center justify-center top-[50%] right-[5%] lg:w-[33%]"
             style={{ zIndex: 1 }}
           >
-            <View
-              style={{
-                width: responsiveWidth(31),
-                height: responsiveHeight(15),
-                backgroundColor: "black",
-                borderRadius: 100,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              className="lg:w-14 lg:h-14"
+            {/* <View
+              style={[
+                {
+                  borderRadius: responsiveWidth(30) / 2,
+                  overflow: "hidden",
+                },
+                shadowStyle,
+              ]}
+            > */}
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() =>
+                setPicEditModalVisible({
+                  message: "profilePic",
+                  status: true,
+                })
+              }
+              style={shadowStyle}
             >
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() =>
-                  setPicEditModalVisible({
-                    message: "profilePic",
-                    status: true,
-                  })
-                }
-              >
-                <Image
-                  source={user?.profilePic ? { uri: user?.profilePic } : nopic}
-                  style={{
-                    width: responsiveWidth(29.6),
-                    height: responsiveHeight(14.4),
-                    borderRadius: 100,
-                  }}
-                  className="lg:w-14 lg:h-14"
-                />
-              </TouchableOpacity>
-            </View>
+              <Image
+                source={user?.profilePic ? { uri: user?.profilePic } : nopic}
+                style={{
+                  width: responsiveWidth(30),
+                  height: responsiveWidth(30),
+                  borderRadius: responsiveWidth(30) / 2,
+                  borderColor: "#1C1C1C",
+                  borderWidth: 1.5,
+                }}
+                className="lg:w-14 lg:h-14"
+              />
+            </TouchableOpacity>
           </View>
         </View>
+        {/* </View> */}
 
         <View className="w-full lg:w-[600px] mx-auto items-center pt-[2%]">
           <View
@@ -396,7 +409,7 @@ const ProfileLayout = () => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Age: {user?.age}{" "}
+                        Age: {calculateAge(user?.dateOfBirth)}{" "}
                         <TextScallingFalse style={{ color: "grey" }}>
                           ({dateFormatter(user?.dateOfBirth, "text")})
                         </TextScallingFalse>
@@ -445,20 +458,44 @@ const ProfileLayout = () => {
                         size={responsiveDotSize}
                         color="white"
                       />
-                      <TextScallingFalse style={styles.ProfileKeyPoints}>
-                        {" "}
-                        Teams:{" "}
-                        {user?.createdTeams?.length > 0 &&
-                          user.createdTeams.map((team: any) => (
-                            <TextScallingFalse
-                              key={team?.team?._id}
-                              style={{ color: "grey" }}
-                            >
-                              {" "}
-                              {team.name}
-                            </TextScallingFalse>
-                          ))}
-                      </TextScallingFalse>
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          router.push(
+                            "/(app)/(profile)/edit-overview/(modal)/current-team"
+                          )
+                        }
+                      >
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {" "}
+                          {(() => {
+                            const allTeams = [
+                              ...(user.createdTeams || []).map(
+                                (t: any) => t.team?.name
+                              ),
+                              ...(user.joinedTeams || []).map(
+                                (t: any) => t.team?.name
+                              ),
+                            ].filter(Boolean);
+
+                            const teamCount = allTeams.length;
+
+                            if (teamCount === 0) return "Teams: No teams";
+
+                            return (
+                              <>
+                                <TextScallingFalse style={{ color: "white" }}>
+                                  {`${teamCount === 1 ? "Team" : "Teams"}: `}
+                                  {allTeams[0]}
+                                </TextScallingFalse>
+                                <TextScallingFalse style={{ color: "grey" }}>
+                                  {teamCount > 1 ? ` +${teamCount - 1}` : ""}
+                                </TextScallingFalse>
+                              </>
+                            );
+                          })()}
+                        </TextScallingFalse>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
@@ -576,9 +613,8 @@ const ProfileLayout = () => {
                       width: "100%",
                     }}
                   >
-                    {`${user?.address?.city || "undefined"}, ${
-                      user?.address?.state || "undefined"
-                    }, ${user?.address?.country || "undefined"}`}
+                    {`${user?.address?.city || "undefined"}, ${user?.address?.state || "undefined"
+                      }, ${user?.address?.country || "undefined"}`}
                   </TextScallingFalse>
                 </View>
                 <View style={{ flexDirection: "row" }}>
@@ -725,15 +761,13 @@ const ProfileLayout = () => {
             return (
               <Pressable
                 key={tab.name}
-                className={`py-2 px-5 ${
-                  isActive ? "border-b-2 border-[#12956B]" : ""
-                }`}
+                className={`py-2 px-5 ${isActive ? "border-b-2 border-[#12956B]" : ""
+                  }`}
                 onPress={() => handleTabPress(tab.segment)}
               >
                 <TextScallingFalse
-                  className={`text-[1.1rem] ${
-                    isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
-                  }`}
+                  className={`text-[1.1rem] ${isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
+                    }`}
                 >
                   {tab.name}
                 </TextScallingFalse>

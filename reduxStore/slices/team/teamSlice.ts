@@ -426,34 +426,34 @@ export const changeUserRole = createAsyncThunk<
   }
 );
 
-export const removeTeamMember = createAsyncThunk<
-  { success: boolean; message: string },
-  { teamId: string; userId: string },
-  { rejectValue: string }
->("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
+// export const removeTeamMember = createAsyncThunk<
+//   { success: boolean; message: string },
+//   { teamId: string; userId: string },
+//   { rejectValue: string }
+// >("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
+//   try {
+//     const token = await getToken("accessToken");
 
-    const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ teamId, userId }),
-    });
+//     const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//       body: JSON.stringify({ teamId, userId }),
+//     });
 
-    const data = await response.json();
+//     const data = await response.json();
 
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Failed to remove team member");
-    }
+//     if (!response.ok) {
+//       return rejectWithValue(data.message || "Failed to remove team member");
+//     }
 
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
-  }
-});
+//     return data;
+//   } catch (err: any) {
+//     return rejectWithValue(err.message || "Network error");
+//   }
+// });
 
 //join team request by user who not present in the team
 export const joinTeam = createAsyncThunk<
@@ -573,6 +573,41 @@ export const rejectTeamInvitation = createAsyncThunk(
     }
   }
 );
+
+
+//remove user from team-----> 
+// In teamSlice.ts, ensure the removeTeamMember thunk is properly implemented:
+
+export const removeTeamMember = createAsyncThunk<
+  { success: boolean; message: string },
+  { teamId: string; userId: string },
+  { rejectValue: string }
+>("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+
+    const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ teamId, userId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to remove team member");
+    }
+
+    return data;
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Network error");
+  }
+});
+
+
 
 const teamSlice = createSlice({
   name: "team",
@@ -711,30 +746,58 @@ const teamSlice = createSlice({
         state.error = action.payload || "Failed to change user role";
       })
 
+      // .addCase(removeTeamMember.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(removeTeamMember.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   // Remove the user from the team members if team exists
+      //   if (state.team) {
+      //     state.team.members = state.team.members.filter(
+      //       (member: any) => member.user._id !== action.meta.arg.userId
+      //     );
+      //     // Also remove from admin and coach arrays if present
+      //     state.team.admin = state.team.admin.filter(
+      //       (adminId: any) => adminId.toString() !== action.meta.arg.userId
+      //     );
+      //     state.team.coach = state.team.coach.filter(
+      //       (coachId: any) => coachId.toString() !== action.meta.arg.userId
+      //     );
+      //   }
+      // })
+      // .addCase(removeTeamMember.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload || "Failed to remove team member";
+      // })
+
       .addCase(removeTeamMember.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(removeTeamMember.fulfilled, (state, action) => {
-        state.loading = false;
-        // Remove the user from the team members if team exists
-        if (state.team) {
-          state.team.members = state.team.members.filter(
-            (member: any) => member.user._id !== action.meta.arg.userId
-          );
-          // Also remove from admin and coach arrays if present
-          state.team.admin = state.team.admin.filter(
-            (adminId: any) => adminId.toString() !== action.meta.arg.userId
-          );
-          state.team.coach = state.team.coach.filter(
-            (coachId: any) => coachId.toString() !== action.meta.arg.userId
-          );
-        }
-      })
-      .addCase(removeTeamMember.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to remove team member";
-      })
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(removeTeamMember.fulfilled, (state, action) => {
+      state.loading = false;
+      // Remove the user from the team members if team exists
+      if (state.team) {
+        state.team.members = state.team.members.filter(
+          (member: any) => member.user._id !== action.meta.arg.userId
+        );
+        // Also remove from admin and coach arrays if present
+        state.team.admin = state.team.admin.filter(
+          (adminId: any) => adminId.toString() !== action.meta.arg.userId
+        );
+        state.team.coach = state.team.coach.filter(
+          (coachId: any) => coachId.toString() !== action.meta.arg.userId
+        );
+        // Update members length
+        state.team.membersLength = state.team.members.length;
+      }
+    })
+    .addCase(removeTeamMember.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "Failed to remove team member";
+    })
+
 
       .addCase(joinTeam.pending, (state) => {
         state.loading = true;

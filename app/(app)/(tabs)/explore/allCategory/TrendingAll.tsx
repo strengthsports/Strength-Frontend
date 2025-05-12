@@ -293,7 +293,7 @@ const TrendingAll = () => {
 
   const sections = [
     { type: "swiper", content: renderSwiper() },
-    { type: "divider", content: <View className="h-[1px] bg-[#1C1C1C]" /> },
+    { type: "divider", content: <View className="h-[1px] bg-[#1c1c1c]" /> },
     { type: "hashtags", content: renderHashtags() },
     { type: "discoverPeople", content: <DiscoverPeopleList /> },
     { type: "matches", content: renderMatches() },

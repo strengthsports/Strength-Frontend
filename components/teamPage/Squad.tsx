@@ -177,9 +177,9 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <View
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        // contentContainerStyle={styles.scrollContent}
       >
         {(isMember || isAdmin) && (
           <View style={styles.threeDotContainer}>
@@ -207,7 +207,7 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           member={selectedMember}
           isTeam={true}
         />
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -234,7 +234,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sectionContainer: {
-    marginTop: 16,
+    marginTop: -12,
+    marginBottom:18,
   },
   sectionTitle: {
     fontFamily: "Sansation-Regular",

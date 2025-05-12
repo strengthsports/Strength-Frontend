@@ -22,9 +22,8 @@ interface MenuItem {
   onPress: () => void;
   color?: string;
   isMember: boolean;
-  isAdmin:boolean;
+  isAdmin: boolean;
   logo?: React.ComponentType<any>;
-
 }
 
 interface DrawerProps {
@@ -38,7 +37,7 @@ const HEADER_HEIGHT = 40;
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
   menuItems,
-  isMember, 
+  isMember,
   isAdmin,
   teamId,
 }) => {
@@ -110,7 +109,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
   });
 
   const handleBackFromTeamPage = () => {
-    router.push("/(app)/(tabs)/home");
+    router.back();
     dispatch(resetTeamState());
   };
 
@@ -124,30 +123,30 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         <TouchableOpacity onPress={handleBackFromTeamPage}>
           <BackIcon />
         </TouchableOpacity>
-        {
-          isMember || isAdmin?
-        <View className="flex-row items-center gap-x-5">
-          <TouchableOpacity
-            onPress={() =>
-              router.push(
-                `/(app)/(team)/teams/${teamId}/team-forum` as RelativePathString
-              )
-            }
-          >
-            <MaterialCommunityIcons
-              name="message-reply-text-outline"
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={toggleSidebar}>
-            <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>
-              <Icon name="bars" size={24} color="white" />
-            </Animated.View>
-          </TouchableOpacity>
-        </View>
-        :<></>
-}
+        {isMember || isAdmin ? (
+          <View className="flex-row items-center gap-x-5">
+            <TouchableOpacity
+              onPress={() =>
+                router.push(
+                  `/(app)/(team)/teams/${teamId}/team-forum` as RelativePathString
+                )
+              }
+            >
+              <MaterialCommunityIcons
+                name="message-reply-text-outline"
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleSidebar}>
+              <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>
+                <Icon name="bars" size={24} color="white" />
+              </Animated.View>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <></>
+        )}
       </View>
 
       {/* Main Content */}

@@ -1,6 +1,7 @@
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { Image } from "react-native";
+import { router } from "expo-router";
 
 const textColor = "#FFFFFF";
 const secondaryTextColor = "#B2B2B2";
@@ -14,17 +15,21 @@ const TeamEntry = ({ team }: any) => {
   const scaleFactor = screenWidth2 / 410;
   const isCaptain = team.position === "Captain";
   const isVC = team.position === "ViceCaptain";
-  console.log(team);
+  // console.log("team entry ---->", team.team._id);
   return (
-    <View
+    <TouchableOpacity
       style={{
         flexDirection: "row",
         alignItems: "center",
         gap: 10,
       }}
+      onPress={() => {
+        router.push(`/(app)/(team)/teams/${team.team._id}`);
+      }}
+      activeOpacity={0.7}
     >
       {/* Team Logo */}
-     
+
       <Image
         source={{ uri: team.team.logo.url }}
         // source={{uri: "https://logowik.com/content/uploads/images/kolkata-knight-riders6292.jpg"}}
@@ -37,9 +42,8 @@ const TeamEntry = ({ team }: any) => {
           // marginRight: 10,
           marginTop: 2,
         }}
-
       />
-  
+
       {/* Team Details */}
       <View className="flex flex-col ml-5 items-start gap-2 justify-between py-3">
         <View className="flex flex-col">
@@ -47,7 +51,7 @@ const TeamEntry = ({ team }: any) => {
             style={{
               color: textColor,
               fontSize: 16,
-              fontWeight: "700", // Bold
+              fontWeight: "700",
             }}
           >
             {team.team.name}
@@ -107,7 +111,7 @@ const TeamEntry = ({ team }: any) => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

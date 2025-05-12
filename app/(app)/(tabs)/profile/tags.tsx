@@ -5,7 +5,7 @@ import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
 const Tags = () => {
   return (
     <View>
-      <UnderDevelopmentModal />
+      <Text>Mentions</Text>
     </View>
   );
 };

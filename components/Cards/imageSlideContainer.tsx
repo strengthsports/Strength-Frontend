@@ -13,13 +13,6 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-import {
-  View,
-  TouchableOpacity,
-  Dimensions,
-  StyleSheet,
-  Image,
-} from "react-native";
 import Swiper from "react-native-swiper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { swiperConfig } from "~/utils/swiperConfig";

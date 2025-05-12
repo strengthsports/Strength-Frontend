@@ -5,43 +5,65 @@ import {
   Text,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
+  Animated,
+  Pressable,
+  Dimensions,
 } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  MaterialIcons,
+  Ionicons,
+  AntDesign,
+} from "@expo/vector-icons";
 import { useEvent } from "expo";
+import Slider from "@react-native-community/slider";
+import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
+import PauseIcon from "../SvgIcons/clips/PauseIcon";
+import TextScallingFalse from "../CentralText";
 
-// Default sample video - replace with actual user video
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const DEFAULT_VIDEO =
   "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
-export default function VideoPlayer({
+export default function YouTubeStyleVideoPlayer({
   videoSource = DEFAULT_VIDEO,
   onRemove,
   editable = false,
+  title = "Big Buck Bunny",
 }: any) {
-  // State for the post text/caption
+  // Player state
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const animationRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [seeking, setSeeking] = useState(false);
+  const [seekValue, setSeekValue] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [controlsVisible, setControlsVisible] = useState(true);
 
-  // Create video player instance with proper cleanup
+  const playerRef = useRef<VideoView>();
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const controlsTimer = useRef<NodeJS.Timeout | null>(null);
+  const animationRef = useRef<number | null>(null);
+
+  // Create video player instance
   const player = useVideoPlayer(videoSource, (player) => {
+    player.play();
     player.loop = true;
     player.volume = 1.0;
     player.muted = isMuted;
 
-    // Return cleanup function
     return () => {
-      // Make sure player is properly disposed
       player.pause();
     };
   });
 
-  // Safety check to prevent operations on released player
+  // Safety check
   const isPlayerValid = () => {
     try {
-      // Access a property to test if player is valid
       const _ = player.status;
       return true;
     } catch (e) {
@@ -50,30 +72,38 @@ export default function VideoPlayer({
     }
   };
 
-  // Video player state using events with safety checks
+  // Player status
   const { isPlaying } = useEvent(player, "playingChange", {
     isPlaying: player.playing,
   });
 
-  // Configure time updates with proper cleanup
+  // Initialize player
   useEffect(() => {
-    if (isPlayerValid()) {
-      player.timeUpdateEventInterval = 0.25; // Update 4 times a second
-    }
+    if (!isPlayerValid()) return;
+
+    const updateDuration = () => {
+      if (player.duration > 0) {
+        setDuration(player.duration);
+      }
+    };
+
+    player.timeUpdateEventInterval = 0.1; // More frequent updates for smoother progress
+    updateDuration();
 
     return () => {
-      // Important cleanup to prevent the "shared object released" error
       if (isPlayerValid()) {
         player.timeUpdateEventInterval = 0;
       }
     };
   }, [player]);
 
-  // Start animation loop to track currentTime
+  // Track current time
   useEffect(() => {
     const updateProgress = () => {
-      if (player) {
-        setCurrentTime(player.currentTime); // Directly read from player
+      if (isPlayerValid() && !seeking) {
+        const time = player.currentTime;
+        setCurrentTime(time);
+        setSeekValue(time);
         animationRef.current = requestAnimationFrame(updateProgress);
       }
     };
@@ -85,149 +115,200 @@ export default function VideoPlayer({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [player]);
+  }, [player, seeking]);
 
-  // Calculate progress percentage
-  const progressPercentage =
-    player?.duration > 0 ? (currentTime / player.duration) * 100 : 0;
-
-  // Add component unmount handler
+  // Auto-hide controls
   useEffect(() => {
-    return () => {
-      // Final cleanup when component unmounts
-      if (isPlayerValid()) {
-        try {
-          player.pause();
-          // Reset any other player properties as needed
-        } catch (error) {
-          console.log("Cleanup error:", error);
-        }
-      }
-    };
-  }, []);
+    if (showControls && isPlaying) {
+      startControlsTimer();
+    } else {
+      clearControlsTimer();
+    }
 
-  // Toggle mute with safety check
-  const handleToggleMute = () => {
-    if (isPlayerValid()) {
-      setIsMuted(!isMuted);
-      player.muted = !isMuted;
+    return () => clearControlsTimer();
+  }, [showControls, isPlaying]);
+
+  const startControlsTimer = () => {
+    clearControlsTimer();
+    controlsTimer.current = setTimeout(() => {
+      fadeOutControls();
+    }, 3000); // 3 seconds timeout like YouTube
+  };
+
+  const clearControlsTimer = () => {
+    if (controlsTimer.current) {
+      clearTimeout(controlsTimer.current);
+      controlsTimer.current = null;
     }
   };
 
-  // Safe method to toggle play/pause
+  const fadeOutControls = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        setControlsVisible(false);
+      }
+    });
+  };
+
+  const fadeInControls = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+    startControlsTimer();
+  };
+
+  // Format time
+  const formatTime = (timeInSeconds: number) => {
+    if (!timeInSeconds) return "0:00";
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  // Toggle play/pause
   const togglePlayPause = () => {
     if (!isPlayerValid()) return;
+    if (isPlaying) {
+      clearControlsTimer();
+      player.pause();
+    } else {
+      clearControlsTimer();
+      player.play();
+    }
+    fadeInControls(); // Always show controls when interacting
+  };
 
+  // Toggle mute
+  const toggleMute = () => {
+    if (!isPlayerValid()) return;
+    setIsMuted(!isMuted);
+    player.muted = !isMuted;
+    fadeInControls();
+  };
+
+  const handleFullScreen = async () => {
     try {
-      if (isPlaying) {
-        player.pause();
-      } else {
-        player.play();
-      }
+      setIsFullscreen(true);
+
+      // Enter fullscreen
+      await playerRef.current?.enterFullscreen();
     } catch (error) {
-      console.error("Error toggling play/pause:", error);
+      console.error("Error in fullscreen:", error);
     }
   };
 
-  // Safe method to replay video
-  const handleReplay = () => {
+  // Handle seeking
+  const handleSeekStart = () => {
     if (!isPlayerValid()) return;
-
-    try {
-      player.replay();
-    } catch (error) {
-      console.error("Error replaying video:", error);
-    }
+    setSeeking(true);
+    clearControlsTimer();
   };
 
-  // Safe method to change playback rate
-  const togglePlaybackRate = () => {
-    if (!isPlayerValid()) return;
+  const handleSeekChange = (value: number) => {
+    setSeekValue(value);
+  };
 
-    try {
-      player.playbackRate = player.playbackRate === 1.0 ? 1.5 : 1.0;
-    } catch (error) {
-      console.error("Error changing playback rate:", error);
-    }
+  const handleSeekComplete = (value: number) => {
+    if (!isPlayerValid()) return;
+    player.currentTime = value;
+    setCurrentTime(value);
+    setSeeking(false);
+    startControlsTimer();
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Video container with 16:9 aspect ratio */}
-        <View style={styles.videoContainer}>
-          <VideoView
-            style={styles.video}
-            player={player}
-            contentFit="cover"
-            nativeControls={false}
-          />
+    <SafeAreaView style={[styles.container]}>
+      <Pressable
+        style={[styles.videoContainer]}
+        onPress={togglePlayPause}
+        onStartShouldSetResponder={() => false}
+      >
+        <VideoView
+          ref={playerRef}
+          style={[
+            styles.video,
+            {
+              borderTopLeftRadius: editable ? 16 : 0,
+              borderBottomLeftRadius: editable ? 16 : 0,
+              marginLeft: editable ? 8 : 0,
+            },
+          ]}
+          player={player}
+          contentFit={isFullscreen ? "cover" : "contain"}
+          nativeControls={isFullscreen ? true : false}
+          allowsFullscreen
+          onFullscreenExit={() => setIsFullscreen(false)}
+        />
 
-          {/* Video progress bar */}
-          <View style={styles.progressBarContainer}>
-            <View
-              style={[styles.progressBar, { width: `${progressPercentage}%` }]}
-            />
+        {/* Controls overlay */}
+        <Animated.View
+          style={[styles.controlsContainer, { opacity: fadeAnim }]}
+        >
+          {/* Center controls */}
+          <View style={styles.centerControls}>
+            {isPlaying ? <PauseIcon /> : <ClipsIconRP />}
           </View>
-
-          {/* Overlay controls that appear on video */}
-          <View style={styles.videoOverlay}>
-            {/* Play/Pause button in center */}
-            <TouchableOpacity onPress={togglePlayPause}>
-              <View>
-                {isPlaying ? (
-                  <View style={styles.pauseIcon}>
-                    <View style={styles.pauseBar} />
-                    <View style={styles.pauseBar} />
-                  </View>
-                ) : (
-                  <View style={styles.playIcon} />
-                )}
-              </View>
-            </TouchableOpacity>
-
-            {/* Bottom controls */}
-            <View style={styles.videoControls}>
+          {!editable && (
+            <View style={styles.rightControls}>
               <TouchableOpacity
+                onPress={handleFullScreen}
                 style={styles.controlButton}
-                onPress={handleToggleMute}
               >
-                {isMuted ? (
-                  <MaterialIcons name="volume-off" size={20} color="white" />
-                ) : (
-                  <MaterialIcons name="volume-up" size={20} color="white" />
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={handleReplay}
-              >
-                <MaterialIcons name="replay" size={20} color="white" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={togglePlaybackRate}
-              >
-                <MaterialIcons name="fast-forward" size={20} color="white" />
-                <Text style={styles.speedText}>
-                  {player.playbackRate === 1.0 ? "1x" : "1.5x"}
-                </Text>
+                <MaterialCommunityIcons
+                  name="fullscreen"
+                  size={24}
+                  color="#E6E6E6"
+                />
               </TouchableOpacity>
             </View>
-          </View>
+          )}
+        </Animated.View>
 
-          {/* Remove video */}
+        {editable && !isFullscreen && (
           <TouchableOpacity
             onPress={onRemove}
-            className="absolute top-2 right-2 bg-black/50 rounded-full p-1 z-10"
+            style={styles.removeButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <MaterialCommunityIcons name="close" size={20} color="white" />
           </TouchableOpacity>
+        )}
+      </Pressable>
+      {/* Bottom Controls */}
+      <View className="items-end justify-between">
+        {/* Progress bar */}
+        <View style={styles.progressRow}>
+          <MaterialCommunityIcons
+            name={isPlaying ? "pause" : "play"}
+            size={20}
+            color="#EAEAEA"
+          />
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={player.duration}
+            value={seeking ? seekValue : currentTime}
+            minimumTrackTintColor="#EAEAEA"
+            maximumTrackTintColor="#E6E6E6"
+            thumbTintColor="#EAEAEA"
+            onSlidingStart={handleSeekStart}
+            onValueChange={handleSeekChange}
+            onSlidingComplete={handleSeekComplete}
+          />
+          {/* Bottom time display */}
+          <View style={styles.timeContainer}>
+            <TextScallingFalse style={styles.timeText}>
+              {formatTime(currentTime)} / {formatTime(player.duration)}
+            </TextScallingFalse>
+          </View>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -235,66 +316,92 @@ export default function VideoPlayer({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "black",
   },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  header: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#000",
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+  fullscreenContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    zIndex: 100,
   },
   videoContainer: {
     width: "100%",
-    aspectRatio: 16 / 9, // 16:9 aspect ratio
+    aspectRatio: 16 / 9,
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
     position: "relative",
-    backgroundColor: "#000",
-    marginBottom: 10,
+  },
+  fullscreenVideo: {
+    width: SCREEN_HEIGHT,
+    height: SCREEN_WIDTH,
+    transform: [{ rotate: "90deg" }],
   },
   video: {
-    flex: 1,
-    backgroundColor: "#000",
+    width: "100%",
+    height: "100%",
   },
-  videoOverlay: {
+  controlsContainer: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
   },
-  playIcon: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 20,
-    borderLeftColor: "white",
-    borderTopWidth: 15,
-    borderTopColor: "transparent",
-    borderBottomWidth: 15,
-    borderBottomColor: "transparent",
-    marginLeft: 6,
-  },
-  pauseIcon: {
+  topControls: {
     flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  rightControls: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  controlButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  centerControls: {
+    flexDirection: "row",
+    columnGap: 20,
+    alignItems: "center",
+    alignSelf: "center",
+    paddingTop: 70,
+  },
+  playButton: {
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: "center",
     alignItems: "center",
-    width: 24,
-    height: 24,
+    marginHorizontal: 24,
   },
-  pauseBar: {
-    width: 6,
-    height: 20,
-    backgroundColor: "white",
-    marginHorizontal: 3,
+  skipButton: {
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    width: 30,
+    height: 30,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
   },
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+  },
+  timeText: {
+    color: "#E6E6E6",
+    fontSize: 12,
+  },
+  // New YouTube-style progress bar
   progressBarContainer: {
     position: "absolute",
     bottom: 0,
@@ -302,36 +409,33 @@ const styles = StyleSheet.create({
     right: 0,
     height: 3,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
-    zIndex: 5,
   },
   progressBar: {
     height: "100%",
     backgroundColor: "#12956B",
   },
-  videoControls: {
+  removeButton: {
     position: "absolute",
-    bottom: 8,
-    right: 8,
-    flexDirection: "row",
-    padding: 2,
-    borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  controlButton: {
-    width: 36,
-    height: 36,
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    borderRadius: 15,
+    width: 30,
+    height: 30,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 2,
+    zIndex: 10,
   },
-  speedText: {
-    color: "white",
-    fontSize: 10,
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    paddingHorizontal: 2,
-    borderRadius: 4,
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 10,
+    paddingHorizontal: 10,
+  },
+  slider: {
+    flex: 1,
+    height: 20,
+    marginHorizontal: 8,
   },
 });

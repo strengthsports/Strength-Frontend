@@ -22,6 +22,7 @@ import MoreModal from "../feedPage/MoreModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
 import nopic from "@/assets/images/nopic.jpg";
+import nothumbnail from "@/assets/images/nothumbnail.png";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import InteractionBar from "../PostContainer/InteractionBar";
@@ -224,7 +225,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const goToHashtag = useCallback(
       (tag: string) => {
         // string version is faster than object
-        router.push(`/(app)/(post)/hashtag/${tag}/top`);
+        router.push(`/home/hashtag/${tag}/top`);
       },
       [router]
     );
@@ -265,7 +266,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               key={i}
               onPress={() => goToHashtag(tag)}
               className={`text-2xl text-[#12956B] ${
-                highlightedHashtag === part && "font-semibold"
+                highlightedHashtag === part.toLowerCase() && "font-semibold"
               } active:bg-gray-600`}
             >
               {part}
@@ -342,17 +343,19 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       [item.caption, item.taggedUsers, isExpanded]
     );
 
-    const [thumbnail, setThumbnail] = useState(null);
+    const [thumbnail, setThumbnail] = useState("");
 
     useEffect(() => {
       const generateThumbnail = async () => {
-        if (!item?.assets || item.assets.length === 0 || !item.assets[0].url)
-          return;
+        if (!item?.isVideo || !item.assets[0].url) return;
 
         try {
           const { uri } = await VideoThumbnails.getThumbnailAsync(
             item.assets[0].url,
-            { time: 15000 }
+            {
+              time: 1000,
+              quality: 0.5,
+            }
           );
           setThumbnail(uri);
         } catch (e) {
@@ -394,9 +397,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   borderWidth: 1,
                   borderColor: "#1a1a1a",
                 }}
-                transition={500}
-                cachePolicy="memory-disk"
-                placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
 
@@ -486,15 +486,17 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onSinglePress={() => {
                   if (item) {
                     router.push({
-                      pathname: `/post-view/${item._id}` as RelativePathString,
+                      pathname:
+                        `/home/post-view/${item._id}` as RelativePathString,
                     });
                   }
                 }}
                 onDoublePress={handleDoubleTap}
               >
                 <Image
-                  source={thumbnail}
-                  contentFit="cover"
+                  source={thumbnail ? { uri: thumbnail } : nothumbnail}
+                  resizeMode="cover"
+                  fadeDuration={0}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -507,10 +509,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     borderLeftWidth: 0.5,
                     borderColor: "#2F2F2F",
                   }}
-                  placeholder={require("../../assets/images/nocover.png")}
-                  placeholderContentFit="cover"
-                  transition={500}
-                  cachePolicy="memory-disk"
                 />
                 <View style={styles.videoOverlay} />
                 <View
@@ -540,6 +538,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   post={item}
                   setIndex={handleSetActiveIndex}
                   onDoubleTap={handleDoubleTap}
+                  isMyActivity={false}
                 />
               );
             })()

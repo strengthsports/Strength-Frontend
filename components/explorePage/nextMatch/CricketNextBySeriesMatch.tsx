@@ -23,7 +23,7 @@ const CricketNextBySeriesMatch: React.FC<NextBySeriesCricketMatchProps> = ({
   nextMatches,
   isFetching,
 }) => {
-  console.log("next by series", nextMatches);
+  // console.log("next by series", nextMatches);
 
   if (isFetching) {
     return (

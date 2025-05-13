@@ -95,17 +95,11 @@ export const cricketApi = createApi({
 
         const allMatches: any[] = [];
 
-        let extractedSeriesId = "";
-        let extractedSeriesName = "";
         // Extract matches of same series
         matchDetails.forEach((matchDetail: any) => {
           const matches = matchDetail?.matchDetailsMap?.match || [];
 
           if (Array.isArray(matches)) {
-            if (!extractedSeriesId && matches[0]?.matchInfo) {
-              extractedSeriesId = matches[0].matchInfo.seriesId;
-              extractedSeriesName = matches[0].matchInfo.seriesName;
-            }
             allMatches.push(...matches); // flatten and extract matches
           }
         });
@@ -114,7 +108,7 @@ export const cricketApi = createApi({
           ["Upcoming", "Abandon"].includes(match?.matchInfo?.state)
         );
 
-        console.log("Filtered matches", filteredMatches);
+        // console.log("Filtered matches", filteredMatches);
         return {
           seriesMatches: filteredMatches,
         };

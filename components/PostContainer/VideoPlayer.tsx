@@ -21,6 +21,7 @@ import Slider from "@react-native-community/slider";
 import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import PauseIcon from "../SvgIcons/clips/PauseIcon";
 import TextScallingFalse from "../CentralText";
+import { useIsFocused } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const DEFAULT_VIDEO =
@@ -41,6 +42,7 @@ export default function YouTubeStyleVideoPlayer({
   const [seekValue, setSeekValue] = useState(0);
   const [duration, setDuration] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const isFocused = useIsFocused();
 
   const playerRef = useRef<VideoView>();
 
@@ -77,22 +79,69 @@ export default function YouTubeStyleVideoPlayer({
     isPlaying: player.playing,
   });
 
+  // Handle screen focus changes
+  useEffect(() => {
+    if (!isPlayerValid()) return;
+
+    if (isFocused) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  }, [isFocused]);
+
   // Initialize player
   useEffect(() => {
     if (!isPlayerValid()) return;
 
-    const updateDuration = () => {
+    let intervalId: NodeJS.Timeout;
+    let timeoutId: NodeJS.Timeout;
+
+    const checkDuration = () => {
+      if (player.duration > 0) {
+        console.log("Duration updated:", player.duration);
+        setDuration(player.duration);
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+      }
+    };
+
+    // First try immediate check
+    checkDuration();
+
+    // Set up polling as fallback
+    intervalId = setInterval(checkDuration, 500);
+
+    // Safety timeout to prevent infinite polling
+    timeoutId = setTimeout(() => {
+      clearInterval(intervalId);
+    }, 10000);
+
+    // Cleanup
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+      if (isPlayerValid()) {
+        player.timeUpdateEventInterval = 0;
+      }
+    };
+  }, [player]);
+
+  // Add status change listener
+  useEffect(() => {
+    if (!isPlayerValid()) return;
+
+    const handleStatusChange = () => {
       if (player.duration > 0) {
         setDuration(player.duration);
       }
     };
 
-    player.timeUpdateEventInterval = 0.1; // More frequent updates for smoother progress
-    updateDuration();
+    player.addListener("statusChange", handleStatusChange);
 
     return () => {
       if (isPlayerValid()) {
-        player.timeUpdateEventInterval = 0;
+        player.removeListener("statusChange", handleStatusChange);
       }
     };
   }, [player]);
@@ -222,6 +271,9 @@ export default function YouTubeStyleVideoPlayer({
     startControlsTimer();
   };
 
+  // Calculate progress percentage
+  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
   return (
     <SafeAreaView style={[styles.container]}>
       <Pressable
@@ -240,7 +292,7 @@ export default function YouTubeStyleVideoPlayer({
             },
           ]}
           player={player}
-          contentFit={isFullscreen ? "cover" : "contain"}
+          contentFit={editable ? "cover" : "contain"}
           nativeControls={isFullscreen ? true : false}
           allowsFullscreen
           onFullscreenExit={() => setIsFullscreen(false)}
@@ -250,10 +302,38 @@ export default function YouTubeStyleVideoPlayer({
         <Animated.View
           style={[styles.controlsContainer, { opacity: fadeAnim }]}
         >
+          <View style={styles.progressBarContainer}>
+            <View
+              style={[styles.progressBar, { width: `${progressPercentage}%` }]}
+            />
+          </View>
+          {/* Top right controls */}
+          {!editable && (
+            <View style={styles.topRightControls}>
+              <TouchableOpacity
+                onPress={toggleMute}
+                style={styles.controlButton}
+              >
+                <MaterialIcons
+                  name={isMuted ? "volume-off" : "volume-up"}
+                  size={16}
+                  color="#fff"
+                  className="bg-black/20 p-1 rounded-md"
+                />
+              </TouchableOpacity>
+            </View>
+          )}
           {/* Center controls */}
           <View style={styles.centerControls}>
             {isPlaying ? <PauseIcon /> : <ClipsIconRP />}
           </View>
+          {/* Bottom time display */}
+          <View style={styles.timeContainer}>
+            <TextScallingFalse style={styles.timeText}>
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </TextScallingFalse>
+          </View>
+          {/* Bottom right controls */}
           {!editable && (
             <View style={styles.rightControls}>
               <TouchableOpacity
@@ -262,8 +342,9 @@ export default function YouTubeStyleVideoPlayer({
               >
                 <MaterialCommunityIcons
                   name="fullscreen"
-                  size={24}
+                  size={18}
                   color="#E6E6E6"
+                  className="bg-black/20 p-1 rounded-md"
                 />
               </TouchableOpacity>
             </View>
@@ -281,18 +362,12 @@ export default function YouTubeStyleVideoPlayer({
         )}
       </Pressable>
       {/* Bottom Controls */}
-      <View className="items-end justify-between">
-        {/* Progress bar */}
+      {/* <View className="items-end justify-between">
         <View style={styles.progressRow}>
-          <MaterialCommunityIcons
-            name={isPlaying ? "pause" : "play"}
-            size={20}
-            color="#EAEAEA"
-          />
           <Slider
             style={styles.slider}
             minimumValue={0}
-            maximumValue={player.duration}
+            maximumValue={duration}
             value={seeking ? seekValue : currentTime}
             minimumTrackTintColor="#EAEAEA"
             maximumTrackTintColor="#E6E6E6"
@@ -301,14 +376,8 @@ export default function YouTubeStyleVideoPlayer({
             onValueChange={handleSeekChange}
             onSlidingComplete={handleSeekComplete}
           />
-          {/* Bottom time display */}
-          <View style={styles.timeContainer}>
-            <TextScallingFalse style={styles.timeText}>
-              {formatTime(currentTime)} / {formatTime(player.duration)}
-            </TextScallingFalse>
-          </View>
         </View>
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 }
@@ -364,6 +433,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  topRightControls: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    flexDirection: "row",
+    alignItems: "center",
+  },
   controlButton: {
     padding: 8,
     marginLeft: 8,
@@ -395,7 +471,7 @@ const styles = StyleSheet.create({
   timeContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
   },
   timeText: {
     color: "#E6E6E6",
@@ -407,7 +483,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 3,
+    height: 5,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   progressBar: {

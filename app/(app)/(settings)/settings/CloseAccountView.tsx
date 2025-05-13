@@ -30,12 +30,12 @@ const CloseAccountView: React.FC<Props> = ({ onClose }) => {
             <View style={{ padding: 20 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
                     <Image style={styles.ProfileImage} source={{ uri: user?.profilePic }} />
-                    <View>
+                    <View style={{ paddingRight: 100 }}>
                         <TextScallingFalse style={styles.NameText}>
                             {user?.firstName} {user?.lastName}
                         </TextScallingFalse>
                         <TextScallingFalse style={styles.HeadlineText}>
-                            @{user?.username} {user?.headline}
+                            @{user?.username} | {user?.headline}
                         </TextScallingFalse>
                     </View>
                 </View>
@@ -119,12 +119,12 @@ const styles = StyleSheet.create({
     },
     NameText: {
         color: 'white',
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '500',
     },
     HeadlineText: {
-        color: 'white',
-        fontSize: 9,
+        color: '#cecece',
+        fontSize: 11,
         fontWeight: '300',
     },
     SectionHeader: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     NextButton: {
         backgroundColor: 'red',
         paddingVertical: 12,
-        paddingHorizontal: 90,
+        paddingHorizontal: 80,
         borderRadius: 25,
     },
     NextButtonText: {

@@ -170,7 +170,7 @@ const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
         {/* Game Type and Round */}
         <View className="flex-row items-center mt-2">
           <TextScallingFalse className="text-theme text-base font-semibold">
-            {"\u25B6"}  Cricket{" "}
+            {"\u25B6"} Cricket{" "}
           </TextScallingFalse>
         </View>
       </View>

@@ -148,7 +148,7 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 left: 0,
                 right: 0,
                 height: 112, // 28 * 4 (since Tailwind unit is 4px by default)
-              }}
+              }}
             />
             <View className="absolute bottom-9 px-4">
               <TextScallingFalse
@@ -162,12 +162,10 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                   {slide.sportsName}
                 </TextScallingFalse>
                 <TextScallingFalse className="text-white text-xl">
-                  {"  "}
-                  •  {slide.date}
+                  {"  "}• {slide.date}
                 </TextScallingFalse>
                 <TextScallingFalse className="text-white text-xl">
-                  {"  "}
-                  •  {slide.time}
+                  {"  "}• {slide.time}
                 </TextScallingFalse>
               </View>
             </View>

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Modal as RNModal,
   Text,
+  Pressable,
 } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { FollowUser, SuggestionUser } from "~/types/user";
@@ -96,16 +97,22 @@ const SuggestionCard = ({
     }
   };
 
+  //handle go to profile
+  const goToProfile = () => {
+    router.push(`/(app)/(profile)/profile/${serializedUser}`);
+  };
+
   const handleOpenModal = () => {
     setModalOpen(true);
   };
 
   return (
     <>
-      <View
-        className={`bg-black rounded-xl pb-4 relative border ${
+      <Pressable
+        className={`rounded-xl pb-4 relative border ${
           size === "small" ? "w-[150px] h-[180px]" : "w-[45%] h-[200px]"
         } border-[#80808085] overflow-hidden`}
+        onPress={goToProfile}
       >
         {/* Close Button */}
         <TouchableOpacity
@@ -141,9 +148,7 @@ const SuggestionCard = ({
         {/* Profile Image positioned outside the cover's container */}
         <TouchableOpacity
           activeOpacity={0.5}
-          onPress={() =>
-            router.push(`/(app)/(profile)/profile/${serializedUser}`)
-          }
+          onPress={goToProfile}
           disabled={onboarding}
           className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full ${
             size === "small" ? "w-16 h-16" : "w-20 h-20"
@@ -209,7 +214,7 @@ const SuggestionCard = ({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </Pressable>
 
       {isModalOpen && (
         <RNModal

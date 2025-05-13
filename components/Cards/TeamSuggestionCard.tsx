@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
-import { Image, View, TouchableOpacity } from "react-native";
+import { Image, View, TouchableOpacity, Pressable } from "react-native";
 import TextScallingFalse from "../CentralText";
 import { SuggestTeam } from "~/types/team";
 import { useRouter } from "expo-router";
@@ -73,11 +73,17 @@ const TeamSuggestionCard = ({
     }
   };
 
+  //handle go to profile
+  const goToProfile = () => {
+    router.push(`/(app)/(team)/teams/${team._id}`);
+  };
+
   return (
-    <View
+    <Pressable
       className={`bg-black rounded-xl p-5 mb-4 relative border justify-between ${
         size === "small" ? "w-[150px] h-[180px]" : "w-full h-[180px]"
       } border-[#323232] overflow-hidden`}
+      onPress={goToProfile}
     >
       {/* Close Button */}
       <TouchableOpacity
@@ -94,7 +100,7 @@ const TeamSuggestionCard = ({
           {/* Profile Image */}
           <TouchableOpacity
             activeOpacity={0.5}
-            onPress={() => router.push(`/(app)/(team)/teams/${team._id}`)}
+            onPress={goToProfile}
             disabled={onboarding}
             className={`rounded-[10px] ${
               size === "small" ? "w-[50px] h-[50px]" : "w-[60px] h-[60px]"
@@ -147,7 +153,7 @@ const TeamSuggestionCard = ({
         {/* Follow/Unfollow button */}
         <View className="basis-[20%]">
           <TouchableOpacity
-            className="border-[1px] rounded-3xl px-8 border-[#555555]"
+            className="border-[1px] rounded-3xl px-8 border-[#555555] h-10 flex items-center justify-center"
             activeOpacity={0.6}
             onPress={followingStatus ? handleUnfollow : handleFollow}
           >
@@ -169,7 +175,7 @@ const TeamSuggestionCard = ({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 

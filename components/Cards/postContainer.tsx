@@ -13,6 +13,7 @@ import {
   StyleSheet,
   Dimensions,
   Image,
+  Pressable,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -235,7 +236,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
     const goToUser = useCallback(
       (userId: string) => {
-        router.push(`/(app)/(profile)/profile/${userId}`);
+        userId === item.postedBy?._id
+          ? router.push("/(app)/(tabs)/profile")
+          : router.push(`/(app)/(profile)/profile/${serializedUser}`);
       },
       [router]
     );
@@ -378,11 +381,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             <TouchableOpacity
               activeOpacity={0.5}
               className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
-              onPress={() =>
-                user?._id === item.postedBy?._id
-                  ? router.push("/(app)/(tabs)/profile")
-                  : router.push(`/(app)/(profile)/profile/${serializedUser}`)
-              }
+              onPress={() => goToUser(user?._id)}
               style={shadowStyle}
             >
               <Image
@@ -404,7 +403,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             </TouchableOpacity>
 
             {/* Name, Headline, post date */}
-            <View className="w-64 flex flex-col gap-y-4 justify-between">
+            <Pressable
+              onPress={() => goToUser(user?._id)}
+              className="w-64 flex flex-col gap-y-4 justify-between"
+            >
               <UserInfo
                 fullName={
                   item.postedBy.firstName +
@@ -431,7 +433,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   color="gray"
                 />
               </View>
-            </View>
+            </Pressable>
 
             {/* Follow button */}
             {user?._id !== item.postedBy?._id && !item.isFollowing && (
@@ -448,13 +450,22 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
-            <TouchableOpacity
+          <Pressable
+            onPress={() => router.push(`/post-details/${item._id}`)}
+            className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900"
+          >
+            <MaterialIcons
+              onPress={(e) => {
+                e.stopPropagation();
+                console.log("Clicked");
+                handleOpenBottomSheet({ type: "settings" });
+              }}
+              name="more-horiz"
+              size={22}
+              color="white"
+              hitSlop={{ top: 20, left: 20, right: 20, bottom: 20 }}
               className="absolute right-8 p-2 pt-2 z-30"
-              onPress={() => handleOpenBottomSheet({ type: "settings" })}
-            >
-              <MaterialIcons name="more-horiz" size={22} color="white" />
-            </TouchableOpacity>
+            />
 
             <View className="pl-7 pr-10 pt-12 pb-2">
               <TextScallingFalse className="text-2xl flex-wrap flex-row">
@@ -472,7 +483,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onVote={handleVote}
               />
             )}
-          </View>
+          </Pressable>
 
           {/* Assets section */}
           {item.isVideo ? (

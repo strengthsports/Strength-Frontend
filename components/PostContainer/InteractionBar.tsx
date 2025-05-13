@@ -75,7 +75,7 @@ const InteractionBar = ({
       {/* counts */}
       <View
         className={`w-full ${
-          isPostContainer ? "pl-8 pr-12" : "px-8"
+          isPostContainer ? "pl-8 pr-12" : "px-6"
         } py-3 flex flex-row justify-between items-center`}
       >
         {/* like count */}
@@ -173,9 +173,13 @@ const InteractionBar = ({
 
       {/* actions */}
       <View
-        className={`w-[80%] mx-auto py-5 mb-1 flex flex-row ${
-          isPostContainer ? "justify-end" : "justify-center"
-        } gap-x-4 items-center border-t-[0.5px] border-[#626262]`}
+        className={`mx-auto py-5 mb-1 flex flex-row ${
+          isPostContainer ? "w-[80%] justify-end" : "w-[90%] justify-center"
+        } items-center border-t`}
+        style={{
+          columnGap: isPostContainer ? 16 : 32,
+          borderColor: "#303030",
+        }}
       >
         {/* like */}
         <TouchableOpacity
@@ -250,7 +254,9 @@ const InteractionBar = ({
         )}
         {/* share */}
         <TouchableOpacity
-          className="mr-3 flex flex-row items-center gap-2 relative"
+          className={`${
+            isPostContainer && "mr-3"
+          } flex flex-row items-center gap-2 relative`}
           onPress={handleShare}
         >
           {/* The main button */}

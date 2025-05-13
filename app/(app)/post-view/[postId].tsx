@@ -158,39 +158,55 @@ const Post = () => {
           }`}
           style={{
             flex: 0.1,
-            paddingHorizontal: 10,
+            paddingHorizontal: 20,
+            flexDirection: "row",
           }}
         >
           <TouchableOpacity
-            style={{ padding: 10 }}
+            style={{ flex: 0.15 }}
             onPress={() => router.back()}
           >
             <BackIcon />
           </TouchableOpacity>
           <TouchableOpacity
-            className="flex-row justify-center items-center gap-x-4"
+            className="flex-row justify-center items-center gap-x-3 px-5"
+            style={{ flex: 1 }}
             activeOpacity={0.8}
             onPress={() =>
               router.push(`/(app)/(profile)/profile/${serializedUser}`)
             }
           >
-            <View className="w-10 h-10 rounded-full overflow-hidden">
+            <View
+              className="rounded-full overflow-hidden"
+              style={{ width: 30, height: 30 }}
+            >
               <Image
                 source={
                   post?.postedBy?.profilePic
                     ? { uri: post.postedBy.profilePic }
                     : nopic
                 }
-                style={{ width: 40, height: 40 }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
                 contentFit="cover"
                 transition={500}
               />
             </View>
-            <TextScallingFalse className="text-white font-light text-4xl">
+            <TextScallingFalse
+              className="text-white font-semibold text-4xl"
+              numberOfLines={1}
+            >
               {post?.postedBy?.firstName} {post?.postedBy?.lastName}
             </TextScallingFalse>
           </TouchableOpacity>
-          <TouchableOpacity style={{ padding: 10 }}>
+          <TouchableOpacity
+            style={{
+              flex: 0.15,
+              alignItems: "flex-end",
+            }}
+          >
             <MaterialIcons name="more-horiz" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -240,7 +256,7 @@ const Post = () => {
         <View
           className={`${!isHeaderFooterVisible && "opacity-0"}`}
           style={{
-            flex: 0.25,
+            flex: 0.18,
             justifyContent: "center",
           }}
         >
@@ -266,7 +282,7 @@ const Post = () => {
             paddingHorizontal: "5%",
             paddingTop: 16,
             position: "absolute",
-            bottom: 150,
+            bottom: 130,
             zIndex: 20,
           }}
           className={`w-full max-h-52 ${!isHeaderFooterVisible && "opacity-0"}`}

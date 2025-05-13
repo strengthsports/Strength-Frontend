@@ -16,17 +16,11 @@ const option = () => {
       <View className="gap-[130px]">
         {/* Header */}
         <View className="w-full flex-row items-center mt-[30px] justify-between px-4">
-          <TouchableOpacity
-            onPress={() => router.push('/(auth)/login')}
-            activeOpacity={0.5}
-          >
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.5}>
             <MaterialIcons name="keyboard-backspace" size={30} color="white" />
           </TouchableOpacity>
           <Logo />
-          <TouchableOpacity
-            onPress={() => router.push("/login")}
-            activeOpacity={0.5}
-          >
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.5}>
             <AntDesign name="close" size={25} color="white" />
           </TouchableOpacity>
         </View>

@@ -228,6 +228,7 @@ const SignupEmail1 = () => {
                   style={styles.input}
                   value={firstName}
                   onChangeText={setFirstName}
+                   cursorColor={'#12956B'}
                 />
               </View>
               <View style={styles.nameInputContainer}>
@@ -238,6 +239,7 @@ const SignupEmail1 = () => {
                   style={styles.input}
                   value={lastName}
                   onChangeText={setLastName}
+                   cursorColor={'#12956B'}
                 />
               </View>
             </View>
@@ -247,10 +249,9 @@ const SignupEmail1 = () => {
                 Email
               </TextScallingFalse>
               <TextInputSection
-                placeholder=""
+                placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
-                keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
@@ -387,6 +388,7 @@ const SignupEmail1 = () => {
             display="calendar"
             onChange={handleDateChange}
             maximumDate={maxDate}
+            minimumDate={new Date(1900, 0, 1)}
           />
         )}
 

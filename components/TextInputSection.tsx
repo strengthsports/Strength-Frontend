@@ -32,7 +32,7 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
         secureTextEntry={secureTextEntry} // Add secureTextEntry here
         style={[styles.input, customStyle]}
         textAlignVertical="center"
-        cursorColor={cursorColor}
+        cursorColor={'#12956B'}
       />
     </View>
   );

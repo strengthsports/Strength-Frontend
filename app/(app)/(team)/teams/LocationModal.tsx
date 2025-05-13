@@ -63,7 +63,7 @@ const LocationModal = ({ visible, onClose, onSave }) => {
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
             text
-          )}&key=${apiKey}&components=country:in`
+          )}&key=${apiKey}`
         );
         const data = await response.json();
         if (data.status === "OK") {
@@ -173,13 +173,12 @@ const LocationModal = ({ visible, onClose, onSave }) => {
               Select Location
             </TextScallingFalse>
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={24} color="white"/>
+              <MaterialIcons name="close" size={24} color="white" />
             </TouchableOpacity>
           </View>
 
           {/* Search Input */}
           <View className="mb-4">
-          
             <TextInput
               value={addressPickup}
               onChangeText={handleAddressChange}

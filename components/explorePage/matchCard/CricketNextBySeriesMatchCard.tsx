@@ -1,10 +1,11 @@
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View, FlatList } from "react-native";
 import { useState } from "react";
 import TextScallingFalse from "../../CentralText";
 import CountryFlag from "react-native-country-flag";
 import { countryCodes } from "~/constants/countryCodes";
 import teamLogos from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface MatchCardProps {
   matchInfo: {
@@ -49,19 +50,23 @@ interface MatchCardProps {
 }
 
 interface GroupedMatchProps {
-  seriesId: number;
-  seriesName: string;
   matches: MatchCardProps[];
 }
 
 const iplImg = require("~/assets/images/ipl.png");
 
-const CricketNextMatchCard = ({
-  seriesId,
-  seriesName,
-  matches,
-}: GroupedMatchProps) => {
+const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
+  const initialSeriesName =
+    matches?.[0]?.matchInfo?.seriesName ?? "Upcoming Matches";
+  const [seriesName, setSeriesName] = useState(initialSeriesName);
+  const [visibleCount, setVisibleCount] = useState(3);
+  const loadMoreMatches = () => {
+    setVisibleCount((prev) => prev + 3);
+  };
+  const isAllMatchesLoaded = visibleCount >= matches.length;
+  //   console.log(matches);
+
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
@@ -99,6 +104,44 @@ const CricketNextMatchCard = ({
     );
   };
 
+  const renderItem = ({ item }: { item: MatchCardProps }) => {
+    const match = item;
+
+    return (
+      <>
+        <View className="h-[1px] bg-[#262626]" />
+
+        <View className="pl-6 pt-5">
+          <TextScallingFalse className="text-[#9E9E9E] text-base">
+            {match.matchInfo.matchFormat}
+            {" \u2022 "}
+            {extractMatchNum(match.matchInfo.matchDesc)}
+          </TextScallingFalse>
+        </View>
+        <View className="flex-row items-center justify-between p-6">
+          <View className="flex-column gap-y-3">
+            {/* Team 1 */}
+            <NameFlagSubCard
+              flag={match.matchInfo.team1.teamName}
+              teamName={match.matchInfo.team1.teamSName}
+            />
+
+            {/* Team 2 */}
+            <NameFlagSubCard
+              flag={match.matchInfo.team2.teamName}
+              teamName={match.matchInfo.team2.teamSName}
+            />
+          </View>
+          <View className="w-[1px] h-12 bg-neutral-700 absolute right-[124px] top-[26px]" />
+          {/* Match Date and time */}
+          <View className="items-center w-[84px]">
+            {extractDateDayTime(match.matchInfo.startDate)}
+          </View>
+        </View>
+      </>
+    );
+  };
+
   return (
     <>
       {/* <View className="w-full h-full rounded-t-2xl bg-neutral-700" > */}
@@ -112,11 +155,11 @@ const CricketNextMatchCard = ({
           <View className="py-1">
             <Image
               source={iplImg}
-              className="w-[24px] h-[16px] rounded-[2px]"
+              className="w-[24px] h-[16px] rounded-[2px] self-center"
             />
           </View>
           <TextScallingFalse
-            className="text-white text-3xl w-[88%]"
+            className="text-white text-3xl w-[88%] "
             numberOfLines={numberOfLinesTitle}
             ellipsizeMode="tail"
           >
@@ -127,49 +170,38 @@ const CricketNextMatchCard = ({
         {/* Game Type and Round */}
         <View className="flex-row items-center mt-2">
           <TextScallingFalse className="text-theme text-base font-semibold">
-            {"\u25B6"}  Cricket{" "}
+            {"\u25B6"} Cricket{" "}
           </TextScallingFalse>
         </View>
       </View>
 
-      {matches &&
-        matches.map((match) => (
-          <View key={match.matchInfo.matchId}>
-            <View className="h-[1px] bg-[#262626]" />
-
-            <View className="pl-6 pt-5">
-              <TextScallingFalse className="text-[#9E9E9E] text-base">
-                {match.matchInfo.matchFormat}
-                {" \u2022 "}
-                {extractMatchNum(match.matchInfo.matchDesc)}
-              </TextScallingFalse>
-            </View>
-            <View className="flex-row items-center justify-between p-6">
-              <View className="flex-column gap-y-3">
-                {/* Team 1 */}
-                <NameFlagSubCard
-                  flag={match.matchInfo.team1.teamName}
-                  teamName={match.matchInfo.team1.teamSName}
-                />
-
-                {/* Team 2 */}
-                <NameFlagSubCard
-                  flag={match.matchInfo.team2.teamName}
-                  teamName={match.matchInfo.team2.teamSName}
-                />
-              </View>
-              <View className="w-[1px] h-12 bg-neutral-700 absolute right-[124px] top-[26px]" />
-              {/* Match Date and time */}
-              <View className="items-center w-[84px]">
-                {extractDateDayTime(match.matchInfo.startDate)}
-              </View>
-            </View>
+      <FlatList
+        data={matches.slice(0, visibleCount)}
+        keyExtractor={(item) => item.matchInfo.matchId.toString()}
+        renderItem={renderItem}
+        scrollEnabled={false}
+      />
+      {!isAllMatchesLoaded && (
+        <TouchableOpacity
+          className="mt-3 mb-10 pt-3 pb-3 px-8 flex self-center rounded-full border border-[1px] border-[#303030]"
+          activeOpacity={0.6}
+          onPress={loadMoreMatches}
+        >
+          <View className="flex-row items-center justify-center">
+            <TextScallingFalse className="text-white">
+              See more
+            </TextScallingFalse>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={18}
+              color="#E9E9E9"
+              className="mt-0.5 ml-1.5"
+            />
           </View>
-        ))}
-
-      {/* <TextScallingFalse className="text-white text-center text-base mb-2">{match?.t1}</TextScallingFalse> */}
+        </TouchableOpacity>
+      )}
     </>
   );
 };
 
-export default CricketNextMatchCard;
+export default CricketNextBySeriesMatchCard;

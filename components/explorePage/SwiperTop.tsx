@@ -91,15 +91,15 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
       paginationStyle={{ bottom: 8, gap: 4 }}
       dotStyle={{
         backgroundColor: Colors.greyText,
-        width: 4,
-        height: 4,
-        marginHorizontal: 20,
+        width: 5,
+        height: 5,
+        marginHorizontal: 18,
       }}
       activeDotStyle={{
         backgroundColor: "white",
         width: 5,
         height: 5,
-        marginHorizontal: 20,
+        marginHorizontal: 18,
       }}
       style={{ height: 220, marginTop: 0.5 }}
     >
@@ -148,26 +148,24 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 left: 0,
                 right: 0,
                 height: 112, // 28 * 4 (since Tailwind unit is 4px by default)
-              }}
+              }}
             />
             <View className="absolute bottom-9 px-4">
               <TextScallingFalse
-                className="text-white text-6xl font-bold"
+                className="text-white text-6xl font-bold mb-1"
                 numberOfLines={numberOfLinesTitle}
               >
                 {slide.title}
               </TextScallingFalse>
               <View className="flex-row items-center">
-                <TextScallingFalse className="text-[#12956B] text-xl font-bold text-start">
+                <TextScallingFalse className="text-[#12956B] text-xl font-semibold text-start">
                   {slide.sportsName}
                 </TextScallingFalse>
                 <TextScallingFalse className="text-white text-xl">
-                  {" "}
-                  • {slide.date}
+                  {"  "}• {slide.date}
                 </TextScallingFalse>
                 <TextScallingFalse className="text-white text-xl">
-                  {" "}
-                  • {slide.time}
+                  {"  "}• {slide.time}
                 </TextScallingFalse>
               </View>
             </View>

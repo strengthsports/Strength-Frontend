@@ -54,6 +54,7 @@ import Header from "~/components/profilePage/Header";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 import { calculateAge } from "~/utils/calculateAge";
+import TickIcon from "~/components/SvgIcons/Common_Icons/TickIcon";
 
 // Define the context type
 interface ProfileContextType {
@@ -567,17 +568,40 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Teams:{" "}
-                              {profileData?.createdTeams?.length > 0 &&
-                                profileData.createdTeams.map((team: any) => (
-                                  <TextScallingFalse
-                                    key={team?.team?._id}
-                                    style={{ color: "grey" }}
-                                  >
-                                    {" "}
-                                    {team.name}
-                                  </TextScallingFalse>
-                                ))}
+                              {(() => {
+                                const allTeams = [
+                                  ...(profileData.createdTeams || []).map(
+                                    (t: any) => t.team?.name
+                                  ),
+                                  ...(profileData.joinedTeams || []).map(
+                                    (t: any) => t.team?.name
+                                  ),
+                                ].filter(Boolean);
+
+                                const teamCount = allTeams.length;
+
+                                if (teamCount === 0) return "Teams: No teams";
+
+                                return (
+                                  <>
+                                    <TextScallingFalse
+                                      style={{ color: "white" }}
+                                    >
+                                      {`${
+                                        teamCount === 1 ? "Team" : "Teams"
+                                      }: `}
+                                      {allTeams[0]}
+                                    </TextScallingFalse>
+                                    <TextScallingFalse
+                                      style={{ color: "grey" }}
+                                    >
+                                      {teamCount > 1
+                                        ? ` +${teamCount - 1}`
+                                        : ""}
+                                    </TextScallingFalse>
+                                  </>
+                                );
+                              })()}
                             </TextScallingFalse>
                           </View>
                         </View>
@@ -765,21 +789,25 @@ const ProfileLayout = () => {
                     className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
                     onPress={() => handleOpenSettingsModal("Unfollow")}
                   >
-                    <TextScallingFalse
+                    <View
                       style={{
-                        color: "white",
-                        fontSize: responsiveFontSize(1.7),
-                        fontWeight: "500",
+                        flexDirection: "row",
+                        gap: 3,
+                        justifyContent: "center",
+                        alignItems: "center",
                       }}
                     >
-                      <Entypo
-                        style={{ marginLeft: -4 * scaleFactor }}
-                        name="check"
-                        size={17.5 * scaleFactor}
-                        color="white"
-                      />
-                      Following
-                    </TextScallingFalse>
+                      <TickIcon />
+                      <TextScallingFalse
+                        style={{
+                          color: "white",
+                          fontSize: responsiveFontSize(1.7),
+                          fontWeight: "400",
+                        }}
+                      >
+                        Following
+                      </TextScallingFalse>
+                    </View>
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
@@ -946,15 +974,15 @@ const ProfileLayout = () => {
             </View>
           ) : isSettingsModalVisible.message === "Unfollow" ? (
             <View>
-              <TextScallingFalse className="text-white text-xl font-medium">
+              <TextScallingFalse className="text-white text-4xl font-medium">
                 Unfollow {profileData?.firstName || ""}
               </TextScallingFalse>
-              <TextScallingFalse className="text-white mt-1 font-light text-sm">
+              <TextScallingFalse className="text-white mt-1 font-light text-lg">
                 Stop seeing posts from {profileData?.firstName || ""} on your
                 feed. {profileData?.firstName || ""} won't be notified that
                 you've unfollowed
               </TextScallingFalse>
-              <View className="items-center justify-evenly flex-row mt-5">
+              <View className="items-center justify-start gap-5 flex-row mt-5">
                 {/* cancel unfollow */}
                 <TouchableOpacity
                   activeOpacity={0.5}

@@ -36,13 +36,10 @@ import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
 import debounce from "lodash.debounce";
 import eventBus from "~/utils/eventBus";
 import PageThemeView from "~/components/PageThemeView";
-import PostSkeletonLoader1 from "~/components/skeletonLoaders/PostSkeletonLoader1";
 import UploadProgressBar from "~/components/UploadProgressBar";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { setUploadingCompleted } from "~/reduxStore/slices/post/postSlice";
-import RunningLoader from "~/components/skeletonLoaders/PostSkeletonLoader1";
-import AddPostContainer from "~/components/modals/AddPostContainer";
-import { Link } from "expo-router";
+import FeedTopFtu from "~/components/ui/FTU/feedPage/FeedTopFtu";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -84,8 +81,6 @@ const ListFooterComponent = memo(
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isAddPostContainerOpen } = useSelector((state: any) => state?.post);
-  console.log(isAddPostContainerOpen);
   const { loading, error, cursor, hasMore } = useSelector(selectFeedState);
   const { isUploadingCompleted } = useSelector(
     (state: RootState) => state.post
@@ -94,6 +89,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
+  const profile = useSelector((state: RootState) => state.profile);
 
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
@@ -256,6 +252,14 @@ const Home = () => {
             }
             onEndReached={handleLoadMore}
             onEndReachedThreshold={2}
+            ListHeaderComponent={
+              // Show FeedTopFtu if at least one state is false, hide if all are true
+              !(
+                profile?.hasVisitedEditProfile &&
+                profile?.hasVisitedEditOverview &&
+                profile?.hasVisitedCommunity
+              ) && <FeedTopFtu />
+            }
             ListEmptyComponent={<EmptyComponent error={error} />}
             ListFooterComponent={
               <ListFooterComponent isLoading={isLoading} hasMore={hasMore} />
@@ -265,11 +269,6 @@ const Home = () => {
           />
         </GestureHandlerRootView>
       )}
-      {/* Add Post container modal */}
-      <AddPostContainer
-        text="What's on your mind"
-        isAddPostContainerOpen={isAddPostContainerOpen}
-      />
     </PageThemeView>
   );
 };

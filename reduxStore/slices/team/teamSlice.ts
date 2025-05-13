@@ -108,14 +108,39 @@ export const createTeam = createAsyncThunk<
     const token = await getToken("accessToken");
 
     const formData = new FormData();
-    const datee = convertToDate(teamData.establishedOn);
+    
+    // Append all required fields
     formData.append("name", teamData.name);
     formData.append("sport", teamData.sport);
-    formData.append("establishedOn", datee);
     formData.append("gender", teamData.gender);
-    formData.append("description", teamData.description);
-    formData.append("address", JSON.stringify(teamData.address)); // Address needs to be a string
-    formData.append("assets", teamData.logo);
+    formData.append("description", teamData.description || "");
+    
+    // Handle establishedOn date - ensure it's in ISO format
+    if (teamData.establishedOn) {
+      formData.append("establishedOn", new Date(teamData.establishedOn).toISOString());
+    }
+    
+    // Handle location/address
+    if (teamData.address) {
+      formData.append("location", JSON.stringify({
+        city: teamData.address.city,
+        state: teamData.address.state,
+        country: teamData.address.country,
+        location: teamData.address.location
+      }));
+    }
+    
+    // Append logo file if exists
+    if (teamData.logo) {
+      formData.append("assets", {
+        uri: teamData.logo.uri,
+        name: teamData.logo.name || "logo.jpg",
+        type: teamData.logo.type || "image/jpeg",
+      });
+    }
+
+    
+    console.log("Sending Data to backend--->",JSON.stringify(teamData, null, 2));
 
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/team`,
@@ -129,6 +154,7 @@ export const createTeam = createAsyncThunk<
     );
 
     const data = await response.json();
+    console.log("data recieved -->",data);
 
     if (!response.ok) {
       return rejectWithValue(data.message || "Something went wrong!");
@@ -400,34 +426,34 @@ export const changeUserRole = createAsyncThunk<
   }
 );
 
-export const removeTeamMember = createAsyncThunk<
-  { success: boolean; message: string },
-  { teamId: string; userId: string },
-  { rejectValue: string }
->("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
+// export const removeTeamMember = createAsyncThunk<
+//   { success: boolean; message: string },
+//   { teamId: string; userId: string },
+//   { rejectValue: string }
+// >("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
+//   try {
+//     const token = await getToken("accessToken");
 
-    const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ teamId, userId }),
-    });
+//     const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//       body: JSON.stringify({ teamId, userId }),
+//     });
 
-    const data = await response.json();
+//     const data = await response.json();
 
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Failed to remove team member");
-    }
+//     if (!response.ok) {
+//       return rejectWithValue(data.message || "Failed to remove team member");
+//     }
 
-    return data;
-  } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
-  }
-});
+//     return data;
+//   } catch (err: any) {
+//     return rejectWithValue(err.message || "Network error");
+//   }
+// });
 
 //join team request by user who not present in the team
 export const joinTeam = createAsyncThunk<
@@ -547,6 +573,41 @@ export const rejectTeamInvitation = createAsyncThunk(
     }
   }
 );
+
+
+//remove user from team-----> 
+// In teamSlice.ts, ensure the removeTeamMember thunk is properly implemented:
+
+export const removeTeamMember = createAsyncThunk<
+  { success: boolean; message: string },
+  { teamId: string; userId: string },
+  { rejectValue: string }
+>("team/removeTeamMember", async ({ teamId, userId }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+
+    const response = await fetch(`${BASE_URL}/api/v1/team/remove-member`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ teamId, userId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to remove team member");
+    }
+
+    return data;
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Network error");
+  }
+});
+
+
 
 const teamSlice = createSlice({
   name: "team",
@@ -685,30 +746,69 @@ const teamSlice = createSlice({
         state.error = action.payload || "Failed to change user role";
       })
 
-      .addCase(removeTeamMember.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(removeTeamMember.fulfilled, (state, action) => {
-        state.loading = false;
-        // Remove the user from the team members if team exists
-        if (state.team) {
-          state.team.members = state.team.members.filter(
-            (member: any) => member.user._id !== action.meta.arg.userId
-          );
-          // Also remove from admin and coach arrays if present
-          state.team.admin = state.team.admin.filter(
-            (adminId: any) => adminId.toString() !== action.meta.arg.userId
-          );
-          state.team.coach = state.team.coach.filter(
-            (coachId: any) => coachId.toString() !== action.meta.arg.userId
-          );
-        }
-      })
-      .addCase(removeTeamMember.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to remove team member";
-      })
+      // .addCase(removeTeamMember.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(removeTeamMember.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   // Remove the user from the team members if team exists
+      //   if (state.team) {
+      //     state.team.members = state.team.members.filter(
+      //       (member: any) => member.user._id !== action.meta.arg.userId
+      //     );
+      //     // Also remove from admin and coach arrays if present
+      //     state.team.admin = state.team.admin.filter(
+      //       (adminId: any) => adminId.toString() !== action.meta.arg.userId
+      //     );
+      //     state.team.coach = state.team.coach.filter(
+      //       (coachId: any) => coachId.toString() !== action.meta.arg.userId
+      //     );
+      //   }
+      // })
+      // .addCase(removeTeamMember.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload || "Failed to remove team member";
+      // })
+
+ .addCase(removeTeamMember.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(removeTeamMember.fulfilled, (state, action) => {
+  state.loading = false;
+  
+  if (state.team) {
+    // Safely remove member from all possible arrays
+    const userId = action.payload.userId;
+
+    // Handle members array
+    if (state.team.members) {
+      state.team.members = state.team.members.filter(
+        (member: any) => member.user?._id !== userId
+      );
+    }
+
+    // Handle admin array (assuming it's an array of user objects)
+    if (state.team.admin) {
+      state.team.admin = state.team.admin.filter(
+        (admin: any) => admin._id !== userId
+      );
+    }
+
+
+
+    // Update members length if exists
+    if (state.team.membersLength) {
+      state.team.membersLength--;
+    }
+  }
+})
+.addCase(removeTeamMember.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to remove team member";
+})
+
 
       .addCase(joinTeam.pending, (state) => {
         state.loading = true;

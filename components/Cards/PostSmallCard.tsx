@@ -6,8 +6,15 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  NativeSyntheticEvent,
 } from "react-native";
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import TextScallingFalse from "../CentralText";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import {
@@ -24,9 +31,28 @@ import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import ClipsIcon from "~/components/SvgIcons/addpost/ClipsIcon";
 import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
-import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
+import { TextLayoutEventData } from "react-native";
+import { Platform } from "react-native";
+
+type TaggedUser = {
+  _id: string;
+  username: string;
+  type: string;
+};
+
+const shadowStyle = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 10,
+    shadowColor: "#000",
+  },
+});
 
 const PostSmallCard = ({
   post,
@@ -39,8 +65,10 @@ const PostSmallCard = ({
   const scaleFactor = screenWidth2 / 410;
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef<Swiper>(null);
+  const fullTextRef = useRef<string>("");
 
   const [thumbnailUri, setThumbnailUri] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState<boolean>(false);
@@ -62,21 +90,15 @@ const PostSmallCard = ({
               quality: 0.5,
             }
           );
-          if (isMounted) {
-            setThumbnailUri(uri);
-          }
+          if (isMounted) setThumbnailUri(uri);
         } catch (e) {
           console.warn(
             `Could not generate thumbnail for video ${post.assets[0].url}:`,
             e
           );
-          if (isMounted) {
-            setThumbnailUri(null);
-          }
+          if (isMounted) setThumbnailUri(null);
         } finally {
-          if (isMounted) {
-            setThumbnailLoading(false);
-          }
+          if (isMounted) setThumbnailLoading(false);
         }
       } else {
         setThumbnailUri(null);
@@ -85,7 +107,6 @@ const PostSmallCard = ({
     };
 
     generateThumbnail();
-
     return () => {
       isMounted = false;
     };
@@ -95,13 +116,6 @@ const PostSmallCard = ({
     setIsExpanded(!isExpanded);
   };
 
-  const maxCaptionLength = 25;
-  const captionText = post.caption || "";
-  const needsTruncation = captionText.length > maxCaptionLength;
-  const truncatedText = needsTruncation
-    ? `${captionText.substring(0, maxCaptionLength).trim()}... `
-    : captionText;
-
   const imageUrls = post.assets
     .filter((asset) => asset.url && !post.isVideo)
     .map((asset) => asset.url);
@@ -110,28 +124,91 @@ const PostSmallCard = ({
     dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
   };
 
-  const renderCaptionWithHashtags = (caption: string) => {
-    return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
-      if (word.startsWith("#")) {
-        return (
-          <Text
-            key={index}
-            onPress={() =>
-              router.push(
-                `/(app)/(post)/hashtag/${word.substring(1, word.length)}`
-              )
-            }
-            className={`text-xl text-[#12956B] ${
-              highlightedHashtag?.toLowerCase() === word.toLowerCase() &&
-              "font-semibold"
-            }`}
-          >
-            {word}
-          </Text>
-        );
+  const renderCaptionWithTags = useCallback(
+    (
+      caption: string,
+      taggedUsers: TaggedUser[],
+      isExpanded: boolean,
+      onPressSeeMore: () => void
+    ) => {
+      if (!caption) return { elements: null, fullText: "" };
+
+      const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+      const elements = [];
+      let fullText = "";
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        fullText += part;
+        if (part.startsWith("#")) {
+          const tag = part.slice(1);
+          elements.push(
+            <TextScallingFalse
+              key={i}
+              onPress={() => router.push(`/(app)/(post)/hashtag/${tag}`)}
+              className={`text-sm text-[#12956B] ${
+                highlightedHashtag?.toLowerCase() === tag.toLowerCase() &&
+                "font-semibold"
+              }`}
+            >
+              {part}
+            </TextScallingFalse>
+          );
+        } else if (part.startsWith("@")) {
+          const username = part.slice(1);
+          const user = taggedUsers.find((u) => u.username === username);
+          if (user) {
+            elements.push(
+              <TextScallingFalse
+                key={i}
+                onPress={() =>
+                  router.push(
+                    `/(app)/(profile)/profile/${encodeURIComponent(
+                      JSON.stringify({ id: user._id, type: user.type })
+                    )}`
+                  )
+                }
+                className="text-sm text-[#12956B]"
+              >
+                {part}
+              </TextScallingFalse>
+            );
+          } else {
+            elements.push(
+              <TextScallingFalse key={i} className="text-white text-sm">
+                {part}
+              </TextScallingFalse>
+            );
+          }
+        } else {
+          elements.push(
+            <TextScallingFalse key={i} className="text-white text-sm">
+              {part}
+            </TextScallingFalse>
+          );
+        }
       }
-      return word;
-    });
+      return { elements, fullText };
+    },
+    [highlightedHashtag]
+  );
+
+  const { elements, fullText } = useMemo(
+    () =>
+      renderCaptionWithTags(
+        post.caption || "",
+        post.taggedUsers || [],
+        isExpanded,
+        handleToggle
+      ),
+    [post.caption, post.taggedUsers, isExpanded, renderCaptionWithTags]
+  );
+
+  fullTextRef.current = fullText;
+
+  const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
+    const renderedText = e.nativeEvent.lines.map((line) => line.text).join("");
+    setIsTruncated(renderedText !== fullTextRef.current);
   };
 
   const navigateToPostDetails = () => {
@@ -142,18 +219,19 @@ const PostSmallCard = ({
 
   return (
     <View style={{ width: 301 * scaleFactor }}>
+      {/* User Info */}
       <View
         style={{
           width: "100%",
           flexDirection: "row",
           gap: "3%",
           position: "relative",
-          top: "6%",
+          top: "6.5%",
           zIndex: 100,
         }}
       >
         <View style={{ paddingLeft: "8%" }}>
-          <View style={{ height: 10 }} />
+          <View style={[{ height: 10 }, shadowStyle]} />
           <Image
             source={{ uri: post.postedBy?.profilePic }}
             style={{
@@ -181,7 +259,7 @@ const PostSmallCard = ({
             style={{
               position: "relative",
               top: -2 * scaleFactor,
-              width: "100%",
+              width: "75%",
             }}
           >
             <TextScallingFalse
@@ -190,45 +268,61 @@ const PostSmallCard = ({
                 color: "white",
                 fontSize: responsiveFontSize(1.19),
                 fontWeight: "200",
+                marginBottom: 3,
               }}
             >
-              {post.postedBy?.headline}
+              @{post.postedBy.username} | {post.postedBy?.headline}
             </TextScallingFalse>
           </View>
-          <View className="flex flex-row items-center">
-            <TextScallingFalse className="text-base text-neutral-400">
-              {formatTimeAgo(post.createdAt)} &bull;{" "}
+          <View className="flex flex-row items-center mt-1">
+            <TextScallingFalse className="text-[8px] text-neutral-400">
+              {formatTimeAgo(post.createdAt)} •{" "}
             </TextScallingFalse>
-            <MaterialIcons name="public" size={12} color="gray" />
+            <MaterialIcons
+              name="public"
+              size={9}
+              color="gray"
+              className="mt-1"
+            />
           </View>
         </View>
       </View>
 
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={navigateToPostDetails}
-        className={`relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-1 bg-[#151515] flex flex-row`}
-      >
-        <MaterialIcons
-          className="absolute right-5 top-2"
-          name="more-horiz"
-          size={18}
-          color="#a3a3a3"
-        />
-        <TextScallingFalse className=" pl-10 pr-6 pt-10 text-sm text-white">
-          {renderCaptionWithHashtags(isExpanded ? captionText : truncatedText)}
-          {needsTruncation && (
+      {/* Caption Section */}
+      <View className="relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-2 bg-[#151515]">
+        <TouchableOpacity activeOpacity={0.7} onPress={navigateToPostDetails}>
+          <MaterialIcons
+            className="absolute right-5 top-[4px]"
+            name="more-horiz"
+            size={18}
+            color="#a3a3a3"
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={navigateToPostDetails}
+          style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 36 }}
+        >
+          <TextScallingFalse
+            numberOfLines={isExpanded ? 0 : 2}
+            onTextLayout={!isExpanded ? handleTextLayout : undefined}
+            style={{ color: "white", fontSize: 14 }}
+          >
+            {elements}
+          </TextScallingFalse>
+          {!isExpanded && isTruncated && (
             <TextScallingFalse
               onPress={handleToggle}
-              className="text-[#808080] font-light text-base"
+              className="text-[#808080] text-sm"
             >
-              {isExpanded ? " see less" : " see more"}
+              {" ...see more"}
             </TextScallingFalse>
           )}
-        </TextScallingFalse>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity activeOpacity={0.5} onPress={navigateToPostDetails}>
+      {/* Media Section */}
+      <TouchableOpacity activeOpacity={0.7} onPress={navigateToPostDetails}>
         <View style={{ height: 240 * scaleFactor, width: "100%" }}>
           {post.isVideo ? (
             <View style={styles.mediaContainer}>
@@ -251,7 +345,9 @@ const PostSmallCard = ({
                 </>
               ) : (
                 <View style={styles.thumbnailPlaceholder}>
-                  <Text style={{ color: "grey" }}>No Thumbnail</Text>
+                  <TextScallingFalse style={{ color: "grey" }}>
+                    No Thumbnail
+                  </TextScallingFalse>
                 </View>
               )}
             </View>
@@ -282,6 +378,7 @@ const PostSmallCard = ({
         </View>
       </TouchableOpacity>
 
+      {/* Interaction Section */}
       <View style={{ width: "100%", alignItems: "flex-end" }}>
         <View
           style={{
@@ -291,7 +388,7 @@ const PostSmallCard = ({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingHorizontal: 12,
+            paddingHorizontal: 14,
           }}
         >
           <TouchableOpacity
@@ -311,7 +408,6 @@ const PostSmallCard = ({
               {post.likesCount} Likes
             </TextScallingFalse>
           </TouchableOpacity>
-
           <View className="pt-9">
             {imageUrls.length > 1 && !post.isVideo && (
               <View style={styles.dotContainer}>
@@ -327,7 +423,6 @@ const PostSmallCard = ({
               </View>
             )}
           </View>
-
           <TouchableOpacity activeOpacity={0.7} onPress={navigateToPostDetails}>
             <TextScallingFalse
               style={{
@@ -343,18 +438,19 @@ const PostSmallCard = ({
         <View
           style={{
             width: "94%",
+            backgroundColor: "#151515",
             justifyContent: "center",
             alignItems: "center",
           }}
         >
           <View
             style={{ backgroundColor: "#505050", height: 0.5, width: "85%" }}
-          ></View>
+          />
         </View>
         <View
           style={{
             width: "94%",
-            gap: "6%",
+            gap: "5%",
             backgroundColor: "#151515",
             height: 57 * scaleFactor,
             borderBottomLeftRadius: 45,
@@ -436,11 +532,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  seeMore: {
-    color: "grey",
-    fontSize: responsiveFontSize(1.29),
-    fontWeight: "400",
-  },
   dotContainer: {
     position: "absolute",
     bottom: 10,
@@ -456,14 +547,6 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     backgroundColor: "white",
-  },
-  navButton: {
-    position: "absolute",
-    top: "50%",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 5,
-    borderRadius: 20,
-    transform: [{ translateY: -10 }],
   },
   mediaContainer: {
     height: "100%",

@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import TextScallingFalse from "~/components/CentralText";
-import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { Tabs, TabsContent, TabsList } from "~/components/ui/tabs";
 import PageThemeView from "~/components/PageThemeView";
 import { ThemedText } from "~/components/ThemedText";
@@ -25,6 +24,7 @@ import MembersSection from "~/components/profilePage/MembersSection";
 import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
 import { Member } from "~/types/user";
 import { useGetPageMembersQuery } from "~/reduxStore/api/profile/profileApi.profile";
+import { responsiveFontSize } from "react-native-responsive-dimensions";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -241,7 +241,7 @@ const Overview = () => {
                         style={{
                           fontFamily: "Montserrat",
                           fontWeight: 700,
-                          fontSize: responsiveFontSize(1.8),
+                          fontSize: 14,
                         }}
                       >
                         CURRENT TEAMS
@@ -279,7 +279,7 @@ const Overview = () => {
               <TextScallingFalse
                 style={{
                   color: "#808080",
-                  fontSize: responsiveFontSize(1.9),
+                  fontSize: 14,
                   fontWeight: "bold",
                 }}
               >
@@ -288,7 +288,7 @@ const Overview = () => {
               <TextScallingFalse
                 className="text-white font-light pt-4 leading-5"
                 style={{
-                  fontSize: responsiveFontSize(1.6),
+                  fontSize: 13,
                 }}
               >
                 {isExpanded ? aboutText : truncatedText}
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   },
   seeMore: {
     color: "grey",
-    fontSize: responsiveFontSize(1.6),
+    fontSize: 13,
     fontWeight: "300",
   },
   tabsList: {

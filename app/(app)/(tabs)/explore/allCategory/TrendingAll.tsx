@@ -57,9 +57,7 @@ const TrendingAll = () => {
   const topFiveArticles = articles?.slice(0, 5);
   const renderSwiper = () => {
     if (isLoading) {
-      return (
-        <SwipperSkeletonLoader />
-      );
+      return <SwipperSkeletonLoader />;
     }
 
     if (error) {
@@ -107,8 +105,11 @@ const TrendingAll = () => {
       );
 
     return (
-      <View className="mt-10">
-        <Hashtag setModalVisible={setModalVisible} data={hashtagData.slice(0, 3)} />
+      <View className="mt-8">
+        <Hashtag
+          setModalVisible={setModalVisible}
+          data={hashtagData.slice(0, 3)}
+        />
         <TouchableOpacity
           className="bg-[#191919] mt-3 mb-10 py-3 px-14 w-full max-w-96 flex self-center rounded-full border border-[0.5px] border-[#303030]"
           activeOpacity={0.6}
@@ -137,7 +138,7 @@ const TrendingAll = () => {
 
   const renderMatches = () => {
     return (
-      <View className="flex-row items-center pl-3 mt-10">
+      <View className="flex-row items-center pl-3.5 mt-10">
         <TextScallingFalse className="text-white text-5xl font-bold">
           Matches
         </TextScallingFalse>
@@ -166,7 +167,7 @@ const TrendingAll = () => {
     isFetching: isCricketLiveFetching,
     refetch: refetchLiveCricket,
   } = useGetCricketLiveMatchesQuery({});
-  const { liveMatches: liveCricketMatches } = cricketLiveData || {};
+  const { liveMatches: liveCricketMatches = [] } = cricketLiveData || {};
 
   const {
     data: cricketNextData,
@@ -217,7 +218,7 @@ const TrendingAll = () => {
     if (isLoading) {
       return (
         <View className="mt-5">
-          <ActivityIndicator color={'white'} size={'small'}/>
+          <ActivityIndicator color={"white"} size={"small"} />
         </View>
       );
     }
@@ -237,7 +238,8 @@ const TrendingAll = () => {
     nextCricketMatches.length > 0
       ? [
           {
-            series: nextCricketMatches[0].series,
+            seriesId: nextCricketMatches[0].seriesId,
+            seriesName: nextCricketMatches[0].seriesName,
             matches: nextCricketMatches[0].matches.slice(0, 3),
           },
         ]
@@ -292,7 +294,7 @@ const TrendingAll = () => {
 
   const sections = [
     { type: "swiper", content: renderSwiper() },
-    { type: "divider", content: <View className="h-[0.6px] bg-neutral-600" /> },
+    { type: "divider", content: <View className="h-[1px] bg-[#1c1c1c]" /> },
     { type: "hashtags", content: renderHashtags() },
     { type: "discoverPeople", content: <DiscoverPeopleList /> },
     { type: "matches", content: renderMatches() },

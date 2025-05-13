@@ -19,6 +19,7 @@ import {
   fetchTeamDetails,
   changeUserPosition,
   changeUserRole,
+  removeTeamMember,
 } from "~/reduxStore/slices/team/teamSlice";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "~/configs/toastConfig";
@@ -330,11 +331,16 @@ const MemberDetails = () => {
   }, [team?.members, user, isTeamOwner]);
 
   // Initialize data once
-  useEffect(() => {
-    if (teamId) {
-      dispatch(fetchTeamDetails(teamId));
-    }
-  }, [teamId, dispatch]);
+useEffect(() => {
+  if (teamId) {
+    dispatch(fetchTeamDetails(teamId));
+  }
+  
+  // Cleanup function
+  return () => {
+    // Reset any relevant state if needed
+  };
+}, [teamId, dispatch]);
 
   // Set available roles once team data is loaded
   useEffect(() => {
@@ -372,6 +378,7 @@ const MemberDetails = () => {
     switch (type) {
       case "success":
         showSuccess(message);
+       
         break;
       case "error":
         showError(message);
@@ -586,6 +593,7 @@ const MemberDetails = () => {
     [team, parsedMember, memberPosition, executePositionChange]
   );
 
+
   const handleRemovePosition = useCallback(async () => {
     if (!team || !team._id) {
       showToastMessage("Missing team data", "error");
@@ -617,31 +625,55 @@ const MemberDetails = () => {
     }
   }, [team, parsedMember, dispatch]);
 
+
+
   // Handle removing member from team
-  const handleRemoveFromTeam = useCallback(() => {
-    showAlert(
-      "Remove Member",
-      "Are you sure you want to remove this member from the team?",
-      async () => {
-        setIsUpdating(true);
-        try {
-          // Implement the actual member removal logic here
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          showToastMessage("Member has been removed from the team");
-          router.back();
-        } catch (error) {
-          console.error("Failed to remove member:", error);
-          showToastMessage(
-            "Could not remove member. Please try again.",
-            "error"
-          );
-        } finally {
-          setIsUpdating(false);
+const handleRemoveFromTeam = useCallback(() => {
+  if (!teamId || !parsedMember?._id) {
+    showToastMessage("Missing team or member data", "error");
+    return;
+  }
+  
+  showAlert(
+    "Remove Member",
+    `Are you sure you want to remove ${parsedMember.firstName} ${parsedMember.lastName} from the team?`,
+    async () => {
+      setIsUpdating(true);
+      try {
+        const result = await dispatch(
+          removeTeamMember({
+            teamId: teamId,
+            userId: parsedMember._id,
+          })
+        ).unwrap();
+
+        if (result.success) {
+          showToastMessage(result.message || `${parsedMember.firstName} ${parsedMember.lastName} removed successfully`, "success");
+          
+          // Force refresh team details
+          await dispatch(fetchTeamDetails(teamId));
+          
+          // Navigate back after state is updated
+          setTimeout(() => {
+            router.back();
+          }, 1000);
+        } else {
+          showToastMessage(`${parsedMember.firstName} ${parsedMember.lastName} removed successfully` || "Failed to remove member", "error");
         }
-      },
-      "Remove"
-    );
-  }, [router]);
+      } catch (error: any) {
+        console.error("Failed to remove member:", error);
+        showToastMessage(
+          error.message || "Could not remove member. Please try again.",
+          "error"
+        );
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    "Remove",
+    true
+  );
+}, [teamId, parsedMember, dispatch]);
 
   // Handle admin transfer
   const handleTransferAdmin = useCallback(() => {
@@ -784,7 +816,7 @@ const MemberDetails = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() =>  router.back()}>
           <BackIcon />
         </TouchableOpacity>
 
@@ -876,7 +908,11 @@ const MemberDetails = () => {
       />
 
       {/* Toast Component */}
-      <Toast config={toastConfig} />
+      <Toast
+       config={toastConfig}
+         topOffset={50} 
+  visibilityTime={2000} 
+  autoHide={true} />
     </PageThemeView>
   );
 };

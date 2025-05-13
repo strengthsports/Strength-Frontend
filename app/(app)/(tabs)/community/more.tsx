@@ -187,14 +187,14 @@ const More = () => {
   return (
     <PageThemeView>
       {/* Header */}
-      <View className="flex-row w-full justify-start items-center p-5 pb-3 relative text-center border-b border-[#181818]">
+      <View className="flex-row w-full justify-start items-center px-3 py-1.5 relative text-center border-b border-[#181818]">
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() => {
-            setOffset(0);
             router.back();
+            setOffset(0);
           }}
-          className="mr-4"
+          className="mr-4 rounded-full p-2 active:bg-neutral-950"
         >
           <AntDesign name="arrowleft" size={24} color="white" />
         </TouchableOpacity>

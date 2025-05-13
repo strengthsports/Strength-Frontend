@@ -989,6 +989,7 @@ export default function AddPostContainer({
                   setTypeVideo(false);
                   setPickedVideoUri("");
                 }}
+                editable={true}
               />
             )}
 

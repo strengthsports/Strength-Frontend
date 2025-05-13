@@ -32,9 +32,9 @@ const Hashtag: React.FC<HashtagProps> = ({ data, setModalVisible }) => {
             setModalVisible(false);
           }}
         >
-          <View className="px-3 flex-row">
+          <View className="px-4 flex-row">
             {/* Index */}
-            <TextScallingFalse className="text-theme text-5xl font-semibold mr-6 mt-0.5">
+            <TextScallingFalse className="text-theme text-5xl font-semibold mr-6 mt-1">
               {count++}
             </TextScallingFalse>
 

@@ -5,6 +5,7 @@ import { loginUser, logoutUser } from "./authSlice";
 import { InviteMember, PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser, resetOnboardingData } from "./onboardingSlice";
+import axios from "axios";
 
 // Initial State
 const initialState: ProfileState = {
@@ -16,6 +17,8 @@ const initialState: ProfileState = {
   posts: [],
   currentPost: null,
 };
+
+type FirstTimeFields = "hasVisitedEditProfile" | "hasVisitedCommunity" | "hasVisitedEditOverview";
 
 // Edit user profile details
 export const editUserProfile = createAsyncThunk<
@@ -424,6 +427,34 @@ export const removeAssociates = createAsyncThunk<
   }
 });
 
+export const setFirstTimeUseFlag = createAsyncThunk<
+  FirstTimeFields, // Return type
+  { field: FirstTimeFields } // Argument type
+>(
+  "firstTimeUse/setFirstTimeUseFlag",
+  async ({ field }, thunkAPI) => {
+    const token = await getToken("accessToken");
+console.log("Called");
+    try {
+      await axios.patch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/set-firstTimeUserFlag`,
+        { field },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(field)
+      return field; // return updated field key
+    } catch (error: any) {
+      console.log(error)
+      return thunkAPI.rejectWithValue("Failed to update flag");
+    }
+  }
+);
+
 const profileSlice = createSlice({
   name: "profile",
   initialState,
@@ -485,6 +516,9 @@ const profileSlice = createSlice({
     builder.addCase(loginUser.fulfilled, (state, action) => {
       state.isLoggedIn = true;
       state.user = action.payload.user;
+      state.hasVisitedEditProfile = action.payload.user.hasVisitedEditProfile;
+      state.hasVisitedCommunity = action.payload.user.hasVisitedCommunity;
+      state.hasVisitedEditOverview = action.payload.user.hasVisitedEditOverview;
       state.followings = [];
       state.msgBackend = action.payload.message;
       state.error = null;
@@ -702,6 +736,20 @@ const profileSlice = createSlice({
       state.loading = false;
       state.error = action.payload as string;
     });
+
+    builder.addCase(setFirstTimeUseFlag.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+          })
+          builder.addCase(setFirstTimeUseFlag.fulfilled, (state, action) => {
+            state.loading = false;
+            state[action.payload] = true;
+            // state.profile.user[action.payload] = true; ← avoid this unless you merge into profile reducer
+          })
+          builder.addCase(setFirstTimeUseFlag.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+          });
   },
 });
 

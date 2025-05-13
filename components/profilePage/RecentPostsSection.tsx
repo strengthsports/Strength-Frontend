@@ -12,7 +12,6 @@ import PostSmallCard from "components/Cards/PostSmallCard";
 import { Post } from "~/types/post";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import PostContainerSmall from "../Cards/postContainerSmall";
-import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { router } from "expo-router";
 
 interface RecentPostsSectionProps {
@@ -79,7 +78,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
           justifyContent: "center",
           flex: 1,
           paddingLeft: 15,
-          paddingTop: 26,
+          paddingTop: 38,
         }}
       >
         <View
@@ -89,7 +88,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
             padding: 75,
             justifyContent: "center",
             alignItems: "center",
-            height: 365,
+            height: 378,
           }}
           className="border-[#2C2C2C] border-[0.3px] rounded-[15px] bg-[#0B0B0B]"
         >
@@ -121,7 +120,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
       <View className="w-full h-8 justify-end pl-5">
         <TextScallingFalse
           className="text-[#8A8A8A] font-bold"
-          style={{ fontSize: responsiveFontSize(1.9) }}
+          style={{ fontSize: 15 }}
         >
           POSTS
         </TextScallingFalse>

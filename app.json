@@ -4,7 +4,7 @@
     "slug": "Strength",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/strengthLogo.png",
+    "icon": "./assets/images/strengthsplash.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-       "bundleIdentifier": "strength.net.in"
+      "bundleIdentifier": "strength.net.in"
     },
     "android": {
       "package": "strength.net.in",

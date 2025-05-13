@@ -98,6 +98,8 @@ const CurrentTeamsScreen = () => {
   // Get filtered teams for selected sport
   const filteredTeams = getFilteredTeams(selectedSport);
 
+  // console.log("from current teams -------->", filteredTeams);
+
   // Sport Icon Component
   const SportIcon = ({ name, logo, selected, onPress }: SportIconProps) => {
     return (
@@ -218,19 +220,26 @@ const CurrentTeamsScreen = () => {
             {/* Teams List */}
             <View style={styles.teamsContainer}>
               {filteredTeams.map((team, index) => (
-                <React.Fragment key={index}>
-                  <TeamItem
-                    name={team.team.name}
-                    logo={{ uri: team.team.logo.url }}
-                    location={team.location || "Location Not Available"}
-                    role={team.role.slice(0, -1) || "NA"}
-                    isCaptain={team.position?.toLowerCase() === "captain"}
-                    isVC={team.position?.toLowerCase() === "vicecaptain"}
-                  />
-                  {index < filteredTeams.length - 1 && (
-                    <View style={styles.divider} />
-                  )}
-                </React.Fragment>
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(`/(app)/(team)/teams/${team.team._id}`)
+                  }
+                  activeOpacity={0.7}
+                >
+                  <React.Fragment key={team.team._id}>
+                    <TeamItem
+                      name={team.team.name}
+                      logo={{ uri: team.team.logo.url }}
+                      location={team.location || "Location Not Available"}
+                      role={team.role.slice(0, -1) || "NA"}
+                      isCaptain={team.position?.toLowerCase() === "captain"}
+                      isVC={team.position?.toLowerCase() === "vicecaptain"}
+                    />
+                    {index < filteredTeams.length - 1 && (
+                      <View style={styles.divider} />
+                    )}
+                  </React.Fragment>
+                </TouchableOpacity>
               ))}
             </View>
           </View>

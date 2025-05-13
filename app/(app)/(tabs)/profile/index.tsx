@@ -93,7 +93,7 @@ const Overview = () => {
   );
 
   //toggle see more
-  const maxAboutLength = 140;
+  const maxAboutLength = 150;
   const aboutText = user?.about || "";
   const needsTruncation = aboutText.length > maxAboutLength;
   const truncatedText = needsTruncation
@@ -138,7 +138,7 @@ const Overview = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
           >
-            <TabsList className="flex-row gap-x-2 w-[100%] p-1 px-1.5">
+            <TabsList className="flex-row gap-x-2 w-[100%] py-1 px-0.5">
               {user?.selectedSports?.map((sport: any) => (
                 <TouchableOpacity
                   key={`sport-tab-${sport.sport?._id}`}
@@ -192,7 +192,7 @@ const Overview = () => {
               value={sport.sport?.name}
             >
               {/* Sports Overview */}
-              <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center p-2">
+              <View className="w-full md:max-w-[600px] mx-auto flex-1 items-center py-2 px-1">
                 {sport.details && (
                   <View className="relative bg-[#161616] w-[96%] px-5 py-4 rounded-[15px] flex-row justify-start flex-wrap gap-8 gap-y-4">
                     {Object.entries(sport.details)
@@ -230,7 +230,7 @@ const Overview = () => {
                           style={{
                             fontFamily: "Montserrat",
                             fontWeight: 700,
-                            fontSize: responsiveFontSize(1.8),
+                            fontSize: 14,
                           }}
                         >
                           CURRENT TEAMS
@@ -285,10 +285,10 @@ const Overview = () => {
       )}
 
       {/* about */}
-      <View className="w-full flex-1 items-center p-2">
+      <View className="w-full flex-1 items-center py-2 px-1">
         {/* About Container */}
         <View
-          className="bg-[#121212] px-5 py-4 rounded-xl"
+          className="bg-[#161616] px-5 py-4 rounded-xl"
           style={{
             width: containerWidth,
           }}
@@ -298,7 +298,7 @@ const Overview = () => {
             <TextScallingFalse
               className="text-[#808080] font-bold"
               style={{
-                fontSize: responsiveFontSize(1.9),
+                fontSize: 14,
               }}
             >
               ABOUT
@@ -306,9 +306,9 @@ const Overview = () => {
 
             {/* About Content */}
             <TextScallingFalse
-              className="text-white font-light pt-4 pr-[25px] leading-5"
+              className="text-white font-light pt-4 leading-5"
               style={{
-                fontSize: responsiveFontSize(1.6),
+                fontSize: 13,
               }}
             >
               {isExpanded ? aboutText : truncatedText}

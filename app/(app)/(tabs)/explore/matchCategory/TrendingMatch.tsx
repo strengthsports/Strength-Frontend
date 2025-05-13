@@ -125,7 +125,8 @@ const TrendingMatch = () => {
     nextCricketMatches.length > 0
       ? [
           {
-            series: nextCricketMatches[0].series,
+            seriesId: nextCricketMatches[0].seriesId,
+            seriesName: nextCricketMatches[0].seriesName,
             matches: nextCricketMatches[0].matches.slice(0, 3),
           },
         ]

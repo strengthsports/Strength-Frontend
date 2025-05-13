@@ -208,7 +208,7 @@ const Members: React.FC = () => {
           </TextScallingFalse>
 
           <TouchableOpacity>
-            <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Edit</TextScallingFalse>
+            <TextScallingFalse style={{ color: 'black', fontSize: 16 }}>Edit</TextScallingFalse>
           </TouchableOpacity>
         </View>
 

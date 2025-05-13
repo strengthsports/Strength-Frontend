@@ -28,7 +28,7 @@ const Hashtag: React.FC<HashtagProps> = ({ data, setModalVisible }) => {
           activeOpacity={0.7}
           key={hashData._id}
           onPress={() => {
-            router.push(`/home/hashtag/${hashData.hashtag}/top`);
+            router.push(`/hashtag/${hashData.hashtag}/top`);
             setModalVisible(false);
           }}
         >

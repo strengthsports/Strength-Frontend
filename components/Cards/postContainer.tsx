@@ -40,6 +40,7 @@ import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import UserInfo from "../ui/atom/UserInfo";
 import { RelativePathString } from "expo-router";
+import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -72,6 +73,7 @@ interface PostContainerProps {
   handleBottomSheet?: (state: boolean) => void;
   isVideo?: boolean;
   isVisible?: boolean;
+  isPostDetailsPage?: boolean;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
@@ -83,6 +85,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       handleBottomSheet,
       isVideo,
       isVisible,
+      isPostDetailsPage,
     },
     ref
   ) => {
@@ -225,7 +228,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const goToHashtag = useCallback(
       (tag: string) => {
         // string version is faster than object
-        router.push(`/home/hashtag/${tag}/top`);
+        router.push(`/hashtag/${tag}/top`);
       },
       [router]
     );
@@ -486,8 +489,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onSinglePress={() => {
                   if (item) {
                     router.push({
-                      pathname:
-                        `/home/post-view/${item._id}` as RelativePathString,
+                      pathname: `/post-view/${item._id}` as RelativePathString,
                     });
                   }
                 }}
@@ -520,7 +522,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
                   }}
                 >
-                  <ClipsIconMedia size={40} />
+                  <ClipsIconRP />
                 </View>
               </TouchableWithDoublePress>
             </View>
@@ -569,6 +571,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             activeSlideIndex={activeIndex}
             isPostContainer={true}
             isFeedPage={isFeedPage}
+            isPostDetailsPage={isPostDetailsPage}
           />
         </View>
         <Modal

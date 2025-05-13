@@ -30,6 +30,7 @@ const InteractionBar = ({
   activeSlideIndex,
   isPostContainer,
   isFeedPage,
+  isPostDetailsPage = false,
 }: {
   post: Post;
   onPressLike: () => void;
@@ -37,6 +38,7 @@ const InteractionBar = ({
   activeSlideIndex?: number;
   isPostContainer?: boolean;
   isFeedPage?: boolean;
+  isPostDetailsPage?: boolean;
 }) => {
   const { sharePost } = useShare();
   const {
@@ -57,7 +59,7 @@ const InteractionBar = ({
       sharePost({
         imageUrl: assets[0]?.url,
         caption: caption,
-        link: "https://play.google.com/store/apps/details?id=com.strength.android",
+        link: "https://play.google.com/store/apps/details?id=strength.net.in",
       });
     }
   };
@@ -78,9 +80,7 @@ const InteractionBar = ({
       >
         {/* like count */}
         <Link
-          href={
-            `/home/post-details/${serializedData}/likes` as RelativePathString
-          }
+          href={`/post-details/${serializedData}/likes` as RelativePathString}
           className="flex flex-row items-center gap-2"
           asChild
         >
@@ -152,7 +152,7 @@ const InteractionBar = ({
         {/* comment count */}
         {isFeedPage ? (
           <Link
-            href={`/home/post-details/${postId}` as RelativePathString}
+            href={`/post-details/${postId}` as RelativePathString}
             className="flex flex-row items-center gap-2"
             asChild
           >
@@ -214,9 +214,24 @@ const InteractionBar = ({
               </TextScallingFalse>
             </View>
           </TouchableOpacity>
+        ) : isPostDetailsPage ? (
+          <TouchableOpacity
+            className="flex flex-row items-center gap-2 relative"
+            disabled
+          >
+            <View className={interactionBtn} style={shadowStyle}>
+              <Feather name="message-square" size={16} color="#D2D2D2" />
+              <TextScallingFalse
+                className="text-base"
+                style={{ color: "#E3E3E3" }}
+              >
+                Comment
+              </TextScallingFalse>
+            </View>
+          </TouchableOpacity>
         ) : (
           <Link
-            href={`/home/post-details/${postId}` as RelativePathString}
+            href={`/post-details/${postId}` as RelativePathString}
             className="flex flex-row items-center gap-2 relative"
             asChild
           >

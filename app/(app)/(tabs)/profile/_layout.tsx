@@ -171,7 +171,8 @@ const ProfileLayout = () => {
   };
 
   const handleOpenPostContainer = () => {
-    dispatch(setAddPostContainerOpen(true));
+    // dispatch(setAddPostContainerOpen(true));
+    router.push("/add-post");
   };
   // console.log(user);
   const handlePress = async () => {

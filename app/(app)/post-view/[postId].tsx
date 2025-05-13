@@ -263,13 +263,13 @@ const Post = () => {
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={{
-            paddingHorizontal: 32,
+            paddingHorizontal: "5%",
             paddingTop: 16,
             position: "absolute",
             bottom: 150,
             zIndex: 20,
           }}
-          className={`w-full max-h-60 ${!isHeaderFooterVisible && "opacity-0"}`}
+          className={`w-full max-h-52 ${!isHeaderFooterVisible && "opacity-0"}`}
         >
           <ScrollView>
             <TextScallingFalse

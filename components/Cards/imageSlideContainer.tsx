@@ -93,7 +93,7 @@ const ImageSlide = memo(
           if (isFeedPage && post) {
             // dispatch(setCurrentPost(post));
             router.push({
-              pathname: `/home/post-view/${post._id}` as RelativePathString,
+              pathname: `/post-view/${post._id}` as RelativePathString,
             });
           }
         }}

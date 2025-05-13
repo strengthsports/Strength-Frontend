@@ -30,6 +30,6 @@ export default function Index() {
   if (isLoggedIn) {
     return <Redirect href="/(app)/(tabs)/home" />;
   } else {
-    return <LoginScreen />;
+    return <Redirect href="/login" />;
   }
 }

@@ -4,7 +4,6 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useMemo,
   useLayoutEffect,
 } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,7 +18,6 @@ import {
   View,
   Animated,
   Platform,
-  Image,
   TextInput,
   TouchableOpacity,
   Keyboard,
@@ -39,8 +37,6 @@ import {
   selectPostById,
 } from "~/reduxStore/slices/feed/feedSlice";
 import { Colors } from "~/constants/Colors";
-import nopic from "@/assets/images/nopic.jpg";
-import { MaterialIcons } from "@expo/vector-icons";
 import PageThemeView from "~/components/PageThemeView";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { showFeedback } from "~/utils/feedbackToast";
@@ -64,7 +60,11 @@ const ListHeader = memo(
     return (
       <View>
         <TopBar heading="" backHandler={() => router.back()} />
-        <PostContainer item={post} isFeedPage={false} />
+        <PostContainer
+          item={post}
+          isFeedPage={false}
+          isPostDetailsPage={true}
+        />
         <View className="px-4 py-4">
           <View className="relative">
             <TextScallingFalse className="text-white text-5xl mb-2">

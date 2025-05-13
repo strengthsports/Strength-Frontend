@@ -1,10 +1,10 @@
-import React from "react";
-import { Stack } from "expo-router";
+import React, { useEffect } from "react";
+import { Stack, useNavigation } from "expo-router";
 
-const HomeLayout = () => {
+const AuthLayout = () => {
   return (
     <Stack
-      initialRouteName="index"
+      initialRouteName="login"
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right", // or 'slide_from_right', 'fade_from_bottom', etc.
@@ -16,4 +16,4 @@ const HomeLayout = () => {
   );
 };
 
-export default HomeLayout;
+export default AuthLayout;

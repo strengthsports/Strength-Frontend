@@ -5,7 +5,7 @@ import {
   useFollowUserMutation,
   useUnFollowUserMutation,
 } from "~/reduxStore/api/profile/profileApi.follow";
-import { updateAllFeedPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
+import { updateAllFeedPostsFollowStatus } from "~/reduxStore/slices/post/postsSlice";
 import { setFollowingCount } from "~/reduxStore/slices/user/profileSlice";
 import { FollowUser } from "~/types/user";
 

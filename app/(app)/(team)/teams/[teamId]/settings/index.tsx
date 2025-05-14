@@ -274,6 +274,7 @@ const Settings = () => {
       }
   
       await dispatch(updateTeam({ teamId, formData: payload })).unwrap();
+      router.back();
       await dispatch(fetchTeamDetails(teamId));
       setOriginalData(formData);
       Alert.alert("Success", "Team updated successfully");
@@ -316,20 +317,8 @@ const Settings = () => {
 
   const renderMember = ({ item: member }: { item: TeamMember }) => (
     <View style={styles.memberItem}>
-      <Avatar.Image
-        size={40}
-        source={{ uri: member?.user?.profilePic || DEFAULT_PROFILE_PIC }}
-        style={styles.memberAvatar}
-      />
-      <View style={styles.memberInfo}>
-        <TextScallingFalse style={styles.memberName}>
-          {member?.user?.firstName} {member?.user?.lastName}
-        </TextScallingFalse>
-        <TextScallingFalse style={styles.memberRole}>
-         @{member?.user?.username} | {member?.user?.headline || "No headline"}
-        </TextScallingFalse>
-      </View>
-      {isUserAdmin && (
+     
+     
         <TouchableOpacity 
           style={styles.memberAction}
           onPress={() => {
@@ -348,12 +337,25 @@ const Settings = () => {
             }
           }}
         >
+           <Avatar.Image
+        size={40}
+        source={{ uri: member?.user?.profilePic || DEFAULT_PROFILE_PIC }}
+        style={styles.memberAvatar}
+      />
+      <View style={styles.memberInfo}>
+        <TextScallingFalse style={styles.memberName}>
+          {member?.user?.firstName} {member?.user?.lastName}
+        </TextScallingFalse>
+        <TextScallingFalse style={styles.memberRole}>
+         @{member?.user?.username} | {member?.user?.headline || "No headline"}
+        </TextScallingFalse>
+      </View>
           <TextScallingFalse style={styles.memberPositionText}>
             {member.position }
           </TextScallingFalse>
          <RightArrow/>
         </TouchableOpacity>
-      )}
+    
     </View>
   );
 
@@ -440,7 +442,7 @@ const Settings = () => {
       </TextScallingFalse>
     </TouchableOpacity>
   ) : null
-)}
+             )}
           </View>
           <Divider style={styles.divider} />
 

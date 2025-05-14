@@ -6,6 +6,7 @@ import {
   Animated,
   Easing,
   TouchableOpacity,
+  Vibration
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -47,6 +48,7 @@ const About: React.FC<AboutProps> = () => {
     if (!teamDetails?._id || !user?._id || isProcessing) return;
     
     setIsProcessing(true);
+    // Vibration.vibrate(20);
     const wasSupporting = isSupporting;
     const previousCount = supporterCount;
     

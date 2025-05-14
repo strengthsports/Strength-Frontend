@@ -101,7 +101,7 @@ const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
               ) : null}
             </View>
           </View>
-          <TextScallingFalse className="text-[#EAEAEA] font-light w-3/4">
+          <TextScallingFalse className="text-[#B5B5B5] font-regular w-3/4">
             @{member.username} | {member.headline || "No description available"}
           </TextScallingFalse>
         </View>

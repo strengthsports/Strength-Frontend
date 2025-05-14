@@ -4,7 +4,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "~/reduxStore";
 
 // Feed selector: full post objects for the feed page
-export const selectFeedPosts = createSelector(
+export const makeSelectFeedPosts = createSelector(
   (state: RootState) => state.views.feed.ids,
   (state: RootState) => state.posts.entities,
   (ids, entities) => ids.map((id) => entities[id]!).filter(Boolean)

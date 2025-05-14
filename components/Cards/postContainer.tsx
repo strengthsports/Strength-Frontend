@@ -27,7 +27,6 @@ import nothumbnail from "@/assets/images/nothumbnail.png";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import InteractionBar from "../PostContainer/InteractionBar";
-import { toggleLike, voteInPoll } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
@@ -37,11 +36,11 @@ import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
 import { Platform } from "react-native";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
-import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import UserInfo from "../ui/atom/UserInfo";
 import { RelativePathString } from "expo-router";
 import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
+import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -454,18 +453,13 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             onPress={() => router.push(`/post-details/${item._id}`)}
             className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900"
           >
-            <MaterialIcons
-              onPress={(e) => {
-                e.stopPropagation();
-                console.log("Clicked");
-                handleOpenBottomSheet({ type: "settings" });
-              }}
-              name="more-horiz"
-              size={22}
-              color="white"
+            <Pressable
+              onPress={() => handleOpenBottomSheet({ type: "settings" })}
               hitSlop={{ top: 20, left: 20, right: 20, bottom: 20 }}
               className="absolute right-8 p-2 pt-2 z-30"
-            />
+            >
+              <MaterialIcons name="more-horiz" size={22} color="white" />
+            </Pressable>
 
             <View className="pl-7 pr-10 pt-12 pb-2">
               <TextScallingFalse className="text-2xl flex-wrap flex-row">

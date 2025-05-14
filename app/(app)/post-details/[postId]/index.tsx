@@ -31,13 +31,16 @@ import { Divider } from "react-native-elements";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { Comment, Post } from "~/types/post";
 import { useLocalSearchParams } from "expo-router";
-import { deleteComment, postComment } from "~/reduxStore/slices/feed/feedSlice";
 import { Colors } from "~/constants/Colors";
 import PageThemeView from "~/components/PageThemeView";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { showFeedback } from "~/utils/feedbackToast";
 import CommentInput from "~/components/comment/CommentInput";
 import { selectPostById } from "~/reduxStore/slices/post/postsSlice";
+import {
+  deleteComment,
+  postComment,
+} from "~/reduxStore/slices/post/postActions";
 
 const MAX_HEIGHT = 80;
 

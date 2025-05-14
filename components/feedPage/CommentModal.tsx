@@ -11,14 +11,12 @@ import {
   Dimensions,
   PanResponder,
 } from "react-native";
-import { Divider } from "react-native-elements";
 import { Colors } from "~/constants/Colors";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { deleteComment, postComment } from "~/reduxStore/slices/feed/feedSlice";
 import {
   useLazyFetchCommentsQuery,
   useLazyFetchRepliesQuery,
@@ -26,6 +24,10 @@ import {
 import CommentNotFound from "../notfound/commentNotFound";
 import CommentInput from "../comment/CommentInput";
 import { TouchableWithoutFeedback } from "react-native";
+import {
+  deleteComment,
+  postComment,
+} from "~/reduxStore/slices/post/postActions";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const DRAG_THRESHOLD = 100;

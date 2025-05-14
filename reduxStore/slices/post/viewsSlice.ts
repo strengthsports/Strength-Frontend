@@ -24,7 +24,17 @@ export const viewsSlice = createSlice({
   initialState,
   reducers: {
     setFeedPage(state, action: PayloadAction<ViewState>) {
-      state.feed = action.payload;
+      const { ids, nextCursor, hasMore } = action.payload;
+
+      const existingIds = state.feed?.ids ?? [];
+      // Merge and deduplicate IDs
+      const mergedIds = Array.from(new Set([...existingIds, ...ids]));
+
+      state.feed = {
+        ids: mergedIds,
+        nextCursor,
+        hasMore,
+      };
     },
     setUserPage(
       state,

@@ -16,10 +16,14 @@ export const postsSlice = createSlice({
     // general upsert
     upsertPosts: postsAdapter.upsertMany,
     updatePost: postsAdapter.updateOne,
+    addPost: postsAdapter.addOne,
+    removePost: postsAdapter.removeOne,
+    resetFeed: postsAdapter.removeAll,
   },
 });
 
-export const { upsertPosts, updatePost } = postsSlice.actions;
+export const { upsertPosts, updatePost, addPost, removePost, resetFeed } =
+  postsSlice.actions;
 export default postsSlice.reducer;
 
 // --- Selectors

@@ -12,12 +12,10 @@ export const fetchFeedPosts = createAsyncThunk(
   "feed/fetchFeedPosts",
   async (params: { limit?: number; cursor?: string }, thunkAPI) => {
     const data = await fetchFeedPostsAPI(params);
-    // 2a) upsert all posts
     thunkAPI.dispatch(upsertPosts(data.posts));
-    // 2b) set feed view
     thunkAPI.dispatch(
       setFeedPage({
-        ids: data.posts.map((p: Post) => p.id),
+        ids: data.posts.map((p: Post) => p._id),
         nextCursor: data.nextCursor,
         hasMore: data.hasMore,
       })
@@ -56,8 +54,6 @@ export const fetchHashtagPosts = createAsyncThunk(
     thunkAPI
   ) => {
     const data = await fetchHashtagPostsAPI(params);
-    // console.log("Data : ", data.data);
-    // console.log("Data length : ", data.data.length);
     thunkAPI.dispatch(upsertPosts(data.data));
     thunkAPI.dispatch(
       setHashtagPage({

@@ -9,7 +9,7 @@ import {
   LayoutAnimation,
   Dimensions,
 } from "react-native";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import {
   RelativePathString,
@@ -22,20 +22,17 @@ import Swiper from "react-native-swiper";
 import { swiperConfig } from "~/utils/swiperConfig";
 import nopic from "@/assets/images/nopic.jpg";
 import { LinearGradient } from "expo-linear-gradient";
-import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import InteractionBar from "~/components/PostContainer/InteractionBar";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
-import { AVPlaybackStatusSuccess } from "expo-av";
-import VideoControls from "~/components/PostContainer/VideoControls";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
-import { purple100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 import PageThemeView from "~/components/PageThemeView";
 import VideoPlayer from "~/components/PostContainer/VideoPlayer";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { selectPostById } from "~/reduxStore/slices/post/postsSlice";
+import { toggleLike } from "~/reduxStore/slices/post/postActions";
 
 const { width } = Dimensions.get("window");
 

@@ -20,6 +20,7 @@ import {
   changeUserPosition,
   changeUserRole,
   removeTeamMember,
+  transferAdmin,
 } from "~/reduxStore/slices/team/teamSlice";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "~/configs/toastConfig";
@@ -676,19 +677,49 @@ const handleRemoveFromTeam = useCallback(() => {
 }, [teamId, parsedMember, dispatch]);
 
   // Handle admin transfer
-  const handleTransferAdmin = useCallback(() => {
-    if (!team || !parsedMember) {
-      showToastMessage("Missing team or member data", "error");
-      return;
-    }
+// In your MemberDetails component, update the handleTransferAdmin function:
+const handleTransferAdmin = useCallback(() => {
+  if (!team || !parsedMember) {
+    showToastMessage("Missing team or member data", "error");
+    return;
+  }
 
-    showAlert(
-      "Transfer Admin",
-      "Are you sure you want to transfer admin rights to this member?",
-      () => executePositionChange("Admin"),
-      "Transfer"
-    );
-  }, [executePositionChange, team, parsedMember]);
+  showAlert(
+    "Transfer Admin",
+    `Are you sure you want to transfer admin rights to ${parsedMember.firstName} ${parsedMember.lastName}?`,
+    async () => {
+      setIsUpdating(true);
+      try {
+        await dispatch(
+          transferAdmin({
+            teamId: team._id,
+            userId: parsedMember._id,
+          })
+        ).unwrap();
+
+        showToastMessage("Admin rights transferred successfully");
+        
+        // Refresh team details after transfer
+        await dispatch(fetchTeamDetails(team._id));
+        
+        // Navigate back after a short delay
+        setTimeout(() => {
+          router.back();
+        }, 1500);
+      } catch (error: any) {
+        console.error("Admin transfer failed:", error);
+        showToastMessage(
+          error.message || "Could not transfer admin rights. Please try again.",
+          "error"
+        );
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    "Transfer",
+    true
+  );
+}, [team, parsedMember, dispatch, router]);
 
   // Render position-specific buttons - memoized to prevent re-renders
   const renderPositionButtons = useMemo(() => {

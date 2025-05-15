@@ -26,7 +26,7 @@ import logo from "@/assets/images/logo2.png";
 import nopic from "@/assets/images/nopic.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { logoutUser } from "~/reduxStore/slices/user/authSlice";
+import { logoutUser, resetUserData } from "~/reduxStore/slices/user/authSlice";
 import { ToastAndroid } from "react-native";
 import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -59,6 +59,8 @@ const index = () => {
     const isAndroid = Platform.OS == "android";
     try {
       const response = await dispatch(logoutUser()).unwrap();
+      // Dispatch resetUserData to clear user-related data from Redux store
+      dispatch(resetUserData());
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
@@ -134,30 +136,30 @@ const index = () => {
           flexDirection: "row",
         }}
       >
-      <View style={{flexDirection:'row', gap: 15, alignItems:'center'}}>
-        <Image
-          source={user?.profilePic ? { uri: user?.profilePic } : nopic}
-          style={{
-            backgroundColor: "orange",
-            width: 84,
-            height: 84,
-            borderRadius: 100,
-            borderWidth: 1,
-            borderColor: "#252525",
-          }}
-        />
-        <View style={{ paddingVertical: 17, width: 220 }}>
-          <TextScallingFalse
-            style={{ color: "white", fontSize: 18, fontWeight: "600" }}
-          >
-            {user?.firstName} {user?.lastName}
-          </TextScallingFalse>
-          <TextScallingFalse
-            style={{ color: "#9FAAB5", fontSize: 13, fontWeight: "400", lineHeight: 17}}
-          >
-            @{user?.username} <TextScallingFalse style={{fontSize: 13}}>|</TextScallingFalse> {user?.headline}
-          </TextScallingFalse>
-        </View>
+        <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
+          <Image
+            source={user?.profilePic ? { uri: user?.profilePic } : nopic}
+            style={{
+              backgroundColor: "orange",
+              width: 84,
+              height: 84,
+              borderRadius: 100,
+              borderWidth: 1,
+              borderColor: "#252525",
+            }}
+          />
+          <View style={{ paddingVertical: 17, width: 220 }}>
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 18, fontWeight: "600" }}
+            >
+              {user?.firstName} {user?.lastName}
+            </TextScallingFalse>
+            <TextScallingFalse
+              style={{ color: "#9FAAB5", fontSize: 13, fontWeight: "400", lineHeight: 17 }}
+            >
+              @{user?.username} <TextScallingFalse style={{ fontSize: 13 }}>|</TextScallingFalse> {user?.headline}
+            </TextScallingFalse>
+          </View>
         </View>
       </View>
       <View
@@ -171,56 +173,43 @@ const index = () => {
       <View
         style={{
           width: "100%",
-          paddingHorizontal: 30,
-          paddingVertical: 40,
+          paddingVertical: 30,
           gap: 20,
         }}
       >
-        <View style={styles.OptionButtonView}>
+        <TouchableOpacity style={styles.OptionButtonView} onPress={openModal} activeOpacity={0.7}>
           <MaterialCommunityIcons
             name="account-cog-outline"
             size={31}
             color="white"
           />
-          <TouchableOpacity onPress={openModal} activeOpacity={0.7}>
-            <TextScallingFalse style={styles.OptionText}>
-              Account Settings
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.OptionButtonView}>
+          <TextScallingFalse style={styles.OptionText}>
+            Account Settings
+          </TextScallingFalse>
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}>
           <MaterialIcons name="help-outline" size={31} color="white" />
-          <TouchableOpacity activeOpacity={0.7}>
-            <TextScallingFalse style={styles.OptionText}>
-              Customer Support
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
+          <TextScallingFalse style={styles.OptionText}>
+            Customer Support
+          </TextScallingFalse>
+        </TouchableOpacity>
         {/* Blocked users */}
-        <View style={styles.OptionButtonView}>
+        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}
+          onPress={() => router.push("/(app)/(settings)/blocked-users")}>
           <MaterialIcons name="block" size={31} color="white" />
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push("/(app)/(settings)/blocked-users")}
-          >
-            <TextScallingFalse style={styles.OptionText}>
-              Blocked Users
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
+          <TextScallingFalse style={styles.OptionText}>
+            Blocked Users
+          </TextScallingFalse>
+        </TouchableOpacity>
         {/* LogOut */}
-        <View style={styles.OptionButtonView}>
+        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}
+          onPress={handleLogout}>
           <Ionicons name="exit-outline" size={31} color="white" />
-          <TouchableOpacity
-            activeOpacity={0.7}
-            // onPress={() => router.push("/(auth)/login")}
-            onPress={handleLogout}
-          >
-            <TextScallingFalse style={styles.OptionText}>
-              Log Out
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
+          <TextScallingFalse style={styles.OptionText}>
+            Log Out
+          </TextScallingFalse>
+        </TouchableOpacity>
       </View>
 
       {/* Account Settings Modal */}
@@ -325,16 +314,16 @@ const index = () => {
             </Modal>
           )}
 
-         {openModal14 && (
-           <Modal
-           visible={openModal14}
-           animationType="slide"
-           transparent={true}
-           onRequestClose={() => setOpenModal14(false)}
-         >
-           <AgreementsModalView onClose={() => setOpenModal14(false)}/>
-         </Modal>
-         )}
+          {openModal14 && (
+            <Modal
+              visible={openModal14}
+              animationType="slide"
+              transparent={true}
+              onRequestClose={() => setOpenModal14(false)}
+            >
+              <AgreementsModalView onClose={() => setOpenModal14(false)} />
+            </Modal>
+          )}
 
         </PageThemeView>
       </Modal>
@@ -388,6 +377,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 19,
+    paddingHorizontal: 40,
   },
   AccountSettingsOptions: {
     color: "white",

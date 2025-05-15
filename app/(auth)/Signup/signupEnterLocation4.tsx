@@ -49,11 +49,11 @@ const signupEnterLocation4 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-          type,
-          text1: message,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+            type,
+            text1: message,
+            visibilityTime: 3000,
+            autoHide: true,
+          });
     } else {
       Toast.show({
         type,
@@ -76,7 +76,7 @@ const signupEnterLocation4 = () => {
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
             text
-          )}&key=${apiKey}&components=country:in`
+          )}&key=${apiKey}`
         );
         const data = await response.json();
         if (data.status === "OK") {
@@ -183,7 +183,7 @@ const signupEnterLocation4 = () => {
     }
   }, [error]);
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const handleNext = () => {
     if (!selectedPlace && !address) {
       feedback(
@@ -197,7 +197,6 @@ const signupEnterLocation4 = () => {
     setIsLoading(false); // 👈 Important! Stop loading when success happens
     router.replace("/Signup/signupSetPassword5");
   };
-
 
   interface Prediction {
     place_id: string; // or number, depending on your actual data
@@ -223,8 +222,8 @@ const signupEnterLocation4 = () => {
                 <TextScallingFalse
                   style={{ color: "white", fontSize: 12, fontWeight: "400" }}
                 >
-                  See sports players, events, tournaments, clubs, and news as per
-                  your location.
+                  See sports players, events, tournaments, clubs, and news as
+                  per your location.
                 </TextScallingFalse>
               </View>
             </View>
@@ -258,7 +257,7 @@ const signupEnterLocation4 = () => {
                 height: 35,
                 borderRadius: 20,
                 flexDirection: "row",
-                alignSelf: 'center'
+                alignSelf: "center",
               }}
             >
               {loading ? (
@@ -282,18 +281,17 @@ const signupEnterLocation4 = () => {
               )}
             </TouchableOpacity>
             <View style={{ marginTop: 45 }}>
-              {
-                isLoading ?
-                  <ActivityIndicator size={'small'} />
-                  :
-                  <SignupButton onPress={handleNext}>
-                    <TextScallingFalse
-                      style={{ color: "white", fontSize: 15, fontWeight: "500" }}
-                    >
-                      Next
-                    </TextScallingFalse>
-                  </SignupButton>
-              }
+              {isLoading ? (
+                <ActivityIndicator size={"small"} />
+              ) : (
+                <SignupButton onPress={handleNext}>
+                  <TextScallingFalse
+                    style={{ color: "white", fontSize: 15, fontWeight: "500" }}
+                  >
+                    Next
+                  </TextScallingFalse>
+                </SignupButton>
+              )}
             </View>
           </View>
         </View>

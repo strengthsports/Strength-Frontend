@@ -4,6 +4,7 @@ import TextScallingFalse from "~/components/CentralText";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
+import { StyleSheet } from "react-native";
 
 const AddPostFTU = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -12,21 +13,41 @@ const AddPostFTU = () => {
   };
 
   return (
-    <View className="w-full items-center mt-10 gap-y-2">
-      <TextScallingFalse className="text-[#808080] font-normal text-4xl">
-        Share your sports journey
+    <View
+      className="w-full items-center mt-10 gap-y-2"
+      style={styles.mainContainer}
+    >
+      <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3">
+        Fuel the Feed with Your Sports Vibe!
       </TextScallingFalse>
 
       <TouchableOpacity
         onPress={handleOpenAddPostContainer}
-        className="w-1/3 bg-[#212121] rounded-full py-2.5 flex-row items-center justify-center"
+        className="w-auto bg-[#262626] rounded-full py-3 px-4 flex-row items-center justify-center mb-2"
+        style={{ borderColor: "#313131", borderWidth: 1 }}
       >
-        <TextScallingFalse className="text-[#808080] font-normal text-2xl">
-          Add Posts
+        <TextScallingFalse className="text-[#c0c0c0] font-normal text-2xl">
+          Create your first post
         </TextScallingFalse>
       </TouchableOpacity>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    backgroundColor: "black",
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 10,
+    marginLeft: 12,
+    marginRight: 12,
+    marginTop: 5,
+    width: "auto",
+    borderColor: "#333",
+    borderStyle: "dashed",
+    borderWidth: 0.5,
+  },
+});
 
 export default AddPostFTU;

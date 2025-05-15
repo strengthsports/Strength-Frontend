@@ -81,7 +81,7 @@ const LoginScreen = () => {
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
 
-      router.push("/(app)/(tabs)/home");
+      router.replace("/(app)/(tabs)/home");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";
@@ -101,15 +101,14 @@ const LoginScreen = () => {
         // contentContainerStyle={{ flexGrow: 1}}
         style={{flex: 1}}
       >
-        <View style={{ width: "100%", paddingHorizontal: 25}}>
-          <View style={{ flexDirection: "row", marginTop: 30, gap: 7 }}>
-            <Image style={{ width: 45, height: 45 }} source={logo} />
+        <View style={{ width: "100%", paddingHorizontal: 20, paddingVertical: 8}}>
+          <View style={{ flexDirection: "row", marginTop: '5%', gap: 7, alignItems:'center'}}>
+            <Image style={{ width: 42, height: 42 }} source={logo} />
             <TextScallingFalse
               style={{
                 color: "white",
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: "500",
-                marginTop: 4,
               }}
             >
               Strength
@@ -117,7 +116,7 @@ const LoginScreen = () => {
           </View>
         </View>
 
-        <View style={{ width: "100%", height: 270, marginTop: 20}}>
+        <View style={{ width: "100%", aspectRatio: 16 / 10, marginTop: '3%'}}>
           <Image source={banner} style={{ width: "100%", height: "100%" }} />
         </View>
 
@@ -202,7 +201,7 @@ const LoginScreen = () => {
           ) : (
             <SignupButton disabled={false} onPress={handleLogin}>
               <TextScallingFalse
-                style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
+                style={{ color: "white", fontSize: 14.5, fontWeight: "700" }}
               >
                 Sign in
               </TextScallingFalse>
@@ -215,8 +214,6 @@ const LoginScreen = () => {
             style={{
               width: 335,
               height: 42,
-              borderColor: "white",
-              borderWidth: 1,
               justifyContent: "center",
               alignItems: "center",
               marginTop: 10,
@@ -224,12 +221,12 @@ const LoginScreen = () => {
             }}
           >
             <TextScallingFalse
-              style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
+              style={{ color: "white", fontSize: 14.5, fontWeight: "400" }}
             >
               New to Strength? Join now
             </TextScallingFalse>
           </TouchableOpacity>
-
+{/* 
           <TouchableOpacity
             activeOpacity={0.5}
             style={{
@@ -252,7 +249,7 @@ const LoginScreen = () => {
               source={google}
               style={{ width: 12, height: 12, marginTop: 3.5 }}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </PageThemeView>

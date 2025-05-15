@@ -6,7 +6,8 @@ import {
   ToastAndroid,
   TouchableOpacity,
   Vibration,
-  View,ScrollView
+  View,ScrollView,
+  Pressable
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -126,12 +127,13 @@ const SignupEnterOtp2 = () => {
               <TextScallingFalse style={{ fontSize: 12, color: "white" }}>
                 We sent the verification code to {email}{" "}
               </TextScallingFalse>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}>
               <TextScallingFalse
-                onPress={() => router.back()}
                 style={{ fontSize: 13, color: "#12956B" }}
               >
                 Edit Email
               </TextScallingFalse>
+              </TouchableOpacity>
             </View>
           </View>
           <View>

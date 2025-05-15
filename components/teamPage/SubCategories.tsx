@@ -10,6 +10,8 @@ import {
 import AppLoading from "expo-app-loading";
 import TextScallingFalse from "../CentralText";
 
+
+
 const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
   const [selectedTab, setSelectedTab] = useState<"SQUAD" | "ABOUT">("ABOUT");
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -20,7 +22,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
   });
 
   const handleTabChange = (tab: "SQUAD" | "ABOUT") => {
-    // Determine animation direction based on current tab
+    
     const newDirection = 
       (selectedTab === "ABOUT" && tab === "SQUAD") || 
       (selectedTab === "SQUAD" && tab === "ABOUT") ? "left" : "right";

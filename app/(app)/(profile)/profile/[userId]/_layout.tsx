@@ -1,4 +1,10 @@
-import React, { createContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -54,6 +60,9 @@ import Header from "~/components/profilePage/Header";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 import { calculateAge } from "~/utils/calculateAge";
+import TickIcon from "~/components/SvgIcons/Common_Icons/TickIcon";
+import { RefreshControl } from "react-native";
+import { getCountryFlag } from "~/utils/getCountryFlag";
 
 // Define the context type
 interface ProfileContextType {
@@ -112,6 +121,23 @@ const ProfileLayout = () => {
   const [followingStatus, setFollowingStatus] = useState<boolean>();
   const [followerCount, setFollowerCount] = useState<number>(0);
   const [isReported, setIsReported] = useState<boolean>();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (userId?.id && userId?.type) {
+        await getUserProfile({
+          targetUserId: userId?.id,
+          targetUserType: userId?.type,
+        }).unwrap();
+      }
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [userId?.id, userId?.type]);
 
   // Fetch user profile when the component mounts
   useEffect(() => {
@@ -328,6 +354,9 @@ const ProfileLayout = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           stickyHeaderIndices={[0]}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
           <View
             style={{
@@ -449,27 +478,40 @@ const ProfileLayout = () => {
                     <View
                       style={{ marginTop: 6, marginRight: 5, height: "auto" }}
                     >
-                      <View style={{ flexDirection: "row", gap: 3 }}>
-                        <Image
-                          source={flag}
+                      {profileData?.address?.country && (
+                        <View
                           style={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: 5,
-                            marginBottom: 5,
-                          }}
-                        />
-                        <TextScallingFalse
-                          style={{
-                            marginTop: 2,
-                            color: "#EAEAEA",
-                            fontSize: responsiveFontSize(1.41),
-                            fontWeight: "400",
+                            flexDirection: "row",
+                            gap: 4,
                           }}
                         >
-                          {profileData?.address?.country || "undefined"}
-                        </TextScallingFalse>
-                      </View>
+                          <Image
+                            source={{
+                              uri:
+                                getCountryFlag(profileData.address.country) ||
+                                "",
+                            }}
+                            style={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: 5,
+                              overflow: "hidden",
+                              marginBottom: 5,
+                            }}
+                            defaultSource={require("@/assets/images/IN.png")}
+                          />
+                          <TextScallingFalse
+                            style={{
+                              marginTop: 1,
+                              color: "#EAEAEA",
+                              fontSize: responsiveFontSize(1.41),
+                              fontWeight: "300",
+                            }}
+                          >
+                            {profileData?.address?.country || "undefined"}
+                          </TextScallingFalse>
+                        </View>
+                      )}
                     </View>
                   )}
                 </View>
@@ -567,17 +609,40 @@ const ProfileLayout = () => {
                             />
                             <TextScallingFalse style={styles.ProfileKeyPoints}>
                               {" "}
-                              Teams:{" "}
-                              {profileData?.createdTeams?.length > 0 &&
-                                profileData.createdTeams.map((team: any) => (
-                                  <TextScallingFalse
-                                    key={team?.team?._id}
-                                    style={{ color: "grey" }}
-                                  >
-                                    {" "}
-                                    {team.name}
-                                  </TextScallingFalse>
-                                ))}
+                              {(() => {
+                                const allTeams = [
+                                  ...(profileData.createdTeams || []).map(
+                                    (t: any) => t.team?.name
+                                  ),
+                                  ...(profileData.joinedTeams || []).map(
+                                    (t: any) => t.team?.name
+                                  ),
+                                ].filter(Boolean);
+
+                                const teamCount = allTeams.length;
+
+                                if (teamCount === 0) return "Teams: No teams";
+
+                                return (
+                                  <>
+                                    <TextScallingFalse
+                                      style={{ color: "white" }}
+                                    >
+                                      {`${
+                                        teamCount === 1 ? "Team" : "Teams"
+                                      }: `}
+                                      {allTeams[0]}
+                                    </TextScallingFalse>
+                                    <TextScallingFalse
+                                      style={{ color: "grey" }}
+                                    >
+                                      {teamCount > 1
+                                        ? ` +${teamCount - 1}`
+                                        : ""}
+                                    </TextScallingFalse>
+                                  </>
+                                );
+                              })()}
                             </TextScallingFalse>
                           </View>
                         </View>
@@ -765,21 +830,25 @@ const ProfileLayout = () => {
                     className="basis-1/3 rounded-[0.70rem] border border-[#12956B] justify-center items-center"
                     onPress={() => handleOpenSettingsModal("Unfollow")}
                   >
-                    <TextScallingFalse
+                    <View
                       style={{
-                        color: "white",
-                        fontSize: responsiveFontSize(1.7),
-                        fontWeight: "500",
+                        flexDirection: "row",
+                        gap: 3,
+                        justifyContent: "center",
+                        alignItems: "center",
                       }}
                     >
-                      <Entypo
-                        style={{ marginLeft: -4 * scaleFactor }}
-                        name="check"
-                        size={17.5 * scaleFactor}
-                        color="white"
-                      />
-                      Following
-                    </TextScallingFalse>
+                      <TickIcon />
+                      <TextScallingFalse
+                        style={{
+                          color: "white",
+                          fontSize: responsiveFontSize(1.7),
+                          fontWeight: "400",
+                        }}
+                      >
+                        Following
+                      </TextScallingFalse>
+                    </View>
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
@@ -946,15 +1015,15 @@ const ProfileLayout = () => {
             </View>
           ) : isSettingsModalVisible.message === "Unfollow" ? (
             <View>
-              <TextScallingFalse className="text-white text-xl font-medium">
+              <TextScallingFalse className="text-white text-4xl font-medium">
                 Unfollow {profileData?.firstName || ""}
               </TextScallingFalse>
-              <TextScallingFalse className="text-white mt-1 font-light text-sm">
+              <TextScallingFalse className="text-white mt-1 font-light text-lg">
                 Stop seeing posts from {profileData?.firstName || ""} on your
                 feed. {profileData?.firstName || ""} won't be notified that
                 you've unfollowed
               </TextScallingFalse>
-              <View className="items-center justify-evenly flex-row mt-5">
+              <View className="items-center justify-start gap-5 flex-row mt-5">
                 {/* cancel unfollow */}
                 <TouchableOpacity
                   activeOpacity={0.5}

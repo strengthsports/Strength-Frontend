@@ -26,6 +26,7 @@ import MembersSection from "~/components/profilePage/MembersSection";
 import members from "~/constants/members";
 import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
 import { Member } from "~/types/user";
+import ProfileFTU from "~/components/ui/FTU/profilePage/ProfileFTU";
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -284,57 +285,61 @@ const Overview = () => {
         </Tabs>
       )}
 
+      <ProfileFTU />
+
       {/* about */}
-      <View className="w-full flex-1 items-center py-2 px-1">
-        {/* About Container */}
-        <View
-          className="bg-[#161616] px-5 py-4 rounded-xl"
-          style={{
-            width: containerWidth,
-          }}
-        >
-          <View className="p-0.5 relative">
-            {/* About Heading */}
-            <TextScallingFalse
-              className="text-[#808080] font-bold"
-              style={{
-                fontSize: 14,
-              }}
-            >
-              ABOUT
-            </TextScallingFalse>
+      {user?.about && (
+        <View className="w-full flex-1 items-center py-2 px-1">
+          {/* About Container */}
+          <View
+            className="bg-[#161616] px-5 py-4 rounded-xl"
+            style={{
+              width: containerWidth,
+            }}
+          >
+            <View className="p-0.5 relative">
+              {/* About Heading */}
+              <TextScallingFalse
+                className="text-[#808080] font-bold"
+                style={{
+                  fontSize: 14,
+                }}
+              >
+                ABOUT
+              </TextScallingFalse>
 
-            {/* About Content */}
-            <TextScallingFalse
-              className="text-white font-light pt-4 leading-5"
-              style={{
-                fontSize: 13,
-              }}
-            >
-              {isExpanded ? aboutText : truncatedText}
-              {needsTruncation && (
-                <TextScallingFalse
-                  onPress={handleToggle}
-                  className="text-[#808080] font-light text-lg"
-                >
-                  {isExpanded ? "" : " see more"}
-                </TextScallingFalse>
-              )}
-            </TextScallingFalse>
+              {/* About Content */}
+              <TextScallingFalse
+                className="text-white font-light pt-4 leading-5"
+                style={{
+                  fontSize: 13,
+                }}
+              >
+                {isExpanded ? aboutText : truncatedText}
+                {needsTruncation && (
+                  <TextScallingFalse
+                    onPress={handleToggle}
+                    className="text-[#808080] font-light text-lg"
+                  >
+                    {isExpanded ? "" : " see more"}
+                  </TextScallingFalse>
+                )}
+              </TextScallingFalse>
 
-            {/* edit button */}
-            <TouchableOpacity
-              className="absolute top-0 right-0"
-              activeOpacity={0.7}
-              onPress={() =>
-                router.push("/(app)/(profile)/edit-overview?about=true")
-              }
-            >
-              <EditIcon />
-            </TouchableOpacity>
+              {/* edit button */}
+              <TouchableOpacity
+                className="absolute top-0 right-0"
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push("/(app)/(profile)/edit-overview?about=true")
+                }
+              >
+                <EditIcon />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* recent posts */}
       {/* {postsWithImages?.length > 0 && (
@@ -366,6 +371,7 @@ const Overview = () => {
       )}
 
       {/* {postsWithImages?.length === 0 && <AddPostFTU />} */}
+      <AddPostFTU />
     </ScrollView>
   );
 };

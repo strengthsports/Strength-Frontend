@@ -69,6 +69,7 @@ import { StyleSheet } from "react-native";
 import MentionHashtagInput2 from "../MentionHashtagInput2";
 import VideoPlayerScreen from "../PostContainer/VideoPlayer";
 import VideoPlayer from "../PostContainer/VideoPlayer";
+import AddImagePlusIcon from "../SvgIcons/addpost/AddImagePlusIcon";
 // Memoized sub-components for better performance
 const Figure = React.memo(
   ({
@@ -1069,16 +1070,20 @@ export default function AddPostContainer({
                 }
                 activeOpacity={0.7}
               >
-                <AddImageIcon
+                {pickedImageUris.length === 0 && (
+                  <AddImageIcon
                   color={
                     showPollInput || (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }
                 />
+                )}
+
                 {pickedImageUris.length > 0 && (
-                  <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
-                    <FontAwesome6 name="add" size={12} color="#12956B" />
+                  <View>
+                    {/* <FontAwesome6 name="add" size={12} color="#12956B" /> */}
+                    <AddImagePlusIcon />
                   </View>
                 )}
               </TouchableOpacity>

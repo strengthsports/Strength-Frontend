@@ -51,10 +51,10 @@ const ListFooterComponent = memo(
       return (
         <View style={styles.footerMessage}>
           <TextScallingFalse style={styles.footerLargeText}>
-            Level Unlocked
+            Level Unlocked:
           </TextScallingFalse>
           <TextScallingFalse style={styles.footerLargeText2}>
-            Ultimate Scoller
+            Ultimate Scroller!
           </TextScallingFalse>
           <TextScallingFalse style={styles.footerSmallText}>
             Crafted with &#10084; in Kolkata, IN

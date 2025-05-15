@@ -237,7 +237,7 @@ const TeamPage: React.FC = () => {
     const baseMenuItems = [
       {
         id: "members",
-        label: `Members                  [${teamData.membersCount}]`,
+        label: `Members`,
         logo: () => null,
         color: "white",
         onPress: () =>
@@ -283,7 +283,7 @@ const TeamPage: React.FC = () => {
   return (
     <View style={styles.container}
    >
-      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId}>
+      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId} memberCount={teamData.membersCount}>
        
 
         <ScrollView

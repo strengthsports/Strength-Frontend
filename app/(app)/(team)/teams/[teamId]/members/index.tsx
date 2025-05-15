@@ -253,6 +253,7 @@ const Members: React.FC = () => {
             maxToRenderPerBatch={3}
             windowSize={5}
             contentContainerStyle={{ paddingBottom: 400 }}
+      
           />
         </View>
       </PageThemeView>
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 5,
+    paddingBottom: 8,
     backgroundColor: "black",
   },
   searchInputContainer: {

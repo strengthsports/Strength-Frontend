@@ -18,6 +18,7 @@ import {
   useGetBlockedUsersQuery,
   useUnblockUserMutation,
 } from "~/reduxStore/api/profile/profileApi.block";
+import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 
 const BlockedUsersList = () => {
   const router = useRouter();
@@ -97,9 +98,9 @@ const BlockedUsersList = () => {
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() => router.back()}
-          className="mr-4"
+          className="w-10"
         >
-          <AntDesign name="arrowleft" size={24} color="white" />
+          <BackIcon/>
         </TouchableOpacity>
         <View>
           <TextScallingFalse className="text-white text-5xl font-light">

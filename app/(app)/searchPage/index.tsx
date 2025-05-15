@@ -5,7 +5,7 @@ import {
   FlatList,
   Dimensions,
   Image,
-  Modal, 
+  Modal,
   StyleSheet,
   ActivityIndicator
 } from "react-native";
@@ -153,10 +153,10 @@ const SearchPage: React.FC = () => {
     onClose: () => void; // Function to close the modal
     onConfirm: () => void; // Function to confirm the action
   }
-    // Function to handle closing the modal
-    const handleCloseModal = () => {
-      setModalVisible(false);
-    };
+  // Function to handle closing the modal
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
   const ClearSearchAlertModal: React.FC<ClearSearchAlertModalProps> = ({ visible, onClose, onConfirm }) => {
     if (!visible) return null; // Don't render if modal is not visible
 
@@ -165,18 +165,18 @@ const SearchPage: React.FC = () => {
         <View style={styles.overlay}>
           <View style={styles.modalContainer}>
             <TextScallingFalse style={{ color: 'white', fontSize: 20 }}>Clear search history?</TextScallingFalse>
-            <TextScallingFalse style={{ fontSize: 12, color: 'white', lineHeight: 17, fontWeight:'400'}}>Your search history is only visible to you, by clearing your search history both your recent searches and texts will be removed.</TextScallingFalse>
+            <TextScallingFalse style={{ fontSize: 12, color: 'white', lineHeight: 17, fontWeight: '400' }}>Your search history is only visible to you, by clearing your search history both your recent searches and texts will be removed.</TextScallingFalse>
 
-            <View style={{ width:'100%', alignItems:'flex-end'}}>
-              <View style={{flexDirection:'row', gap: 35}}>
-              <TouchableOpacity onPress={handleCloseModal} >
-                <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Cancel</TextScallingFalse>
-              </TouchableOpacity>
+            <View style={{ width: '100%', alignItems: 'flex-end' }}>
+              <View style={{ flexDirection: 'row', gap: 35 }}>
+                <TouchableOpacity onPress={handleCloseModal} >
+                  <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Cancel</TextScallingFalse>
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={clearSearchHistory} >
-                <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Confirm</TextScallingFalse>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity onPress={clearSearchHistory} >
+                  <TextScallingFalse style={{ color: 'white', fontSize: 16 }}>Confirm</TextScallingFalse>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -202,8 +202,8 @@ const SearchPage: React.FC = () => {
       {searchText ? (
         <View className="px-5 mt-3">
           {isSearching ? (
-            <View style={{paddingTop: 5}}>
-            <ActivityIndicator size="small" color="gray" />
+            <View style={{ paddingTop: 5 }}>
+              <ActivityIndicator size="small" color="gray" />
             </View>
           ) : (
             <FlatList
@@ -211,6 +211,7 @@ const SearchPage: React.FC = () => {
               renderItem={renderSearchResult}
               keyExtractor={(item) => item._id}
               keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
             />
           )}
         </View>
@@ -283,26 +284,31 @@ const SearchResultItem = memo(
   ({ item, onPress }: { item: any; onPress: (user: any) => void }) => (
     <TouchableOpacity
       onPress={() => onPress(item)}
-      className="flex-row items-center py-2 px-3"
+      className="flex-row items-center py-2"
       activeOpacity={0.7}
     >
       <Image
         source={item?.profilePic?.trim() ? { uri: item.profilePic } : nopic}
-        className="w-12 h-12 rounded-full mr-3 border border-[#2F2F2F]"
+        style={{
+          width: 46, // 12 * 4
+          height: 46,
+          borderRadius: 999,
+          marginRight: 12,
+          borderWidth: 1,
+          borderColor: "#2F2F2F",
+        }}
       />
-      <View>
-        <TextScallingFalse className="text-white text-lg font-medium">
+      <View style={{width:'75%'}}>
+        <TextScallingFalse className="text-white font-medium" style={{fontSize: 13}}>
           {item.firstName} {item.lastName}
         </TextScallingFalse>
-        <TextScallingFalse className="text-[#EAEAEA] text-base font-light">
+        <View>
+        <TextScallingFalse numberOfLines={1} ellipsizeMode="tail" className="text-[#9FAAB5] font-regular" style={{fontSize: 12}}>
           @{item.username}
-          {item.headline
-            ? ` | ${item.headline.length > 18
-              ? item.headline.slice(0, 18) + "..."
-              : item.headline
-            }`
-            : ""}
+          <TextScallingFalse style={{fontSize: 13}}> | </TextScallingFalse>
+         {item.headline}
         </TextScallingFalse>
+        </View>
       </View>
     </TouchableOpacity>
   )

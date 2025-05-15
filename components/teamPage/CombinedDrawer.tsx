@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   TouchableOpacity,
   ScrollView,
   Text,
   Animated,
-  Dimensions,
   TouchableWithoutFeedback,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import { RelativePathString, useRouter } from "expo-router";
@@ -24,36 +24,39 @@ interface MenuItem {
   isMember: boolean;
   isAdmin: boolean;
   logo?: React.ComponentType<any>;
+  memberCount: number;
+  id?: string;
 }
 
 interface DrawerProps {
   children: React.ReactNode;
   menuItems: MenuItem[];
   teamId: string;
+  isAdmin: boolean;
+  isMember: boolean;
+  memberCount: number;
 }
 
 const HEADER_HEIGHT = 40;
+const SIDEBAR_WIDTH = 200;
 
 const CombinedDrawer: React.FC<DrawerProps> = ({
   children,
   menuItems,
-  isMember,
   isAdmin,
+  isMember,
   teamId,
+  memberCount,
 }) => {
-  const SIDEBAR_WIDTH = 200;
   const dispatch = useDispatch<AppDispatch>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(SIDEBAR_WIDTH)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
-  // const { width } = Dimensions.get('window');
 
-  // Toggle Sidebar visibility
   const toggleSidebar = () => {
     if (isSidebarOpen) {
-      // Close sidebar
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: SIDEBAR_WIDTH,
@@ -74,11 +77,10 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         setIsSidebarOpen(false);
       });
     } else {
-      // Open sidebar
       setIsSidebarOpen(true);
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: SIDEBAR_WIDTH - 200,
+          toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
@@ -96,7 +98,6 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
     }
   };
 
-  // Function to close sidebar
   const closeSidebar = () => {
     if (isSidebarOpen) {
       toggleSidebar();
@@ -114,8 +115,8 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      {/* Fixed Header Drawer */}
+    <SafeAreaView className="flex-1" edges={["top"]}>
+      {/* Fixed Header */}
       <View
         className="flex-row justify-between items-center px-4 py-1 bg-black top-0 left-0 right-0 z-30"
         style={{ height: HEADER_HEIGHT }}
@@ -123,7 +124,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         <TouchableOpacity onPress={handleBackFromTeamPage}>
           <BackIcon />
         </TouchableOpacity>
-        {isMember || isAdmin ? (
+        {(isMember || isAdmin) && (
           <View className="flex-row items-center gap-x-5">
             <TouchableOpacity
               onPress={() =>
@@ -144,23 +145,19 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
               </Animated.View>
             </TouchableOpacity>
           </View>
-        ) : (
-          <></>
         )}
       </View>
 
       {/* Main Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-        }}
-        scrollEnabled={!isSidebarOpen} // Disable scrolling when drawer is open
+        contentContainerStyle={{ flexGrow: 1 }}
+        scrollEnabled={!isSidebarOpen}
       >
         {children}
       </ScrollView>
 
-      {/* Drawer System - Only rendered when needed */}
+      {/* Drawer System */}
       {isSidebarOpen && (
         <>
           {/* Overlay */}
@@ -186,15 +183,19 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
             style={{
               position: "absolute",
               top: 0,
-              width: 200,
+              width: SIDEBAR_WIDTH,
               right: 0,
               bottom: 0,
-              backgroundColor: "black",
+              backgroundColor: "#000",
               zIndex: 20,
               transform: [{ translateX: slideAnim }],
+              paddingTop: Platform.select({
+                ios: HEADER_HEIGHT+60,
+                android: HEADER_HEIGHT + (Platform.OS === 'android' ? 24 :0), // Adjust for Android status bar
+              }),
             }}
           >
-            <View className="flex-1 mt-10 pt-[72px]">
+            <View className="flex-1">
               {menuItems.map((item, index) => (
                 <TouchableOpacity
                   key={index}
@@ -202,21 +203,17 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                     item.onPress();
                     closeSidebar();
                   }}
-                  className="py-4 pl-5 border-b border-gray-600"
+                  className="py-4 pl-5 border-b  border-[#252525]"
                 >
                   <View className="flex flex-row justify-between mr-4">
-                    <Text
-                      style={{ color: item.color || "white", fontSize: 16 }}
-                    >
+                    <Text style={{ color: item.color || "white", fontSize: 16 }}>
                       {item.label}
                     </Text>
+                    {item?.id === "members" && (isAdmin || isMember) && (
+                      <Text className="text-white">{`[${memberCount}]`}</Text>
+                    )}
                     {item?.logo && (
-                      <item.logo
-                        width={32}
-                        height={32}
-                        fill="white"
-                        className="mr-2"
-                      />
+                      <item.logo width={32} height={32} fill="white" />
                     )}
                   </View>
                 </TouchableOpacity>

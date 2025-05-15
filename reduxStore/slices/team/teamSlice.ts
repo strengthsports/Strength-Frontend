@@ -608,6 +608,40 @@ export const removeTeamMember = createAsyncThunk<
 });
 
 
+// Add this to your teamSlice.ts file with the other async thunks
+export const transferAdmin = createAsyncThunk<
+  { team: Team; message: string },
+  { teamId: string; userId: string },
+  { rejectValue: string }
+>("team/transferAdmin", async ({ teamId, userId }, { rejectWithValue }) => {
+  try {
+    const token = await getToken("accessToken");
+
+    const response = await fetch(`${BASE_URL}/api/v1/team/transfer-admin`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ teamId, userId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Failed to transfer admin rights");
+    }
+
+    return {
+      team: data.data.team,
+      message: data.message || "Admin rights transferred successfully",
+    };
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Network error");
+  }
+});
+
+
 
 const teamSlice = createSlice({
   name: "team",
@@ -795,7 +829,7 @@ const teamSlice = createSlice({
         (admin: any) => admin._id !== userId
       );
     }
-
+ 
 
 
     // Update members length if exists
@@ -825,6 +859,23 @@ const teamSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to join team";
       })
+
+      //Transfer Admin
+      // Add this to your extraReducers in teamSlice
+.addCase(transferAdmin.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(transferAdmin.fulfilled, (state, action) => {
+  state.loading = false;
+  if (action.payload.team) {
+    state.team = action.payload.team;
+  }
+})
+.addCase(transferAdmin.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to transfer admin rights";
+})
 
       // Accept Invitation
       .addCase(acceptTeamInvitation.fulfilled, (state, action) => {

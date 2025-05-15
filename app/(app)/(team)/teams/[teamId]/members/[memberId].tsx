@@ -15,11 +15,14 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/reduxStore";
+import { useFollow } from "~/hooks/useFollow";
+import { FollowUser } from "~/types/user";
 import {
   fetchTeamDetails,
   changeUserPosition,
   changeUserRole,
   removeTeamMember,
+  transferAdmin,
 } from "~/reduxStore/slices/team/teamSlice";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "~/configs/toastConfig";
@@ -42,6 +45,8 @@ import {
   showWarning,
 } from "../../../../../../utils/feedbackToast";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import CaptainSq from "~/components/SvgIcons/teams/CaptainSq";
+import ViceCaptainSq from "~/components/SvgIcons/teams/ViceCaptainSq";
 
 // Types
 interface Role {
@@ -119,8 +124,13 @@ const RoleDropdownComponent = ({
             <TextScallingFalse style={styles.roleText}>
               {role.name}
             </TextScallingFalse>
+            
+              {currentRole !== role.name && (
+              <View className="w-[16px]  h-[16px] rounded-xl   border-[1px] border-[#E2E2E2]  "></View>
+            )}
+            
             {currentRole === role.name && (
-              <AntIcon name="check" size={16} color="#12956B" />
+              <View className="w-[16px]  h-[16px] rounded-xl bg-[#35A700]  border-[1px] border-[#E2E2E2]  "></View>
             )}
           </TouchableOpacity>
         )}
@@ -200,11 +210,11 @@ const ActionButtonRole = React.memo(
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className="flex-row w-full justify-between pl-8 pr-3 py-4 mb-4 rounded-lg"
+      className="flex-row w-full justify-between pl-6 pr-3 py-5 mb-4 rounded-[15px]"
       style={{ backgroundColor }}
     >
       <TextScallingFalse
-        className="text-3xl font-bold"
+        className="text-3xl mt-1  font-regular"
         style={{ color: textColor }}
       >
         {label}
@@ -213,40 +223,8 @@ const ActionButtonRole = React.memo(
     </TouchableOpacity>
   )
 );
+const btn = "rounded-xl border border-[#12956B] py-2 w-[40%]";
 
-// Follow Button Component
-const FollowButton = React.memo(
-  ({
-    isFollowing,
-    onPress,
-    isLoading = false,
-    isAdmin,
-  }: {
-    isFollowing: boolean;
-    onPress: () => void;
-    isLoading?: boolean;
-    isAdmin?: boolean;
-  }) => (
-    <Button
-      mode="contained"
-      style={isAdmin ? styles.buttonGray : styles.smallButton}
-      labelStyle={styles.whiteText}
-      onPress={onPress}
-      disabled={isLoading || isAdmin}
-    >
-      {isLoading ? (
-        <ActivityIndicator size="small" color="white" />
-      ) : isFollowing ? (
-        <>
-          <AntIcon name="check" size={16} color="white" style={styles.icon} />{" "}
-          Following
-        </>
-      ) : (
-        "Follow"
-      )}
-    </Button>
-  )
-);
 
 // Profile Section Component
 const ProfileSection = React.memo(({ member }: { member: any }) => (
@@ -255,13 +233,18 @@ const ProfileSection = React.memo(({ member }: { member: any }) => (
       source={member?.profilePic ? { uri: member.profilePic } : Nopic}
       style={styles.profileImage}
     />
+    <View className="flex-row  mt-6">
     <TextScallingFalse style={styles.nameText}>
       {member?.firstName} {member?.lastName}
     </TextScallingFalse>
+    
+    {member.position == "Captain" && <CaptainSq/>}
+     {member.position == "ViceCaptain" && <ViceCaptainSq/>}
+    </View>
     <View className="flex-row">
       <TextScallingFalse style={styles.roleText}>
         {"@"}
-        {member?.username} | {member?.headline}
+        {member?.username} <TextScallingFalse className="text-3xl">|</TextScallingFalse> {member?.headline}
       </TextScallingFalse>
     </View>
   </View>
@@ -310,6 +293,55 @@ const MemberDetails = () => {
     confirmMessage: "Confirm",
     cancelMessage: "Cancel",
   });
+
+ const [followingStatus, setFollowingStatus] = useState<boolean>(
+    parsedMember?.isFollowing ?? false
+  );
+
+  const serializedUser = encodeURIComponent(
+    JSON.stringify({ id: parsedMember?._id, type: "User" })
+  );
+
+  const { followUser, unFollowUser } = useFollow();
+
+  const handleFollowToggle = async () => {
+    if (!parsedMember) {
+      console.warn("Member is null/undefined");
+      return;
+    }
+
+    const wasFollowing = followingStatus;
+    const followData: FollowUser = {
+      followingId: parsedMember._id,
+      followingType: "User",
+    };
+
+    try {
+      // Optimistic UI update
+      setFollowingStatus(!wasFollowing);
+
+      // Execute the appropriate action
+      if (wasFollowing) {
+        await unFollowUser(followData);
+      } else {
+        await followUser(followData);
+      }
+    } catch (err) {
+      // Revert on error
+      setFollowingStatus(wasFollowing);
+      console.error(wasFollowing ? "Unfollow error:" : "Follow error:", err);
+      Alert.alert("Error", `Failed to ${wasFollowing ? "unfollow" : "follow"}`);
+    }
+  };
+
+  const handleViewProfile = () => {
+    if (!parsedMember) return;
+    router.push(`/(app)/(profile)/profile/${serializedUser}`);
+  };
+
+
+
+  
 
   // Memoized values to prevent recalculations
   const isAdmin = useMemo(() => {
@@ -464,18 +496,18 @@ useEffect(() => {
     [role, teamId, parsedMember, dispatch]
   );
 
-  const handleFollowToggle = useCallback(async () => {
-    setIsFollowingLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setIsFollowing((prev) => !prev);
-      showToastMessage(
-        isFollowing ? "Unfollowed successfully" : "Following now"
-      );
-    } finally {
-      setIsFollowingLoading(false);
-    }
-  }, [isFollowing]);
+  // const handleFollowToggle = useCallback(async () => {
+  //   setIsFollowingLoading(true);
+  //   try {
+  //     await new Promise((resolve) => setTimeout(resolve, 500));
+  //     setIsFollowing((prev) => !prev);
+  //     showToastMessage(
+  //       isFollowing ? "Unfollowed successfully" : "Following now"
+  //     );
+  //   } finally {
+  //     setIsFollowingLoading(false);
+  //   }
+  // }, [isFollowing]);
 
   const executePositionChange = useCallback(
     async (newPosition: string) => {
@@ -573,9 +605,9 @@ useEffect(() => {
         const conflictMember = conflictingMembers[0];
         showAlert(
           "Position Conflict",
-          `${conflictMember.user.firstName || "User"} ${
+          `"${conflictMember.user.firstName || "User"} ${
             conflictMember.user.lastName || ""
-          } is already assigned as ${newPosition}. Do you want to replace them?`,
+          }"${" "}is already assigned as ${newPosition}. Do you want to replace them?`,
           () => executePositionChange(newPosition),
           "Replace"
         );
@@ -636,7 +668,7 @@ const handleRemoveFromTeam = useCallback(() => {
   
   showAlert(
     "Remove Member",
-    `Are you sure you want to remove ${parsedMember.firstName} ${parsedMember.lastName} from the team?`,
+    `Are you sure you want to remove "${parsedMember.firstName} ${parsedMember.lastName}" from the team?`,
     async () => {
       setIsUpdating(true);
       try {
@@ -648,7 +680,7 @@ const handleRemoveFromTeam = useCallback(() => {
         ).unwrap();
 
         if (result.success) {
-          showToastMessage(result.message || `${parsedMember.firstName} ${parsedMember.lastName} removed successfully`, "success");
+          showToastMessage(result.message || `"${parsedMember.firstName} ${parsedMember.lastName}" removed successfully`, "success");
           
           // Force refresh team details
           await dispatch(fetchTeamDetails(teamId));
@@ -658,7 +690,7 @@ const handleRemoveFromTeam = useCallback(() => {
             router.back();
           }, 1000);
         } else {
-          showToastMessage(`${parsedMember.firstName} ${parsedMember.lastName} removed successfully` || "Failed to remove member", "error");
+          showToastMessage(`"${parsedMember.firstName} ${parsedMember.lastName}" removed successfully` || "Failed to remove member", "error");
         }
       } catch (error: any) {
         console.error("Failed to remove member:", error);
@@ -676,19 +708,49 @@ const handleRemoveFromTeam = useCallback(() => {
 }, [teamId, parsedMember, dispatch]);
 
   // Handle admin transfer
-  const handleTransferAdmin = useCallback(() => {
-    if (!team || !parsedMember) {
-      showToastMessage("Missing team or member data", "error");
-      return;
-    }
+// In your MemberDetails component, update the handleTransferAdmin function:
+const handleTransferAdmin = useCallback(() => {
+  if (!team || !parsedMember) {
+    showToastMessage("Missing team or member data", "error");
+    return;
+  }
 
-    showAlert(
-      "Transfer Admin",
-      "Are you sure you want to transfer admin rights to this member?",
-      () => executePositionChange("Admin"),
-      "Transfer"
-    );
-  }, [executePositionChange, team, parsedMember]);
+  showAlert(
+    "Transfer Admin",
+    `Are you sure you want to transfer admin rights to ${parsedMember.firstName} ${parsedMember.lastName}?`,
+    async () => {
+      setIsUpdating(true);
+      try {
+        await dispatch(
+          transferAdmin({
+            teamId: team._id,
+            userId: parsedMember._id,
+          })
+        ).unwrap();
+
+        showToastMessage("Admin rights transferred successfully");
+        
+        // Refresh team details after transfer
+        await dispatch(fetchTeamDetails(team._id));
+        
+        // Navigate back after a short delay
+        setTimeout(() => {
+          router.back();
+        }, 1500);
+      } catch (error: any) {
+        console.error("Admin transfer failed:", error);
+        showToastMessage(
+          error.message || "Could not transfer admin rights. Please try again.",
+          "error"
+        );
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    "Transfer",
+    true
+  );
+}, [team, parsedMember, dispatch, router]);
 
   // Render position-specific buttons - memoized to prevent re-renders
   const renderPositionButtons = useMemo(() => {
@@ -833,30 +895,40 @@ const handleRemoveFromTeam = useCallback(() => {
       <ProfileSection member={parsedMember} />
 
       {/* Buttons */}
-      <View style={styles.buttonRow}>
-        {!isAdmin && (
-          <FollowButton
-            isAdmin={isAdmin}
-            isFollowing={isFollowing}
+    <View className="flex-row justify-start items-center gap-x-5 mt-6 ml-6 mb-12">
+        {/* Follow / Following Button */}
+        {user?._id !== parsedMember?._id && (
+          <TouchableOpacity
             onPress={handleFollowToggle}
-            isLoading={isFollowingLoading}
-          />
+            className={`${btn} bg-[#12956B]`}
+          >
+            {followingStatus ? (
+              <TextScallingFalse className="text-white font-medium text-center">
+                ✓ Following
+              </TextScallingFalse>
+            ) : (
+              <TextScallingFalse className="text-white font-medium text-center">
+                Follow
+              </TextScallingFalse>
+            )}
+          </TouchableOpacity>
         )}
-        <Button
-          mode="contained"
-          style={styles.smallButtonRight}
-          labelStyle={styles.whiteText}
-          onPress={() => {
-            /* Navigate to user profile */
-          }}
+
+        {/* View Profile Button */}
+        <TouchableOpacity
+          className={btn}
+          onPress={handleViewProfile}
+          disabled={!parsedMember}
         >
-          View Profile
-        </Button>
+          <TextScallingFalse className="text-white font-medium text-center">
+            View Profile
+          </TextScallingFalse>
+        </TouchableOpacity>
       </View>
 
       {/* Role Actions */}
       <View style={styles.actionsContainer}>
-        <TextScallingFalse style={styles.sectionLabel}>Role</TextScallingFalse>
+        <TextScallingFalse style={styles.sectionLabel}>Position</TextScallingFalse>
         <View>
           <ActionButtonRole
             onPress={() => {
@@ -935,21 +1007,23 @@ const styles = StyleSheet.create({
   },
   centered: {
     marginTop: 20,
-    marginLeft: 30,
+    marginLeft: 22,
   },
   profileImage: {
     width: 80,
     height: 80,
+    borderWidth:1,
+    borderColor:"#252525",
     borderRadius: 50,
   },
   nameText: {
-    marginTop: 15,
+    marginRight: 5,
     color: "white",
     fontSize: 16,
     fontWeight: "700",
   },
   roleText: {
-    color: "#949494",
+    color: "#9FAAB5",
     fontSize: 13,
     marginTop: 4,
     maxWidth: 300,
@@ -958,7 +1032,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     marginVertical: 25,
-    paddingHorizontal: 12,
+    paddingHorizontal:20,
   },
   buttonGray: {
     backgroundColor: "#141414",
@@ -968,13 +1042,14 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   smallButton: {
-    paddingVertical: -5,
+    paddingVertical: 0,
     paddingHorizontal: 12,
+    marginHorizontal:6,
     borderRadius: 7.48,
     backgroundColor: "#12956B",
   },
   smallButtonRight: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     borderRadius: 10,
     borderColor: "#12956B",
     borderWidth: 1,
@@ -1013,36 +1088,36 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.6)",
   },
   dropdownContainer: {
     position: "absolute",
-    left: "5%",
-    right: "5%",
-    backgroundColor: "#141414",
+    left: "6%",
+    right: "6%",
+    backgroundColor: "#333333",
     borderRadius: 15,
     padding: 10,
     maxHeight: "40%",
-    top: "51%",
-    zIndex: 10,
+    top: "50%",
+    zIndex: 5,
   },
   roleItem: {
     padding: 15,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#292929",
+    borderBottomWidth: 2,
+    borderBottomColor: "#434343",
   },
   selectedRole: {
-    backgroundColor: "#252525",
+    // backgroundColor: "#252525",
   },
   sectionLabel: {
     color: "#949494",
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "700",
     marginBottom: 8,
-    marginLeft: 2,
+    marginLeft: 3,
   },
   loadingContainer: {
     flex: 1,

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { View,  TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/reduxStore";
 import { setTeamDescription } from "~/reduxStore/slices/team/teamSlice";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import TextScallingFalse from "~/components/CentralText";
 
 const EditDescription = () => {
   const router = useRouter();
@@ -41,13 +42,13 @@ const EditDescription = () => {
         </View>
 
         {/* Body */}
-        <View className="px-6 pt-6 flex-1 pb-20">
-          <Text className="text-white text-5xl font-semibold mb-3">Team Description</Text>
-          <Text className="text-gray-500 mb-3">
+        <View className="px-6 pt-2 flex-1 pb-20">
+          <TextScallingFalse className="text-white text-5xl font-semibold mb-1">Team Description</TextScallingFalse>
+          <TextScallingFalse className="text-gray-500 text-base mb-8">
             Share details about your team's goals, history, achievements, or unique aspects.
-          </Text>
+          </TextScallingFalse>
           <TextInput
-            className="bg-black border border-gray-800 text-white text-base rounded-lg p-4 h-80"
+            className="bg-black border border-gray-800 text-white text-regular rounded-lg p-4 h-80"
             value={newDescription}
             onChangeText={setNewDescription}
             multiline
@@ -62,9 +63,9 @@ const EditDescription = () => {
             className="bg-green-600 py-3 rounded-lg"
             onPress={handleSave}
           >
-            <Text className="text-white text-center text-lg font-semibold">
+            <TextScallingFalse className="text-white text-center text-lg font-semibold">
               Save Changes
-            </Text>
+            </TextScallingFalse>
           </TouchableOpacity>
         </SafeAreaView>
       </SafeAreaView>

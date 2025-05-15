@@ -163,10 +163,20 @@ const Comments = () => {
   );
 
   const renderEmptyComponent = () => (
-    <View style={styles.centered}>
-      <TextScallingFalse className="text-white text-center p-4">
-        You haven't commented on any post yet.
+    <View className="w-full items-center mt-10 gap-y-2">
+      <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3">
+        Every Play Deserves a Comment!
       </TextScallingFalse>
+
+      <TouchableOpacity
+        onPress={() => router.push("/(app)/(tabs)/home")}
+        className="w-auto bg-[#262626] rounded-full py-3 px-4 flex-row items-center justify-center mb-2"
+        style={{ borderColor: "#313131", borderWidth: 1 }}
+      >
+        <TextScallingFalse className="text-[#c0c0c0] font-normal text-2xl">
+          Drop a comment
+        </TextScallingFalse>
+      </TouchableOpacity>
     </View>
   );
 

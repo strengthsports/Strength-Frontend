@@ -102,7 +102,7 @@ const ReplySection = memo(
   }) => {
     if (replies.length === 0 && !loading) return null;
 
-    console.log(hasNextPage);
+    console.log("Parent Comm", parentComment);
 
     return (
       <View className="ml-8 mt-2">
@@ -343,7 +343,7 @@ const PostDetailsPage = () => {
 
   // Handle Reply button tap
   const handleReply = useCallback((comment: Comment) => {
-    const replyTag = `@${comment.postedBy.username}`;
+    const replyTag = `${comment.postedBy.firstName} ${comment.postedBy.lastName}`;
     setReplyingTo({ commentId: comment._id, name: replyTag });
     textInputRef.current?.focus();
   }, []);

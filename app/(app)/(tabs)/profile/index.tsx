@@ -371,6 +371,7 @@ const Overview = () => {
       )}
 
       {/* {postsWithImages?.length === 0 && <AddPostFTU />} */}
+      <AddPostFTU />
     </ScrollView>
   );
 };

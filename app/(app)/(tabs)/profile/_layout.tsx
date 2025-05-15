@@ -16,7 +16,6 @@ import {
   InteractionManager,
 } from "react-native";
 import PageThemeView from "~/components/PageThemeView";
-import flag from "@/assets/images/IN.png";
 import TextScallingFalse from "@/components/CentralText";
 import {
   MaterialCommunityIcons,
@@ -50,6 +49,7 @@ import { Share } from "react-native";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { calculateAge } from "~/utils/calculateAge";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
+import { getCountryFlag } from "~/utils/getCountryFlag";
 
 const ProfileOptionsBottomSheet = ({
   onClose,
@@ -174,8 +174,9 @@ const ProfileLayout = () => {
       // TODO: need modification of the profile url
       const profileUrl = `strength://profile/${user?._id}`;
       const result = await Share.share({
-        message: `Check out ${user?.firstName || "this"
-          } profile on Strength! ${profileUrl}`,
+        message: `Check out ${
+          user?.firstName || "this"
+        } profile on Strength! ${profileUrl}`,
         url: Platform.OS === "ios" ? profileUrl : undefined,
         title: "Share Profile",
       });
@@ -335,27 +336,33 @@ const ProfileLayout = () => {
                 </TextScallingFalse>
 
                 <View style={{ marginTop: 6, marginRight: 5, height: "auto" }}>
-                  <View style={{ flexDirection: "row", gap: 3 }}>
-                    <Image
-                      source={flag}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: 5,
-                        marginBottom: 5,
-                      }}
-                    />
-                    <TextScallingFalse
-                      style={{
-                        marginTop: 2,
-                        color: "#EAEAEA",
-                        fontSize: responsiveFontSize(1.41),
-                        fontWeight: "400",
-                      }}
-                    >
-                      {user?.address?.country || "undefined"}
-                    </TextScallingFalse>
-                  </View>
+                  {user?.address?.country && (
+                    <View style={{ flexDirection: "row", gap: 4 }}>
+                      <Image
+                        source={{
+                          uri: getCountryFlag(user.address.country) || "",
+                        }}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 5,
+                          overflow: "hidden",
+                          marginBottom: 5,
+                        }}
+                        defaultSource={require("@/assets/images/IN.png")}
+                      />
+                      <TextScallingFalse
+                        style={{
+                          marginTop: 1,
+                          color: "#EAEAEA",
+                          fontSize: responsiveFontSize(1.41),
+                          fontWeight: "300",
+                        }}
+                      >
+                        {user?.address?.country || "undefined"}
+                      </TextScallingFalse>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
@@ -594,8 +601,9 @@ const ProfileLayout = () => {
                       width: "100%",
                     }}
                   >
-                    {`${user?.address?.city || "undefined"}, ${user?.address?.state || "undefined"
-                      }, ${user?.address?.country || "undefined"}`}
+                    {`${user?.address?.city || "undefined"}, ${
+                      user?.address?.state || "undefined"
+                    }, ${user?.address?.country || "undefined"}`}
                   </TextScallingFalse>
                 </View>
                 <View style={{ flexDirection: "row" }}>
@@ -742,13 +750,15 @@ const ProfileLayout = () => {
             return (
               <Pressable
                 key={tab.name}
-                className={`py-2 px-5 ${isActive ? "border-b-2 border-[#12956B]" : ""
-                  }`}
+                className={`py-2 px-5 ${
+                  isActive ? "border-b-2 border-[#12956B]" : ""
+                }`}
                 onPress={() => handleTabPress(tab.segment)}
               >
                 <TextScallingFalse
-                  className={`text-[1.1rem] ${isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
-                    }`}
+                  className={`text-[1.1rem] ${
+                    isActive ? "text-[#12956B]" : "text-[#EEEEEE]"
+                  }`}
                 >
                   {tab.name}
                 </TextScallingFalse>

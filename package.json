@@ -67,6 +67,7 @@
     "expo-video": "^2.0.6",
     "expo-video-thumbnails": "^9.0.3",
     "expo-web-browser": "~14.0.1",
+    "i18n-iso-countries": "^7.14.0",
     "image-size": "^2.0.2",
     "jwt-decode": "^4.0.0",
     "lodash.debounce": "^4.0.8",

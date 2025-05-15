@@ -48,6 +48,8 @@ export const CommenterCard = memo(
       })
     );
 
+    console.log(parent);
+
     // Handle like on comment
     const toggleLikeOnComment = async () => {
       try {

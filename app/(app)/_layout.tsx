@@ -23,7 +23,6 @@ export default function AppLayout() {
           name="add-post"
           options={{
             animation: "slide_from_bottom",
-            presentation: "modal",
             contentStyle: {
               backgroundColor: "black",
             },

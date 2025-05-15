@@ -36,6 +36,12 @@ export const viewsSlice = createSlice({
         hasMore,
       };
     },
+    addPostToTopOfFeed(state, action: PayloadAction<string>) {
+      const postId = action.payload;
+      if (!state.feed.ids.includes(postId)) {
+        state.feed.ids.unshift(postId);
+      }
+    },
     setUserPage(
       state,
       action: PayloadAction<{ userId: string; type: string } & ViewState>
@@ -80,5 +86,6 @@ export const viewsSlice = createSlice({
   },
 });
 
-export const { setFeedPage, setUserPage, setHashtagPage } = viewsSlice.actions;
+export const { setFeedPage, setUserPage, setHashtagPage, addPostToTopOfFeed } =
+  viewsSlice.actions;
 export default viewsSlice.reducer;

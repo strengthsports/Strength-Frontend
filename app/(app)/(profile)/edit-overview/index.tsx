@@ -109,6 +109,14 @@ function EditOverview() {
   // About modal
   const [initialAbout, setAbout] = useState(user?.about);
   const [isAboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
+  const [isTeamAvailable, setIsTeamAvailable] = useState(false);
+
+  useEffect(() => {
+    const hasTeams = user?.selectedSports?.some(
+      (sport: any) => sport.teams && sport.teams.length > 0
+    );
+    setIsTeamAvailable(!!hasTeams);
+  }, [user]);
 
   // Check which edit request has came
   useEffect(() => {
@@ -629,9 +637,15 @@ function EditOverview() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-            onPress={() =>
-              router.push("/(app)/(profile)/edit-overview/(modal)/current-team")
-            }
+            onPress={() => {
+              if (isTeamAvailable) {
+                router.push(
+                  "/(app)/(profile)/edit-overview/(modal)/current-team"
+                );
+              } else {
+                router.push("/(app)/(team)/teams");
+              }
+            }}
           >
             <TextScallingFalse
               style={{ color: "white", fontSize: 16, fontWeight: "500" }}

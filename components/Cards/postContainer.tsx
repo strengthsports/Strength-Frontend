@@ -329,7 +329,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             onPress={onPressSeeMore}
             className="text-[#808080] text-2xl"
           >
-            ...see more
+            ...more
           </TextScallingFalse>
         );
       }
@@ -491,7 +491,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             >
               <TouchableWithDoublePress
                 className="flex-1 relative overflow-hidden ml-2"
-                activeOpacity={0.95}
+                activeOpacity={0.7}
                 onSinglePress={() => {
                   if (item) {
                     router.push({

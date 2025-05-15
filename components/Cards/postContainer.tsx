@@ -51,7 +51,7 @@ const shadowStyle = Platform.select({
   },
   android: {
     elevation: 10,
-    shadowColor: "#000000",
+    shadowColor: "#000",
     shadowOpacity: 0.25,
   },
 });

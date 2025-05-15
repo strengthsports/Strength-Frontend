@@ -10,15 +10,21 @@ const NameFlagSubCard = ({
   flag: string;
   teamName: string;
 }) => {
-  const teamLogo = teamLogos[teamName]; // Fetch team logo if available
+  const teamLogo = teamLogos[flag]; // Fetch team logo if available
   const imgUrl = require("../../assets/images/IN.png");
+  // console.log("teamName:", teamName);
+  // console.log("teamLogo:", teamLogos[teamName]);
 
   return (
     <View style={styles.nameCard}>
       {/* Display country flag if it's not "Unknown", otherwise fallback to team logo */}
-      {flag === "" ? (
+      {flag === teamName ? (
         <View style={styles.logoContainer}>
-          <Image source={imgUrl} style={styles.teamLogo} resizeMode="contain" />
+          <Image
+            source={{ uri: teamLogo }}
+            style={styles.teamLogo}
+            resizeMode="contain"
+          />
         </View>
       ) : (
         <View style={styles.logoContainer}>

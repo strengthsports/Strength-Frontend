@@ -109,12 +109,12 @@ const CricketNextMatchCard = ({
           className="flex-row items-center gap-2"
           onPress={toggleNumberOfLines}
         >
-          <View className="py-1">
+          {/* <View className="py-1">
             <Image
               source={iplImg}
               className="w-[24px] h-[16px] rounded-[2px]"
             />
-          </View>
+          </View> */}
           <TextScallingFalse
             className="text-white text-3xl w-[88%]"
             numberOfLines={numberOfLinesTitle}
@@ -127,7 +127,7 @@ const CricketNextMatchCard = ({
         {/* Game Type and Round */}
         <View className="flex-row items-center mt-2">
           <TextScallingFalse className="text-theme text-base font-semibold">
-            {"\u25B6"}  Cricket{" "}
+            {"\u25B6"} Cricket{" "}
           </TextScallingFalse>
         </View>
       </View>

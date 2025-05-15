@@ -34,10 +34,14 @@ const CricketNextBySeriesMatch: React.FC<NextBySeriesCricketMatchProps> = ({
   }
 
   return (
-    <View className="px-4">
-      <View className="border border-[#454545] rounded-xl">
-        <CricketNextBySeriesMatchCard matches={nextMatches} />
-      </View>
+    <View className="px-4 mb-5">
+      {nextMatches.length != 0 ? (
+        <View className="border border-[#454545] rounded-xl">
+          <CricketNextBySeriesMatchCard matches={nextMatches} />
+        </View>
+      ) : (
+        <></>
+      )}
     </View>
   );
 };

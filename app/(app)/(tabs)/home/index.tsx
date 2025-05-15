@@ -21,16 +21,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
 import PostContainer from "@/components/Cards/postContainer";
 import { Divider } from "react-native-elements";
-import {
-  fetchFeedPosts,
-  resetFeed,
-  selectAllFeedPosts,
-  selectFeedState,
-} from "~/reduxStore/slices/feed/feedSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
-import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "~/components/CentralText";
 import CustomHomeHeader from "~/components/ui/CustomHomeHeader";
 import debounce from "lodash.debounce";
@@ -40,16 +33,11 @@ import UploadProgressBar from "~/components/UploadProgressBar";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import { setUploadingCompleted } from "~/reduxStore/slices/post/postSlice";
 import FeedTopFtu from "~/components/ui/FTU/feedPage/FeedTopFtu";
+import { makeSelectFeedPosts } from "~/reduxStore/slices/post/selectors";
+import { fetchFeedPosts } from "~/reduxStore/slices/post/hooks";
+import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
 
 const INTERLEAVE_INTERVAL = 6;
-
-const EmptyComponent = memo(({ error }: { error: any }) => {
-  if (error) {
-    console.error("Feed Error:", error);
-    showFeedback(`Can't retrieve posts now! Try again later!`, "error");
-  }
-  return <Text style={styles.emptyText}>No new posts available</Text>;
-});
 
 const ListFooterComponent = memo(
   ({ isLoading, hasMore }: { isLoading: boolean; hasMore: boolean }) => {
@@ -81,12 +69,20 @@ const ListFooterComponent = memo(
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error, cursor, hasMore } = useSelector(selectFeedState);
   const { isUploadingCompleted } = useSelector(
     (state: RootState) => state.post
   );
-  const posts = useSelector(selectAllFeedPosts);
+  const selectFeedPosts = useCallback(makeSelectFeedPosts, []);
+
+  const posts = useSelector(selectFeedPosts);
+  const nextCursor = useSelector(
+    (state: RootState) => state.views.feed.nextCursor ?? null
+  );
+  const hasMore = useSelector(
+    (state: RootState) => state.views.feed.hasMore ?? false
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const flatListRef = useRef<FlatList>(null);
   const profile = useSelector((state: RootState) => state.profile);
@@ -106,12 +102,18 @@ const Home = () => {
     }
   ).current;
 
+  // Load feed posts function
+  const loadPosts = async (cursor?: string | null) => {
+    await dispatch(fetchFeedPosts({ limit: 10, cursor }));
+  };
+
+  // Refresh function
   const handleRefresh = useCallback(async () => {
     if (isRefreshing) return; // Prevent multiple simultaneous refreshes
     setIsRefreshing(true);
     try {
       dispatch(resetFeed());
-      await dispatch(fetchFeedPosts({}));
+      await dispatch(fetchFeedPosts({ limit: 10 }));
     } finally {
       setIsRefreshing(false);
     }
@@ -127,20 +129,18 @@ const Home = () => {
     }
   }, [isUploadingCompleted, handleRefresh, dispatch]);
 
+  // Fetch feed posts on initial page mount
   useEffect(() => {
-    const scrollListener = () => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-    };
-
-    eventBus.addListener("scrollToTop", scrollListener);
-    return () => {
-      eventBus.removeListener("scrollToTop", scrollListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    dispatch(fetchFeedPosts({ limit: 10, cursor }));
+    dispatch(fetchFeedPosts({ limit: 10 }));
   }, [dispatch]);
+
+  // Handle load more feed posts
+  const handleLoadMore = async () => {
+    if (!nextCursor || isLoading) return;
+    setIsLoadingMore(true);
+    await loadPosts(nextCursor);
+    setIsLoadingMore(false);
+  };
 
   const debouncedRefresh = useMemo(
     () => debounce(handleRefresh, 100),
@@ -153,14 +153,19 @@ const Home = () => {
     };
   }, [debouncedRefresh]);
 
-  const handleLoadMore = useCallback(async () => {
-    if (hasMore && !loading && cursor) {
-      setIsLoading(true);
-      await dispatch(fetchFeedPosts({ limit: 10, cursor }));
-      setIsLoading(false);
-    }
-  }, [cursor, dispatch, loading, hasMore]);
+  // Scroll to top on press home option
+  useEffect(() => {
+    const scrollListener = () => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    };
 
+    eventBus.addListener("scrollToTop", scrollListener);
+    return () => {
+      eventBus.removeListener("scrollToTop", scrollListener);
+    };
+  }, []);
+
+  // Mix Posts and discover section
   const interleavedData = useMemo(() => {
     return posts.reduce(
       (
@@ -208,7 +213,7 @@ const Home = () => {
 
   const isAndroid = Platform.OS === "android";
 
-  if (loading && !cursor) {
+  if (isRefreshing || (isLoading && !nextCursor)) {
     return (
       <PageThemeView>
         <CustomHomeHeader />
@@ -225,50 +230,45 @@ const Home = () => {
     <PageThemeView>
       <CustomHomeHeader />
       <UploadProgressBar />
-      {loading && !cursor ? (
-        <ActivityIndicator size="large" color={Colors.themeColor} />
-      ) : (
-        <GestureHandlerRootView>
-          <Animated.FlatList
-            ref={flatListRef}
-            data={interleavedData}
-            keyExtractor={keyExtractor}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig.current}
-            scrollEventThrottle={16}
-            renderItem={renderItem}
-            initialNumToRender={5}
-            removeClippedSubviews={isAndroid}
-            windowSize={21}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={debouncedRefresh}
-                colors={["#12956B", "#6E7A81"]}
-                tintColor="#6E7A81"
-                progressViewOffset={60}
-                progressBackgroundColor="#181A1B"
-              />
-            }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={2}
-            ListHeaderComponent={
-              // Show FeedTopFtu if at least one state is false, hide if all are true
-              !(
-                profile?.hasVisitedEditProfile &&
-                profile?.hasVisitedEditOverview &&
-                profile?.hasVisitedCommunity
-              ) && <FeedTopFtu />
-            }
-            ListEmptyComponent={<EmptyComponent error={error} />}
-            ListFooterComponent={
-              <ListFooterComponent isLoading={isLoading} hasMore={hasMore} />
-            }
-            contentContainerStyle={styles.contentContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        </GestureHandlerRootView>
-      )}
+      <GestureHandlerRootView>
+        <Animated.FlatList
+          ref={flatListRef}
+          data={interleavedData}
+          keyExtractor={keyExtractor}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig.current}
+          scrollEventThrottle={16}
+          renderItem={renderItem}
+          initialNumToRender={5}
+          removeClippedSubviews={isAndroid}
+          windowSize={21}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={debouncedRefresh}
+              colors={["#12956B", "#6E7A81"]}
+              tintColor="#6E7A81"
+              progressViewOffset={60}
+              progressBackgroundColor="#181A1B"
+            />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={2}
+          ListHeaderComponent={
+            // Show FeedTopFtu if at least one state is false, hide if all are true
+            !(
+              profile?.hasVisitedEditProfile &&
+              profile?.hasVisitedEditOverview &&
+              profile?.hasVisitedCommunity
+            ) && <FeedTopFtu />
+          }
+          ListFooterComponent={
+            <ListFooterComponent isLoading={isLoadingMore} hasMore={hasMore} />
+          }
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      </GestureHandlerRootView>
     </PageThemeView>
   );
 };

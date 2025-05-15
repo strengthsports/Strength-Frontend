@@ -5,19 +5,17 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/types/post";
-import { AppDispatch } from "~/reduxStore";
-import {
-  fetchNonFeedPosts,
-  selectAllNonFeedPosts,
-  selectNonFeedState,
-} from "~/reduxStore/slices/feed/feedSlice";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { Colors } from "~/constants/Colors";
+import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
+import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
+import { RefreshControl } from "react-native";
 
 interface ActivityPageProps {
   userId: string;
@@ -27,48 +25,42 @@ interface ActivityPageProps {
 const ActivityPage = ({ userId, type }: ActivityPageProps) => {
   console.log("Page rendered ");
   const dispatch = useDispatch<AppDispatch>();
-  const isAndroid = Platform.OS === "android";
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { nonFeedLoading, nonFeedError, nonFeedCursor, nonFeedHasMore } =
-    useSelector(selectNonFeedState);
-  const posts = useSelector(selectAllNonFeedPosts);
+  const selectUserPosts = useMemo(
+    () => makeSelectUserPosts(userId, type),
+    [userId, type]
+  );
 
-  // Initial load or when userId/type changes
+  const posts = useSelector(selectUserPosts);
+  const nextCursor = useSelector(
+    (state: RootState) => state.views.user[userId]?.[type]?.nextCursor ?? null
+  );
+
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  const loadPosts = async (cursor?: string | null) => {
+    await dispatch(fetchUserPosts({ userId, type, limit: 10, cursor }));
+  };
+
   useEffect(() => {
-    setIsInitialLoad(true);
-    if (userId) {
-      dispatch(
-        fetchNonFeedPosts({
-          limit: 10,
-          type: type || "all", // Default to "all" if not specified
-          userId: userId,
-          reset: true, // Always reset for new userId/type combination
-        })
-      );
-    }
-  }, [dispatch, userId, type]);
+    setInitialLoading(true);
+    loadPosts().finally(() => setInitialLoading(false));
+  }, [userId, type]);
 
-  // For subsequent loads
-  const handleLoadMore = useCallback(() => {
-    console.log("Load more conditions:", {
-      cursor: nonFeedCursor,
-      loading: nonFeedLoading,
-    });
-    setIsInitialLoad(false);
-    if (nonFeedCursor && !nonFeedLoading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      dispatch(
-        fetchNonFeedPosts({
-          limit: 10,
-          cursor: nonFeedCursor,
-          type: type || "all",
-          userId: userId,
-        })
-      ).finally(() => setIsLoadingMore(false));
-    }
-  }, [nonFeedCursor, nonFeedLoading, isLoadingMore, type, userId]);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadPosts(); // no cursor => refresh
+    setRefreshing(false);
+  };
+
+  const handleLoadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    await loadPosts(nextCursor);
+    setLoadingMore(false);
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
@@ -80,61 +72,43 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
     []
   );
 
-  const MemoizedEmptyComponent = useCallback(() => {
+  if (initialLoading) {
     return (
-      <View className="flex justify-center items-center flex-1 p-4">
-        {nonFeedLoading ? (
-          <ActivityIndicator color="#12956B" size={22} />
-        ) : (
-          <TextScallingFalse className="text-white text-center">
-            No posts available
-          </TextScallingFalse>
-        )}
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={Colors.themeColor} />
       </View>
     );
-  }, [nonFeedLoading]);
+  }
 
-  if (nonFeedError)
+  if (!posts || posts.length === 0) {
     return (
-      <View className="flex justify-center items-center">
-        <TextScallingFalse className="text-red-500">
-          Error loading posts
-        </TextScallingFalse>
-      </View>
+      <TextScallingFalse className="text-white">
+        Posts not found
+      </TextScallingFalse>
     );
+  }
 
   return (
     <View className="mt-4">
-      {isInitialLoad && nonFeedLoading ? (
-        <View style={styles.fullScreenLoader}>
-          <ActivityIndicator size="large" color={Colors.themeColor} />
-        </View>
-      ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item._id}
-          initialNumToRender={5}
-          removeClippedSubviews={isAndroid}
-          windowSize={5}
-          renderItem={renderItem}
-          ListEmptyComponent={MemoizedEmptyComponent}
-          onEndReached={({ distanceFromEnd }) => {
-            if (distanceFromEnd < 0) return;
-            handleLoadMore();
-          }}
-          onEndReachedThreshold={0.1}
-          ListFooterComponent={
-            nonFeedLoading || isLoadingMore ? (
-              <ActivityIndicator
-                style={{ marginVertical: 20 }}
-                color={Colors.themeColor}
-              />
-            ) : null
-          }
-          bounces={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
-      )}
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.themeColor}
+          />
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color={Colors.themeColor} />
+          ) : null
+        }
+      />
     </View>
   );
 };
@@ -143,6 +117,11 @@ export default React.memo(ActivityPage);
 
 const styles = StyleSheet.create({
   fullScreenLoader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",

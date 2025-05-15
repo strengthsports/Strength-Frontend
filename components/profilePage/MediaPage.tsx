@@ -11,7 +11,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { router, Href } from "expo-router";
-import { AppDispatch } from "~/reduxStore";
+import { AppDispatch, RootState } from "~/reduxStore";
 import { Post } from "~/types/post";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
@@ -24,6 +24,14 @@ import {
   selectNonFeedState,
 } from "~/reduxStore/slices/feed/feedSlice";
 import { Colors } from "~/constants/Colors";
+import {
+  makeSelectHashtagPosts,
+  makeSelectUserPosts,
+} from "~/reduxStore/slices/post/selectors";
+import {
+  fetchHashtagPosts,
+  fetchUserPosts,
+} from "~/reduxStore/slices/post/hooks";
 
 interface MediaItem {
   imageUrl: string;
@@ -52,74 +60,63 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { nonFeedLoading, nonFeedError, nonFeedCursor, nonFeedHasMore } =
-    useSelector(selectNonFeedState);
-  const posts = useSelector(selectAllNonFeedPosts);
+  const selectHashtagPosts = useCallback(
+    makeSelectHashtagPosts(hashtag, "media"),
+    [hashtag]
+  );
+  const selectUserPosts = useCallback(makeSelectUserPosts(userId, "media"), [
+    userId,
+  ]);
 
-  // Initial load or when userId/type changes
+  const hashtagposts = useSelector(selectHashtagPosts);
+  const userposts = useSelector(selectUserPosts);
+  const nextHashtagCursor = useSelector(
+    (state: RootState) =>
+      state.views.hashtag[hashtag]?.["media"]?.nextCursor ?? null
+  );
+  const nextUserCursor = useSelector(
+    (state: RootState) =>
+      state.views.user[userId]?.["media"]?.nextCursor ?? null
+  );
+  const loadPosts = async (cursor?: string | null) => {
+    if (pageType === "Hashtag")
+      await dispatch(
+        fetchHashtagPosts({ hashtag, type: "media", limit: 10, cursor })
+      );
+    else if (pageType === "Activity")
+      await dispatch(
+        fetchUserPosts({ userId, type: "media", limit: 10, cursor })
+      );
+  };
+
   useEffect(() => {
     setIsInitialLoad(true);
-    if (userId) {
-      console.log("User id : ", userId);
-      dispatch(
-        fetchNonFeedPosts({
-          limit: 10,
-          type: "media",
-          userId: userId,
-          reset: true,
-        })
-      );
-    } else if (hashtag) {
-      console.log("Hashtag : ", hashtag);
-      dispatch(
-        fetchHashtagContents({
-          limit: 10,
-          type: "media",
-          hashtag,
-          reset: true,
-        })
-      );
-    }
-  }, [dispatch, userId]);
+    loadPosts().finally(() => setIsInitialLoad(false));
+  }, [pageType, userId, hashtag]);
 
-  // For subsequent loads
-  const handleLoadMore = useCallback(() => {
-    setIsInitialLoad(false);
-    if (
-      nonFeedCursor &&
-      !nonFeedLoading &&
-      !isLoadingMore &&
-      pageType === "Activity"
-    ) {
+  const handleLoadMore = async () => {
+    if (pageType === "Activity") {
+      if (!nextUserCursor || isLoadingMore) return;
       setIsLoadingMore(true);
-      dispatch(
-        fetchNonFeedPosts({
-          limit: 10,
-          cursor: nonFeedCursor,
-          type: "media",
-          userId: userId as string,
-        })
-      ).finally(() => setIsLoadingMore(false));
-    } else if (
-      nonFeedCursor &&
-      !nonFeedLoading &&
-      !isLoadingMore &&
-      pageType === "Hashtag"
-    ) {
+      await loadPosts(nextUserCursor);
+      setIsLoadingMore(false);
+    } else if (pageType === "Hashtag") {
+      if (!nextHashtagCursor || isLoadingMore) return;
       setIsLoadingMore(true);
-      dispatch(
-        fetchHashtagContents({
-          limit: 10,
-          cursor: nonFeedCursor,
-          type: "media",
-          hashtag: hashtag as string,
-        })
-      ).finally(() => setIsLoadingMore(false));
+      await loadPosts(nextHashtagCursor);
+      setIsLoadingMore(false);
     }
-  }, [nonFeedCursor, nonFeedLoading, isLoadingMore, userId]);
+  };
 
   // Process posts into media items
   const initialImageData = useMemo<MediaItem[]>(() => {
+    let posts: Post[];
+    pageType === "Activity"
+      ? (posts = userposts)
+      : pageType === "Hashtag"
+      ? (posts = hashtagposts)
+      : (posts = []);
+
     return posts.flatMap((post: Post): MediaItem[] => {
       if (!post?._id || !post.assets || post.assets.length === 0) return [];
 
@@ -149,7 +146,7 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
         ];
       }
     });
-  }, [posts]);
+  }, [pageType, userId, hashtag]);
 
   // Thumbnail generation (existing logic)
   useEffect(() => {
@@ -212,7 +209,7 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     const handlePress = () => {
       if (item.postId) {
         router.push({
-          pathname: "/home/post-details/[postId]",
+          pathname: "/post-details/[postId]",
           params: { postId: item.postId },
         } as Href);
       } else {
@@ -273,58 +270,49 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     []
   );
 
-  const MemoizedEmptyComponent = useCallback(() => {
+  if (isInitialLoad) {
     return (
-      <View className="flex justify-center items-center flex-1 p-4">
-        {nonFeedLoading && <ActivityIndicator color="#12956B" size={22} />}
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={Colors.themeColor} />
       </View>
     );
-  }, [nonFeedLoading]);
+  }
 
-  if (nonFeedError)
+  if (
+    (!hashtagposts || hashtagposts.length === 0) &&
+    (!userposts || userposts.length === 0)
+  ) {
     return (
-      <View className="flex justify-center items-center">
-        <TextScallingFalse className="text-red-500">
-          Error loading posts
-        </TextScallingFalse>
-      </View>
+      <TextScallingFalse className="text-white">
+        Media not found
+      </TextScallingFalse>
     );
+  }
 
   return (
     <View className="flex-1">
-      {isInitialLoad && nonFeedLoading ? (
-        <View style={styles.fullScreenLoader}>
-          <ActivityIndicator size="large" color={Colors.themeColor} />
-        </View>
-      ) : (
-        <FlatList
-          data={processedImageData}
-          keyExtractor={keyExtractor}
-          numColumns={3}
-          renderItem={renderGridItem}
-          ListEmptyComponent={MemoizedEmptyComponent}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          contentContainerStyle={[
-            styles.listContentContainer,
-            processedImageData.length === 0 && styles.emptyListContainer,
-          ]}
-          ListFooterComponent={
-            nonFeedLoading || isLoadingMore ? (
-              <ActivityIndicator
-                style={styles.bottomLoader}
-                color="#555"
-                size="small"
-              />
-            ) : null
-          }
-          windowSize={11}
-          initialNumToRender={15}
-          maxToRenderPerBatch={10}
-          updateCellsBatchingPeriod={50}
-          removeClippedSubviews={true}
-        />
-      )}
+      <FlatList
+        data={processedImageData}
+        keyExtractor={keyExtractor}
+        numColumns={3}
+        renderItem={renderGridItem}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        contentContainerStyle={[
+          styles.listContentContainer,
+          processedImageData.length === 0 && styles.emptyListContainer,
+        ]}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <ActivityIndicator size="small" color={Colors.themeColor} />
+          ) : null
+        }
+        windowSize={11}
+        initialNumToRender={15}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        removeClippedSubviews={true}
+      />
     </View>
   );
 };
@@ -339,6 +327,11 @@ const styles = StyleSheet.create({
   centerContent: {
     flex: 1,
     padding: 20,
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyListContainer: {
     flexGrow: 1,

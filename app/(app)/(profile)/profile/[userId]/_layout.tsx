@@ -1,4 +1,10 @@
-import React, { createContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -55,6 +61,8 @@ import { useBottomSheet } from "~/context/BottomSheetContext";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 import { calculateAge } from "~/utils/calculateAge";
 import TickIcon from "~/components/SvgIcons/Common_Icons/TickIcon";
+import { RefreshControl } from "react-native";
+import { getCountryFlag } from "~/utils/getCountryFlag";
 
 // Define the context type
 interface ProfileContextType {
@@ -113,6 +121,23 @@ const ProfileLayout = () => {
   const [followingStatus, setFollowingStatus] = useState<boolean>();
   const [followerCount, setFollowerCount] = useState<number>(0);
   const [isReported, setIsReported] = useState<boolean>();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (userId?.id && userId?.type) {
+        await getUserProfile({
+          targetUserId: userId?.id,
+          targetUserType: userId?.type,
+        }).unwrap();
+      }
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [userId?.id, userId?.type]);
 
   // Fetch user profile when the component mounts
   useEffect(() => {
@@ -329,6 +354,9 @@ const ProfileLayout = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           stickyHeaderIndices={[0]}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
           <View
             style={{
@@ -450,27 +478,40 @@ const ProfileLayout = () => {
                     <View
                       style={{ marginTop: 6, marginRight: 5, height: "auto" }}
                     >
-                      <View style={{ flexDirection: "row", gap: 3 }}>
-                        <Image
-                          source={flag}
+                      {profileData?.address?.country && (
+                        <View
                           style={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: 5,
-                            marginBottom: 5,
-                          }}
-                        />
-                        <TextScallingFalse
-                          style={{
-                            marginTop: 2,
-                            color: "#EAEAEA",
-                            fontSize: responsiveFontSize(1.41),
-                            fontWeight: "400",
+                            flexDirection: "row",
+                            gap: 4,
                           }}
                         >
-                          {profileData?.address?.country || "undefined"}
-                        </TextScallingFalse>
-                      </View>
+                          <Image
+                            source={{
+                              uri:
+                                getCountryFlag(profileData.address.country) ||
+                                "",
+                            }}
+                            style={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: 5,
+                              overflow: "hidden",
+                              marginBottom: 5,
+                            }}
+                            defaultSource={require("@/assets/images/IN.png")}
+                          />
+                          <TextScallingFalse
+                            style={{
+                              marginTop: 1,
+                              color: "#EAEAEA",
+                              fontSize: responsiveFontSize(1.41),
+                              fontWeight: "300",
+                            }}
+                          >
+                            {profileData?.address?.country || "undefined"}
+                          </TextScallingFalse>
+                        </View>
+                      )}
                     </View>
                   )}
                 </View>

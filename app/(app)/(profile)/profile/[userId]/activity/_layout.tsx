@@ -37,7 +37,7 @@ const ActivityLayout = () => {
 
   const [activeSubSection, setActiveSubSection] = useState("posts");
   return (
-    <View className="flex-1">
+    <View>
       <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
         {/* Horizontal Tab Scroll */}
         <ScrollView
@@ -51,10 +51,9 @@ const ActivityLayout = () => {
             paddingStart: 15 * scaleFactor,
             justifyContent: "flex-start",
             alignItems: "center",
-            paddingEnd: 15 * scaleFactor,
-            height: 50,
+            paddingEnd: 80 * scaleFactor,
+            gap: 12,
           }}
-          style={{ flexGrow: 0 }}
         >
           <TabsList className="flex-row items-center gap-x-3">
             {["posts", "clips", "thoughts", "polls", "comments"].map(

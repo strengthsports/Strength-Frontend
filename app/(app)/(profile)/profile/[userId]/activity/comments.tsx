@@ -169,9 +169,9 @@ const Comments = () => {
   );
 
   const renderEmptyComponent = () => (
-    <View style={styles.centered}>
-      <TextScallingFalse className="text-white text-center p-4">
-        This user hasn't made any comments yet.
+    <View className="w-full items-center mt-10 gap-y-2">
+      <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3">
+        No comments yet
       </TextScallingFalse>
     </View>
   );

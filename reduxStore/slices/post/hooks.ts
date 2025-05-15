@@ -2,7 +2,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { upsertPosts } from "./postsSlice";
 import { setFeedPage, setUserPage, setHashtagPage } from "./viewsSlice";
-import { fetchFeedPostsAPI } from "./api/fetchFeedPostsApi";
+import { fetchFeedPostsAPI } from "./api/fetchFeedPostsAPI";
 import { fetchUserPostsAPI } from "./api/fetchUserPostsAPI";
 import { fetchHashtagPostsAPI } from "./api/fetchHashtagPostsAPI";
 import { Post } from "~/types/post";

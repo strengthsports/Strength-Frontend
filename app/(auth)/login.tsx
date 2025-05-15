@@ -81,7 +81,7 @@ const LoginScreen = () => {
       // Feedback on success
       feedback(response.message || "Login successful!", "success");
 
-      router.push("/(app)/(tabs)/home");
+      router.replace("/(app)/(tabs)/home");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";
@@ -99,10 +99,19 @@ const LoginScreen = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         // contentContainerStyle={{ flexGrow: 1}}
-        style={{flex: 1}}
+        style={{ flex: 1 }}
       >
-        <View style={{ width: "100%", paddingHorizontal: 20, paddingVertical: 8}}>
-          <View style={{ flexDirection: "row", marginTop: '5%', gap: 7, alignItems:'center'}}>
+        <View
+          style={{ width: "100%", paddingHorizontal: 20, paddingVertical: 8 }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              marginTop: "5%",
+              gap: 7,
+              alignItems: "center",
+            }}
+          >
             <Image style={{ width: 42, height: 42 }} source={logo} />
             <TextScallingFalse
               style={{
@@ -116,23 +125,23 @@ const LoginScreen = () => {
           </View>
         </View>
 
-        <View style={{ width: "100%", aspectRatio: 16 / 10, marginTop: '3%'}}>
+        <View style={{ width: "100%", aspectRatio: 16 / 10, marginTop: "3%" }}>
           <Image source={banner} style={{ width: "100%", height: "100%" }} />
         </View>
 
-        <View style={{ width: "100%", alignItems: "center"}}>
-            <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: 35,
-                fontWeight: "500",
-                paddingHorizontal: 10,
-                paddingVertical: 18,
-              }}
-            >
-              Step Into the World of Sports
-            </TextScallingFalse>
-          <View >
+        <View style={{ width: "100%", alignItems: "center" }}>
+          <TextScallingFalse
+            style={{
+              color: "white",
+              fontSize: 35,
+              fontWeight: "500",
+              paddingHorizontal: 10,
+              paddingVertical: 18,
+            }}
+          >
+            Step Into the World of Sports
+          </TextScallingFalse>
+          <View>
             <TextScallingFalse
               style={{ color: "white", fontSize: 13, fontWeight: "400" }}
             >
@@ -166,7 +175,7 @@ const LoginScreen = () => {
             <TouchableOpacity
               activeOpacity={0.5}
               onPress={toggleShowPassword}
-              style={{ position: "absolute", top: 112, left: 288}}
+              style={{ position: "absolute", top: 112, left: 288 }}
             >
               <TextScallingFalse
                 style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
@@ -191,7 +200,7 @@ const LoginScreen = () => {
           </View>
         </View>
 
-        <View style={{ marginTop: 27, width: "100%", alignItems: "center"}}>
+        <View style={{ marginTop: 27, width: "100%", alignItems: "center" }}>
           {loading ? (
             <ActivityIndicator
               size={"small"}
@@ -226,7 +235,7 @@ const LoginScreen = () => {
               New to Strength? Join now
             </TextScallingFalse>
           </TouchableOpacity>
-{/* 
+          {/* 
           <TouchableOpacity
             activeOpacity={0.5}
             style={{

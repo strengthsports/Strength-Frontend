@@ -1,15 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
+import React, { useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
+import ActivityPage from "~/components/profilePage/ActivityPage";
+import { useSelector } from "react-redux";
 
-const Tags = () => {
-  return (
-    <View>
-      <Text>Mentions</Text>
-    </View>
-  );
+const Mentions = () => {
+  const { user } = useSelector((state: any) => state?.profile);
+
+  return <ActivityPage userId={user._id} type="mentions" />;
 };
 
-export default Tags;
-
-const styles = StyleSheet.create({});
+export default Mentions;

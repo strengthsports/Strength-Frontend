@@ -32,6 +32,7 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
   );
 
   const posts = useSelector(selectUserPosts);
+  console.log(posts);
   const nextCursor = useSelector(
     (state: RootState) => state.views.user[userId]?.[type]?.nextCursor ?? null
   );

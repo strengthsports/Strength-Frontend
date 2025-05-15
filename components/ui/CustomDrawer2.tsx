@@ -73,7 +73,7 @@ const CustomDrawer2 = () => {
   };
   return (
     <SafeAreaView
-      className={`w-full h-full bg-black ${
+      className={`w-full h-full bg-[#181818] ${
         Platform.OS === "ios" ? "pt-10" : "pt-4"
       }`}
       style={{ justifyContent: "space-between" }}

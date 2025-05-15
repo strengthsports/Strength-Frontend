@@ -234,7 +234,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     );
 
     const goToUser = useCallback(
-      (userId: string) => {
+      (serializedUser: any, userId?: string) => {
         userId === item.postedBy?._id
           ? router.push("/(app)/(tabs)/profile")
           : router.push(`/(app)/(profile)/profile/${serializedUser}`);
@@ -292,7 +292,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 goToUser(
                   encodeURIComponent(
                     JSON.stringify({ id: user._id, type: user.type })
-                  )
+                  ),
+                  user._id
                 )
               }
               className="text-2xl text-[#12956B] active:bg-gray-600"
@@ -345,7 +346,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           isExpanded,
           () => setIsExpanded(true)
         ),
-      [item.caption, item.taggedUsers, isExpanded]
+      [item, item.caption, item.taggedUsers, isExpanded]
     );
 
     const [thumbnail, setThumbnail] = useState("");
@@ -380,7 +381,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             <TouchableOpacity
               activeOpacity={0.5}
               className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
-              onPress={() => goToUser(user?._id)}
+              onPress={() => goToUser(serializedUser, user?._id)}
               style={shadowStyle}
             >
               <Image
@@ -403,7 +404,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
 
             {/* Name, Headline, post date */}
             <Pressable
-              onPress={() => goToUser(user?._id)}
+              onPress={() => goToUser(serializedUser, user?._id)}
               className="w-64 flex flex-col gap-y-4 justify-between"
             >
               <UserInfo

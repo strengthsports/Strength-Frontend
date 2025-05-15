@@ -26,7 +26,6 @@ import teamReducer from "./slices/team/teamSlice";
 import searchReducer from "./slices/explore/searchSlice";
 import sportsReducer from "./slices/team/sportSlice";
 import teamForumReducer from "./slices/team/teamForumSlice";
-import feedReducer from "./slices/feed/feedSlice";
 import postReducer from "./slices/post/postSlice";
 import postsReducer from "./slices/post/postsSlice";
 import viewsReducer from "./slices/post/viewsSlice";
@@ -74,7 +73,6 @@ const rootReducer = combineReducers({
   search: searchReducer,
   teamForum: teamForumReducer,
   userSuggestions: userSuggestionsReducer,
-  feed: feedReducer,
   post: postReducer,
   posts: postsReducer,
   views: viewsReducer,

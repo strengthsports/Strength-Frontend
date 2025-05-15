@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showFeedback } from "~/utils/feedbackToast";
 import { getToken } from "~/utils/secureStore";
-import { addPost } from "./postsSlice";
+import { addPost, upsertPosts } from "./postsSlice";
 
 // Initial State
 const initialState = {
@@ -37,7 +37,7 @@ export const uploadPost = createAsyncThunk(
           },
         }
       );
-      dispatch(addPost(response.data.data));
+      dispatch(upsertPosts([response.data.data]));
       showFeedback("Post uploaded successfully !", "success");
       return response.data;
     } catch (error) {

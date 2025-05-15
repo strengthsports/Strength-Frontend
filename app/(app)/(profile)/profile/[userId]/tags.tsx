@@ -1,15 +1,18 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-import UnderDevelopmentModal from "~/components/common/UpcomingFeatureCard";
+import React, { useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
+import ActivityPage from "~/components/profilePage/ActivityPage";
 
-const tags = () => {
-  return (
-    <View>
-      <Text>Mentions</Text>
-    </View>
-  );
+const Mentions = () => {
+  const params = useLocalSearchParams();
+  const fetchedUserId = useMemo(() => {
+    return params.userId
+      ? JSON.parse(decodeURIComponent(params?.userId as string))
+      : null;
+  }, [params.userId]);
+
+  console.log(fetchedUserId.id);
+
+  return <ActivityPage userId={fetchedUserId.id} type="mentions" />;
 };
 
-export default tags;
-
-const styles = StyleSheet.create({});
+export default Mentions;

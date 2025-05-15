@@ -146,7 +146,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
             >
               <Image
                 source={user?.profilePic ? { uri: user.profilePic } : nopic}
-                className="w-14 h-14 rounded-full"
+                className="w-14 h-14 rounded-full border-[1px] border-[#C1C1C1]"
                 resizeMode="cover"
               />
               <View className="pl-4">

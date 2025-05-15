@@ -27,7 +27,7 @@ import { Post } from "~/types/post";
 import { formatTimeAgo } from "~/utils/formatTime";
 import Swiper from "react-native-swiper";
 import { RelativePathString, router } from "expo-router";
-import { toggleLike } from "~/reduxStore/slices/feed/feedSlice";
+import { toggleLike } from "~/reduxStore/slices/post/postActions";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import * as VideoThumbnails from "expo-video-thumbnails";
@@ -145,7 +145,7 @@ const PostSmallCard = ({
           elements.push(
             <TextScallingFalse
               key={i}
-              onPress={() => router.push(`/(app)/(post)/hashtag/${tag}`)}
+              onPress={() => router.push(`/hashtag/${tag}`)}
               className={`text-sm text-[#12956B] ${
                 highlightedHashtag?.toLowerCase() === tag.toLowerCase() &&
                 "font-semibold"

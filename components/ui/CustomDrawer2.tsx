@@ -85,7 +85,13 @@ const CustomDrawer2 = () => {
             router.push("/(app)/(tabs)/profile");
           }}
           activeOpacity={0.7}
-          className="flex-row items-center pl-6 mb-6"
+          className="flex-row items-center pb-8 mb-6"
+          style={{
+            width: "85%",
+            marginHorizontal: "auto",
+            borderBottomWidth: 1,
+            borderColor: "#404040",
+          }}
         >
           <Image
             source={user?.profilePic ? { uri: user.profilePic } : nopic}

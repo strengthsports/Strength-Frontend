@@ -72,7 +72,7 @@ const TrendingMatch = () => {
     data: cricketNextBySeriesData,
     isFetching: isCricketNextBySeriesFetching,
     refetch: refetchNextBySeriesCricket,
-  } = useGetCricketNextMatchesBySeriesQuery({9237});
+  } = useGetCricketNextMatchesBySeriesQuery(9237);
   const { seriesMatches: nextBySeriesCricketMatches = [] } =
     cricketNextBySeriesData || {};
 

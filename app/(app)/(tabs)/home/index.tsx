@@ -195,7 +195,7 @@ const Home = () => {
               isFeedPage={true}
               isVisible={visiblePostIds.includes(item.data._id)}
             />
-            <Divider style={styles.divider} width={0.4} color="#282828" />
+            <Divider style={styles.divider} width={1} color="#1c1c1c" />
           </View>
         );
       }

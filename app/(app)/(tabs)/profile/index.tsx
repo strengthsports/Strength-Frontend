@@ -19,14 +19,14 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import EditIcon from "~/components/SvgIcons/profilePage/EditIcon";
 import AddIcon from "~/components/SvgIcons/profilePage/AddIcon";
-import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
 import AddPostFTU from "~/components/ui/FTU/profilePage/AddPostFTU";
 import TeamEntry from "~/components/profilePage/TeamEntry";
 import MembersSection from "~/components/profilePage/MembersSection";
-import members from "~/constants/members";
 import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
 import { Member } from "~/types/user";
 import ProfileFTU from "~/components/ui/FTU/profilePage/ProfileFTU";
+import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
+import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
 
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
@@ -56,24 +56,29 @@ const Overview = () => {
   //   [userPosts]
   // );
 
+  const selectUserPosts = useMemo(
+    () => makeSelectUserPosts(user._id, "recent"),
+    [user._id]
+  );
+  const postsWithImages = useSelector(selectUserPosts);
+
   // Get associates list
   const associates = useSelector(
     (state: RootState) => (state.profile.user?.associates as Member[]) || []
   );
 
   // Fetch initial posts
-  // useEffect(() => {
-  //   if (user?._id) {
-  //     dispatch(
-  //       fetchUserPosts({
-  //         postedBy: user._id,
-  //         postedByType: user?.type,
-  //         limit: 10,
-  //         skip: 0,
-  //       })
-  //     );
-  //   }
-  // }, [user?._id, dispatch]);
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(
+        fetchUserPosts({
+          userId: user._id,
+          limit: 10,
+          type: "recent",
+        })
+      );
+    }
+  }, [user?._id, dispatch]);
 
   // Fetch page associates
   useEffect(() => {
@@ -342,7 +347,7 @@ const Overview = () => {
       )}
 
       {/* recent posts */}
-      {/* {postsWithImages?.length > 0 && (
+      {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
           onSeeAllPress={() =>
@@ -350,7 +355,7 @@ const Overview = () => {
           }
           scaleFactor={scaleFactor}
         />
-      )} */}
+      )}
 
       {/* members */}
       {user?.type === "Page" && coaches?.length > 0 && (
@@ -370,8 +375,7 @@ const Overview = () => {
         />
       )}
 
-      {/* {postsWithImages?.length === 0 && <AddPostFTU />} */}
-      <AddPostFTU />
+      {postsWithImages?.length === 0 && <AddPostFTU />}
     </ScrollView>
   );
 };

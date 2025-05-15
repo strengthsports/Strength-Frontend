@@ -18,13 +18,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import TeamEntry from "~/components/profilePage/TeamEntry";
-import { AppDispatch, RootState } from "~/reduxStore";
-import { selectPostsByUserId } from "~/reduxStore/slices/feed/feedSlice";
+import { AppDispatch } from "~/reduxStore";
 import MembersSection from "~/components/profilePage/MembersSection";
 import { fetchAssociates } from "~/reduxStore/slices/user/profileSlice";
 import { Member } from "~/types/user";
 import { useGetPageMembersQuery } from "~/reduxStore/api/profile/profileApi.profile";
 import { responsiveFontSize } from "react-native-responsive-dimensions";
+import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
+import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -63,13 +64,11 @@ const Overview = () => {
   );
 
   // Get filtered posts from Redux
-  // const userPosts = useSelector((state: RootState) =>
-  //   // selectPostsByUserId(state.feed.posts as any, fetchedUserId.id)
-  // );
-  // const postsWithImages = useMemo(
-  //   () => userPosts?.filter((post) => post.assets.length > 0) || [],
-  //   [userPosts]
-  // );
+  const selectUserPosts = useMemo(
+    () => makeSelectUserPosts(fetchedUserId.id, "recent"),
+    [fetchedUserId]
+  );
+  const postsWithImages = useSelector(selectUserPosts);
 
   // Get associates list
   // const associates = useSelector(
@@ -77,16 +76,15 @@ const Overview = () => {
   // );
 
   // Fetch initial posts
-  // useEffect(() => {
-  //   dispatch(
-  //     fetchUserPosts({
-  //       postedBy: fetchedUserId.id,
-  //       postedByType: fetchedUserId.type,
-  //       limit: 10,
-  //       skip: 0,
-  //     })
-  //   );
-  // }, [fetchedUserId, dispatch]);
+  useEffect(() => {
+    dispatch(
+      fetchUserPosts({
+        userId: fetchedUserId.id,
+        limit: 4,
+        type: "recent",
+      })
+    );
+  }, [fetchedUserId, dispatch]);
 
   // Fetch page associates
   const { data: associates } = useGetPageMembersQuery({
@@ -306,7 +304,7 @@ const Overview = () => {
         </View>
       )}
 
-      {/* recent posts
+      {/* recent posts*/}
       {postsWithImages?.length > 0 && (
         <RecentPostsSection
           posts={postsWithImages}
@@ -317,7 +315,7 @@ const Overview = () => {
           }}
           scaleFactor={scaleFactor}
         />
-      )} */}
+      )}
 
       {/* members */}
       {profileData?.type === "Page" && coaches?.length > 0 && (

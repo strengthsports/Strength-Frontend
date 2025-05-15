@@ -27,6 +27,7 @@ import AlertModal from "~/components/modals/AlertModal";
 import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
+import * as MediaLibrary from 'expo-media-library';
 import {
   resetUploadProgress,
   setUploadLoading,
@@ -280,6 +281,15 @@ export default function AddPostContainer() {
       alert("Permission to access media library is required.");
       return;
     }
+
+     // Second: For Android 13+ also ask for Media Library permission
+  if (Platform.OS === "android") {
+    const mediaLibPermission = await MediaLibrary.requestPermissionsAsync();
+    if (mediaLibPermission.status !== "granted") {
+      alert("Media Library permission is required on Android 13+.");
+      return;
+    }
+  }
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({

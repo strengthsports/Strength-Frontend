@@ -75,7 +75,10 @@ const ActivityLayout = () => {
                       : "bg-black border-[#454545]"
                   } border`}
                 >
-                  <TextScallingFalse className="text-white">
+                  <TextScallingFalse
+                    className="text-white"
+                    style={{ fontSize: 12 }}
+                  >
                     {tab
                       .charAt(0)
                       .toUpperCase()

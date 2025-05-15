@@ -132,9 +132,9 @@ const index = () => {
           paddingVertical: 40,
           paddingHorizontal: 20,
           flexDirection: "row",
-          gap: 15,
         }}
       >
+      <View style={{flexDirection:'row', gap: 15, alignItems:'center'}}>
         <Image
           source={user?.profilePic ? { uri: user?.profilePic } : nopic}
           style={{
@@ -143,7 +143,7 @@ const index = () => {
             height: 84,
             borderRadius: 100,
             borderWidth: 1,
-            borderColor: "white",
+            borderColor: "#252525",
           }}
         />
         <View style={{ paddingVertical: 17, width: 220 }}>
@@ -153,10 +153,11 @@ const index = () => {
             {user?.firstName} {user?.lastName}
           </TextScallingFalse>
           <TextScallingFalse
-            style={{ color: "white", fontSize: 10, fontWeight: "300" }}
+            style={{ color: "#9FAAB5", fontSize: 13, fontWeight: "400", lineHeight: 17}}
           >
-            {user?.headline}
+            @{user?.username} <TextScallingFalse style={{fontSize: 13}}>|</TextScallingFalse> {user?.headline}
           </TextScallingFalse>
+        </View>
         </View>
       </View>
       <View
@@ -217,17 +218,6 @@ const index = () => {
           >
             <TextScallingFalse style={styles.OptionText}>
               Log Out
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.OptionButtonView}>
-          <Ionicons name="exit-outline" size={31} color="white" />
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push("/(auth)/login")}
-          >
-            <TextScallingFalse style={styles.OptionText}>
-              Log Out (bypass)
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
@@ -348,332 +338,6 @@ const index = () => {
 
         </PageThemeView>
       </Modal>
-
-
-
-      {/* Change Password Modal */}
-      {/* <Modal
-        visible={isModalVisible2}
-        transparent={true}
-        onRequestClose={closeModal2}
-      >
-        <PageThemeView>
-          <View style={styles.TopBarView}>
-            <TouchableOpacity activeOpacity={0.5} onPress={closeModal2}>
-              <AntDesign name="arrowleft" size={28} color="white" />
-            </TouchableOpacity>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 20, fontWeight: "300" }}
-            >
-              Password
-            </TextScallingFalse>
-            <View style={{ width: 29, height: 8 }} />
-          </View>
-          <View style={{ height: 30 }} />
-          <View
-            style={{
-              width: "100%",
-              paddingVertical: 25,
-              paddingHorizontal: 40,
-            }}
-          >
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 25, fontWeight: "bold" }}
-            >
-              Change Password
-            </TextScallingFalse>
-            <TextScallingFalse style={{ fontSize: 13, color: "white" }}>
-              Make sure it's 8 character or more
-            </TextScallingFalse>
-          </View>
-
-          <View style={{ width: "100%", alignItems: "center", gap: 20 }}>
-            <View>
-              <TextScallingFalse style={styles.PasswordTextHeading}>
-                Enter old password
-              </TextScallingFalse>
-              <TextInputSection
-                placeholder="Enter old password"
-                placeholderTextColor={"grey"}
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-            <View>
-              <TextScallingFalse style={styles.PasswordTextHeading}>
-                Enter new password
-              </TextScallingFalse>
-              <TextInputSection
-                placeholder="Enter old password"
-                placeholderTextColor={"grey"}
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-            <View>
-              <TextScallingFalse style={styles.PasswordTextHeading}>
-                Confirm new password
-              </TextScallingFalse>
-              <TextInputSection
-                placeholder="Enter old password"
-                placeholderTextColor={"grey"}
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                paddingHorizontal: 40,
-                justifyContent: "space-between",
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={toggleShowPassword}
-              >
-                <TextScallingFalse style={styles.ShowAndForgetButton}>
-                  {showPassword ? "Hide Password" : "Show Password"}
-                </TextScallingFalse>
-              </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.7}>
-                <TextScallingFalse style={styles.ShowAndForgetButton}>
-                  Forget passowrd?
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-
-            <View
-              style={{
-                width: "100%",
-                paddingVertical: 30,
-                alignItems: "center",
-              }}
-            >
-              <SignupButton onPress={handleChangePassword}>
-                <TextScallingFalse
-                  style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
-                >
-                  Next
-                </TextScallingFalse>
-              </SignupButton>
-            </View>
-          </View>
-        </PageThemeView>
-      </Modal> */}
-
-      {/* Close Account Modal */}
-      {/* <Modal
-        visible={isModalVisible3}
-        transparent={true}
-        onRequestClose={closeModal3}
-      >
-        <PageThemeView>
-          <View style={styles.TopBarView}>
-            <TouchableOpacity activeOpacity={0.5} onPress={closeModal3}>
-              <AntDesign name="arrowleft" size={28} color="white" />
-            </TouchableOpacity>
-            <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: 20,
-                fontWeight: "300",
-                borderBottomWidth: 0.3,
-                borderBottomColor: "#707070",
-                height: 37,
-              }}
-            >
-              Close account
-            </TextScallingFalse>
-            <View style={{ width: 29, height: 8 }} />
-          </View>
-          <View style={{ paddingVertical: 30, paddingHorizontal: 20 }}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 15 }}
-            >
-              <Image
-                style={{
-                  backgroundColor: "orange",
-                  borderRadius: 100,
-                  width: 40,
-                  height: 40,
-                }}
-              />
-              <View>
-                <TextScallingFalse
-                  style={{ color: "white", fontSize: 14, fontWeight: "500" }}
-                >
-                  First Last Name
-                </TextScallingFalse>
-                <TextScallingFalse
-                  style={{ color: "white", fontSize: 9, fontWeight: "300" }}
-                >
-                  User Headline
-                </TextScallingFalse>
-              </View>
-            </View>
-            <View style={{ paddingVertical: 40, gap: 5 }}>
-              <TextScallingFalse style={styles.CloseAccountHeadersText}>
-                We’re sad to see you go
-              </TextScallingFalse>
-              <TextScallingFalse style={styles.CloseAccountDesText}>
-                You're about to close your Strength account. Once closed, your
-                public profile will no longer be visible on the Strength app.
-              </TextScallingFalse>
-            </View>
-            <View style={{ gap: 5 }}>
-              <TextScallingFalse style={styles.CloseAccountHeadersText}>
-                What you Should Know
-              </TextScallingFalse>
-              <View style={{ flexDirection: "row", gap: 10, paddingTop: 10 }}>
-                <Octicons name="dot-fill" size={12} color="grey" />
-                <TextScallingFalse style={styles.CloseAccountDesText}>
-                  Some of your account information may still be visible to users
-                  you've interacted with, such as in their follower or following
-                  lists.
-                </TextScallingFalse>
-              </View>
-              <View style={{ flexDirection: "row", gap: 10, paddingTop: 5 }}>
-                <Octicons name="dot-fill" size={12} color="grey" />
-                <TextScallingFalse style={styles.CloseAccountDesText}>
-                  If you only want to change your @username or date of birth,
-                  there's no need to close your account—you can update those
-                  details in your settings.
-                </TextScallingFalse>
-              </View>
-            </View>
-            <View
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 75,
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.AccountCloseButtons}
-                onPress={openModal4}
-              >
-                <TextScallingFalse
-                  style={{ color: "white", fontSize: 14, fontWeight: "600" }}
-                >
-                  Next
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </PageThemeView>
-      </Modal> */}
-
-      {/* Close Account Confirm Password Modal */}
-      {/* <Modal
-        visible={isModalVisible4}
-        transparent={true}
-        onRequestClose={closeModal4}
-      >
-        <PageThemeView>
-          <View style={{ padding: 25, width: "100%" }}>
-            <TouchableOpacity onPress={closeModal4}>
-              <Entypo name="cross" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: 20,
-            }}
-          >
-            <View style={{ justifyContent: "center", alignItems: "center" }}>
-              <Image style={{ width: 50, height: 50 }} source={logo} />
-              <TextScallingFalse
-                style={{ color: "white", fontSize: 13, fontWeight: "500" }}
-              >
-                Strength
-              </TextScallingFalse>
-            </View>
-          </View>
-          <View style={{ width: "100%", padding: 30 }}>
-            <TextScallingFalse
-              style={{
-                color: "white",
-                fontSize: 27,
-                fontWeight: "500",
-                width: 230,
-                lineHeight: 35,
-              }}
-            >
-              Confirm your Email & password
-            </TextScallingFalse>
-          </View>
-          <View
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 20,
-            }}
-          >
-            <View>
-              <TextScallingFalse style={styles.PasswordTextHeading}>
-                Email
-              </TextScallingFalse>
-              <TextInputSection
-                placeholder="Enter your email"
-                placeholderTextColor={"grey"}
-                value={email}
-                onChangeText={setEmail}
-              />
-            </View>
-            <View>
-              <TextScallingFalse style={styles.PasswordTextHeading}>
-                Password
-              </TextScallingFalse>
-              <TextInputSection
-                placeholder="Enter your email"
-                placeholderTextColor={"grey"}
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                  paddingTop: 10,
-                  paddingLeft: 5,
-                }}
-                activeOpacity={0.5}
-                onPress={toggleShowPassword}
-              >
-                <TextScallingFalse
-                  style={{ color: "#12956B", fontSize: 13, fontWeight: "400" }}
-                >
-                  {showPassword ? "Hide Password" : "Show Password"}
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-            <View style={{ paddingVertical: 30 }}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.AccountCloseButtons}
-              >
-                <TextScallingFalse
-                  style={{ color: "white", fontWeight: "bold", fontSize: 14 }}
-                >
-                  Done
-                </TextScallingFalse>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </PageThemeView>
-      </Modal> */}
     </PageThemeView>
   );
 };

@@ -43,6 +43,9 @@ import AlertModal from "~/components/modals/AlertModal";
 import { Sport } from "./SelectSports";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import debounce from "lodash/debounce";
+import nopic from "@/assets/images/nopic.jpg";
+import nocoverpic from "@/assets/images/nocover.png";
+import { Divider } from "react-native-elements";
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
 
@@ -81,12 +84,12 @@ const userFormConfig = [
     label: "Weight",
     icon: <AntDesign name="down" size={15} color="grey" />,
   },
-  {
-    type: "team",
-    label: "Team",
-    icon: <AntDesign name="down" size={15} color="grey" />,
-    placeholder: "not joined yet",
-  },
+  // {
+  //   type: "team",
+  //   label: "Team",
+  //   icon: <AntDesign name="down" size={15} color="grey" />,
+  //   placeholder: "not joined yet",
+  // },
   // {
   //   type: "academy",
   //   label: "Academy",
@@ -1108,9 +1111,7 @@ const EditProfile = () => {
               />
             ) : (
               <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }}
+                source={nocoverpic}
                 style={{ width: "100%", height: "100%", opacity: 0.5 }}
                 resizeMode="cover"
               />
@@ -1135,9 +1136,7 @@ const EditProfile = () => {
               />
             ) : (
               <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1720048170996-40507a45c720?q=80&w=1913&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }}
+                source={nopic}
                 className="w-full h-full opacity-50 rounded-full bg-cover"
               />
             )}
@@ -1644,19 +1643,34 @@ const EditProfile = () => {
                   {picType === "address" &&
                     showSuggestions &&
                     predictions.length > 0 && (
-                      <View style={{ maxHeight: 200 }}>
+                      <View
+                        style={{
+                          maxHeight: 400,
+                          borderRadius: 10,
+                          borderColor: "white",
+                          borderWidth: 0.5,
+                          paddingHorizontal: 15,
+                          paddingVertical: 10,
+                          marginTop: 8,
+                        }}
+                      >
                         <FlatList
                           data={predictions}
                           keyExtractor={(item) => item.place_id}
                           renderItem={({ item }) => (
                             <TouchableOpacity
                               onPress={() => handlePlaceSelect(item)}
+                              style={{ paddingVertical: 5 }}
                             >
-                              <TextScallingFalse className="text-white text-3xl font-light padding-2">
+                              <TextScallingFalse className="text-white text-2xl font-light">
                                 {item.description}
                               </TextScallingFalse>
                             </TouchableOpacity>
                           )}
+                          ItemSeparatorComponent={() => (
+                            <Divider color="#434343" width={0.8} />
+                          )}
+                          keyboardShouldPersistTaps={"handled"}
                         />
                       </View>
                     )}

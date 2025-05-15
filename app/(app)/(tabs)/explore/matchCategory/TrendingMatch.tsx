@@ -5,6 +5,7 @@ import TextScallingFalse from "~/components/CentralText";
 import {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
+  useGetCricketNextMatchesBySeriesQuery,
 } from "~/reduxStore/api/explore/cricketApi";
 import {
   useGetFootballLiveMatchesQuery,
@@ -22,6 +23,7 @@ import FootballNextMatch from "~/components/explorePage/nextMatch/FootballNextMa
 import TrendingLiveMatch from "~/components/explorePage/match/TrendingLiveMatch";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
+import CricketNextBySeriesMatch from "~/components/explorePage/nextMatch/CricketNextBySeriesMatch";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
 const TrendingMatch = () => {
@@ -65,6 +67,14 @@ const TrendingMatch = () => {
     refetch: refetchNextCricket,
   } = useGetCricketNextMatchesQuery({});
   const { nextMatches: nextCricketMatches = [] } = cricketNextData || {};
+
+  const {
+    data: cricketNextBySeriesData,
+    isFetching: isCricketNextBySeriesFetching,
+    refetch: refetchNextBySeriesCricket,
+  } = useGetCricketNextMatchesBySeriesQuery(9237);
+  const { seriesMatches: nextBySeriesCricketMatches = [] } =
+    cricketNextBySeriesData || {};
 
   const {
     data: footballLiveData,
@@ -141,6 +151,15 @@ const TrendingMatch = () => {
     );
   };
 
+  const renderCricketNextBySeriesMatches = () => {
+    return (
+      <CricketNextBySeriesMatch
+        nextMatches={nextBySeriesCricketMatches.slice(0, 3)}
+        isFetching={isCricketNextBySeriesFetching}
+      />
+    );
+  };
+
   const topThreeFootballNextMatches =
     nextFootballMatches.length > 0
       ? [
@@ -183,7 +202,11 @@ const TrendingMatch = () => {
     { type: "matches", content: renderMatches() },
     { type: "trendingLiveMatches", content: renderTrendingLiveMatches() },
     { type: "dontMiss", content: renderDontMiss() },
-    { type: "cricketNextMatches", content: renderCricketNextMatches() },
+    // { type: "cricketNextMatches", content: renderCricketNextMatches() },
+    {
+      type: "cricketNextBySeriesMatches",
+      content: renderCricketNextBySeriesMatches(),
+    },
     { type: "footballNextMatches", content: renderFootballNextMatches() },
     { type: "basketballNextMatches", content: renderBasketballNextMatches() },
   ];

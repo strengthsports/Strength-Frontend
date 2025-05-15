@@ -119,10 +119,18 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuthState:(state)=>{
+    setAuthState: (state) => {
       state.isLoggedIn = true;
     },
     resetAuthState: (state) => {
+      state.error = null;
+      state.msgBackend = null;
+      state.status = null;
+    },
+    resetUserData: (state) => {
+      // Reset all user-related data (added part)
+      state.isLoggedIn = false;
+      state.user = null;
       state.error = null;
       state.msgBackend = null;
       state.status = null;
@@ -132,6 +140,13 @@ const authSlice = createSlice({
     //login State
     builder.addCase(initializeAuth.fulfilled, (state, action) => {
       state.isLoggedIn = action.payload.isLoggedIn;
+    });
+    //missing extra reducer (added part)
+    builder.addCase(loginUser.fulfilled, (state, action) => {
+      state.user = action.payload.user;
+      state.isLoggedIn = true;
+      state.error = null;
+      state.msgBackend = action.payload.message;
     });
 
     // Logout
@@ -146,5 +161,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetAuthState,setAuthState } = authSlice.actions;
+export const { resetAuthState, setAuthState, resetUserData } = authSlice.actions;
 export default authSlice.reducer;

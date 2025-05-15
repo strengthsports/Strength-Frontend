@@ -65,14 +65,21 @@ const FeedTopFtu = () => {
 
     // cross button
     const handleCrossClick = () => {
-        // Dispatch all three actions when the cross button is pressed
-        dispatch(setFirstTimeUseFlag({ field: "hasVisitedEditProfile" }));
-        dispatch(setFirstTimeUseFlag({ field: "hasVisitedEditOverview" }));
-        dispatch(setFirstTimeUseFlag({ field: "hasVisitedCommunity" }));
+        const currentItem = visibleFtuItems[activeIndex];
+        if (!currentItem) return;
 
-        // You can log or perform other actions as needed
-        console.log('All three dispatches executed');
+        if (currentItem.key === 'editProfile') {
+            dispatch(setFirstTimeUseFlag({ field: "hasVisitedEditProfile" }));
+        } else if (currentItem.key === 'overview') {
+            dispatch(setFirstTimeUseFlag({ field: "hasVisitedEditOverview" }));
+        } else if (currentItem.key === 'community') {
+            dispatch(setFirstTimeUseFlag({ field: "hasVisitedCommunity" }));
+        }
+
+        console.log(`Dispatch executed for key ${currentItem.key}`);
     };
+
+
 
     // Filter visible containers
     const visibleFtuItems = ftuItems.filter(item => item.visible);

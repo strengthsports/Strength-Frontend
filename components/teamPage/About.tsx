@@ -148,7 +148,7 @@ const About = () => {
             style={{ opacity: fadeAnim }}
           >
             <View className="bg-green-500 px-6 py-3 rounded-full">
-              <Text className="text-white font-bold">Copied to clipboard!</Text>
+              <TextScallingFalse className="text-white font-bold">Copied to clipboard!</TextScallingFalse>
             </View>
           </Animated.View>
         )}
@@ -160,12 +160,12 @@ const About = () => {
               onPress={toggleModal}
             >
               <Supporters />
-              <Text className="text-white text-3xl ml-3 font-bold">
+              <TextScallingFalse className="text-white text-3xl ml-3 font-bold">
                 {supporterCount || 0}
-              </Text>
-              <Text className="text-[#9C9C9C] text-4xl font-medium ml-1">
+              </TextScallingFalse>
+              <TextScallingFalse className="text-[#9C9C9C] text-4xl font-medium ml-1">
                 Supporters
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
 
             <CustomButton
@@ -188,7 +188,7 @@ const About = () => {
             </TextScallingFalse>
             {!showFullDescription && descriptionLines > 3 && (
               <TouchableOpacity onPress={toggleDescription}>
-                <Text className="text-[#818181] text-xl mt-1">See More</Text>
+                <TextScallingFalse className="text-[#818181] text-xl mt-1">See More</TextScallingFalse>
               </TouchableOpacity>
             )}
           </View>
@@ -196,23 +196,23 @@ const About = () => {
 
         <View className="p-2 ml-4 bg-[#0B0B0B] flex flex-row items-center">
           <Members />
-          <Text className="text-[#CECECE] text-3xl ml-3">
+          <TextScallingFalse className="text-[#CECECE] text-3xl ml-3">
             Members - {teamDetails?.members?.length || 0}
-          </Text>
+          </TextScallingFalse>
         </View>
 
         <View className="p-2 ml-4 bg-[#0B0B0B] flex flex-row items-center">
           <EstabilishedOn />
-          <Text className="text-[#CECECE] text-3xl ml-3">
+          <TextScallingFalse className="text-[#CECECE] text-3xl ml-3">
             Established On - {handleEstablished()}
-          </Text>
+          </TextScallingFalse>
         </View>
 
         <View className="p-2 ml-4 flex flex-row items-center">
           <TeamId />
-          <Text className="text-[#CECECE] text-3xl ml-2">
+          <TextScallingFalse className="text-[#CECECE] text-3xl ml-2">
             Team unique ID - {handleTeamUniqueId()}
-          </Text>
+          </TextScallingFalse>
           <CopyCode code={handleTeamUniqueId()} onCopy={handleCopySuccess} />
         </View>
       </ScrollView>
@@ -231,14 +231,18 @@ const About = () => {
               { transform: [{ translateY: modalAnim }] }
             ]}
           >
+            <View style={{flexDirection:'row', justifyContent:'space-between', padding: 10, alignItems:'center'}}>
             <TouchableOpacity 
               style={styles.closeButton}
               onPress={toggleModal}
+              activeOpacity={0.5}
             >
               <BackIcon width={24} height={24} fill="#FFFFFF" />
             </TouchableOpacity>
             
-            <Text style={styles.modalTitle}>Team Supporters</Text>
+            <TextScallingFalse style={styles.modalTitle}>Team Supporters</TextScallingFalse>
+            <View style={{width: 24}} />
+            </View>
             
             <ScrollView style={styles.supporterList}>
               <UserList targetId={teamDetails?._id} type="Followers" />

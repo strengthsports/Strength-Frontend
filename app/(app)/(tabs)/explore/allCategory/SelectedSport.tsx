@@ -258,12 +258,12 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
 
   if (sportsName === "Cricket") {
     sections.push({
-      type: "CricketNextMatches",
-      content: renderCricketNextMatches(),
-    });
-    sections.push({
       type: "CricketNextBySeriesMatches",
       content: renderCricketNextBySeriesMatches(),
+    });
+    sections.push({
+      type: "CricketNextMatches",
+      content: renderCricketNextMatches(),
     });
   } else if (sportsName === "Football")
     sections.push({

@@ -225,7 +225,7 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
         </View>
 
         {/* Home team and away team scores */}
-        <View className="max-w-[150px] absolute right-3 mt-2">
+        <View className="max-w-[150px] absolute right-3 mt-3">
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -246,7 +246,7 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
               </View>
 
               {/* Home Team Scores */}
-              <View className="flex-row mb-3.5">
+              <View className="flex-row mb-4">
                 {scoreColumns.map((item) => (
                   <TextScallingFalse
                     key={`home-${item.label}`}

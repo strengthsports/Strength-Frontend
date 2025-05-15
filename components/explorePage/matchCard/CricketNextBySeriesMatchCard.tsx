@@ -122,13 +122,13 @@ const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
           <View className="flex-column gap-y-3">
             {/* Team 1 */}
             <NameFlagSubCard
-              flag={match.matchInfo.team1.teamName}
+              flag={match.matchInfo.team1.teamSName}
               teamName={match.matchInfo.team1.teamSName}
             />
 
             {/* Team 2 */}
             <NameFlagSubCard
-              flag={match.matchInfo.team2.teamName}
+              flag={match.matchInfo.team2.teamSName}
               teamName={match.matchInfo.team2.teamSName}
             />
           </View>

@@ -48,6 +48,7 @@ const SuggestedSupportScreen: React.FC = () => {
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   const { user } = useSelector((state: RootState) => state.auth);
 
+
   useEffect(() => {
     console.log("Selected Sports id:", selectedSports);
     dispatch(fetchUserSuggestions({ sportsData: selectedSports, limit, page })); // add limit, page for pagination while scrolling up
@@ -208,7 +209,14 @@ const SuggestedSupportScreen: React.FC = () => {
     ),
     [handleClose, handleSelectedPlayers]
   );
-  const filteredUsers = users.filter(userItem => userItem._id !== user?._id);
+  // const filteredUsers = users.filter(userItem => userItem._id !== user?._id);
+
+//   const filteredUsers = users.filter(userItem => {
+//   console.log('Current User ID:', user?._id);  // Log the current user ID
+//   console.log('Checking against User ID:', userItem._id);  // Log the ID of the user being filtered
+
+//   return userItem._id !== user?._id;
+// });
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
@@ -216,7 +224,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
       {/* FlatList scrolls everything from Logo to suggestions */}
       <FlatList
-        data={loading ? [] : filteredUsers}
+        data={loading ? [] : users}
         keyExtractor={(item) => item._id}
         numColumns={2}
         renderItem={renderItem}

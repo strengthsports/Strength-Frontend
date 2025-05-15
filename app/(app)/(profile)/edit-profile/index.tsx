@@ -1026,7 +1026,7 @@ const EditProfile = () => {
   const handleBackPress = () => {
     if (!Array.from(finalUploadData.entries()).length) {
       router.back(); // No unsaved changes — go back
-      return false; // Allow default back behavior (for system back)
+      return true; // Allow default back behavior (for system back)
     } else {
       setAlertModal(true); // Unsaved changes — show alert modal
       return true; // Prevent default system back

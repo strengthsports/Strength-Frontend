@@ -450,23 +450,27 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </View>
 
           {/* Caption Section */}
-          <Pressable
-            onPress={() => router.push(`/post-details/${item._id}`)}
-            className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900"
-          >
-            <Pressable
-              onPress={() => handleOpenBottomSheet({ type: "settings" })}
-              hitSlop={{ top: 20, left: 20, right: 20, bottom: 20 }}
+          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
+            <TouchableOpacity
+              onPress={() => {
+                handleOpenBottomSheet({ type: "settings" });
+              }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
               className="absolute right-8 p-2 pt-2 z-30"
             >
               <MaterialIcons name="more-horiz" size={22} color="white" />
-            </Pressable>
+            </TouchableOpacity>
 
-            <View className="pl-7 pr-10 pt-12 pb-2">
+            <Pressable
+              disabled={isPostDetailsPage}
+              onPress={() => router.push(`/post-details/${item._id}`)}
+              className="pl-7 pr-10 pt-12 pb-2"
+            >
               <TextScallingFalse className="text-2xl flex-wrap flex-row">
                 {memoizedCaption}
               </TextScallingFalse>
-            </View>
+            </Pressable>
 
             {!isVideo && item.isPoll && (
               <PollsContainer
@@ -478,7 +482,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onVote={handleVote}
               />
             )}
-          </Pressable>
+          </View>
 
           {/* Assets section */}
           {item.isVideo ? (

@@ -24,7 +24,7 @@ interface ActivityPageProps {
   type: string;
 }
 
-type PostType = "all" | "thoughts" | "polls" | "clips";
+type PostType = "all" | "thoughts" | "polls" | "clips" | "mentions";
 
 const EMPTY_STATE_CONFIG: Record<
   PostType,
@@ -70,6 +70,16 @@ const EMPTY_STATE_CONFIG: Record<
     },
     otherUser: {
       title: "No clips shared yet",
+      buttonText: undefined,
+    },
+  },
+  mentions: {
+    currentUser: {
+      title: "Your Mentions - See Who's Talking About You!",
+      buttonText: "Make Your Move",
+    },
+    otherUser: {
+      title: "No mentions yet",
       buttonText: undefined,
     },
   },
@@ -171,7 +181,7 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
   }
 
   return (
-    <View className="mt-4">
+    <View>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}

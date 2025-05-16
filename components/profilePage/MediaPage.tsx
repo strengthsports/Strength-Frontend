@@ -278,19 +278,23 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     );
   }
 
+  console.log("Hashtag posts : ", hashtagposts, " userposts : ", userposts);
+
   if (
     (!hashtagposts || hashtagposts.length === 0) &&
     (!userposts || userposts.length === 0)
   ) {
     return (
-      <TextScallingFalse className="text-white">
-        Media not found
-      </TextScallingFalse>
+      <View className="w-full items-center mt-8 gap-y-2">
+        <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3 text-center">
+          No Media posts yet
+        </TextScallingFalse>
+      </View>
     );
   }
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 pb-5">
       <FlatList
         data={processedImageData}
         keyExtractor={keyExtractor}

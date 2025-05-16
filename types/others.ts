@@ -47,6 +47,7 @@ export type NotificationType =
   | "Comment"
   | "Follow"
   | "TeamInvitation"
+  | "TeamPromotion"
   | "JoinTeamRequest"
   | "Report"
   | "Tag"

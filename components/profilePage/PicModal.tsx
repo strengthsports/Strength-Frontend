@@ -64,13 +64,6 @@ const PicModal = ({
   const pickImage = async () => {
     picData.delete(type);
     try {
-      const permissionResult =
-        await EXImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        alert("Permission to access the camera roll is required!");
-        return;
-      }
-
       const result = await EXImagePicker.launchImageLibraryAsync({
         mediaTypes: EXImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,

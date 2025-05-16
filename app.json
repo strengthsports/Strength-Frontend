@@ -4,7 +4,7 @@
     "slug": "Strength",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/strengthsplash.png",
+    "icon": "./assets/images/adaptive-icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,13 +13,17 @@
       "resizeMode": "contain"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "strength.net.in"
+      "supportsTablet": false,
+      "bundleIdentifier": "strength.net.in",
+           "adaptiveIcon": {
+        "foregroundImage": "./assets/images/ios-dark.png",
+        "backgroundColor": "#000000"
+      }
     },
     "android": {
       "package": "strength.net.in",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/strengthLogo.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       }
     },
@@ -33,7 +37,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Splash/splashLogo.png",
+          "image": "./assets/images/Splash/splash-icon-dark.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#000000"

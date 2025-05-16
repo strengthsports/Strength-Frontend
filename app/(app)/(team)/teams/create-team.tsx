@@ -253,12 +253,12 @@ const [formattedDate, setFormattedDate] = useState("");
 
 const selectImage = async () => {
   try {
-    // 1. Request permissions
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission denied', 'We need access to your photos to select a team logo');
-      return;
-    }
+    // // 1. Request permissions
+    // const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    // if (status !== 'granted') {
+    //   Alert.alert('Permission denied', 'We need access to your photos to select a team logo');
+    //   return;
+    // }
 
     // 2. Launch image picker
     const result = await ImagePicker.launchImageLibraryAsync({

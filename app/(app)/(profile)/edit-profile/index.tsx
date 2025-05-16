@@ -679,13 +679,13 @@ const EditProfile = () => {
   // Pick Image (Cover pic, Profile Pic)
   const pickImage = async (imageType: "cover" | "profile") => {
     try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      // const permissionResult =
+      //   await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      if (!permissionResult.granted) {
-        showToast("Permission to access the camera roll is required!");
-        return;
-      }
+      // if (!permissionResult.granted) {
+      //   showToast("Permission to access the camera roll is required!");
+      //   return;
+      // }
 
       let aspect: [number, number] = [1, 1]; // Explicitly type aspect as [number, number]
       if (imageType === "cover") {

@@ -41,7 +41,10 @@ const DiscoverPeopleList = () => {
   }, [first10Users]);
 
   return (
-    <View className="flex-1">
+    <View
+      className="flex-1 pb-5"
+      style={{ borderBottomWidth: 1, borderColor: "#1c1c1c" }}
+    >
       <TextScallingFalse className="text-white text-4xl ml-3 my-2 font-bold">
         Discover People
       </TextScallingFalse>

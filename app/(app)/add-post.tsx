@@ -42,6 +42,7 @@ import ClipsIcon from "@/components/SvgIcons/addpost/ClipsIcon";
 import MentionHashtagInput2 from "@/components/MentionHashtagInput2";
 import VideoPlayer from "@/components/PostContainer/VideoPlayer";
 import AddImagePlusIcon from "~/components/SvgIcons/addpost/AddImagePlusIcon";
+import ThisFeatureUnderDev from "~/components/modals/ThisFeatureUnderDev";
 // Memoized sub-components for better performance
 const Figure = React.memo(
   ({
@@ -296,21 +297,13 @@ export default function AddPostContainer() {
     }
   }, []);
 
-  
+
   // For adding more images (using same aspect ratio)
   const addMoreImages = useCallback(async () => {
     if (pickedImageUris.length === 0) {
       setIsImageRatioModalVisible(true);
       return;
     }
-
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert("Permission to access media library is required.");
-      return;
-    }
-
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         aspect:
@@ -330,6 +323,7 @@ export default function AddPostContainer() {
     }
   }, [pickedImageUris.length, selectedAspectRatio]);
 
+  
   // Optimize image removal
   const removeImage = useCallback((index: number) => {
     setPickedImageUris((prevUris) => prevUris.filter((_, i) => i !== index));
@@ -425,9 +419,8 @@ export default function AddPostContainer() {
           <View className="flex flex-row items-center justify-between p-4">
             <AddPostHeader onBackPress={handleCloseAddPostContainer} />
             <TouchableOpacity
-              className={`px-6 py-1 rounded-full ${
-                isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-              }`}
+              className={`px-6 py-1 rounded-full ${isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+                }`}
               onPress={handlePostSubmit}
               disabled={!isPostButtonEnabled}
             >
@@ -435,9 +428,8 @@ export default function AddPostContainer() {
                 <ActivityIndicator color={"white"} />
               ) : (
                 <TextScallingFalse
-                  className={`${
-                    isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                  } text-3xl font-semibold`}
+                  className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                    } text-3xl font-semibold`}
                 >
                   Post
                 </TextScallingFalse>
@@ -494,7 +486,7 @@ export default function AddPostContainer() {
 
           {/* only render when any feature which is under development is clicked */}
           {showFeatureModal && (
-            <FeatureUnderDev
+            <ThisFeatureUnderDev
               isVisible={showFeatureModal}
               onClose={() => setShowFeatureModal(false)}
             />
@@ -537,8 +529,8 @@ export default function AddPostContainer() {
                 <ClipsIcon
                   color={
                     showPollInput ||
-                    pickedImageUris.length > 0 ||
-                    (isTypeVideo && pickedVideoUri !== null)
+                      pickedImageUris.length > 0 ||
+                      (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }
@@ -554,15 +546,15 @@ export default function AddPostContainer() {
               >
                 {pickedImageUris.length === 0 && (
                   <AddImageIcon
-                  color={
-                    showPollInput || (isTypeVideo && pickedVideoUri !== null)
-                      ? "#737373"
-                      : Colors.themeColor
-                  }
-                />
+                    color={
+                      showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                        ? "#737373"
+                        : Colors.themeColor
+                    }
+                  />
                 )}
                 {pickedImageUris.length > 0 && (
-                    <AddImagePlusIcon color={Colors.themeColor} />
+                  <AddImagePlusIcon color={Colors.themeColor} />
                 )}
               </TouchableOpacity>
               <Modal
@@ -592,8 +584,8 @@ export default function AddPostContainer() {
                 <PollsIcon
                   color={
                     showPollInput ||
-                    pickedImageUris.length > 0 ||
-                    (isTypeVideo && pickedVideoUri !== null)
+                      pickedImageUris.length > 0 ||
+                      (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }

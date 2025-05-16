@@ -8,7 +8,13 @@ import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
 import { Alert } from "react-native";
 
-const UserCard = ({ user }: { user: any }) => {
+const UserCard = ({
+  user,
+  isOwnProfile,
+}: {
+  user: any;
+  isOwnProfile: boolean;
+}) => {
   const router = useRouter();
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: user._id, type: user.type })
@@ -86,14 +92,16 @@ const UserCard = ({ user }: { user: any }) => {
             {user.headline}
           </TextScallingFalse>
         </View>
-        <View className="basis-[22%]">
-          <FollowButton
-            followingStatus={followingStatus}
-            size="small"
-            handleFollowToggle={handleFollowToggle}
-            handleOpenModal={() => {}}
-          />
-        </View>
+        {!isOwnProfile && (
+          <View className="basis-[24%]">
+            <FollowButton
+              followingStatus={followingStatus}
+              size="small"
+              handleFollowToggle={handleFollowToggle}
+              handleOpenModal={() => {}}
+            />
+          </View>
+        )}
       </View>
     </>
   );

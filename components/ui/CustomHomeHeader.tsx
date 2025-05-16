@@ -40,13 +40,13 @@ const CustomHomeHeader = () => {
   const handleOpenDrawer = () => {
     navigation.openDrawer();
   };
-  const heightValue = Platform.OS === "ios" ? "27%" : "22%";
+  const heightValue = Platform.OS === "ios" ? "28%" : "25%";
 
   // Define the content separately
   const messagingBottomSheetConfig = {
     isVisible: true,
     content: (
-      <View style={{ paddingVertical: 15, paddingHorizontal: 20 }}>
+      <View style={{ paddingVertical: 15, paddingHorizontal: 20,}}>
         <TextScallingFalse
           style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
         >

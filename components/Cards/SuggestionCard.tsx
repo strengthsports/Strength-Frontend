@@ -109,6 +109,7 @@ const SuggestionCard = ({
   return (
     <>
       <Pressable
+       disabled={onboarding}
         className={`rounded-xl pb-4 relative border ${
           size === "small" ? "w-[150px] h-[180px]" : "w-[45%] h-[200px]"
         } border-[#80808085] overflow-hidden`}

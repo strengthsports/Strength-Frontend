@@ -73,7 +73,7 @@ const CustomDrawer2 = () => {
   };
   return (
     <SafeAreaView
-      className={`w-full h-full bg-[#181818] ${
+      className={`w-full h-full bg-[#101010] ${
         Platform.OS === "ios" ? "pt-10" : "pt-4"
       }`}
       style={{ justifyContent: "space-between" }}
@@ -95,7 +95,7 @@ const CustomDrawer2 = () => {
         >
           <Image
             source={user?.profilePic ? { uri: user.profilePic } : nopic}
-            className="w-14 h-14 rounded-full"
+            className="w-14 h-14 rounded-full border-[1px] border-[#C1C1C1]"
             resizeMode="cover"
           />
           <View className="pl-4">

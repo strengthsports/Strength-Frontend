@@ -27,6 +27,7 @@ import AlertModal from "~/components/modals/AlertModal";
 import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
+import * as MediaLibrary from 'expo-media-library';
 import {
   resetUploadProgress,
   setUploadLoading,
@@ -40,6 +41,7 @@ import FeatureUnderDev from "@/components/modals/FeatureUnderDev";
 import ClipsIcon from "@/components/SvgIcons/addpost/ClipsIcon";
 import MentionHashtagInput2 from "@/components/MentionHashtagInput2";
 import VideoPlayer from "@/components/PostContainer/VideoPlayer";
+import AddImagePlusIcon from "~/components/SvgIcons/addpost/AddImagePlusIcon";
 // Memoized sub-components for better performance
 const Figure = React.memo(
   ({
@@ -269,20 +271,14 @@ export default function AddPostContainer() {
     dispatch,
   ]);
 
+
   // For selecting the first image with aspect ratio
   const selectFirstImage = useCallback(async (ratio: [number, number]) => {
+    console.log('yes selectFirstImage is called')
     setSelectedAspectRatio(ratio);
-
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert("Permission to access media library is required.");
-      return;
-    }
-
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         aspect: Platform.OS === "ios" ? ratio : ratio,
         quality: 0.8,
         allowsEditing: true,
@@ -300,6 +296,7 @@ export default function AddPostContainer() {
     }
   }, []);
 
+  
   // For adding more images (using same aspect ratio)
   const addMoreImages = useCallback(async () => {
     if (pickedImageUris.length === 0) {
@@ -555,17 +552,17 @@ export default function AddPostContainer() {
                 }
                 activeOpacity={0.7}
               >
-                <AddImageIcon
+                {pickedImageUris.length === 0 && (
+                  <AddImageIcon
                   color={
                     showPollInput || (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }
                 />
+                )}
                 {pickedImageUris.length > 0 && (
-                  <View className="absolute -right-[0.5px] top-0 bg-black size-3 p-[0.5px]">
-                    <FontAwesome6 name="add" size={12} color="#12956B" />
-                  </View>
+                    <AddImagePlusIcon color={Colors.themeColor} />
                 )}
               </TouchableOpacity>
               <Modal

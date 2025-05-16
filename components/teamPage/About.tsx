@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-  StyleSheet
+  StyleSheet,
+  Platform
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -27,6 +28,7 @@ import {
 } from "~/reduxStore/slices/team/teamSlice";
 import BackIcon from "../SvgIcons/Common_Icons/BackIcon";
 import UserList from "../ui/UserList";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { height } = Dimensions.get('window');
 
@@ -224,29 +226,37 @@ const About = () => {
         animationType="none"
         onRequestClose={toggleModal}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalOuterContainer}>
           <Animated.View 
             style={[
-              styles.modalContent,
+              styles.modalInnerContainer,
               { transform: [{ translateY: modalAnim }] }
             ]}
           >
-            <View style={{flexDirection:'row', justifyContent:'space-between', padding: 10, alignItems:'center'}}>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={toggleModal}
-              activeOpacity={0.5}
-            >
-              <BackIcon width={24} height={24} fill="#FFFFFF" />
-            </TouchableOpacity>
+            <SafeAreaView edges={['top']} style={styles.safeArea}>
+              <View style={styles.modalHeader}>
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={toggleModal}
+                  activeOpacity={0.7}
+                >
+                  <BackIcon width={24} height={24} fill="#FFFFFF" />
+                </TouchableOpacity>
+                
+                <TextScallingFalse style={styles.modalTitle}>Team Supporters</TextScallingFalse>
+                <View style={styles.headerSpacer} />
+              </View>
             
-            <TextScallingFalse style={styles.modalTitle}>Team Supporters</TextScallingFalse>
-            <View style={{width: 24}} />
-            </View>
-            
-            <ScrollView style={styles.supporterList}>
-              <UserList targetId={teamDetails?._id} type="Followers" />
-            </ScrollView>
+              <View style={styles.listContainer}>
+                <UserList 
+                  targetId={teamDetails?._id} 
+                  type="Followers"
+                  ListHeaderComponent={<View style={{ height: 10 }} />}
+                  ListFooterComponent={<View style={{ height: 30 }} />}
+                  contentContainerStyle={styles.listContentContainer}
+                />
+              </View>
+            </SafeAreaView>
           </Animated.View>
         </View>
       </Modal>
@@ -255,34 +265,49 @@ const About = () => {
 };
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  modalOuterContainer: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: 'rgba(0,0,0,0.7)',
   },
-  modalContent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: height,
-    backgroundColor: 'black',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    // padding: 20,
+  modalInnerContainer: {
+    flex: 1,
+    backgroundColor: '#0B0B0B',
+    marginTop: Platform.OS === 'ios' ? 44 : 0,
   },
-  closeButton: {
-    alignSelf: 'flex-end',
+  safeArea: {
+    backgroundColor: '#0B0B0B',
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2A2A2A',
+  },
+  backButton: {
     padding: 8,
   },
   modalTitle: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 5,
     textAlign: 'center',
-  },
-  supporterList: {
     flex: 1,
+    marginHorizontal: 10,
+  },
+  headerSpacer: {
+    width: 32,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  listContentContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+    paddingTop: 10,
   },
 });
 

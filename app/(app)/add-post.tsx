@@ -273,6 +273,7 @@ export default function AddPostContainer() {
 
   // For selecting the first image with aspect ratio
   const selectFirstImage = useCallback(async (ratio: [number, number]) => {
+    console.log('yes selectFirstImage is called')
     setSelectedAspectRatio(ratio);
 
     // const permissionResult =

@@ -18,6 +18,12 @@
     },
     "android": {
       "package": "strength.net.in",
+      "permissions": [
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "READ_MEDIA_AUDIO",
+        "READ_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/strengthLogo.png",
         "backgroundColor": "#000000"

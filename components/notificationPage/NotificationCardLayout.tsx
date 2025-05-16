@@ -1,8 +1,7 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import React, { useState, useCallback, useMemo } from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import nopic from "@/assets/images/nopic.jpg";
-import { formatTimeAgo } from "~/utils/formatTime";
+import { formatShortTimeAgo } from "~/utils/formatTime";
 import { RelativePathString, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "../CentralText";
@@ -21,6 +20,7 @@ type NotificationCardProps = {
   target: any;
   isNew: boolean;
   count?: number;
+  [key: string]: any;
 };
 
 // Static configuration objects
@@ -29,14 +29,12 @@ const NOTIFICATION_TEXTS: Record<NotificationType, string> = {
   Comment: "commented on your post",
   Reply: "replied to your comment",
   Follow: "started following you",
-  TeamInvitation: "is inviting you to join",
-  JoinTeamRequest: "has requested to join team",
+  TeamInvitation: "is inviting you to join team - ",
+  TeamPromotion: "promoted you as the",
+  JoinTeamRequest: "has requested to join team - ",
   Report: "You are reported",
   Tag: "tagged you",
 };
-
-const POST_PREVIEW_TYPES = new Set(["Like", "Comment", "Tag"]);
-const TEAM_PREVIEW_TYPES = new Set(["JoinTeamRequest", "TeamInvitation"]);
 
 const NotificationCardLayout = React.memo(
   ({
@@ -47,11 +45,11 @@ const NotificationCardLayout = React.memo(
     target,
     isNew,
     count,
+    comment,
   }: NotificationCardProps) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: any) => state.profile.user._id);
-    const [isLoading, setLoading] = useState<boolean>(false);
 
     // Memoized values
     const serializedUser = useMemo(
@@ -62,15 +60,17 @@ const NotificationCardLayout = React.memo(
       [sender._id, sender.type]
     );
 
+    // Profile pic
     const profileImageSource = useMemo(
       () => (sender.profilePic ? { uri: sender.profilePic } : nopic),
       [sender.profilePic]
     );
 
-    const timeAgo = useMemo(() => (date ? formatTimeAgo(date) : ""), [date]);
-
-    const hasPostPreview = useMemo(() => POST_PREVIEW_TYPES.has(type), [type]);
-    const hasTeamPreview = useMemo(() => TEAM_PREVIEW_TYPES.has(type), [type]);
+    const timeAgo = formatShortTimeAgo
+      ? formatShortTimeAgo(date)
+      : date
+      ? "10h"
+      : "";
 
     // Handlers
     const handleProfilePress = useCallback(() => {
@@ -82,7 +82,7 @@ const NotificationCardLayout = React.memo(
     }, [userId, sender._id, serializedUser]);
 
     const handlePostPress = useCallback(() => {
-      router.push(`/(app)/(post)/(modal)/post-details/${target._id}`);
+      router.push(`/post-details/${target._id}`);
     }, [target?._id]);
 
     const handleAcceptTeamInvitaion = useCallback(() => {
@@ -102,191 +102,350 @@ const NotificationCardLayout = React.memo(
       );
     }, [dispatch]);
 
-    // Rendered components
-    const OptionsButton = useMemo(
-      () =>
-        type === "Follow" ? (
-          <TouchableOpacity
-            className="px-3 py-1 rounded-md bg-[#12956B]"
-            activeOpacity={0.7}
-          >
-            <TextScallingFalse className="text-white text-base">
-              Follow
-            </TextScallingFalse>
-          </TouchableOpacity>
-        ) : type === "TeamInvitation" || type === "JoinTeamRequest" ? (
-          <View className="flex-row gap-x-4">
-            <TouchableOpacity
-              className="px-3 py-1 rounded-md bg-[#12956B]"
-              activeOpacity={0.7}
-              onPress={handleAcceptTeamInvitaion}
-              disabled={isLoading}
-            >
-              <TextScallingFalse className="text-white text-base">
-                {isLoading ? "Accepting...." : "Accept"}
-              </TextScallingFalse>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="px-3 py-1 rounded-md bg-[#000] border-[0.5px] border-white"
-              activeOpacity={0.7}
-              onPress={handleRejectTeamInvitaion}
-              disabled={isLoading}
-            >
-              <TextScallingFalse className="text-white text-base">
-                {isLoading ? "Rejecting...." : "Reject"}
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <MaterialCommunityIcons
-            name="dots-horizontal"
-            size={18}
-            color="#808080"
-          />
-        ),
-      [type]
-    );
-
-    const PostPreview = useMemo(
-      () =>
-        hasPostPreview && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={handlePostPress}
-            className="flex-row mt-1.5 items-center h-auto bg-[#121212] rounded-lg overflow-hidden w-full"
-          >
-            {target?.assets?.length > 0 && (
+    // Custom rendering for different notification types
+    const renderNotificationContent = () => {
+      if (type === "Comment" && target.type === "Post") {
+        return (
+          <View className="flex-row">
+            {/* Profile Image */}
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
               <Image
-                source={{ uri: target.assets[0].url }}
-                resizeMode="cover"
-                className="rounded-l-lg flex-shrink-0"
-                style={postStyle}
+                source={profileImageSource}
+                className="w-10 h-10 rounded-full"
               />
-            )}
-            {target?.type === "Team" && (
-              <Image
-                source={{ uri: target.logo.url }}
-                resizeMode="cover"
-                className="rounded-l-lg flex-shrink-0"
-                style={postStyle}
-              />
-            )}
-            <View className="flex-1 ml-3 p-3">
-              <Text
-                className="text-[#808080] text-sm"
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                "{target?.caption}"
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ),
-      [hasPostPreview, target, handlePostPress]
-    );
-
-    const TeamPreview = useMemo(
-      () =>
-        hasTeamPreview && (
-          <View className="flex-row mt-1.5 items-center h-auto bg-[#121212] rounded-lg overflow-hidden w-full p-2">
-            <Image
-              source={{ uri: target.logo.url }}
-              resizeMode="cover"
-              className="rounded-l-lg flex-shrink-0"
-              style={postStyle}
-            />
-            <View className="items-center flex-1 gap-y-4">
-              <TextScallingFalse className="text-white">
-                {target.name}
-              </TextScallingFalse>
-              {OptionsButton}
-            </View>
-          </View>
-        ),
-      [hasTeamPreview, target]
-    );
-
-    return (
-      <View style={{ backgroundColor: isNew ? "rgba(29, 155, 240, 0.1)" : "" }}>
-        <View className="flex-row w-full min-w-[320px] lg:min-w-[400px] max-w-[600px] rounded-lg py-3">
-          <ProfileImage
-            source={profileImageSource}
-            onPress={handleProfilePress}
-          />
-
-          <View className="flex-1 pl-3 justify-center">
-            <View className="flex-row justify-between items-center">
-              <NotificationText
+            </TouchableOpacity>
+            <View className="flex-1">
+              <NotificationHeader
                 sender={sender}
-                target={target}
-                count={count}
-                typeText={
-                  target.type === "Comment"
-                    ? NOTIFICATION_TEXTS["Reply"]
-                    : NOTIFICATION_TEXTS[type]
-                }
+                type={type}
                 timeAgo={timeAgo}
+                count={count}
+                isNew={isNew}
+              />
+
+              {/* Comment preview */}
+              {/* Post preview */}
+              <PostPreview
+                caption={target.caption}
+                image={target.assets.length > 0 && target.assets[0].url}
+                comment={comment}
               />
             </View>
-            {TEAM_PREVIEW_TYPES.has(type) ? TeamPreview : PostPreview}
+          </View>
+        );
+      }
+
+      if (type === "Like" && target.type === "Post") {
+        return (
+          <View className="flex-row">
+            {/* Profile Image */}
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+              <Image
+                source={profileImageSource}
+                className="w-10 h-10 rounded-full"
+              />
+            </TouchableOpacity>
+            <View className="flex-1">
+              <NotificationHeader
+                sender={sender}
+                type={type}
+                timeAgo={timeAgo}
+                count={count}
+                isNew={isNew}
+              />
+
+              {/* Post preview */}
+              <PostPreview
+                caption={target.caption}
+                image={target.assets.length > 0 && target.assets[0].url}
+              />
+            </View>
+          </View>
+        );
+      }
+
+      if (type === "Follow") {
+        return (
+          <View className="flex-row">
+            {/* Profile Image */}
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+              <Image
+                source={profileImageSource}
+                className="w-10 h-10 rounded-full"
+              />
+            </TouchableOpacity>
+            <View className="flex-1">
+              <NotificationHeader
+                sender={sender}
+                type={type}
+                timeAgo={timeAgo}
+                isNew={isNew}
+              />
+
+              {/* <View className="ml-12 mt-1">
+              <TouchableOpacity className="bg-theme px-5 py-1.5 self-start rounded-lg">
+                <TextScallingFalse className="text-white font-medium text-2xl">
+                  Follow back
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View> */}
+            </View>
+          </View>
+        );
+      }
+
+      if (type === "TeamPromotion") {
+        return (
+          <View className="flex-row">
+            {/* Profile Image */}
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+              <Image
+                source={profileImageSource}
+                className="w-10 h-10 rounded-full"
+              />
+            </TouchableOpacity>
+            <View className="flex-1">
+              <NotificationHeader
+                sender={sender}
+                type={type}
+                timeAgo={timeAgo}
+                isNew={isNew}
+                customText={`promoted you as the `}
+                teamName={target.name}
+                // role={role}
+              />
+            </View>
+          </View>
+        );
+      }
+
+      if (type === "TeamInvitation") {
+        return (
+          <View className="flex-row">
+            {/* Profile Image */}
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+              <Image
+                source={profileImageSource}
+                className="w-10 h-10 rounded-full"
+              />
+            </TouchableOpacity>
+            <View className="flex-1">
+              <NotificationHeader
+                sender={sender}
+                type={type}
+                timeAgo={timeAgo}
+                isNew={isNew}
+                customText={`is inviting you to join team`}
+                teamName={target.name}
+                // role={role}
+              />
+              <TeamPreview
+                image={target.logo && target.logo.url}
+                handleAccept={handleAcceptTeamInvitaion}
+                handleDecline={handleRejectTeamInvitaion}
+              />
+            </View>
+          </View>
+        );
+      }
+
+      if (type === "Tag") {
+        return (
+          <View className="flex-row">
+            {/* Profile Image */}
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+              <Image
+                source={profileImageSource}
+                className="w-10 h-10 rounded-full"
+              />
+            </TouchableOpacity>
+            <View className="flex-1">
+              <NotificationHeader
+                sender={sender}
+                type={type}
+                timeAgo={timeAgo}
+                count={count}
+                isNew={isNew}
+              />
+
+              {/* Post preview */}
+              <PostPreview
+                caption={target.caption}
+                image={target.assets.length > 0 && target.assets[0].url}
+              />
+            </View>
+          </View>
+        );
+      }
+
+      // Default rendering
+      return (
+        <View className="flex-row">
+          {/* Profile Image */}
+          <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+            <Image
+              source={profileImageSource}
+              className="w-10 h-10 rounded-full"
+            />
+          </TouchableOpacity>
+          <View className="flex-1">
+            <NotificationHeader
+              sender={sender}
+              type={type}
+              timeAgo={timeAgo}
+              isNew={isNew}
+              count={count}
+            />
           </View>
         </View>
+      );
+    };
+
+    return (
+      <View className={`py-3 px-6 ${isNew && "bg-[#181818]"}`}>
+        {renderNotificationContent()}
       </View>
     );
   }
 );
 
-// Sub-components for better readability and reusability
-const ProfileImage = React.memo(
-  ({ source, onPress }: { source: any; onPress: () => void }) => (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={onPress}
-      className="w-12 h-12 rounded-full justify-center items-center flex-shrink-0"
+// Notification header with profile image, text and indicator
+const NotificationHeader = ({
+  sender,
+  type,
+  timeAgo,
+  count,
+  isNew,
+  customText,
+  teamName,
+  role,
+}: any) => {
+  // Format count text
+  const countText = count > 1 ? ` and ${count - 1} other` : "";
+
+  // Get notification text based on type or use custom text
+  const actionText = customText || NOTIFICATION_TEXTS[type] || "";
+
+  return (
+    <View className="flex-1 ml-4 mb-1">
+      <View className="flex-row justify-between">
+        <View className="flex-row flex-wrap pr-6">
+          <TextScallingFalse className="text-white text-xl">
+            <TextScallingFalse className="font-bold">
+              {sender.firstName} {sender.lastName}
+            </TextScallingFalse>
+            {countText} {actionText}
+            {role && (
+              <TextScallingFalse className="text-[#35A700] font-bold">
+                {" "}
+                {role}{" "}
+              </TextScallingFalse>
+            )}
+            {teamName && (
+              <TextScallingFalse className="font-bold">
+                {" "}
+                "{teamName}"{" "}
+              </TextScallingFalse>
+            )}
+            {role && type === "TeamInvitation" && (
+              <TextScallingFalse> as a </TextScallingFalse>
+            )}
+            {role && type === "TeamInvitation" && (
+              <TextScallingFalse className="font-bold">
+                "{role}"
+              </TextScallingFalse>
+            )}
+            <TextScallingFalse>.</TextScallingFalse>
+            <TextScallingFalse className="text-zinc-500 font-medium">
+              {" "}
+              {timeAgo}
+            </TextScallingFalse>
+          </TextScallingFalse>
+        </View>
+
+        {/* New notification indicator */}
+        {isNew && <View className="w-2 h-2 rounded-full bg-green-500 mt-2" />}
+      </View>
+    </View>
+  );
+};
+
+// Post View
+const PostPreview = React.memo(
+  ({
+    image,
+    caption,
+    comment,
+  }: {
+    image?: string;
+    caption: string;
+    comment?: string;
+  }) => (
+    <View
+      className={`ml-4 mt-1 overflow-hidden ${
+        comment ? "rounded-2xl border border-b-0" : "rounded-xl"
+      }`}
+      style={{ borderColor: comment ? "#262626" : "transparent" }}
     >
-      <Image source={source} className="w-10 h-10 rounded-full" />
-    </TouchableOpacity>
+      {comment && (
+        <View className="p-3">
+          <TextScallingFalse className="text-white text-xl">
+            {comment}
+          </TextScallingFalse>
+        </View>
+      )}
+      <View className="flex-row bg-[#262626] p-3">
+        {image && (
+          <Image source={{ uri: image }} className="w-16 h-16 rounded-lg" />
+        )}
+        <View className="p-3 flex-1">
+          <TextScallingFalse
+            style={{ color: "#AEAEAE", fontSize: 12 }}
+            numberOfLines={2}
+          >
+            {caption}
+          </TextScallingFalse>
+        </View>
+      </View>
+    </View>
   )
 );
 
-const NotificationText = React.memo(
+// Team view
+const TeamPreview = React.memo(
   ({
-    sender,
-    count,
-    typeText,
-    timeAgo,
-    target,
+    image,
+    handleDecline,
+    handleAccept,
   }: {
-    sender: any;
-    target?: any;
-    count?: number;
-    typeText: string;
-    timeAgo: string;
-  }) => {
-    const countText = useMemo(() => {
-      if (!count || count < 2) return " ";
-      return count <= 2 ? ` and ${count - 1} other ` : ` and ${count} others `;
-    }, [count]);
-
-    return (
-      <TextScallingFalse className="text-white text-lg font-light flex-1">
-        {sender.firstName} {sender.lastName}
-        {countText}
-        <TextScallingFalse className="font-bold">
-          {typeText} {target.type === "Team" && `"` + target.name + `"`}
-        </TextScallingFalse>{" "}
-        {timeAgo}
-      </TextScallingFalse>
-    );
-  }
+    image?: string;
+    handleDecline: () => void;
+    handleAccept: () => void;
+  }) => (
+    <View className={`ml-12 mt-1 overflow-hidden rounded-xl`}>
+      <View className="flex-row bg-[#262626] justify-between items-center">
+        {image && <Image source={{ uri: image }} className="w-20 h-20" />}
+        <View className="flex-row items-center justify-center gap-x-3 flex-1">
+          <TouchableOpacity
+            className="bg-transparent px-5 py-1.5 self-start rounded-lg border border-white"
+            onPress={handleDecline}
+          >
+            <TextScallingFalse className="text-white font-medium text-2xl">
+              Decline
+            </TextScallingFalse>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-theme px-5 py-1.5 self-start rounded-lg border border-theme"
+            onPress={handleAccept}
+          >
+            <TextScallingFalse className="text-white font-medium text-2xl">
+              Accept
+            </TextScallingFalse>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  )
 );
-
-// Static styles
-const postStyle = {
-  width: 70,
-  height: 70,
-  maxWidth: 90,
-  maxHeight: 90,
-};
 
 export default NotificationCardLayout;

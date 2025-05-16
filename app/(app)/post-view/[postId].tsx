@@ -33,6 +33,8 @@ import VideoPlayer from "~/components/PostContainer/VideoPlayer";
 import { useNavigation } from "@react-navigation/native";
 import { selectPostById } from "~/reduxStore/slices/post/postsSlice";
 import { toggleLike } from "~/reduxStore/slices/post/postActions";
+import { Modal } from "react-native";
+import CommentModal from "~/components/feedPage/CommentModal";
 
 const { width } = Dimensions.get("window");
 
@@ -51,6 +53,8 @@ const Post = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
+  const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
+    useState(false);
 
   useLayoutEffect(() => {
     const tabParent = navigation.getParent();
@@ -262,11 +266,7 @@ const Post = () => {
             isPostContainer={false}
             onPressLike={handleLike}
             isFeedPage={false}
-            onPressComment={() =>
-              router.push({
-                pathname: `/post-details/${postId}` as RelativePathString,
-              })
-            }
+            onPressComment={() => setIsCommentCountModalVisible(true)}
           />
         </View>
 
@@ -300,6 +300,21 @@ const Post = () => {
           </ScrollView>
         </LinearGradient>
       </Pressable>
+      <Modal
+        visible={isCommentCountModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsCommentCountModalVisible(false)}
+        style={{
+          flex: 1,
+        }}
+      >
+        <CommentModal
+          targetId={post._id}
+          autoFocusKeyboard={true}
+          onClose={() => setIsCommentCountModalVisible(false)}
+        />
+      </Modal>
     </PageThemeView>
   );
 };

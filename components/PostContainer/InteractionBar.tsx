@@ -150,7 +150,13 @@ const InteractionBar = ({
         )}
 
         {/* comment count */}
-        {isFeedPage ? (
+        {isPostDetailsPage ? (
+          <TouchableOpacity disabled>
+            <TextScallingFalse className="text-base text-white font-light">
+              {commentsCount} Comments
+            </TextScallingFalse>
+          </TouchableOpacity>
+        ) : (
           <Link
             href={`/post-details/${postId}` as RelativePathString}
             className="flex flex-row items-center gap-2"
@@ -162,12 +168,6 @@ const InteractionBar = ({
               </TextScallingFalse>
             </TouchableOpacity>
           </Link>
-        ) : (
-          <TouchableOpacity disabled>
-            <TextScallingFalse className="text-base text-white font-light">
-              {commentsCount} Comments
-            </TextScallingFalse>
-          </TouchableOpacity>
         )}
       </View>
 
@@ -203,7 +203,7 @@ const InteractionBar = ({
           </View>
         </TouchableOpacity>
         {/* comment now */}
-        {isFeedPage ? (
+        {isFeedPage || !isPostContainer ? (
           <TouchableOpacity
             className="flex flex-row items-center gap-2 relative"
             onPress={onPressComment}

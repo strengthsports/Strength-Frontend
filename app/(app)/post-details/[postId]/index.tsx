@@ -546,6 +546,7 @@ const PostDetailsPage = () => {
           initialNumToRender={5}
           maxToRenderPerBatch={10}
           windowSize={10}
+          showsVerticalScrollIndicator={false}
         />
 
         {/* Sticky comment input bar */}

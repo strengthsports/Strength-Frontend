@@ -1,5 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, SectionList, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+  TouchableOpacity,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import {
@@ -7,59 +14,37 @@ import {
   setHasNewNotification,
 } from "~/reduxStore/slices/notification/notificationSlice";
 import NotificationCardLayout from "~/components/notificationPage/NotificationCardLayout";
-import GroupedNotificationCard from "~/components/notificationPage/GroupedNotificationCard";
 import moment from "moment";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
-import { RefreshControl } from "react-native";
+import { RefreshControl as RControl } from "react-native";
 import { Notification, NotificationType } from "~/types/others";
 import {
   useGetNotificationsQuery,
   useMarkNotificationsAsReadMutation,
 } from "~/reduxStore/api/notificationApi";
-import { TouchableOpacity } from "react-native";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import NotificationNotFound from "~/components/notfound/notificationNotFound";
 import TextScallingFalse from "~/components/CentralText";
-import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
-
-type GroupedSection = {
-  title: string;
-  data: Cluster[];
-};
-
-export type Cluster = {
-  type: string;
-  target: any;
-  notifications: Notification[];
-  latestNotification: Notification;
-};
 
 // Tab configuration
 const tabs = [
   { id: "All", label: "All" },
   { id: "Teams", label: "Teams" },
-  { id: "MyPosts", label: "My Posts" },
-  { id: "Tags", label: "Mentions" },
+  { id: "My Posts", label: "My Posts" },
+  { id: "Mentions", label: "Mentions" },
 ];
 
-// Add this helper function to map tabs to notification types
-const getTypesForTab = (tab: typeof activeTab): string[] => {
+const getTypesForTab = (tab: any) => {
   switch (tab) {
     case "Teams":
       return ["JoinTeamRequest", "TeamInvitation"];
-    case "Tags":
+    case "Mentions":
       return ["Tag"];
-    case "Other":
-      return [
-        "Follow",
-        "Like",
-        "Comment",
-        "Report",
-        "PageInvitation",
-        "JoinPageRequest",
-      ];
-    default: // "All"
+    case "My Posts":
+      return ["Like", "Comment", "Report"];
+    default:
       return [
         "JoinTeamRequest",
         "TeamInvitation",
@@ -80,155 +65,61 @@ const NotificationPage = () => {
   );
   const dispatch = useDispatch<AppDispatch>();
 
-  const {
-    data: notifications,
-    isLoading,
-    isError,
-    isSuccess,
-    refetch,
-  } = useGetNotificationsQuery();
+  const { data, isLoading, isError, isSuccess, refetch } =
+    useGetNotificationsQuery();
   const [markAsRead] = useMarkNotificationsAsReadMutation();
 
   const [newNotificationIds, setNewNotificationIds] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<
-    "All" | "Teams" | "Mentions" | "Other"
-  >("All");
+  const [activeTab, setActiveTab] = useState("All");
   const [refreshing, setRefreshing] = useState(false);
   const initialLoad = useRef(true);
   const previousData = useRef<Notification[]>([]);
 
+  // Mark unread notifications as read when new notification flag is set
   useEffect(() => {
-    console.log("🎯 Effect RUNNING. hasNewNotification:", hasNewNotification);
-
     if (!hasNewNotification) return;
 
     const markNotificationsRead = async () => {
       const unreadIds =
-        notifications?.notifications
+        data?.notifications
           ?.filter((n) => !n.isNotificationRead)
           ?.map((n) => n._id) || [];
 
-      console.log("📝 Unread IDs:", unreadIds); // Log IDs being processed
       dispatch(resetCount());
       if (unreadIds.length > 0) {
-        console.log("🔵 Marking as read...");
         await markAsRead({ notificationIds: unreadIds }).unwrap();
         dispatch(setHasNewNotification(false));
         dispatch(resetCount());
-        console.log("✅ Marked as read. hasNewNotification set to false");
       }
     };
 
     markNotificationsRead();
-  }, [hasNewNotification, notifications]); // Keep deps minimal
+  }, [hasNewNotification, data]);
 
-  // Track new notifications
+  // Track new notifications for highlighting
   useEffect(() => {
     if (isSuccess && !initialLoad.current) {
-      // Find new notifications that weren't in previous data
-      const newNotifications = notifications.notifications.filter(
-        (notification: Notification) =>
-          !previousData.current.some((n) => n._id === notification._id)
+      const newNotifications = data.notifications.filter(
+        (n) => !previousData.current.some((prev) => prev._id === n._id)
       );
 
-      // Update new notification IDs
       if (newNotifications.length > 0) {
         const newIds = newNotifications.map((n) => n._id);
         setNewNotificationIds((prev) => [...prev, ...newIds]);
-
-        // Clear highlight after 5 seconds
         const timeout = setTimeout(() => {
           setNewNotificationIds((prev) =>
             prev.filter((id) => !newIds.includes(id))
           );
         }, 5000);
-
         return () => clearTimeout(timeout);
       }
     }
 
     if (isSuccess) {
-      previousData.current = notifications.notifications;
+      previousData.current = data.notifications;
       initialLoad.current = false;
     }
-  }, [notifications, isSuccess]);
-
-  const groupNotifications = (
-    notifications: Notification[]
-  ): GroupedSection[] => {
-    if (!Array.isArray(notifications)) {
-      console.error("Expected array for notifications, got:", notifications);
-      return [];
-    }
-
-    const now = moment();
-    const grouped: GroupedSection[] = [
-      { title: "Today", data: [] },
-      { title: "Yesterday", data: [] },
-      { title: "This Week", data: [] },
-      { title: "2 Weeks Ago", data: [] },
-    ];
-
-    notifications.forEach((notification) => {
-      if (!notification?.createdAt) return;
-
-      const createdAt = moment(notification.createdAt);
-      const daysDiff = now.diff(createdAt, "days");
-
-      if (daysDiff === 0) {
-        grouped[0].data.push(notification);
-      } else if (daysDiff === 1) {
-        grouped[1].data.push(notification);
-      } else if (daysDiff <= 7) {
-        grouped[2].data.push(notification);
-      } else if (daysDiff <= 14) {
-        grouped[3].data.push(notification);
-      }
-    });
-
-    // Cluster notifications within each time group
-    return grouped
-      .map((section) => ({
-        title: section.title,
-        data: clusterNotifications(section.data),
-      }))
-      .filter((section) => section.data.length > 0);
-  };
-
-  const clusterNotifications = (notifications: Notification[]): Cluster[] => {
-    if (!Array.isArray(notifications)) {
-      console.error("Expected array for clustering, got:", notifications);
-      return [];
-    }
-
-    const clusterMap = new Map<string, Notification[]>();
-
-    notifications.forEach((notification) => {
-      if (!notification?.type || !notification?.target?._id) return;
-
-      const key =
-        notification.type === "TeamInvitation" ||
-        notification.type === "JoinTeamRequest"
-          ? `${notification.type}-${notification.target._id}-${notification.sender._id}`
-          : `${notification.type}-${notification.target._id}`;
-      const cluster = clusterMap.get(key) || [];
-      clusterMap.set(key, [...cluster, notification]);
-    });
-
-    return Array.from(clusterMap.entries()).map(([key, notifications]) => {
-      const sorted = [...notifications].sort(
-        (a, b) =>
-          moment(b?.createdAt).valueOf() - moment(a?.createdAt).valueOf()
-      );
-
-      return {
-        type: sorted[0]?.type || "",
-        target: sorted[0]?.target || null,
-        notifications: sorted,
-        latestNotification: sorted[0],
-      };
-    });
-  };
+  }, [data, isSuccess]);
 
   const handleRefresh = debounce(async () => {
     setRefreshing(true);
@@ -239,27 +130,38 @@ const NotificationPage = () => {
     }
   }, 1000);
 
-  const groupedNotifications = groupNotifications(
-    notifications?.notifications || []
-  )
-    .map((section) => ({
-      ...section,
-      data: section.data.filter((cluster) =>
-        getTypesForTab(activeTab).includes(cluster.type)
-      ),
-    }))
-    .filter((section) => section.data.length > 0);
+  // Filter and sort notifications
+  const allNotifications = data?.notifications || [];
+  const filtered = allNotifications
+    .filter((n) => getTypesForTab(activeTab).includes(n.type))
+    .sort(
+      (a, b) => moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf()
+    );
+
+  const renderItem = useCallback(
+    ({ item }: { item: Notification }) => (
+      <NotificationCardLayout
+        _id={item._id}
+        date={item.createdAt}
+        type={item.type as NotificationType}
+        sender={item.sender}
+        target={item.target}
+        isNew={newNotificationIds.includes(item._id)}
+        comment={item.comment}
+      />
+    ),
+    [newNotificationIds]
+  );
 
   return (
-    <SafeAreaView className="flex-1 px-6 pt-6 bg-black">
-      <View className="mb-4">
+    <SafeAreaView className="flex-1 pt-6 bg-black">
+      <View className="mb-4 px-6">
         <View className="w-full flex-row justify-between items-center">
           <TextScallingFalse className="text-6xl font-normal text-white">
             Notifications
           </TextScallingFalse>
           <MaterialCommunityIcons name="tune-variant" color="#fff" size={20} />
         </View>
-        {/* Category Navbar */}
         <View className="flex-row justify-start gap-x-3 border-b border-[#121212] pb-2 mt-4">
           {tabs.map((tab) => (
             <TouchableOpacity
@@ -282,24 +184,16 @@ const NotificationPage = () => {
         </View>
       </View>
 
-      {isLoading && <LoadingIndicator />}
-      {isError && <ErrorIndicator />}
+      {isLoading && <ActivityIndicator size="large" color="gray" />}
+      {isError && (
+        <Text className="text-red-500">Failed to load notifications.</Text>
+      )}
 
-      {groupedNotifications.length > 0 ? (
-        <SectionList
-          sections={groupedNotifications}
-          keyExtractor={(item) => item.latestNotification._id}
-          renderItem={({ item: cluster }) => (
-            <NotificationCluster
-              cluster={cluster}
-              isNew={cluster.notifications.some((n) =>
-                newNotificationIds.includes(n._id)
-              )}
-            />
-          )}
-          renderSectionHeader={({ section: { title } }) => (
-            <SectionHeader title={title} />
-          )}
+      {!isLoading && filtered.length > 0 ? (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -312,62 +206,14 @@ const NotificationPage = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       ) : (
-        <EmptyState type={activeTab} />
+        !isLoading && (
+          <View className="flex-1 justify-center items-center">
+            <NotificationNotFound type={activeTab} />
+          </View>
+        )
       )}
     </SafeAreaView>
   );
 };
-
-const NotificationCluster = ({
-  cluster,
-  isNew,
-}: {
-  cluster: Cluster;
-  isNew: boolean;
-}) => {
-  if (!cluster?.notifications || !Array.isArray(cluster.notifications)) {
-    return null;
-  }
-
-  if (cluster.notifications.length > 1) {
-    return <GroupedNotificationCard cluster={cluster} isNew={isNew} />;
-  }
-
-  const notification = cluster.notifications[0];
-  return (
-    <NotificationCardLayout
-      _id={notification?._id}
-      date={notification?.createdAt}
-      type={notification?.type as NotificationType}
-      sender={notification?.sender}
-      target={notification?.target}
-      isNew={isNew}
-    />
-  );
-};
-
-const LoadingIndicator = () => (
-  <View className="flex-1 justify-center items-center">
-    <View style={{ transform: [{ scale: 1.5 }]} }>
-    <ActivityIndicator size="small" color={'gray'} />
-    </View>
-  </View>
-);
-
-const ErrorIndicator = () => (
-  <View className="flex-1 justify-center items-center">
-    <Text className="text-red-500">Failed to load notifications.</Text>
-  </View>
-);
-
-const SectionHeader = ({ title }: { title: string }) => (
-  <Text className="text-[#808080] text-2xl font-bold my-2">{title}</Text>
-);
-
-const EmptyState = ({ type }: { type: string }) => (
-  <View className="flex-1 justify-center items-center">
-    <NotificationNotFound type={type} />
-  </View>
-);
 
 export default NotificationPage;

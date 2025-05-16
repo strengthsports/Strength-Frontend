@@ -28,7 +28,7 @@ export default function Index() {
   }, [dispatch]);
 
   if (isLoggedIn) {
-    return <Redirect href="/onboarding/SuggestedFollowers" />;
+    return <Redirect href="/(app)/(tabs)/home" />;
   } else {
     return <Redirect href="/login" />;
   }

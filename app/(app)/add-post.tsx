@@ -271,18 +271,11 @@ export default function AddPostContainer() {
     dispatch,
   ]);
 
+
   // For selecting the first image with aspect ratio
   const selectFirstImage = useCallback(async (ratio: [number, number]) => {
     console.log('yes selectFirstImage is called')
     setSelectedAspectRatio(ratio);
-
-    // const permissionResult =
-    //   await ImagePicker.requestMediaLibraryPermissionsAsync();
-    // if (!permissionResult.granted) {
-    //   alert("Permission to access media library is required.");
-    //   return;
-    // }
-
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -303,6 +296,7 @@ export default function AddPostContainer() {
     }
   }, []);
 
+  
   // For adding more images (using same aspect ratio)
   const addMoreImages = useCallback(async () => {
     if (pickedImageUris.length === 0) {

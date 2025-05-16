@@ -594,6 +594,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
                 ref={flatListRef}
                 data={comments}
                 keyExtractor={keyExtractor}
+                keyboardShouldPersistTaps="handled"
                 renderItem={renderItem}
                 ListEmptyComponent={ListEmptyComponent}
                 contentContainerStyle={{

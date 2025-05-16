@@ -129,6 +129,7 @@ const NotificationCardLayout = React.memo(
                 caption={target.caption}
                 image={target.assets.length > 0 && target.assets[0].url}
                 comment={comment}
+                handlePostPress={handlePostPress}
               />
             </View>
           </View>
@@ -158,6 +159,7 @@ const NotificationCardLayout = React.memo(
               <PostPreview
                 caption={target.caption}
                 image={target.assets.length > 0 && target.assets[0].url}
+                handlePostPress={handlePostPress}
               />
             </View>
           </View>
@@ -272,6 +274,7 @@ const NotificationCardLayout = React.memo(
               <PostPreview
                 caption={target.caption}
                 image={target.assets.length > 0 && target.assets[0].url}
+                handlePostPress={handlePostPress}
               />
             </View>
           </View>
@@ -376,12 +379,16 @@ const PostPreview = React.memo(
     image,
     caption,
     comment,
+    handlePostPress,
   }: {
     image?: string;
     caption: string;
     comment?: string;
+    handlePostPress?: () => void;
   }) => (
-    <View
+    <TouchableOpacity
+      onPress={handlePostPress}
+      activeOpacity={0.7}
       className={`ml-4 mt-1 overflow-hidden ${
         comment ? "rounded-2xl border border-b-0" : "rounded-xl"
       }`}
@@ -389,7 +396,7 @@ const PostPreview = React.memo(
     >
       {comment && (
         <View className="p-3">
-          <TextScallingFalse className="text-white text-xl">
+          <TextScallingFalse className="text-white text-xl" numberOfLines={1}>
             {comment}
           </TextScallingFalse>
         </View>
@@ -407,7 +414,7 @@ const PostPreview = React.memo(
           </TextScallingFalse>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   )
 );
 

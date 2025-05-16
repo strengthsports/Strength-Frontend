@@ -16,7 +16,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "strength.net.in",
            "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/ios-dark.png",
         "backgroundColor": "#000000"
       }
     },

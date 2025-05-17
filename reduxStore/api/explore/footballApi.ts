@@ -1,89 +1,50 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_FOOTBALL_API_BASE_URL;
-const API_KEY = process.env.EXPO_PUBLIC_FOOTBALL_API;
-
-if (!API_KEY || !API_BASE_URL) {
-  throw new Error("Missing API Key or BASE URL in environment variables");
-}
+import { getToken } from "~/utils/secureStore";
 
 export const footballApi = createApi({
   reducerPath: "footballApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    prepareHeaders: (headers) => {
-      headers.set("x-apisports-key", API_KEY);
+    baseUrl: `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/sportsDataApi/football`,
+    prepareHeaders: async (headers) => {
+      const token = await getToken("accessToken");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      headers.set("Content-Type", "application/json");
       return headers;
     },
   }),
   endpoints: (builder) => ({
     getFootballLiveMatches: builder.query({
-      query: () => `/fixtures?live=all`,
+      query: () => `/live`,
       transformResponse: (response: any) => {
-        const matches = response.response || [];
-        // Extract live matches
-        const liveMatches = matches.filter((match: any) =>
-          ["1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(
-            match.fixture.status.short
-          )
-        );
+        const liveMatches = Array.isArray(response.data.liveMatches)
+          ? response.data.liveMatches
+          : [];
+
+        // console.log("Live Football Matches :", liveMatches);
         return { liveMatches };
       },
     }),
     getFootballNextMatches: builder.query({
-      query: () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const nextDate = tomorrow.toISOString().split("T")[0];
-        return `/fixtures?date=${nextDate}`;
-      },
+      query: () => `/next`,
       transformResponse: (response: any) => {
-        const matches = response.response || [];
-        // Extract next matches
-        const nextMatchesAll = matches.filter((match: any) =>
-          ["TBD", "NS"].includes(match.fixture.status.short)
-        );
+        const nextMatches = Array.isArray(response.data.nextMatches)
+          ? response.data.nextMatches
+          : [];
 
-        const nextMatches = nextMatchesAll.filter(
-          (match: any) =>
-            match.league.name === "Premier League" &&
-            match.league.country === "England"
-        );
-
-        // ✅ Group matches by league name
-        const groupedByLeague: { league: string; matches: any[] }[] = [];
-
-        nextMatches.forEach((match: any) => {
-          const leagueIndex = groupedByLeague.findIndex(
-            (item) => item.league === match.league.name
-          );
-          if (leagueIndex > -1) {
-            groupedByLeague[leagueIndex].matches.push(match);
-          } else {
-            groupedByLeague.push({
-              league: match.league.name,
-              matches: [match],
-            });
-          }
-        });
-
-        return { nextMatches: groupedByLeague };
+        // console.log("Next Football Matches :", nextMatches);
+        return { nextMatches };
       },
     }),
     getFootballRecentMatches: builder.query({
-      query: () => {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const previousDate = yesterday.toISOString().split("T")[0];
-        return `/fixtures?date=${previousDate}`;
-      },
+      query: () => `/recent`,
       transformResponse: (response: any) => {
-        const matches = response.response || [];
-        // Extract recent matches
-        const recentMatches = matches.filter((match: any) =>
-          ["FT", "AET", "PEN"].includes(match.fixture.status.short)
-        );
+        const recentMatches = Array.isArray(response.data.recentMatches)
+          ? response.data.recentMatches
+          : [];
 
+        // console.log("Recent Football Matches :", recentMatches);
         return { recentMatches };
       },
     }),

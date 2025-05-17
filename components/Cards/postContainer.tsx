@@ -16,14 +16,14 @@ import {
   Pressable,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
 import nopic from "@/assets/images/nopic.jpg";
-import nothumbnail from "@/assets/images/nothumbnail.png";
+import nothumbnail from "@/assets/images/DefaultImage.png";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import InteractionBar from "../PostContainer/InteractionBar";
@@ -570,7 +570,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               opacity: scaleAnim,
             }}
           >
-            <FontAwesome name="thumbs-up" size={50} color="#FABE25" />
+            <AntDesign name="like1" size={50} color="#fbbf24" />
           </Animated.View>
 
           {/* Interaction Bar */}

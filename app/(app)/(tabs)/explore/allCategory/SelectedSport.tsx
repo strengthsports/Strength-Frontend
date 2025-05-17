@@ -110,7 +110,7 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
     data: cricketNextBySeriesData,
     isFetching: isCricketNextBySeriesFetching,
     refetch: refetchNextBySeriesCricket,
-  } = useGetCricketNextMatchesBySeriesQuery(9237);
+  } = useGetCricketNextMatchesBySeriesQuery({});
   const { seriesMatches: nextBySeriesCricketMatches = [] } =
     cricketNextBySeriesData || {};
 
@@ -283,13 +283,13 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
         refetchLiveCricket(),
         refetchNextCricket(),
         refetchNextBySeriesCricket(),
-        // refetchRecentCricket(),
+        refetchRecentCricket(),
         refetchLiveFootball(),
         refetchNextFootball(),
-        // refetchRecentFootball(),
+        refetchRecentFootball(),
         refetchLiveBasketball(),
         refetchNextBasketball(),
-        // refetchRecentBasketball(),
+        refetchRecentBasketball(),
         refetchSportArticles(),
       ]);
     } catch (error) {

@@ -67,9 +67,10 @@ interface MatchCardProps {
   };
 
   isLive?: boolean;
+  onCardPress?: () => void;
 }
 
-const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
+const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
   const opacityValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -187,98 +188,100 @@ const CricketMatchCard = ({ match, isLive }: MatchCardProps) => {
       <View className="h-[0.8] bg-[#252525] my-1" />
 
       {/* Teams Section */}
-      <View className="px-4 mt-1">
-        {/* Team 1 */}
-        <View className="flex-row items-center justify-between mt-2 mb-1">
-          <NameFlagSubCard
-            flag={match.matchInfo?.team1?.teamName}
-            teamName={match.matchInfo?.team1?.teamSName}
-          />
-          <TextScallingFalse
-            className="ml-2"
-            numberOfLines={numberOfLinesTitle}
-            ellipsizeMode="tail"
-            style={{
-              fontSize: 12,
-              color: match.matchScore?.team1Score ? "white" : "#464646",
-            }}
-          >
-            {determineScore({
-              teamRun: match.matchScore?.team1Score?.inngs1?.runs ?? 0,
-              teamWicket: match.matchScore?.team1Score?.inngs1?.wickets ?? 0,
-              teamOver: match.matchScore?.team1Score?.inngs1?.overs ?? 0,
-            })}
-            {!isMatchComplete && (
-              <TextScallingFalse
-                style={{
-                  fontSize: 9,
-                  color:
-                    match.matchInfo?.currBatTeamId ===
-                    match.matchInfo?.team1?.teamId
-                      ? "green"
-                      : "transparent",
-                }}
-              >
-                {" "}
-                &#9664;
-              </TextScallingFalse>
-            )}
-          </TextScallingFalse>
+      <TouchableOpacity onPress={onCardPress}>
+        <View className="px-4 mt-1">
+          {/* Team 1 */}
+          <View className="flex-row items-center justify-between mt-2 mb-1">
+            <NameFlagSubCard
+              flag={match.matchInfo?.team1?.teamName}
+              teamName={match.matchInfo?.team1?.teamSName}
+            />
+            <TextScallingFalse
+              className="ml-2"
+              numberOfLines={numberOfLinesTitle}
+              ellipsizeMode="tail"
+              style={{
+                fontSize: 12,
+                color: match.matchScore?.team1Score ? "white" : "#464646",
+              }}
+            >
+              {determineScore({
+                teamRun: match.matchScore?.team1Score?.inngs1?.runs ?? 0,
+                teamWicket: match.matchScore?.team1Score?.inngs1?.wickets ?? 0,
+                teamOver: match.matchScore?.team1Score?.inngs1?.overs ?? 0,
+              })}
+              {!isMatchComplete && (
+                <TextScallingFalse
+                  style={{
+                    fontSize: 9,
+                    color:
+                      match.matchInfo?.currBatTeamId ===
+                      match.matchInfo?.team1?.teamId
+                        ? "green"
+                        : "transparent",
+                  }}
+                >
+                  {" "}
+                  &#9664;
+                </TextScallingFalse>
+              )}
+            </TextScallingFalse>
+          </View>
+
+          {/* Team 2 */}
+          <View className="flex-row items-center justify-between mt-1 mb-2">
+            <NameFlagSubCard
+              flag={match.matchInfo?.team2?.teamName}
+              teamName={match.matchInfo?.team2?.teamSName}
+            />
+            <TextScallingFalse
+              className="ml-2"
+              numberOfLines={numberOfLinesTitle}
+              ellipsizeMode="tail"
+              style={{
+                fontSize: 12,
+                color: match.matchScore?.team2Score ? "white" : "#464646",
+              }}
+            >
+              {determineScore({
+                teamRun: match.matchScore?.team2Score?.inngs1?.runs ?? 0,
+                teamWicket: match.matchScore?.team2Score?.inngs1?.wickets ?? 0,
+                teamOver: match.matchScore?.team2Score?.inngs1?.overs ?? 0,
+              })}
+              {!isMatchComplete && (
+                <TextScallingFalse
+                  style={{
+                    fontSize: 9,
+                    color:
+                      match.matchInfo?.currBatTeamId ===
+                      match.matchInfo?.team2?.teamId
+                        ? "green"
+                        : "transparent",
+                  }}
+                >
+                  {" "}
+                  &#9664;
+                </TextScallingFalse>
+              )}
+            </TextScallingFalse>
+          </View>
         </View>
 
-        {/* Team 2 */}
-        <View className="flex-row items-center justify-between mt-1 mb-2">
-          <NameFlagSubCard
-            flag={match.matchInfo?.team2?.teamName}
-            teamName={match.matchInfo?.team2?.teamSName}
-          />
-          <TextScallingFalse
-            className="ml-2"
-            numberOfLines={numberOfLinesTitle}
-            ellipsizeMode="tail"
-            style={{
-              fontSize: 12,
-              color: match.matchScore?.team2Score ? "white" : "#464646",
-            }}
-          >
-            {determineScore({
-              teamRun: match.matchScore?.team2Score?.inngs1?.runs ?? 0,
-              teamWicket: match.matchScore?.team2Score?.inngs1?.wickets ?? 0,
-              teamOver: match.matchScore?.team2Score?.inngs1?.overs ?? 0,
-            })}
-            {!isMatchComplete && (
-              <TextScallingFalse
-                style={{
-                  fontSize: 9,
-                  color:
-                    match.matchInfo?.currBatTeamId ===
-                    match.matchInfo?.team2?.teamId
-                      ? "green"
-                      : "transparent",
-                }}
-              >
-                {" "}
-                &#9664;
-              </TextScallingFalse>
-            )}
-          </TextScallingFalse>
+        {/* Match Status */}
+        <View className="px-5 pt-2">
+          {match.matchInfo?.status && (
+            <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
+              {filterResultData({
+                result: match.matchInfo?.status,
+                teamA: match.matchInfo.team1.teamName,
+                teamB: match.matchInfo.team2.teamName,
+                teamA_short: match.matchInfo.team1.teamSName,
+                teamB_short: match.matchInfo.team2.teamSName,
+              })}
+            </TextScallingFalse>
+          )}
         </View>
-      </View>
-
-      {/* Match Status */}
-      <View className="px-5 pt-2">
-        {match.matchInfo?.status && (
-          <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
-            {filterResultData({
-              result: match.matchInfo?.status,
-              teamA: match.matchInfo.team1.teamName,
-              teamB: match.matchInfo.team2.teamName,
-              teamA_short: match.matchInfo.team1.teamSName,
-              teamB_short: match.matchInfo.team2.teamSName,
-            })}
-          </TextScallingFalse>
-        )}
-      </View>
+      </TouchableOpacity>
     </>
   );
 };

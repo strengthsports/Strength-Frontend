@@ -1,10 +1,7 @@
 import { useRouter } from "expo-router";
 import { memo, useState } from "react";
-import { Image, Modal, TouchableOpacity } from "react-native";
+import { Image, Pressable, TouchableOpacity } from "react-native";
 import { View } from "react-native";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "~/reduxStore";
-import { deleteComment, toggleLike } from "~/reduxStore/slices/feed/feedSlice";
 import TextScallingFalse from "../CentralText";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Comment } from "~/types/post";
@@ -15,6 +12,7 @@ import ModalLayout1 from "../modals/layout/ModalLayout1";
 
 interface CommenterCardProps {
   comment: Comment;
+  commentCount: number;
   targetId: string;
   targetType: string;
   onReply?: (comment: Comment) => void;
@@ -27,6 +25,7 @@ interface CommenterCardProps {
 export const CommenterCard = memo(
   ({
     comment,
+    commentCount,
     targetId,
     targetType,
     onReply,
@@ -35,7 +34,6 @@ export const CommenterCard = memo(
     isOwnComment,
   }: CommenterCardProps) => {
     const router = useRouter();
-    const dispatch = useDispatch<AppDispatch>();
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
     const [isCommentLiked, setIsCommentLiked] = useState(comment.isLiked);
     const [commentLikesCount, setCommentLikesCount] = useState(
@@ -47,8 +45,6 @@ export const CommenterCard = memo(
         type: comment?.postedBy?.type,
       })
     );
-
-    console.log(parent);
 
     // Handle like on comment
     const toggleLikeOnComment = async () => {
@@ -79,6 +75,9 @@ export const CommenterCard = memo(
           className={`${
             targetType === "Comment" ? "size-10" : "size-12"
           } absolute top-2 left-4 z-10 aspect-square rounded-full bg-slate-400`}
+          onPress={() =>
+            router.push(`/(app)/(profile)/profile/${serializedUser}`)
+          }
         >
           <Image
             className="w-full h-full rounded-full"
@@ -102,6 +101,7 @@ export const CommenterCard = memo(
             <TouchableOpacity
               onPress={() => setIsReportModalVisible(true)}
               className="p-2 absolute -right-2"
+              hitSlop={{ top: 10, bottom: 20, left: 40, right: 10 }}
             >
               <MaterialIcons name="more-horiz" size={16} color="white" />
               {isReportModalVisible && (
@@ -153,7 +153,11 @@ export const CommenterCard = memo(
               )}
             </TouchableOpacity>
           </View>
-          <View>
+          <Pressable
+            onPress={() =>
+              router.push(`/(app)/(profile)/profile/${serializedUser}`)
+            }
+          >
             <TextScallingFalse className="font-bold text-white text-lg">
               {comment?.postedBy?.firstName} {comment?.postedBy?.lastName}
             </TextScallingFalse>
@@ -164,7 +168,7 @@ export const CommenterCard = memo(
             >
               @{comment?.postedBy?.username} | {comment?.postedBy?.headline}
             </TextScallingFalse>
-          </View>
+          </Pressable>
 
           <TextScallingFalse
             className="text-[#12956B] font-medium mt-2"
@@ -172,7 +176,7 @@ export const CommenterCard = memo(
               router.push(`/(app)/(profile)/profile/${serializedUser}`)
             }
           >
-            {targetType === "Comment" && "@" + parent?.postedBy?.username + " "}
+            {targetType === "Comment" && "@" + parent?.username + " "}
             <TextScallingFalse className="text-xl font-normal text-white mt-4 mb-3">
               {comment?.text}
             </TextScallingFalse>
@@ -205,7 +209,7 @@ export const CommenterCard = memo(
           <TextScallingFalse className="mt-1 text-xl text-[#939393] font-normal">
             {comment.commentsCount > 0 &&
               targetType !== "Comment" &&
-              `${comment.commentsCount}`}
+              `${commentCount}`}
           </TextScallingFalse>
         </View>
       </View>

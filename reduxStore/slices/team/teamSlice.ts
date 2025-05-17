@@ -52,6 +52,11 @@ interface TeamState {
   supporters: Supporter[];
   supporterCount: number;
   isSupporting: boolean;
+  allTeams: TeamBasicInfo[];
+  allTeamsLoading: boolean;
+  allTeamsError: string | null;
+  allTeamsPagination: PaginationInfo;
+  currentFilters: TeamFilterParams;
 }
 
 export type TeamPayload = {
@@ -86,6 +91,57 @@ export type AcceptPayload = {
 export type RejectPayload = {
   notificationId: string;
   userId: string;
+};
+
+export type TeamBasicInfo = {
+  _id: string;
+  name: string;
+  logo: {
+    url: string;
+    public_id: string;
+  };
+  sport: {
+    _id: string;
+    name: string;
+    logo: string;
+  };
+  address: {
+    city: string;
+  };
+  gender: string;
+  admin: Array<{
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+    profilePic: string;
+  }>;
+  establishedOn: string;
+  membersLength: number;
+  sportname?: string;
+};
+
+// Pagination Info Type
+export type PaginationInfo = {
+  currentPage: number;
+  totalPages: number;
+  totalTeams: number;
+  teamsPerPage: number;
+};
+
+// Response Data Type
+export type AllTeamsResponse = {
+  teams: TeamBasicInfo[];
+  pagination: PaginationInfo;
+};
+
+// Filter Parameters Type
+export type TeamFilterParams = {
+  page?: number;
+  limit?: number;
+  sportId?: string;
+  gender?: string;
+  searchQuery?: string;
 };
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -339,6 +395,8 @@ export const sendInvitations = createAsyncThunk<
   }
 });
 
+//dispatch the all-team form backend write the slice for it 
+
 // --- Initial State ---
 const initialState: TeamState = {
   currentTeam: null,
@@ -352,6 +410,19 @@ const initialState: TeamState = {
   supporterCount: 0,
   isSupporting: false,
   supporters: [],
+   allTeams: [],
+  allTeamsLoading: false,
+  allTeamsError: null,
+  allTeamsPagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalTeams: 0,
+    teamsPerPage: 10,
+  },
+  currentFilters: {
+    page: 1,
+    limit: 10,
+  },
   memberSuggestionsState: {
     members: [],
     totalPlayers: 0,
@@ -456,6 +527,8 @@ export const changeUserRole = createAsyncThunk<
 // });
 
 //join team request by user who not present in the team
+
+
 export const joinTeam = createAsyncThunk<
   { team: Team; message: string }, // Return type
   { teamId: string; userId: string }, // Only requires teamId and userId
@@ -641,6 +714,49 @@ export const transferAdmin = createAsyncThunk<
   }
 });
 
+
+
+export const fetchAllTeams = createAsyncThunk<
+  AllTeamsResponse,
+  TeamFilterParams,
+  { rejectValue: string }
+>('team/fetchAllTeams', async (filters, { rejectWithValue }) => {
+  try {
+    const token = await getToken('accessToken');
+    
+    // Construct query string from filters
+    const queryParams = new URLSearchParams();
+    if (filters.page) queryParams.append('page', filters.page.toString());
+    if (filters.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters.sportId) queryParams.append('sportId', filters.sportId);
+    if (filters.gender) queryParams.append('gender', filters.gender);
+    if (filters.searchQuery) queryParams.append('search', filters.searchQuery);
+
+    const response = await fetch(
+      `${BASE_URL}/api/v1/team/all-teams?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return rejectWithValue(data.message || 'Failed to fetch teams');
+    }
+
+    return {
+      teams: data.data.teams,
+      pagination: data.data.pagination,
+    };
+  } catch (err: any) {
+    return rejectWithValue(err.message || 'Network error');
+  }
+});
 
 
 const teamSlice = createSlice({
@@ -896,7 +1012,30 @@ const teamSlice = createSlice({
       .addCase(rejectTeamInvitation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      });
+      })
+      
+      // fetchAllTeams cases
+    .addCase(fetchAllTeams.pending, (state, action) => {
+      state.allTeamsLoading = true;
+      state.allTeamsError = null;
+      // Update current filters with the new ones
+      state.currentFilters = {
+        ...state.currentFilters,
+        ...action.meta.arg,
+      };
+    })
+    .addCase(fetchAllTeams.fulfilled, (state, action) => {
+      state.allTeamsLoading = false;
+      state.allTeams = action.payload.teams;
+      state.allTeamsPagination = action.payload.pagination;
+    })
+    .addCase(fetchAllTeams.rejected, (state, action) => {
+      state.allTeamsLoading = false;
+      state.allTeamsError = action.payload || 'Failed to fetch teams';
+    });
+      
+      
+      ;
   },
 });
 
@@ -908,4 +1047,9 @@ export const {
 } = teamSlice.actions;
 export const selectSupporters = (state: { team: TeamState }) =>
   state.team.supporters;
+export const selectAllTeams = (state: { team: TeamState }) => state.team.allTeams;
+export const selectAllTeamsLoading = (state: { team: TeamState }) => state.team.allTeamsLoading;
+export const selectAllTeamsError = (state: { team: TeamState }) => state.team.allTeamsError;
+export const selectTeamsPagination = (state: { team: TeamState }) => state.team.allTeamsPagination;
+export const selectCurrentFilters = (state: { team: TeamState }) => state.team.currentFilters;
 export default teamSlice.reducer;

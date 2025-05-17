@@ -557,7 +557,7 @@ const ProfileLayout = () => {
                         <TextScallingFalse style={styles.ProfileKeyPoints}>
                           {" "}
                           Website:{" "}
-                          <Text
+                          <TextScallingFalse
                             style={{
                               color: "#E1E1E1",
                               fontSize: responsiveFontSize(1.4),
@@ -565,7 +565,7 @@ const ProfileLayout = () => {
                           >
                             {user?.websiteLink}
                             {"  "}
-                          </Text>
+                          </TextScallingFalse>
                           <TouchableOpacity
                             className="mt-[5px]"
                             onPress={handlePress}

@@ -179,6 +179,7 @@ const InteractionBar = ({
         style={{
           columnGap: isPostContainer ? 16 : 32,
           borderColor: "#303030",
+          marginTop: 2
         }}
       >
         {/* like */}

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import PageThemeView from "~/components/PageThemeView";
-import nopic from "@/assets/images/pro.jpg";
+import nopic from "@/assets/images/nopic.jpg";
 import {
   useGetBlockedUsersQuery,
   useUnblockUserMutation,

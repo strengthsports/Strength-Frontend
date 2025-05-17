@@ -25,7 +25,7 @@ export default function AddPostHeader({
       </TouchableOpacity>
       <Image
         source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
-        style={{ width: 40, height: 40, borderRadius: 20 }}
+        style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: '#1C1C1C'}}
       />
       <TextScallingFalse className="text-white text-3xl">
         {user?.firstName} {user?.lastName}

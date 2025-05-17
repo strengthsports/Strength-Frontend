@@ -1,91 +1,50 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_BASKETBALL_API_BASE_URL;
-const API_KEY = process.env.EXPO_PUBLIC_BASKETBALL_API;
-
-if (!API_KEY || !API_BASE_URL) {
-  throw new Error("Missing API Key or BASE URL in environment variables");
-}
+import { getToken } from "~/utils/secureStore";
 
 export const basketballApi = createApi({
   reducerPath: "basketballApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    prepareHeaders: (headers) => {
-      headers.set("x-apisports-key", API_KEY);
+    baseUrl: `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/sportsDataApi/basketball`,
+    prepareHeaders: async (headers) => {
+      const token = await getToken("accessToken");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      headers.set("Content-Type", "application/json");
       return headers;
     },
   }),
   endpoints: (builder) => ({
     getBasketballLiveMatches: builder.query({
-      query: () => {
-        const today = new Date().toISOString().split("T")[0];
-        return `/games?date=${today}`;
-      },
+      query: () => `/live`,
       transformResponse: (response: any) => {
-        const matches = response.response || [];
+        const liveMatches = Array.isArray(response.data.liveMatches)
+          ? response.data.liveMatches
+          : [];
 
-        // Extract live matches
-        const liveMatches = matches.filter((match: any) =>
-          ["Q1", "Q2", "Q3", "Q4", "OT", "BT", "HT"].includes(
-            match.status.short
-          )
-        );
+        // console.log("Live Basketball Matches :", liveMatches);
         return { liveMatches };
       },
     }),
     getBasketballNextMatches: builder.query({
-      query: () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const nextDate = tomorrow.toISOString().split("T")[0];
-        return `/games?date=${nextDate}`;
-      },
+      query: () => `/next`,
       transformResponse: (response: any) => {
-        const matches = response.response || [];
+        const nextMatches = Array.isArray(response.data.nextMatches)
+          ? response.data.nextMatches
+          : [];
 
-        // Extract next matches
-        const nextMatchesAll = matches.filter(
-          (match: any) => match.status.short === "NS"
-        );
-
-        const nextMatches = nextMatchesAll.filter(
-          (match: any) => match.league.name === "Liga A"
-        );
-
-        // ✅ Group matches by league name
-        const groupedByLeague: { league: string; matches: any[] }[] = [];
-
-        nextMatches.forEach((match: any) => {
-          const leagueIndex = groupedByLeague.findIndex(
-            (item) => item.league === match.league.name
-          );
-          if (leagueIndex > -1) {
-            groupedByLeague[leagueIndex].matches.push(match);
-          } else {
-            groupedByLeague.push({
-              league: match.league.name,
-              matches: [match],
-            });
-          }
-        });
-
-        return { nextMatches: groupedByLeague };
+        // console.log("Next Basketball Matches :", nextMatches);
+        return { nextMatches };
       },
     }),
-
     getBasketballRecentMatches: builder.query({
-      query: () => {
-        const today = new Date().toISOString().split("T")[0];
-        return `/games?date=${today}`;
-      },
+      query: () => `/recent`,
       transformResponse: (response: any) => {
-        const matches = response.response || [];
+        const recentMatches = Array.isArray(response.data.recentMatches)
+          ? response.data.recentMatches
+          : [];
 
-        // Extract live matches
-        const recentMatches = matches.filter((match: any) =>
-          ["FT", "AOT"].includes(match.status.short)
-        );
+        // console.log("Recent Basketball Matches :", recentMatches);
         return { recentMatches };
       },
     }),

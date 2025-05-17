@@ -13,12 +13,9 @@
       "resizeMode": "contain"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet":  false,
       "bundleIdentifier": "strength.net.in",
-           "adaptiveIcon": {
-        "foregroundImage": "./assets/images/ios-dark.png",
-        "backgroundColor": "#000000"
-      }
+      "icon": "./assets/images/ios-dark.png"
     },
     "android": {
       "package": "strength.net.in",
@@ -37,10 +34,14 @@
       [
         "expo-splash-screen",
         {
+          "backgroundColor": "#000000",
           "image": "./assets/images/Splash/splash-icon-dark.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#000000"
+          "dark": {
+            "image": "./assets/images/Splash/splash-icon-dark.png",
+            "backgroundColor": "#000000"
+          },
+          "imageWidth": 100,
+          "resizeMode": "contain"
         }
       ],
       "expo-secure-store",

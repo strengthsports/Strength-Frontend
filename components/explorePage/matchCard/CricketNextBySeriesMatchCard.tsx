@@ -53,7 +53,7 @@ interface GroupedMatchProps {
   matches: MatchCardProps[];
 }
 
-const iplImg = require("~/assets/images/ipl.png.png");
+const iplImg = "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747485639901-ipl-logo.jpg";
 
 const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);

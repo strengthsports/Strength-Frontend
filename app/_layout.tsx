@@ -4,10 +4,10 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Dimensions, StatusBar } from "react-native";
+import { Dimensions, StatusBar, View } from "react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import "../global.css";
 import { Provider } from "react-redux";
@@ -20,6 +20,8 @@ import { PaperProvider } from "react-native-paper";
 import * as NavigationBar from "expo-navigation-bar";
 import { Drawer } from "expo-router/drawer";
 import CustomDrawer2 from "~/components/ui/CustomDrawer2";
+import { getToken } from "~/utils/secureStore";
+import { Stack } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -32,18 +34,32 @@ export default function RootLayout() {
     Inter: require("../assets/fonts/Inter-Regular.ttf"),
     Montserrat: require("../assets/fonts/Montserrat-Bold.ttf"),
   });
+  const [token, setToken] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function prepare() {
+      try {
+        // Load fonts and token simultaneously
+        const storedToken = await getToken("accessToken");
+        setToken(storedToken);
+        console.log(storedToken);
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setIsReady(true);
+        await SplashScreen.hideAsync();
+      }
     }
-  }, [loaded]);
+
+    prepare();
+  }, []);
 
   useEffect(() => {
     NavigationBar.setBackgroundColorAsync("black");
   }, []);
 
-  if (!loaded) {
+  if (!loaded || !isReady) {
     return null;
   }
 
@@ -53,16 +69,24 @@ export default function RootLayout() {
         <PersistGate loading={null} persistor={persistor}>
           <Provider store={store}>
             <PaperProvider>
-              <Drawer
-                screenOptions={{
-                  headerShown: false,
-                  drawerStyle: {
-                    width: SCREEN_WIDTH * 0.69,
-                    backgroundColor: "black",
-                  },
-                }}
-                drawerContent={(props) => <CustomDrawer2 />}
-              />
+              {token ? (
+                <Drawer
+                  screenOptions={{
+                    headerShown: false,
+                    drawerStyle: {
+                      width: SCREEN_WIDTH * 0.69,
+                      backgroundColor: "#000",
+                    },
+                  }}
+                  drawerContent={(props) => <CustomDrawer2 />}
+                />
+              ) : (
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                />
+              )}
               <StatusBar barStyle="light-content" backgroundColor="black" />
               <Toast config={toastConfig} />
             </PaperProvider>

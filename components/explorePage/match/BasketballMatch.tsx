@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View, FlatList } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import TextScallingFalse from "~/components/CentralText";
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import BasketballMatchCard from "../matchCard/BasketballMatchCard";
+import ThisFeatureUnderDev from "~/components/modals/ThisFeatureUnderDev";
 
 interface BasketballMatchProps {
   liveBasketballMatches: any[];
@@ -17,6 +18,7 @@ const BasketballMatch = ({
   isBasketballLiveFetching,
   isBasketballRecentFetching,
 }: BasketballMatchProps) => {
+  const [modalVisible, setModalVisible] = useState(false);
   // Add a type tag to distinguish
   const combinedMatches = [
     ...(Array.isArray(liveBasketballMatches) ? liveBasketballMatches : []).map(
@@ -36,6 +38,13 @@ const BasketballMatch = ({
 
   const isLoading = isBasketballLiveFetching || isBasketballRecentFetching;
 
+  if (isLoading)
+    return (
+      <View className="h-full flex justify-center self-center items-center">
+        <ScoresSkeletonLoader />
+      </View>
+    );
+
   return (
     <View className="mt-4">
       <FlatList
@@ -46,13 +55,11 @@ const BasketballMatch = ({
         contentContainerStyle={{ paddingHorizontal: 10 }}
         renderItem={({ item }) => (
           <View className="h-[164px] w-[290px] bg-transparent rounded-2xl mr-5 border border-[#454545]">
-            {isLoading ? (
-              <View className="h-full flex justify-center self-center items-center">
-                <ScoresSkeletonLoader />
-              </View>
-            ) : (
-              <BasketballMatchCard match={item} isLive={item.type === "live"} />
-            )}
+            <BasketballMatchCard
+              match={item}
+              isLive={item.type === "live"}
+              onCardPress={() => setModalVisible(true)}
+            />
           </View>
         )}
         ListEmptyComponent={
@@ -62,6 +69,11 @@ const BasketballMatch = ({
             </TextScallingFalse>
           </View>
         }
+      />
+
+      <ThisFeatureUnderDev
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
       />
     </View>
   );

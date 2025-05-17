@@ -66,6 +66,7 @@ interface MatchCardProps {
     };
   };
   isLive?: boolean;
+  onCardPress?: () => void; // Add this
 }
 
 type ScoreKey =
@@ -90,7 +91,11 @@ const extractShortName = (teamName: string) => {
   return words.map((word) => word[0].toUpperCase()).join("");
 };
 
-const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
+const BasketballMatchCard = ({
+  match,
+  isLive,
+  onCardPress,
+}: MatchCardProps) => {
   const opacityValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -205,81 +210,83 @@ const BasketballMatchCard = ({ match, isLive }: MatchCardProps) => {
 
       {/* Teams & Scores Section */}
 
-      <View className="mt-1">
-        <View className="mt-5 px-5">
-          {/* Team 1 */}
-          <View className="flex-row items-center justify-between mt-2 mb-1">
-            <NameFlagSubCard
-              flag={match.teams.home.logo}
-              teamName={extractShortName(match.teams.home.name)}
-            />
+      <TouchableOpacity onPress={onCardPress}>
+        <View className="mt-1">
+          <View className="mt-5 px-5">
+            {/* Team 1 */}
+            <View className="flex-row items-center justify-between mt-2 mb-1">
+              <NameFlagSubCard
+                flag={match.teams.home.logo}
+                teamName={extractShortName(match.teams.home.name)}
+              />
+            </View>
+
+            {/* Team 2 */}
+            <View className="flex-row items-center justify-between mt-2 mb-1">
+              <NameFlagSubCard
+                flag={match.teams.away.logo}
+                teamName={extractShortName(match.teams.away.name)}
+              />
+            </View>
           </View>
 
-          {/* Team 2 */}
-          <View className="flex-row items-center justify-between mt-2 mb-1">
-            <NameFlagSubCard
-              flag={match.teams.away.logo}
-              teamName={extractShortName(match.teams.away.name)}
-            />
-          </View>
-        </View>
+          {/* Home team and away team scores */}
+          <View className="max-w-[150px] absolute right-3 mt-3">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 0 }}
+              nestedScrollEnabled={true}
+            >
+              <View className="flex-column">
+                {/* Header Row */}
+                <View className="flex-row mb-2">
+                  {scoreColumns.map((item) => (
+                    <TextScallingFalse
+                      key={item.label}
+                      className="text-neutral-400 text-sm text-center mx-1 w-10"
+                    >
+                      {item.label}
+                    </TextScallingFalse>
+                  ))}
+                </View>
 
-        {/* Home team and away team scores */}
-        <View className="max-w-[150px] absolute right-3 mt-3">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 0 }}
-            nestedScrollEnabled={true}
-          >
-            <View className="flex-column">
-              {/* Header Row */}
-              <View className="flex-row mb-2">
-                {scoreColumns.map((item) => (
-                  <TextScallingFalse
-                    key={item.label}
-                    className="text-neutral-400 text-sm text-center mx-1 w-10"
-                  >
-                    {item.label}
-                  </TextScallingFalse>
-                ))}
-              </View>
-
-              {/* Home Team Scores */}
-              <View className="flex-row mb-4">
-                {scoreColumns.map((item) => (
-                  <TextScallingFalse
-                    key={`home-${item.label}`}
-                    className={`text-lg text-center mx-1 w-10 ${
-                      item.label === "Total" ? "font-bold" : "font-normal"
-                    }
+                {/* Home Team Scores */}
+                <View className="flex-row mb-4">
+                  {scoreColumns.map((item) => (
+                    <TextScallingFalse
+                      key={`home-${item.label}`}
+                      className={`text-lg text-center mx-1 w-10 ${
+                        item.label === "Total" ? "font-bold" : "font-normal"
+                      }
                     ${
                       item.label !== "Total" ? "text-[#A7A7A7]" : "text-white"
                     }`}
-                  >
-                    {item.home}
-                  </TextScallingFalse>
-                ))}
-              </View>
+                    >
+                      {item.home}
+                    </TextScallingFalse>
+                  ))}
+                </View>
 
-              {/* Away Team Scores */}
-              <View className="flex-row">
-                {scoreColumns.map((item) => (
-                  <TextScallingFalse
-                    key={`away-${item.label}`}
-                    className={`text-lg text-center mx-1 w-10 ${
-                      item.label === "Total" ? "font-bold" : "font-normal"
-                    }
+                {/* Away Team Scores */}
+                <View className="flex-row">
+                  {scoreColumns.map((item) => (
+                    <TextScallingFalse
+                      key={`away-${item.label}`}
+                      className={`text-lg text-center mx-1 w-10 ${
+                        item.label === "Total" ? "font-bold" : "font-normal"
+                      }
                   ${item.label !== "Total" ? "text-[#A7A7A7]" : "text-white"}`}
-                  >
-                    {item.away}
-                  </TextScallingFalse>
-                ))}
+                    >
+                      {item.away}
+                    </TextScallingFalse>
+                  ))}
+                </View>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Match Status */}
       {/* <TextScallingFalse className="absolute bottom-4 left-4 text-neutral-400 text-base mt-2">

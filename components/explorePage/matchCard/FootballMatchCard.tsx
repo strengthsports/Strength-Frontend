@@ -98,9 +98,10 @@ interface MatchCardProps {
     }[];
   };
   isLive?: boolean;
+  onCardPress?: () => void; // Add this
 }
 
-const FootballMatchCard = ({ match, isLive }: MatchCardProps) => {
+const FootballMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
   const opacityValue = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -223,43 +224,45 @@ const FootballMatchCard = ({ match, isLive }: MatchCardProps) => {
       {/* Border */}
       <View className="h-[0.8] bg-[#252525]" />
 
-      <View className=" h-28 flex-row justify-center items-center pb-2">
-        {/* view 1 */}
-        <View className="items-center justify-center flex-1">
-          <Image
-            source={{ uri: match.teams.home.logo }}
-            style={{ width: 32, height: 32, marginBottom: 8 }}
-          />
-          <TextScallingFalse className="text-white w-24 text-center text-base">
-            {match.teams.home.name}
-          </TextScallingFalse>
-          {/* <TextScallingFalse className="text-white text-center text-base">{match?.t1}</TextScallingFalse> */}
-        </View>
+      <TouchableOpacity onPress={onCardPress}>
+        <View className=" h-28 flex-row justify-center items-center pb-2">
+          {/* view 1 */}
+          <View className="items-center justify-center flex-1">
+            <Image
+              source={{ uri: match.teams.home.logo }}
+              style={{ width: 32, height: 32, marginBottom: 8 }}
+            />
+            <TextScallingFalse className="text-white w-24 text-center text-base">
+              {match.teams.home.name}
+            </TextScallingFalse>
+            {/* <TextScallingFalse className="text-white text-center text-base">{match?.t1}</TextScallingFalse> */}
+          </View>
 
-        {/* view 2 */}
-        <View className="items-center flex-1">
-          <TextScallingFalse className="text-[#F2F2F2] font-semibold text-7xl font-turret-road">
-            {match.goals.away} - {match.goals.away}
-          </TextScallingFalse>
-          <TextScallingFalse className="text-[#8F8F8F] text-center self-center text-base font-monster-bold">
-            {determineTimeElapsed(match.fixture.status.short)}
-          </TextScallingFalse>
-          <TextScallingFalse className="text-[#8F8F8F] text-center self-center text-base mt-0.5">
-            {match.fixture.status.elapsed}'
-          </TextScallingFalse>
-        </View>
+          {/* view 2 */}
+          <View className="items-center flex-1">
+            <TextScallingFalse className="text-[#F2F2F2] font-semibold text-7xl font-turret-road">
+              {match.goals.away} - {match.goals.away}
+            </TextScallingFalse>
+            <TextScallingFalse className="text-[#8F8F8F] text-center self-center text-base font-monster-bold">
+              {determineTimeElapsed(match.fixture.status.short)}
+            </TextScallingFalse>
+            <TextScallingFalse className="text-[#8F8F8F] text-center self-center text-base mt-0.5">
+              {match.fixture.status.elapsed}'
+            </TextScallingFalse>
+          </View>
 
-        {/* view 3 */}
-        <View className="items-center flex-1">
-          <Image
-            source={{ uri: match.teams.away.logo }}
-            style={{ width: 32, height: 32, marginBottom: 8 }}
-          />
-          <TextScallingFalse className="text-white w-24 text-center text-base">
-            {match.teams.away.name}
-          </TextScallingFalse>
+          {/* view 3 */}
+          <View className="items-center flex-1">
+            <Image
+              source={{ uri: match.teams.away.logo }}
+              style={{ width: 32, height: 32, marginBottom: 8 }}
+            />
+            <TextScallingFalse className="text-white w-24 text-center text-base">
+              {match.teams.away.name}
+            </TextScallingFalse>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* <TextScallingFalse className="text-white text-center text-base mb-2">{match?.t1}</TextScallingFalse> */}
     </>

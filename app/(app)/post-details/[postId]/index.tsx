@@ -36,13 +36,12 @@ import PageThemeView from "~/components/PageThemeView";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { showFeedback } from "~/utils/feedbackToast";
 import CommentInput from "~/components/comment/CommentInput";
-import { selectPostById } from "~/reduxStore/slices/post/postsSlice";
+import { addPost, selectPostById } from "~/reduxStore/slices/post/postsSlice";
 import {
   deleteComment,
   postComment,
 } from "~/reduxStore/slices/post/postActions";
-
-const MAX_HEIGHT = 80;
+import { fetchPostById } from "~/api/post/fetchPostById";
 
 type ReplyPaginationState = {
   [commentId: string]: {
@@ -143,7 +142,9 @@ const PostDetailsPage = () => {
   const params = useLocalSearchParams();
   const postId = params?.postId as string;
   const { user } = useSelector((state: RootState) => state.profile);
-  const post = useSelector((state: RootState) => selectPostById(state, postId));
+  let post = useSelector((state: RootState) => selectPostById(state, postId));
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Comment state management
   const [comments, setComments] = useState<Comment[]>([]);
@@ -170,16 +171,27 @@ const PostDetailsPage = () => {
   const [fetchComments] = useLazyFetchCommentsQuery();
   const [fetchReplies] = useLazyFetchRepliesQuery();
 
-  // Handle error if post not found
-  if (!post) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black">
-        <TextScallingFalse className="text-white text-lg">
-          Post not found
-        </TextScallingFalse>
-      </SafeAreaView>
-    );
-  }
+  // Fallback to db for post fetching
+  useEffect(() => {
+    const loadPost = async () => {
+      if (!postId || post) return; // Skip if post exists or no postId
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Dispatch the async thunk and unwrap the result to handle errors
+        post = await fetchPostById({ postId });
+        dispatch(addPost(post));
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch post");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPost();
+  }, [postId, dispatch, post]);
 
   useLayoutEffect(() => {
     const tabParent = navigation.getParent();
@@ -364,7 +376,7 @@ const PostDetailsPage = () => {
     try {
       const result = await dispatch(
         postComment({
-          postId: post._id,
+          postId: postId,
           parentCommentId: targetId,
           text: textToPost,
         })
@@ -420,7 +432,7 @@ const PostDetailsPage = () => {
     } finally {
       setIsPosting(false);
     }
-  }, [commentText, dispatch, post._id, replyingTo, isPosting]);
+  }, [commentText, dispatch, postId, replyingTo, isPosting]);
 
   // Handle delete a comment
   const handleDeleteComment = useCallback(
@@ -462,7 +474,7 @@ const PostDetailsPage = () => {
         <View className="px-2 mb-4">
           <CommenterCard
             comment={item}
-            targetId={post._id}
+            targetId={postId}
             targetType="Post"
             onReply={handleReply}
             isOwnComment={user?._id === item.postedBy._id}
@@ -485,7 +497,7 @@ const PostDetailsPage = () => {
         </View>
       );
     },
-    [replyStates, handleReply, loadMoreReplies, post._id]
+    [replyStates, handleReply, loadMoreReplies, postId]
   );
 
   // Memoize keyExtractor to avoid re-renders
@@ -515,6 +527,33 @@ const PostDetailsPage = () => {
       </View>
     );
   }, [loadingComments]);
+
+  if (isLoading) {
+    return (
+      <PageThemeView>
+        <ActivityIndicator size="large" color="white" />
+      </PageThemeView>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageThemeView>
+        <TextScallingFalse className="text-white">{error}</TextScallingFalse>
+      </PageThemeView>
+    );
+  }
+
+  // Handle error if post not found
+  if (!post) {
+    return (
+      <PageThemeView>
+        <TextScallingFalse className="text-white text-lg">
+          Post not found
+        </TextScallingFalse>
+      </PageThemeView>
+    );
+  }
 
   return (
     <PageThemeView>

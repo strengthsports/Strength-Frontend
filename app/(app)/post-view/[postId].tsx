@@ -31,10 +31,12 @@ import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import PageThemeView from "~/components/PageThemeView";
 import VideoPlayer from "~/components/PostContainer/VideoPlayer";
 import { useNavigation } from "@react-navigation/native";
-import { selectPostById } from "~/reduxStore/slices/post/postsSlice";
+import { addPost, selectPostById } from "~/reduxStore/slices/post/postsSlice";
 import { toggleLike } from "~/reduxStore/slices/post/postActions";
 import { Modal } from "react-native";
 import CommentModal from "~/components/feedPage/CommentModal";
+import { fetchPostById } from "~/api/post/fetchPostById";
+import { ActivityIndicator } from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -43,8 +45,10 @@ const Post = () => {
   const params = useLocalSearchParams();
   const navigation = useNavigation();
   const postId = params?.postId as string; // Extract postId from URL params
-  const post = useSelector((state: RootState) => selectPostById(state, postId));
+  let post = useSelector((state: RootState) => selectPostById(state, postId));
   const dispatch = useDispatch<AppDispatch>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: post?.postedBy?._id, type: post?.postedBy?.type })
@@ -55,6 +59,28 @@ const Post = () => {
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
   const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
     useState(false);
+
+  // Fallback to db for post fetching
+  useEffect(() => {
+    const loadPost = async () => {
+      if (!postId || post) return; // Skip if post exists or no postId
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Dispatch the async thunk and unwrap the result to handle errors
+        post = await fetchPostById({ postId });
+        dispatch(addPost(post));
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch post");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPost();
+  }, [postId, dispatch, post]);
 
   useLayoutEffect(() => {
     const tabParent = navigation.getParent();
@@ -133,11 +159,29 @@ const Post = () => {
     return (width * 2) / 3; // Default 3:2 aspect ratio
   };
 
+  if (isLoading) {
+    return (
+      <PageThemeView>
+        <ActivityIndicator size="large" color="white" />
+      </PageThemeView>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageThemeView>
+        <TextScallingFalse className="text-white">{error}</TextScallingFalse>
+      </PageThemeView>
+    );
+  }
+
   if (!post) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-black">
-        <TextScallingFalse className="text-white">Loading...</TextScallingFalse>
-      </SafeAreaView>
+      <PageThemeView>
+        <TextScallingFalse className="text-white">
+          Post Not Found
+        </TextScallingFalse>
+      </PageThemeView>
     );
   }
 

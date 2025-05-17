@@ -209,14 +209,6 @@ const SuggestedSupportScreen: React.FC = () => {
     ),
     [handleClose, handleSelectedPlayers]
   );
-  // const filteredUsers = users.filter(userItem => userItem._id !== user?._id);
-
-//   const filteredUsers = users.filter(userItem => {
-//   console.log('Current User ID:', user?._id);  // Log the current user ID
-//   console.log('Checking against User ID:', userItem._id);  // Log the ID of the user being filtered
-
-//   return userItem._id !== user?._id;
-// });
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>

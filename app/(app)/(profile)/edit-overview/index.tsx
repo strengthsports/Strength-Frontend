@@ -413,7 +413,7 @@ function EditOverview() {
 
     if (isDataUnchanged) {
       router.back();
-      return false;
+      return true;
     } else {
       setAlertConfig({
         title: "Discard changes?",

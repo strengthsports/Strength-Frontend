@@ -679,13 +679,13 @@ const EditProfile = () => {
   // Pick Image (Cover pic, Profile Pic)
   const pickImage = async (imageType: "cover" | "profile") => {
     try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      // const permissionResult =
+      //   await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      if (!permissionResult.granted) {
-        showToast("Permission to access the camera roll is required!");
-        return;
-      }
+      // if (!permissionResult.granted) {
+      //   showToast("Permission to access the camera roll is required!");
+      //   return;
+      // }
 
       let aspect: [number, number] = [1, 1]; // Explicitly type aspect as [number, number]
       if (imageType === "cover") {
@@ -1026,7 +1026,7 @@ const EditProfile = () => {
   const handleBackPress = () => {
     if (!Array.from(finalUploadData.entries()).length) {
       router.back(); // No unsaved changes — go back
-      return false; // Allow default back behavior (for system back)
+      return true; // Allow default back behavior (for system back)
     } else {
       setAlertModal(true); // Unsaved changes — show alert modal
       return true; // Prevent default system back

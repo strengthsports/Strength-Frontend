@@ -61,7 +61,7 @@ const SignupEmail1 = () => {
   };
 
   const handleDateChange = (event, selectedDate) => {
-    setIsDatePickerVisible(Platform.OS === 'ios'); // Only hide on Android after selection
+    setIsDatePickerVisible(Platform.OS === "ios"); // Only hide on Android after selection
 
     if (selectedDate) {
       // Format the date correctly
@@ -98,11 +98,11 @@ const SignupEmail1 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-          type,
-          text1: message,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+            type,
+            text1: message,
+            visibilityTime: 3000,
+            autoHide: true,
+          });
     } else
       Toast.show({
         type,
@@ -121,9 +121,9 @@ const SignupEmail1 = () => {
         ...SignupPayload,
         dateOfBirth: SignupPayload.dateOfBirth
           ? (() => {
-            const [day, month, year] = SignupPayload.dateOfBirth.split("-");
-            return `${year}-${month}-${day}`;
-          })()
+              const [day, month, year] = SignupPayload.dateOfBirth.split("-");
+              return `${year}-${month}-${day}`;
+            })()
           : undefined,
       };
 
@@ -173,7 +173,11 @@ const SignupEmail1 = () => {
                   setIsDatePickerVisible(false);
                 }}
               >
-                <Text style={[styles.datePickerHeaderButton, { color: '#12956B' }]}>Done</Text>
+                <Text
+                  style={[styles.datePickerHeaderButton, { color: "#12956B" }]}
+                >
+                  Done
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -196,17 +200,11 @@ const SignupEmail1 = () => {
     <PageThemeView>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.push("/option")}
-            activeOpacity={0.5}
-          >
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.5}>
             <MaterialIcons name="keyboard-backspace" size={30} color="white" />
           </TouchableOpacity>
           <Logo />
-          <TouchableOpacity
-            onPress={() => router.push("/login")}
-            activeOpacity={0.5}
-          >
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.5}>
             <AntDesign name="close" size={25} color="white" />
           </TouchableOpacity>
         </View>
@@ -296,7 +294,7 @@ const SignupEmail1 = () => {
                   activeOpacity={0.5}
                   style={[
                     styles.genderButton,
-                    femaleSelected && styles.genderButtonSelected
+                    femaleSelected && styles.genderButtonSelected,
                   ]}
                 >
                   <TextScallingFalse style={styles.genderButtonText}>
@@ -305,7 +303,7 @@ const SignupEmail1 = () => {
                   <View
                     style={[
                       styles.genderRadio,
-                      femaleSelected && styles.genderRadioSelected
+                      femaleSelected && styles.genderRadioSelected,
                     ]}
                   />
                 </TouchableOpacity>
@@ -315,7 +313,7 @@ const SignupEmail1 = () => {
                   activeOpacity={0.5}
                   style={[
                     styles.genderButton,
-                    maleSelected && styles.genderButtonSelected
+                    maleSelected && styles.genderButtonSelected,
                   ]}
                 >
                   <TextScallingFalse style={styles.genderButtonText}>
@@ -324,7 +322,7 @@ const SignupEmail1 = () => {
                   <View
                     style={[
                       styles.genderRadio,
-                      maleSelected && styles.genderRadioSelected
+                      maleSelected && styles.genderRadioSelected,
                     ]}
                   />
                 </TouchableOpacity>
@@ -349,16 +347,15 @@ const SignupEmail1 = () => {
             </View>
 
             <View style={styles.signupButtonContainer}>
-              {
-                loading ?
-                  <ActivityIndicator size={'small'} />
-                  :
-                  <SignupButton onPress={() => validateSignupForm()}>
-                    <TextScallingFalse style={styles.signupButtonText}>
-                      Agree & join
-                    </TextScallingFalse>
-                  </SignupButton>
-              }
+              {loading ? (
+                <ActivityIndicator size={"small"} />
+              ) : (
+                <SignupButton onPress={() => validateSignupForm()}>
+                  <TextScallingFalse style={styles.signupButtonText}>
+                    Agree & join
+                  </TextScallingFalse>
+                </SignupButton>
+              )}
             </View>
             <View style={styles.loginContainer}>
               <TextScallingFalse style={styles.loginText}>
@@ -378,10 +375,10 @@ const SignupEmail1 = () => {
         </View>
 
         {/* Date picker for iOS (modal) */}
-        {Platform.OS === 'ios' && renderIOSDatePicker()}
+        {Platform.OS === "ios" && renderIOSDatePicker()}
 
         {/* Date picker for Android (inline) */}
-        {Platform.OS === 'android' && isDatePickerVisible && (
+        {Platform.OS === "android" && isDatePickerVisible && (
           <DateTimePicker
             value={getInitialDateValue()}
             mode="date"

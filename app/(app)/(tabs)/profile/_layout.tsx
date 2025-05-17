@@ -185,26 +185,6 @@ const ProfileLayout = () => {
     }
   };
 
-  // const handleOpenProfileOptions = () => {
-  //   openBottomSheet({
-  //     isVisible: true,
-  //     content: (
-  //       <ProfileOptionsBottomSheet
-  //         onClose={closeBottomSheet}
-  //         onNavigate={(path) => router.push(path as any)}
-  //         onShare={handleShareProfile}
-  //       />
-  //     ),
-  //     height: "28%",
-  //     bgcolor: "#151515",
-  //     border: false,
-  //     maxHeight: 250,
-  //     draggableDirection: "down",
-  //   });
-  // };
-
-  //handle settings modal
-
   const handleOpenProfileOptions = (optionType: string) => {
     setProfileOptionsVisible({ status: true, message: optionType });
   };
@@ -214,7 +194,8 @@ const ProfileLayout = () => {
   };
 
   const handleOpenPostContainer = () => {
-    dispatch(setAddPostContainerOpen(true));
+    // dispatch(setAddPostContainerOpen(true));
+    router.push("/add-post");
   };
   // console.log("****---------->", user.createdTeams);
   // console.log("#####---------->", user.joinedTeams);

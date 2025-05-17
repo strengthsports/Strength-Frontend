@@ -1,15 +1,12 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import {
-  useReportPostMutation,
-  useUndoReportPostMutation,
-} from "~/reduxStore/api/feed/features/feedApi.reportPost";
+import { useReportPostMutation } from "~/reduxStore/api/feed/features/feedApi.reportPost";
 import {
   useReportUserMutation,
   useUndoReportUserMutation,
 } from "~/reduxStore/api/profile/profileApi.report";
-import { updateAllPostsReportStatus } from "~/reduxStore/slices/feed/feedSlice";
+import { updateAllFeedPostsReportStatus } from "~/reduxStore/slices/post/postsSlice";
 import { ReportPost } from "~/types/post";
 import { ReportUser } from "~/types/user";
 
@@ -51,7 +48,7 @@ export const useReport = () => {
     async (reportData: ReportPost) => {
       try {
         dispatch(
-          updateAllPostsReportStatus({
+          updateAllFeedPostsReportStatus({
             postId: reportData.targetId,
             isReported: true,
           })
@@ -60,7 +57,7 @@ export const useReport = () => {
         await reportPostMutation(reportData).unwrap();
       } catch (error) {
         dispatch(
-          updateAllPostsReportStatus({
+          updateAllFeedPostsReportStatus({
             postId: reportData.targetId,
             isReported: false,
           })

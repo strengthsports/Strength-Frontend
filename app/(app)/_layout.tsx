@@ -1,4 +1,3 @@
-import { Text } from "react-native";
 import { Redirect, Stack } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/reduxStore";
@@ -17,9 +16,19 @@ export default function AppLayout() {
       <Stack
         screenOptions={{
           headerShown: false, // Disable headers globally
-          animation: "none",
+          animation: "slide_from_right",
         }}
-      />
+      >
+        <Stack.Screen
+          name="add-post"
+          options={{
+            animation: "slide_from_bottom",
+            contentStyle: {
+              backgroundColor: "black",
+            },
+          }}
+        />
+      </Stack>
       <AppBottomSheet />
     </BottomSheetProvider>
   );

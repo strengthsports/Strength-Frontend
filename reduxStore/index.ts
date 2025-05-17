@@ -26,8 +26,9 @@ import teamReducer from "./slices/team/teamSlice";
 import searchReducer from "./slices/explore/searchSlice";
 import sportsReducer from "./slices/team/sportSlice";
 import teamForumReducer from "./slices/team/teamForumSlice";
-import feedReducer from "./slices/feed/feedSlice";
 import postReducer from "./slices/post/postSlice";
+import postsReducer from "./slices/post/postsSlice";
+import viewsReducer from "./slices/post/viewsSlice";
 import userSuggestionsReducer from "./slices/team/userSuggestionSlice";
 import { profileApi } from "./api/profile/profileApi";
 import { feedApi } from "./api/feed/services/feedApi";
@@ -40,7 +41,6 @@ import notificationReducer from "./slices/notification/notificationSlice";
 import { cricketApi } from "./api/explore/cricketApi";
 import { footballApi } from "./api/explore/footballApi";
 import { basketballApi } from "./api/explore/basketballApi";
-// import { badmintonApi } from "./api/explore/badmintonApi";
 import { articleApi } from "./api/explore/article/articleApi";
 import userCommentsReducer from "./slices/comments/userCommentsSlice";
 
@@ -58,7 +58,6 @@ const persistConfig = {
     "teamForum",
     "feed",
   ],
-  blacklist: [], // Add any API reducers here
 };
 
 const rootReducer = combineReducers({
@@ -74,8 +73,9 @@ const rootReducer = combineReducers({
   search: searchReducer,
   teamForum: teamForumReducer,
   userSuggestions: userSuggestionsReducer,
-  feed: feedReducer,
   post: postReducer,
+  posts: postsReducer,
+  views: viewsReducer,
   notification: notificationReducer,
   userComments: userCommentsReducer,
   [profileApi.reducerPath]: profileApi.reducer,
@@ -85,7 +85,6 @@ const rootReducer = combineReducers({
   [cricketApi.reducerPath]: cricketApi.reducer,
   [footballApi.reducerPath]: footballApi.reducer,
   [basketballApi.reducerPath]: basketballApi.reducer,
-  // [badmintonApi.reducerPath]: badmintonApi.reducer,
   [feedApi.reducerPath]: feedApi.reducer,
   [searchApi.reducerPath]: searchApi.reducer,
   [articleApi.reducerPath]: articleApi.reducer,

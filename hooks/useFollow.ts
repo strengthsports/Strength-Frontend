@@ -5,7 +5,7 @@ import {
   useFollowUserMutation,
   useUnFollowUserMutation,
 } from "~/reduxStore/api/profile/profileApi.follow";
-import { updateAllPostsFollowStatus } from "~/reduxStore/slices/feed/feedSlice";
+import { updateAllFeedPostsFollowStatus } from "~/reduxStore/slices/post/postsSlice";
 import { setFollowingCount } from "~/reduxStore/slices/user/profileSlice";
 import { FollowUser } from "~/types/user";
 
@@ -22,7 +22,7 @@ export const useFollow = () => {
         !isOther && dispatch(setFollowingCount("follow"));
         !isOther &&
           dispatch(
-            updateAllPostsFollowStatus({
+            updateAllFeedPostsFollowStatus({
               userId: followData.followingId,
               isFollowing: true,
             })
@@ -32,7 +32,7 @@ export const useFollow = () => {
         !isOther && dispatch(setFollowingCount("unfollow"));
         !isOther &&
           dispatch(
-            updateAllPostsFollowStatus({
+            updateAllFeedPostsFollowStatus({
               userId: followData.followingId,
               isFollowing: false,
             })
@@ -50,7 +50,7 @@ export const useFollow = () => {
         !isOther && dispatch(setFollowingCount("unfollow"));
         !isOther &&
           dispatch(
-            updateAllPostsFollowStatus({
+            updateAllFeedPostsFollowStatus({
               userId: unfollowData.followingId,
               isFollowing: false,
             })
@@ -60,7 +60,7 @@ export const useFollow = () => {
         !isOther && dispatch(setFollowingCount("follow"));
         !isOther &&
           dispatch(
-            updateAllPostsFollowStatus({
+            updateAllFeedPostsFollowStatus({
               userId: unfollowData.followingId,
               isFollowing: true,
             })

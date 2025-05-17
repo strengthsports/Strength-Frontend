@@ -11,14 +11,12 @@ import {
   Dimensions,
   PanResponder,
 } from "react-native";
-import { Divider } from "react-native-elements";
 import { Colors } from "~/constants/Colors";
 import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { deleteComment, postComment } from "~/reduxStore/slices/feed/feedSlice";
 import {
   useLazyFetchCommentsQuery,
   useLazyFetchRepliesQuery,
@@ -26,6 +24,10 @@ import {
 import CommentNotFound from "../notfound/commentNotFound";
 import CommentInput from "../comment/CommentInput";
 import { TouchableWithoutFeedback } from "react-native";
+import {
+  deleteComment,
+  postComment,
+} from "~/reduxStore/slices/post/postActions";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const DRAG_THRESHOLD = 100;
@@ -563,7 +565,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
           <Animated.View
             style={{
               // flex: 1,
-              height: dynamicModalHeight,
+              height: MODAL_HEIGHT,
               width: "104%",
               alignSelf: "center",
               paddingHorizontal: 10,
@@ -586,17 +588,18 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
             <KeyboardAvoidingView
               className="flex-1"
               behavior={Platform.OS === "ios" ? "padding" : "height"}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
             >
               <FlatList
                 ref={flatListRef}
                 data={comments}
                 keyExtractor={keyExtractor}
+                keyboardShouldPersistTaps="handled"
                 renderItem={renderItem}
                 ListEmptyComponent={ListEmptyComponent}
                 contentContainerStyle={{
                   flexGrow: 1,
-                  paddingBottom: keyboardHeight > 0 ? keyboardHeight : 120,
+                  paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 80,
                   paddingHorizontal: 8,
                 }}
                 onEndReached={() => {
@@ -618,7 +621,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
                 className="bg-black"
                 style={{
                   position: "absolute",
-                  bottom: keyboardHeight > 0 ? keyboardHeight - 95 : 0,
+                  bottom: keyboardHeight,
                   left: 0,
                   right: 0,
                   backgroundColor: "black",

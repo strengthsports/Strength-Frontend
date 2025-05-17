@@ -189,6 +189,7 @@ const Settings = () => {
   };
 
   const pickImage = async () => {
+    console.log('yes pickImage function is called')
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,

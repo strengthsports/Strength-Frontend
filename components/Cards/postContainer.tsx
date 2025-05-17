@@ -13,6 +13,7 @@ import {
   StyleSheet,
   Dimensions,
   Image,
+  Pressable,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
@@ -22,10 +23,10 @@ import MoreModal from "../feedPage/MoreModal";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { formatTimeAgo } from "~/utils/formatTime";
 import nopic from "@/assets/images/nopic.jpg";
+import nothumbnail from "@/assets/images/nothumbnail.png";
 import { Post } from "~/types/post";
 import CustomImageSlider from "@/components/Cards/imageSlideContainer";
 import InteractionBar from "../PostContainer/InteractionBar";
-import { toggleLike, voteInPoll } from "~/reduxStore/slices/feed/feedSlice";
 import { FollowUser } from "~/types/user";
 import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
@@ -35,10 +36,11 @@ import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
 import { Platform } from "react-native";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
-import ClipsIconMedia from "../SvgIcons/profilePage/ClipsIconMedia";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import UserInfo from "../ui/atom/UserInfo";
 import { RelativePathString } from "expo-router";
+import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
+import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -49,7 +51,7 @@ const shadowStyle = Platform.select({
   },
   android: {
     elevation: 10,
-    shadowColor: "#000000",
+    shadowColor: "#000",
     shadowOpacity: 0.25,
   },
 });
@@ -71,6 +73,7 @@ interface PostContainerProps {
   handleBottomSheet?: (state: boolean) => void;
   isVideo?: boolean;
   isVisible?: boolean;
+  isPostDetailsPage?: boolean;
 }
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
@@ -82,6 +85,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       handleBottomSheet,
       isVideo,
       isVisible,
+      isPostDetailsPage,
     },
     ref
   ) => {
@@ -224,14 +228,16 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const goToHashtag = useCallback(
       (tag: string) => {
         // string version is faster than object
-        router.push(`/(app)/(post)/hashtag/${tag}/top`);
+        router.push(`/hashtag/${tag}/top`);
       },
       [router]
     );
 
     const goToUser = useCallback(
-      (userId: string) => {
-        router.push(`/(app)/(profile)/profile/${userId}`);
+      (serializedUser: any, userId?: string) => {
+        userId === item.postedBy?._id
+          ? router.push("/(app)/(tabs)/profile")
+          : router.push(`/(app)/(profile)/profile/${serializedUser}`);
       },
       [router]
     );
@@ -265,7 +271,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               key={i}
               onPress={() => goToHashtag(tag)}
               className={`text-2xl text-[#12956B] ${
-                highlightedHashtag === part && "font-semibold"
+                highlightedHashtag === part.toLowerCase() && "font-semibold"
               } active:bg-gray-600`}
             >
               {part}
@@ -286,7 +292,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 goToUser(
                   encodeURIComponent(
                     JSON.stringify({ id: user._id, type: user.type })
-                  )
+                  ),
+                  user._id
                 )
               }
               className="text-2xl text-[#12956B] active:bg-gray-600"
@@ -322,7 +329,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             onPress={onPressSeeMore}
             className="text-[#808080] text-2xl"
           >
-            ...see more
+            ...more
           </TextScallingFalse>
         );
       }
@@ -339,20 +346,22 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           isExpanded,
           () => setIsExpanded(true)
         ),
-      [item.caption, item.taggedUsers, isExpanded]
+      [item, item.caption, item.taggedUsers, isExpanded]
     );
 
-    const [thumbnail, setThumbnail] = useState(null);
+    const [thumbnail, setThumbnail] = useState("");
 
     useEffect(() => {
       const generateThumbnail = async () => {
-        if (!item?.assets || item.assets.length === 0 || !item.assets[0].url)
-          return;
+        if (!item?.isVideo || !item.assets[0].url) return;
 
         try {
           const { uri } = await VideoThumbnails.getThumbnailAsync(
             item.assets[0].url,
-            { time: 15000 }
+            {
+              time: 1000,
+              quality: 0.5,
+            }
           );
           setThumbnail(uri);
         } catch (e) {
@@ -372,11 +381,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             <TouchableOpacity
               activeOpacity={0.5}
               className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
-              onPress={() =>
-                user?._id === item.postedBy?._id
-                  ? router.push("/(app)/(tabs)/profile")
-                  : router.push(`/(app)/(profile)/profile/${serializedUser}`)
-              }
+              onPress={() => goToUser(serializedUser, user?._id)}
               style={shadowStyle}
             >
               <Image
@@ -394,14 +399,14 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   borderWidth: 1,
                   borderColor: "#1a1a1a",
                 }}
-                transition={500}
-                cachePolicy="memory-disk"
-                placeholder={require("../../assets/images/nopic.jpg")}
               />
             </TouchableOpacity>
 
             {/* Name, Headline, post date */}
-            <View className="w-64 flex flex-col gap-y-4 justify-between">
+            <Pressable
+              onPress={() => goToUser(serializedUser, user?._id)}
+              className="w-64 flex flex-col gap-y-4 justify-between"
+            >
               <UserInfo
                 fullName={
                   item.postedBy.firstName +
@@ -428,7 +433,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   color="gray"
                 />
               </View>
-            </View>
+            </Pressable>
 
             {/* Follow button */}
             {user?._id !== item.postedBy?._id && !item.isFollowing && (
@@ -447,17 +452,25 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           {/* Caption Section */}
           <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
             <TouchableOpacity
+              onPress={() => {
+                handleOpenBottomSheet({ type: "settings" });
+              }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
               className="absolute right-8 p-2 pt-2 z-30"
-              onPress={() => handleOpenBottomSheet({ type: "settings" })}
             >
               <MaterialIcons name="more-horiz" size={22} color="white" />
             </TouchableOpacity>
 
-            <View className="pl-7 pr-10 pt-12 pb-2">
+            <Pressable
+              disabled={isPostDetailsPage}
+              onPress={() => router.push(`/post-details/${item._id}`)}
+              className="pl-7 pr-10 pt-12 pb-2"
+            >
               <TextScallingFalse className="text-2xl flex-wrap flex-row">
                 {memoizedCaption}
               </TextScallingFalse>
-            </View>
+            </Pressable>
 
             {!isVideo && item.isPoll && (
               <PollsContainer
@@ -482,7 +495,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             >
               <TouchableWithDoublePress
                 className="flex-1 relative overflow-hidden ml-2"
-                activeOpacity={0.95}
+                activeOpacity={0.7}
                 onSinglePress={() => {
                   if (item) {
                     router.push({
@@ -493,8 +506,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onDoublePress={handleDoubleTap}
               >
                 <Image
-                  source={thumbnail}
-                  contentFit="cover"
+                  source={thumbnail ? { uri: thumbnail } : nothumbnail}
+                  resizeMode="cover"
+                  fadeDuration={0}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -507,10 +521,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     borderLeftWidth: 0.5,
                     borderColor: "#2F2F2F",
                   }}
-                  placeholder={require("../../assets/images/nocover.png")}
-                  placeholderContentFit="cover"
-                  transition={500}
-                  cachePolicy="memory-disk"
                 />
                 <View style={styles.videoOverlay} />
                 <View
@@ -522,7 +532,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
                   }}
                 >
-                  <ClipsIconMedia size={40} />
+                  <ClipsIconRP />
                 </View>
               </TouchableWithDoublePress>
             </View>
@@ -540,6 +550,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   post={item}
                   setIndex={handleSetActiveIndex}
                   onDoubleTap={handleDoubleTap}
+                  isMyActivity={false}
                 />
               );
             })()
@@ -570,6 +581,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             activeSlideIndex={activeIndex}
             isPostContainer={true}
             isFeedPage={isFeedPage}
+            isPostDetailsPage={isPostDetailsPage}
           />
         </View>
         <Modal

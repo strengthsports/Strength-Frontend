@@ -10,17 +10,15 @@ import {
   Platform,
   ToastAndroid,
 } from "react-native";
-import { useDeletePostMutation } from "~/reduxStore/api/feed/features/feedApi.DeletePost";
 import { showFeedback } from "~/utils/feedbackToast";
 import TextScallingFalse from "../CentralText";
 import Toast from "react-native-toast-message";
 import { ReportPost } from "~/types/post";
 import { useReport } from "~/hooks/useReport";
-import { SafeAreaView } from "react-native-safe-area-context";
 import PageThemeView from "../PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { deletePost } from "~/reduxStore/slices/feed/feedSlice";
+import { deletePost } from "~/reduxStore/slices/post/postActions";
 
 const modalText = "text-white ml-4 text-4xl font-[500px]";
 const modalOption = "flex-row items-center py-3 px-2 active:bg-neutral-900";

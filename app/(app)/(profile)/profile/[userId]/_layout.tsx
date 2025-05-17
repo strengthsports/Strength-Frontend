@@ -1052,7 +1052,7 @@ const ProfileLayout = () => {
               </View>
             </View>
           ) : (
-            <View style={{ paddingHorizontal: 20 }}>
+            <View style={{ paddingHorizontal: 10 }}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
               >

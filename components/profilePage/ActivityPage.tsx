@@ -6,27 +6,25 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
 import PostContainer from "~/components/Cards/postContainer";
 import { Post } from "~/types/post";
 import { AppDispatch, RootState } from "~/reduxStore";
-import {
-  fetchNonFeedPosts,
-  selectAllNonFeedPosts,
-  selectNonFeedState,
-} from "~/reduxStore/slices/feed/feedSlice";
 import { Colors } from "~/constants/Colors";
-import { setAddPostContainerOpen } from "~/reduxStore/slices/post/postSlice";
+import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
+import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
+import { RefreshControl } from "react-native";
+import { useRouter } from "expo-router";
 
 interface ActivityPageProps {
   userId: string;
   type: string;
 }
 
-type PostType = "all" | "thoughts" | "polls" | "clips";
+type PostType = "all" | "thoughts" | "polls" | "clips" | "mentions";
 
 const EMPTY_STATE_CONFIG: Record<
   PostType,
@@ -75,60 +73,60 @@ const EMPTY_STATE_CONFIG: Record<
       buttonText: undefined,
     },
   },
+  mentions: {
+    currentUser: {
+      title: "Your Mentions - See Who's Talking About You!",
+      buttonText: "Make Your Move",
+    },
+    otherUser: {
+      title: "No mentions yet",
+      buttonText: undefined,
+    },
+  },
 };
 
 const ActivityPage = ({ userId, type }: ActivityPageProps) => {
+  console.log("Page rendered ");
   const dispatch = useDispatch<AppDispatch>();
-  const isAndroid = Platform.OS === "android";
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const { user: currentUser } = useSelector(
-    (state: RootState) => state.profile
+  const { user } = useSelector((state: RootState) => state.profile);
+  const router = useRouter();
+  const isCurrentUser = user?._id === userId;
+
+  const selectUserPosts = useMemo(
+    () => makeSelectUserPosts(userId, type),
+    [userId, type]
   );
-  const isCurrentUser = currentUser?._id === userId;
 
-  const { nonFeedLoading, nonFeedError, nonFeedCursor, nonFeedHasMore } =
-    useSelector(selectNonFeedState);
-  const posts = useSelector(selectAllNonFeedPosts);
+  const posts = useSelector(selectUserPosts);
+  const nextCursor = useSelector(
+    (state: RootState) => state.views.user[userId]?.[type]?.nextCursor ?? null
+  );
 
-  const handleOpenAddPostContainer = () => {
-    dispatch(setAddPostContainerOpen(true));
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  const loadPosts = async (cursor?: string | null) => {
+    await dispatch(fetchUserPosts({ userId, type, limit: 10, cursor }));
   };
-  // Initial load or when userId/type changes
-  useEffect(() => {
-    setIsInitialLoad(true);
-    if (userId) {
-      console.log("User id : ", userId);
-      dispatch(
-        fetchNonFeedPosts({
-          limit: 10,
-          type: type || "all", // Default to "all" if not specified
-          userId: userId,
-          reset: true, // Always reset for new userId/type combination
-        })
-      );
-    }
-  }, [dispatch, userId, type]);
 
-  // For subsequent loads
-  const handleLoadMore = useCallback(() => {
-    console.log("Load more conditions:", {
-      cursor: nonFeedCursor,
-      loading: nonFeedLoading,
-    });
-    setIsInitialLoad(false);
-    if (nonFeedCursor && !nonFeedLoading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      dispatch(
-        fetchNonFeedPosts({
-          limit: 10,
-          cursor: nonFeedCursor,
-          type: type || "all",
-          userId: userId,
-        })
-      ).finally(() => setIsLoadingMore(false));
-    }
-  }, [nonFeedCursor, nonFeedLoading, isLoadingMore, type, userId]);
+  useEffect(() => {
+    setInitialLoading(true);
+    loadPosts().finally(() => setInitialLoading(false));
+  }, [userId, type]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadPosts(); // no cursor => refresh
+    setRefreshing(false);
+  };
+
+  const handleLoadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    await loadPosts(nextCursor);
+    setLoadingMore(false);
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
@@ -146,7 +144,7 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
 
   const EmptyComponentButton = React.memo(({ label }: { label: string }) => (
     <TouchableOpacity
-      onPress={handleOpenAddPostContainer}
+      onPress={() => router.push("/add-post")}
       activeOpacity={0.7}
       className="w-auto bg-[#262626] rounded-full py-3 px-4 flex-row items-center justify-center mb-2"
       style={{ borderColor: "#313131", borderWidth: 1 }}
@@ -157,78 +155,65 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
     </TouchableOpacity>
   ));
 
-  const MemoizedEmptyComponent = useCallback(() => {
+  if (initialLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={Colors.themeColor} />
+      </View>
+    );
+  }
+
+  if (!posts || posts.length === 0) {
     const config = EMPTY_STATE_CONFIG[type as PostType];
     const { title, buttonText } = isCurrentUser
       ? config.currentUser
       : config.otherUser;
     return (
-      <View className="flex justify-center items-center flex-1 p-4">
-        {nonFeedLoading ? (
-          <ActivityIndicator color="#12956B" size={22} />
-        ) : (
-          <View className="w-full items-center mt-8 gap-y-2">
-            <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3 text-center">
-              {title}
-            </TextScallingFalse>
-            {isCurrentUser && buttonText && (
-              <EmptyComponentButton label={buttonText} />
-            )}
-          </View>
+      <View className="w-full items-center mt-8 gap-y-2">
+        <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3 text-center">
+          {title}
+        </TextScallingFalse>
+        {isCurrentUser && buttonText && (
+          <EmptyComponentButton label={buttonText} />
         )}
       </View>
     );
-  }, [type, nonFeedLoading, isCurrentUser]);
-
-  if (nonFeedError)
-    return (
-      <View className="flex justify-center items-center">
-        <TextScallingFalse className="text-red-500">
-          Error loading posts
-        </TextScallingFalse>
-      </View>
-    );
+  }
 
   return (
-    <View className="mt-4">
-      {isInitialLoad && nonFeedLoading ? (
-        <View style={styles.fullScreenLoader}>
-          <ActivityIndicator size="large" color={Colors.themeColor} />
-        </View>
-      ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item._id}
-          initialNumToRender={5}
-          removeClippedSubviews={isAndroid}
-          windowSize={11}
-          renderItem={renderItem}
-          ListEmptyComponent={MemoizedEmptyComponent}
-          onEndReached={({ distanceFromEnd }) => {
-            if (distanceFromEnd < 0) return;
-            handleLoadMore();
-          }}
-          onEndReachedThreshold={0.6}
-          ListFooterComponent={
-            nonFeedLoading || isLoadingMore ? (
-              <ActivityIndicator
-                style={{ marginVertical: 20 }}
-                color={Colors.themeColor}
-              />
-            ) : null
-          }
-          bounces={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
-      )}
+    <View>
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.themeColor}
+          />
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color={Colors.themeColor} />
+          ) : null
+        }
+      />
     </View>
   );
 };
 
-export default ActivityPage;
+export default React.memo(ActivityPage);
 
 const styles = StyleSheet.create({
   fullScreenLoader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",

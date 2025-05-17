@@ -1,5 +1,11 @@
 import React, { memo, useEffect, useState } from "react";
-import { Image, View, TouchableOpacity, Modal as RNModal } from "react-native";
+import {
+  Image,
+  View,
+  TouchableOpacity,
+  Modal as RNModal,
+  Pressable,
+} from "react-native";
 import TextScallingFalse from "../CentralText";
 import { FollowUser, SuggestionUser } from "~/types/user";
 import { useRouter } from "expo-router";
@@ -90,16 +96,22 @@ const PageSuggestionCard = ({
     }
   };
 
+  //handle go to profile
+  const goToProfile = () => {
+    router.push(`/(app)/(profile)/profile/${serializedUser}`);
+  };
+
   const handleOpenModal = () => {
     setModalOpen(true);
   };
 
   return (
     <>
-      <View
+      <Pressable
         className={`bg-black rounded-xl pb-4 mb-4 relative border ${
           size === "small" ? "w-[150px] h-[180px]" : "w-[100%] h-[200px]"
         } border-[#80808085] overflow-hidden`}
+        onPress={goToProfile}
       >
         {/* Close Button */}
         <TouchableOpacity
@@ -127,9 +139,7 @@ const PageSuggestionCard = ({
         {/* Profile Image positioned outside the cover's container */}
         <TouchableOpacity
           activeOpacity={0.5}
-          onPress={() =>
-            router.push(`/(app)/(profile)/profile/${serializedUser}`)
-          }
+          onPress={goToProfile}
           disabled={onboarding}
           className={`absolute left-5 bg-white rounded-full ${
             size === "small" ? "w-16 h-16" : "w-20 h-20"
@@ -204,7 +214,7 @@ const PageSuggestionCard = ({
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </Pressable>
 
       {isModalOpen && (
         <RNModal

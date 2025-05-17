@@ -13,6 +13,7 @@ import {
 import { Modal,StyleSheet} from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as ImagePicker from "expo-image-picker";
+import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 import { NavigationProp } from "@react-navigation/native";
 import AddMembersModal from "@/components/teamPage/AddMembersModal";
 import { router, useLocalSearchParams } from "expo-router";
@@ -30,6 +31,7 @@ import { fetchUserSuggestions } from "~/reduxStore/slices/team/userSuggestionSli
 import { fetchSports } from "~/reduxStore/slices/team/sportSlice";
 import TextScallingFalse from "~/components/CentralText";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+// import * as ImagePicker from 'expo-image-picker';
 
 interface CreateTeamProps {
   navigation: NavigationProp<any>;
@@ -218,28 +220,28 @@ const [formattedDate, setFormattedDate] = useState("");
     setTimeout(() => setShow(false), 2000);
   };
 
-  const selectImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) return;
+  // const selectImage = async () => {
+  //   const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   if (!permissionResult.granted) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
+  //   const result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     aspect: [1, 1],
+  //     quality: 0.5,
+  //   });
 
-    if (!result.canceled) {
-      setFormData((prev) => ({
-        ...prev,
-        logo: {
-          uri: result.assets[0].uri,
-          name: "logo.jpg",
-          type: "image/jpeg",
-        },
-      }));
-    }
-  };
+  //   if (!result.canceled) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       logo: {
+  //         uri: result.assets[0].uri,
+  //         name: "logo.jpg",
+  //         type: "image/jpeg",
+  //       },
+  //     }));
+  //   }
+  // };
 
   const removeMember = (memberId: string) => {
     setFormData((prev) => ({
@@ -247,6 +249,52 @@ const [formattedDate, setFormattedDate] = useState("");
       members: prev.members.filter((member) => member._id !== memberId),
     }));
   };
+
+
+const selectImage = async () => {
+  try {
+    // // 1. Request permissions
+    // const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    // if (status !== 'granted') {
+    //   Alert.alert('Permission denied', 'We need access to your photos to select a team logo');
+    //   return;
+    // }
+
+    // 2. Launch image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      // Correct way to specify media types
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    // 3. Handle the result
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      return {
+        uri: asset.uri,
+        name: asset.fileName || `image-${Date.now()}.jpg`,
+        type: asset.mimeType || 'image/jpeg',
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Image picker error:', error);
+    Alert.alert('Error', 'Failed to select image');
+    return null;
+  }
+};
+
+const handleImageSelect = async () => {
+  const image = await selectImage();
+  if (image) {
+    setFormData(prev => ({
+      ...prev,
+      logo: image
+    }));
+  }
+};
 
   const handleInviteMembers = async (selectedUsers: any[]) => {
     if (!user?.id || !formData.sport) {
@@ -416,38 +464,37 @@ const [formattedDate, setFormattedDate] = useState("");
                 Forge Unbreakable Bonds, Play Strong, and Conquer Together –
                 Create Your Team Now.
               </TextScallingFalse>
-
-              {/* Logo Upload */}
-              <View className="mb-6 h-48">
-                <TextScallingFalse className="text-white text-2xl mb-2">Logo*</TextScallingFalse>
-                <TouchableOpacity
-                  onPress={selectImage}
-                  className="border border-[#515151] h-40 rounded-lg px-4 flex-row items-center"
-                >
-                  {formData.logo ? (
-                    <View className="flex-row items-center justify-center w-full">
-                      <Image
-                        source={{ uri: formData.logo.uri }}
-                        className="w-32 h-32 rounded"
-                      />
-                    </View>
-                  ) : (
-                    <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
-                      <Icon name="upload" size={30} color="gray" />
-                      <TextScallingFalse className="text-gray-400 text-xl">Upload Logo</TextScallingFalse>
-                    </View>
-                  )}
-                  {formData.logo && (
-                    <TouchableOpacity
-                      onPress={() => setFormData({ ...formData, logo: null })}
-                      className="absolute right-2 top-2 bg-gray-800 rounded-full w-6 h-6 items-center justify-center"
-                    >
-                      <TextScallingFalse className="text-white text-sm">✕</TextScallingFalse>
-                    </TouchableOpacity>
-                  )}
-                </TouchableOpacity>
-              </View>
-
+{/* Logo Upload */}
+             {/* Logo Upload */}
+<View className="mb-6 h-48">
+  <TextScallingFalse className="text-white text-2xl mb-2">Logo*</TextScallingFalse>
+  <TouchableOpacity
+    onPress={handleImageSelect}
+    className="border border-[#515151] h-40 rounded-lg px-4 flex-row items-center"
+  >
+    {formData.logo ? (
+      <View className="flex-row items-center justify-center w-full">
+        <Image
+          source={{ uri: formData.logo.uri }}
+          className="w-32 h-32 rounded"
+        />
+      </View>
+    ) : (
+      <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
+        <Icon name="upload" size={30} color="gray" />
+        <TextScallingFalse className="text-gray-400 text-xl">Upload Logo</TextScallingFalse>
+      </View>
+    )}
+    {formData.logo && (
+      <TouchableOpacity
+        onPress={() => setFormData({ ...formData, logo: null })}
+        className="absolute right-2 top-2 bg-gray-800 rounded-full w-6 h-6 items-center justify-center"
+      >
+        <TextScallingFalse className="text-white text-sm">✕</TextScallingFalse>
+      </TouchableOpacity>
+    )}
+  </TouchableOpacity>
+</View>
               {/* Form Fields */}
               <View className="space-y-6">
                 {/* Name */}
@@ -811,6 +858,47 @@ const styles = StyleSheet.create({
   },
   iosDatePicker: {
     height: 200,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logoWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#1E1E1E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#515151',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  logoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#12956B',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#1E1E1E',
   },
 });
 

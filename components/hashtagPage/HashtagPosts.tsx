@@ -1,51 +1,75 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   FlatList,
-  RefreshControl,
-  Text,
   ActivityIndicator,
+  RefreshControl,
   Dimensions,
+  StyleSheet,
 } from "react-native";
-import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedApi.hashtag";
-import PostContainer from "~/components/Cards/postContainer";
-import { Post } from "~/reduxStore/api/feed/features/feedApi.getFeed";
-import TextScallingFalse from "~/components/CentralText";
 import { Divider } from "react-native-elements";
-import { Colors } from "~/constants/Colors";
+import { fetchHashtagPosts } from "~/reduxStore/slices/post/hooks";
+import { makeSelectHashtagPosts } from "~/reduxStore/slices/post/selectors";
+import { Post } from "~/types/post";
+import PostContainer from "~/components/Cards/postContainer";
 import HashtagNotFound from "../notfound/hashtagNotFound";
-
-type ContentType = "top" | "latest" | "polls" | "media" | "people";
+import TextScallingFalse from "~/components/CentralText";
+import { Colors } from "~/constants/Colors";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "~/reduxStore";
 
 const screenWidth = Dimensions.get("window").width;
 
 const HashtagPosts = ({
-  type,
   hashtag,
+  type,
 }: {
-  type: ContentType;
   hashtag: string;
+  type: "top" | "latest" | "polls" | "media" | "people";
 }) => {
-  const { data, error, isLoading, refetch } = useGetHashtagContentsQuery({
-    hashtag,
-    type,
-    limit: 10,
-  });
+  const dispatch = useDispatch<AppDispatch>();
 
+  const selectHashtagPosts = useCallback(
+    makeSelectHashtagPosts(hashtag, type),
+    [hashtag, type]
+  );
+
+  const posts = useSelector(selectHashtagPosts);
+  const nextCursor = useSelector(
+    (state: RootState) =>
+      state.views.hashtag[hashtag]?.[type]?.nextCursor ?? null
+  );
+
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  const handleRefresh = useCallback(async () => {
+  const loadPosts = async (cursor?: string | null) => {
+    await dispatch(fetchHashtagPosts({ hashtag, type, limit: 10, cursor }));
+  };
+
+  useEffect(() => {
+    setInitialLoading(true);
+    loadPosts().finally(() => setInitialLoading(false));
+  }, [hashtag, type]);
+
+  const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await loadPosts(); // no cursor => refresh
     setRefreshing(false);
-  }, [refetch]);
+  };
 
-  const posts = useMemo(() => data?.data || [], [data]);
+  const handleLoadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    await loadPosts(nextCursor);
+    setLoadingMore(false);
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View style={{ width: screenWidth }}>
-        <PostContainer item={item} highlightedHashtag={`#${hashtag}`} />
+        <PostContainer item={item as any} highlightedHashtag={`#${hashtag}`} />
         <Divider
           style={{ marginHorizontal: "auto", width: "100%" }}
           width={0.4}
@@ -56,53 +80,47 @@ const HashtagPosts = ({
     [hashtag]
   );
 
-  if (error) {
+  if (initialLoading) {
     return (
-      <View className="justify-center items-center">
-        <Text className="text-red-400">Something went wrong.</Text>
-      </View>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center">
+      <View style={styles.center}>
         <ActivityIndicator size="large" color={Colors.themeColor} />
       </View>
     );
   }
 
-  if (!posts.length) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <HashtagNotFound text={hashtag} />
-      </View>
-    );
+  if (!posts || posts.length === 0) {
+    return <HashtagNotFound text={hashtag} />;
   }
 
   return (
     <FlatList
       data={posts}
-      keyExtractor={(item) => item._id.toString()}
+      keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.5}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          colors={["#12956B", "#6E7A81"]}
-          tintColor="#6E7A81"
-          title="Refreshing..."
-          titleColor="#6E7A1"
-          progressBackgroundColor="#181A1B"
+          tintColor={Colors.themeColor}
         />
       }
-      initialNumToRender={5}
-      maxToRenderPerBatch={5}
-      windowSize={10}
-      removeClippedSubviews
-      ListFooterComponent={<View className="mt-20" />}
+      ListFooterComponent={
+        loadingMore ? (
+          <ActivityIndicator size="small" color={Colors.themeColor} />
+        ) : null
+      }
     />
   );
 };
 
-export default React.memo(HashtagPosts);
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
+export default HashtagPosts;

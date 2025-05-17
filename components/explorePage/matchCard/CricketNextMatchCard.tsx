@@ -54,7 +54,6 @@ interface GroupedMatchProps {
   matches: MatchCardProps[];
 }
 
-const iplImg = require("~/assets/images/ipl.png");
 
 const CricketNextMatchCard = ({
   seriesId,

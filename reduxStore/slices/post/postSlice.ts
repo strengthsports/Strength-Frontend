@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showFeedback } from "~/utils/feedbackToast";
 import { getToken } from "~/utils/secureStore";
+import { addPost, upsertPosts } from "./postsSlice";
+import { addPostToTopOfFeed } from "./viewsSlice";
 
 // Initial State
 const initialState = {
@@ -36,6 +38,8 @@ export const uploadPost = createAsyncThunk(
           },
         }
       );
+      dispatch(upsertPosts([response.data.data]));
+      dispatch(addPostToTopOfFeed(response.data.data._id));
       showFeedback("Post uploaded successfully !", "success");
       return response.data;
     } catch (error) {

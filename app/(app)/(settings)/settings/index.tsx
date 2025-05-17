@@ -31,7 +31,7 @@ import { ToastAndroid } from "react-native";
 import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Platform } from "react-native";
-import { resetFeed } from "~/reduxStore/slices/feed/feedSlice";
+import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
 import ChangePasswordForm from "./ChangePasswordForm";
 import CloseAccountView from "./CloseAccountView";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
@@ -64,22 +64,22 @@ const index = () => {
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-          type: "error",
-          text1: "Logged out successfully",
-          visibilityTime: 1500,
-          autoHide: true,
-        });
+            type: "error",
+            text1: "Logged out successfully",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
       dispatch(resetFeed());
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-          type: "error",
-          text1: "Logged out successfully",
-          visibilityTime: 1500,
-          autoHide: true,
-        });
+            type: "error",
+            text1: "Logged out successfully",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
     }
   };
 
@@ -110,12 +110,11 @@ const index = () => {
     setModalVisible4(true);
   };
 
-
   return (
     <PageThemeView>
       <View style={styles.TopBarView}>
         <TouchableOpacity
-          style={{ width: 60, height: 30, justifyContent: 'center' }}
+          style={{ width: 60, height: 30, justifyContent: "center" }}
           activeOpacity={0.5}
           onPress={() => router.back()}
         >
@@ -136,7 +135,7 @@ const index = () => {
           flexDirection: "row",
         }}
       >
-        <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", gap: 15, alignItems: "center" }}>
           <Image
             source={user?.profilePic ? { uri: user?.profilePic } : nopic}
             style={{
@@ -155,9 +154,16 @@ const index = () => {
               {user?.firstName} {user?.lastName}
             </TextScallingFalse>
             <TextScallingFalse
-              style={{ color: "#9FAAB5", fontSize: 13, fontWeight: "400", lineHeight: 17 }}
+              style={{
+                color: "#9FAAB5",
+                fontSize: 13,
+                fontWeight: "400",
+                lineHeight: 17,
+              }}
             >
-              @{user?.username} <TextScallingFalse style={{ fontSize: 13 }}>|</TextScallingFalse> {user?.headline}
+              @{user?.username}{" "}
+              <TextScallingFalse style={{ fontSize: 13 }}>|</TextScallingFalse>{" "}
+              {user?.headline}
             </TextScallingFalse>
           </View>
         </View>
@@ -177,7 +183,11 @@ const index = () => {
           gap: 20,
         }}
       >
-        <TouchableOpacity style={styles.OptionButtonView} onPress={openModal} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.OptionButtonView}
+          onPress={openModal}
+          activeOpacity={0.7}
+        >
           <MaterialCommunityIcons
             name="account-cog-outline"
             size={31}
@@ -195,19 +205,36 @@ const index = () => {
           </TextScallingFalse>
         </TouchableOpacity>
         {/* Blocked users */}
-        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}
-          onPress={() => router.push("/(app)/(settings)/blocked-users")}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.OptionButtonView}
+          onPress={() => router.push("/(app)/(settings)/blocked-users")}
+        >
           <MaterialIcons name="block" size={31} color="white" />
           <TextScallingFalse style={styles.OptionText}>
             Blocked Users
           </TextScallingFalse>
         </TouchableOpacity>
         {/* LogOut */}
-        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}
-          onPress={handleLogout}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.OptionButtonView}
+          onPress={handleLogout}
+        >
           <Ionicons name="exit-outline" size={31} color="white" />
           <TextScallingFalse style={styles.OptionText}>
             Log Out
+          </TextScallingFalse>
+        </TouchableOpacity>
+                {/* LogOut Bypass*/}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.OptionButtonView}
+          onPress={()=>router.push('/(auth)/login')}
+        >
+          <Ionicons name="exit-outline" size={31} color="white" />
+          <TextScallingFalse style={styles.OptionText}>
+            Log Out Bypass
           </TextScallingFalse>
         </TouchableOpacity>
       </View>
@@ -220,7 +247,11 @@ const index = () => {
       >
         <PageThemeView>
           <View style={styles.TopBarView}>
-            <TouchableOpacity style={{ width: 60, height: 30, justifyContent: 'center' }} activeOpacity={0.5} onPress={closeModal}>
+            <TouchableOpacity
+              style={{ width: 60, height: 30, justifyContent: "center" }}
+              activeOpacity={0.5}
+              onPress={closeModal}
+            >
               <BackIcon />
             </TouchableOpacity>
             <TextScallingFalse
@@ -251,8 +282,7 @@ const index = () => {
                 className="py-4"
                 onPress={() => {
                   setShowChangePasswordForm(true);
-                }
-                }
+                }}
                 activeOpacity={0.7}
               >
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
@@ -278,7 +308,13 @@ const index = () => {
                 size={26}
                 color="white"
               />
-              <TouchableOpacity className="py-4" onPress={() => { setShowCloseAccountPage(true); }} activeOpacity={0.7}>
+              <TouchableOpacity
+                className="py-4"
+                onPress={() => {
+                  setShowCloseAccountPage(true);
+                }}
+                activeOpacity={0.7}
+              >
                 <TextScallingFalse style={styles.AccountSettingsOptions}>
                   Close account
                 </TextScallingFalse>
@@ -287,10 +323,7 @@ const index = () => {
           </View>
 
           {showChangePasswordForm && (
-            <Modal
-              visible={showChangePasswordForm}
-              transparent={true}
-            >
+            <Modal visible={showChangePasswordForm} transparent={true}>
               <ChangePasswordForm
                 onSuccess={() => {
                   setShowChangePasswordForm(false);
@@ -305,8 +338,7 @@ const index = () => {
             <Modal
               visible={showCloseAccountPage}
               transparent={true}
-              onRequestClose={() =>
-                setShowCloseAccountPage(false)}
+              onRequestClose={() => setShowCloseAccountPage(false)}
             >
               <CloseAccountView
                 onClose={() => setShowCloseAccountPage(false)}
@@ -324,7 +356,6 @@ const index = () => {
               <AgreementsModalView onClose={() => setOpenModal14(false)} />
             </Modal>
           )}
-
         </PageThemeView>
       </Modal>
     </PageThemeView>

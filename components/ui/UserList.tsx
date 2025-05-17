@@ -7,6 +7,8 @@ import {
 import { useLazyFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
 import TextScallingFalse from "../CentralText";
 import UserCard from "../Cards/UserCard";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
 
 export type PageType = "Likers" | "Followers" | "Followings";
 
@@ -18,7 +20,9 @@ interface UserListProps {
 const ITEM_HEIGHT = 60;
 
 const UserList = memo(({ targetId, type }: UserListProps) => {
-  console.log(targetId);
+  const currentUserId = useSelector(
+    (state: RootState) => state.profile.user?._id
+  );
   const [userData, setUserData] = useState<any[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -114,7 +118,9 @@ const UserList = memo(({ targetId, type }: UserListProps) => {
         <FlatList
           data={userData}
           keyExtractor={(item) => item._id}
-          renderItem={({ item }) => <UserCard user={item} />}
+          renderItem={({ item }) => (
+            <UserCard user={item} isOwnProfile={currentUserId === item._id} />
+          )}
           contentContainerStyle={{ flexGrow: 1, padding: 10 }}
           getItemLayout={(_, index) => ({
             length: ITEM_HEIGHT,

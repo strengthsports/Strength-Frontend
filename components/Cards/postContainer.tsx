@@ -506,7 +506,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onDoublePress={handleDoubleTap}
               >
                 <Image
-                  source={!thumbnail ? { uri: thumbnail } : nothumbnail}
+                  source={thumbnail ? { uri: thumbnail } : nothumbnail}
                   resizeMode="cover"
                   fadeDuration={0}
                   style={{

@@ -109,7 +109,7 @@ const ImageSlide = memo(
       >
         <Image
           source={
-            uri !== null ? require("../../assets/images/DefaultImage.png") : { uri }
+            uri === null ? require("../../assets/images/DefaultImage.png") : { uri }
           }
          
           resizeMode="cover"

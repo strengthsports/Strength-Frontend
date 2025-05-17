@@ -226,10 +226,6 @@ const Home = () => {
     );
   }
 
-  console.log('hasVisitedEditProfile-',profile?.hasVisitedEditProfile)
-  console.log('hasVisitedEditOverview-',profile?.hasVisitedEditOverview)
-  console.log('hasVisitedCommunity-',profile?.hasVisitedCommunity)
-
   return (
     <PageThemeView>
       <CustomHomeHeader />

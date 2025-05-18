@@ -86,9 +86,9 @@ const InteractionBar = ({
         >
           <TouchableOpacity
             activeOpacity={0.7}
-            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }} 
           >
-            <AntDesign name="like1" size={16} color="#fbbf24" />
+            <AntDesign name="like1" size={13} color="#fbbf24" />
             <TextScallingFalse className="text-base text-white font-light">
               {likesCount} {likesCount > 1 ? "Likes" : "Like"}
             </TextScallingFalse>
@@ -179,7 +179,7 @@ const InteractionBar = ({
         style={{
           columnGap: isPostContainer ? 16 : 32,
           borderColor: "#303030",
-          marginTop: 2
+          marginTop: 1
         }}
       >
         {/* like */}

@@ -58,7 +58,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showAllTeams, setShowAllTeams] = useState(false);
 
-  const user = useSelector((state: RootState) => state.profile.user);
+  const user = useSelector((state: RootState) => state?.profile?.user);
   const teams = useSelector((state: RootState) => state.team.teams);
   const [teamList, setTeamList] = useState<TeamsList[]>([]);
 
@@ -75,7 +75,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
   const processTeams = () => {
     const uniqueTeams = new Map<string, Team>();
 
-    [...(teams?.createdTeams || []), ...(teams?.joinedTeams || [])].forEach(
+    [...(user?.createdTeams || []), ...(user?.joinedTeams || [])].forEach(
       (teamEntry) => {
         if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
           uniqueTeams.set(teamEntry.team._id, {
@@ -119,7 +119,7 @@ export const DrawerProvider = ({ children }: { children: ReactNode }) => {
     }, 1000);
   };
 
-  console.log("team.sportname-",teams.joinedTeams)
+  console.log("team.sportname-",user?.joinedTeams)
 
   return (
     <DrawerContext.Provider

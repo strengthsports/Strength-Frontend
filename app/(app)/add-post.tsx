@@ -457,7 +457,7 @@ export default function AddPostContainer() {
   };
 
   return (
-    <>
+    
       <PageThemeView>
         <View className="h-full">
           {/* Header */}
@@ -657,6 +657,6 @@ export default function AddPostContainer() {
           />
         )}
       </PageThemeView>
-    </>
+ 
   );
 }

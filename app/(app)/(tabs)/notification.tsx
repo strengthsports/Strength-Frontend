@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -86,7 +87,7 @@ const NotificationPage = () => {
           ?.map((n) => n._id) || [];
 
       dispatch(resetCount());
-      if (unreadIds.length > 0) {
+      if (unreadIds?.length > 0) {
         await markAsRead({ notificationIds: unreadIds }).unwrap();
         dispatch(setHasNewNotification(false));
         dispatch(resetCount());
@@ -103,7 +104,7 @@ const NotificationPage = () => {
         (n) => !previousData.current.some((prev) => prev._id === n._id)
       );
 
-      if (newNotifications.length > 0) {
+      if (newNotifications?.length > 0) {
         const newIds = newNotifications.map((n) => n._id);
         setNewNotificationIds((prev) => [...prev, ...newIds]);
         const timeout = setTimeout(() => {
@@ -155,33 +156,45 @@ const NotificationPage = () => {
 
   return (
     <SafeAreaView className="flex-1 pt-6 bg-black">
-      <View className="mb-4 px-6">
-        <View className="w-full flex-row justify-between items-center">
+      <View className="mb-4">
+        <View className="w-full flex-row justify-between items-center px-5">
           <TextScallingFalse className="text-6xl font-normal text-white">
             Notifications
           </TextScallingFalse>
           <MaterialCommunityIcons name="tune-variant" color="#fff" size={20} />
         </View>
-        <View className="flex-row justify-start gap-x-3 border-b border-[#121212] pb-2 mt-4">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flexDirection: "row",
+            justifyContent: "flex-start",
+            columnGap: 12,
+            paddingBottom: 12,
+            paddingLeft: 15,
+            marginTop: 16,
+          }}
+          className="border-b border-[#121212]"
+        >
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
-              className={`px-5 py-2.5 rounded-xl border border-[#2c2c2c] ${
+              className={`px-6 py-2.5 rounded-xl border border-[#2c2c2c] ${
                 activeTab === tab.id ? "bg-neutral-800" : ""
               }`}
               activeOpacity={0.7}
             >
-              <Text
+              <TextScallingFalse
                 className={`text-lg font-medium ${
                   activeTab === tab.id ? "text-white" : "text-[#BFBFBF]"
                 }`}
               >
                 {tab.label}
-              </Text>
+              </TextScallingFalse>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       {isLoading && <ActivityIndicator size="large" color="gray" />}
@@ -189,7 +202,7 @@ const NotificationPage = () => {
         <Text className="text-red-500">Failed to load notifications.</Text>
       )}
 
-      {!isLoading && filtered.length > 0 ? (
+      {!isLoading && filtered?.length > 0 ? (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item._id}

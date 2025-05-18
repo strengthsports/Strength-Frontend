@@ -1,4 +1,4 @@
-const teamLogos: Record<string, any> = {
+export const teamLogos: Record<string, any> = {
   CSK: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215267400-chennaisuperkings.png",
   DC: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215533557-delhicapitals.png",
   GT: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215643186-gujarattitans.png",
@@ -11,4 +11,9 @@ const teamLogos: Record<string, any> = {
   SRH: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215998933-sunrisershyderabad.png",
 };
 
-export default teamLogos;
+export const seriesLogos: Record<string, any> = {
+  "Indian Premier League 2025":
+    "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747497481948-ipl-logo.jpg",
+  "ICC Cricket World Cup League Two 2023-2027":
+    "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747501464920-icc-logo.png",
+};

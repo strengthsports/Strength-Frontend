@@ -104,6 +104,14 @@ const NotificationCardLayout = React.memo(
       );
     }, [dispatch]);
 
+    const handleAcceptRequest = useCallback(() => {
+      // Handle team join request accept function
+    }, []);
+
+    const handleRejectRequest = useCallback(() => {
+      // Handle team join request reject function
+    }, []);
+
     // Custom rendering for different notification types
     const renderNotificationContent = () => {
       if (type === "Comment" && target.type === "Post") {
@@ -228,6 +236,26 @@ const NotificationCardLayout = React.memo(
               image={target.logo && target.logo.url}
               handleAccept={handleAcceptTeamInvitaion}
               handleDecline={handleRejectTeamInvitaion}
+            />
+          </>
+        );
+      }
+
+      if (type === "JoinTeamRequest") {
+        return (
+          <>
+            <NotificationHeader
+              sender={sender}
+              type={type}
+              timeAgo={timeAgo}
+              isNew={isNew}
+              teamName={target.name}
+              // role={role}
+            />
+            <TeamPreview
+              image={target.logo && target.logo.url}
+              handleAccept={handleAcceptRequest}
+              handleDecline={handleRejectRequest}
             />
           </>
         );
@@ -456,9 +484,23 @@ const TeamPreview = React.memo(
                 </TextScallingFalse>
               </TouchableOpacity>
             )}
-            {!isDeclined && (
+            {!isDeclined && isAccepted ? (
               <TouchableOpacity
-                className="bg-theme self-start px-4 justify-center rounded-lg border-theme"
+                className="bg-theme self-start px-4 flex-row justify-center items-center rounded-lg border-theme"
+                style={{ height: 32 }}
+                onPress={() => {
+                  setIsAccepted(true);
+                  handleAccept();
+                }}
+              >
+                <TickIcon />
+                <TextScallingFalse className="text-white font-medium text-[12px]">
+                  Accepted
+                </TextScallingFalse>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                className="bg-theme self-start px-4 justify-center items-center rounded-lg border-theme"
                 style={{ height: 32 }}
                 onPress={() => {
                   setIsAccepted(true);
@@ -466,13 +508,7 @@ const TeamPreview = React.memo(
                 }}
               >
                 <TextScallingFalse className="text-white font-medium text-[12px]">
-                  {isAccepted ? (
-                    <>
-                      <TickIcon /> Accepted
-                    </>
-                  ) : (
-                    "Accept"
-                  )}
+                  Accept
                 </TextScallingFalse>
               </TouchableOpacity>
             )}

@@ -78,7 +78,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
           justifyContent: "center",
           flex: 1,
           paddingLeft: 15,
-          paddingTop: 38,
+          paddingTop: 50,
         }}
       >
         <View
@@ -88,7 +88,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
             padding: 75,
             justifyContent: "center",
             alignItems: "center",
-            height: 378,
+            height: 385,
           }}
           className="border-[#2C2C2C] border-[0.3px] rounded-[15px] bg-[#0B0B0B]"
         >
@@ -155,6 +155,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
           scrollEventThrottle={16}
           style={{ flex: 1 }}
           ListFooterComponent={ListFooterComponent}
+          keyboardShouldPersistTaps="handled"
         />
         {/* dot carousel */}
         {displayedPosts?.length > 0 && (

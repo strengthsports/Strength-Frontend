@@ -34,6 +34,7 @@ import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import { TextLayoutEventData } from "react-native";
 import { Platform } from "react-native";
+import nopic from "@/assets/images/nopic.jpg";
 
 type TaggedUser = {
   _id: string;
@@ -233,7 +234,11 @@ const PostSmallCard = ({
         <View style={{ paddingLeft: "8%" }}>
           <View style={[{ height: 10 }, shadowStyle]} />
           <Image
-            source={{ uri: post.postedBy?.profilePic }}
+            source={
+              post?.postedBy?.profilePic
+                ? { uri: post?.postedBy?.profilePic }
+                : nopic
+            }
             style={{
               width: 50 * scaleFactor,
               height: 50 * scaleFactor,
@@ -289,7 +294,7 @@ const PostSmallCard = ({
       </View>
 
       {/* Caption Section */}
-      <View className="relative left-[5%] bottom-0 w-[95%] mt-3 min-h-16 h-auto rounded-tl-[45px] rounded-tr-[15px] pb-2 bg-[#151515]">
+      <View className="relative left-[5%] bottom-0 w-[95%] mt-3 min-h-[70px] h-auto rounded-tl-[45px] rounded-tr-[15px] pb-2 bg-[#151515]">
         <TouchableOpacity activeOpacity={0.7} onPress={navigateToPostDetails}>
           <MaterialIcons
             className="absolute right-5 top-[4px]"
@@ -310,14 +315,14 @@ const PostSmallCard = ({
           >
             {elements}
           </TextScallingFalse>
-          {!isExpanded && isTruncated && (
+          {/* {!isExpanded && isTruncated && (
             <TextScallingFalse
               onPress={handleToggle}
               className="text-[#808080] text-sm"
             >
               {" ...see more"}
             </TextScallingFalse>
-          )}
+          )} */}
         </TouchableOpacity>
       </View>
 
@@ -352,34 +357,39 @@ const PostSmallCard = ({
               )}
             </View>
           ) : imageUrls.length > 0 ? (
-            <Swiper
-              ref={swiperRef}
-              loop={false}
-              onIndexChanged={setCurrentSlide}
-              showsPagination={false}
-              style={{ height: 240 * scaleFactor }}
+            <View
+              style={{
+                height: 240 * scaleFactor,
+                borderTopLeftRadius: 16,
+                borderBottomLeftRadius: 16,
+                borderTopWidth: 1,
+                borderBottomWidth: 1,
+                borderLeftWidth: 1,
+                borderColor: "#222222",
+                // overflow: "hidden",
+              }}
             >
-              {imageUrls.map((uri) => (
+              {imageUrls[0] && (
                 <Image
-                  key={uri}
-                  source={{ uri }}
+                  key={imageUrls[0]}
+                  source={{ uri: imageUrls[0] }}
                   style={{
                     width: "100%",
                     height: 240 * scaleFactor,
                     backgroundColor: "white",
-                    borderTopLeftRadius: 22,
-                    borderBottomLeftRadius: 22,
+                    borderTopLeftRadius: 16,
+                    borderBottomLeftRadius: 16,
                   }}
-                  resizeMode="cover"
+                  // resizeMode="cover"
                 />
-              ))}
-            </Swiper>
+              )}
+            </View>
           ) : null}
         </View>
       </TouchableOpacity>
 
       {/* Interaction Section */}
-      <View style={{ width: "100%", alignItems: "flex-end" }}>
+      <View style={{ width: "100%", alignItems: "flex-end", marginTop: 1 }}>
         <View
           style={{
             backgroundColor: "#151515",

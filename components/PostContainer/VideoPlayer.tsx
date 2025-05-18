@@ -294,7 +294,7 @@ export default function YouTubeStyleVideoPlayer({
             },
           ]}
           player={player}
-          contentFit={editable ? "cover" : "contain"}
+          contentFit="cover"
           nativeControls={isFullscreen ? true : false}
           allowsFullscreen
           onFullscreenExit={() => setIsFullscreen(false)}
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 5,
+    height: 2,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   progressBar: {

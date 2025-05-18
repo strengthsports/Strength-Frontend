@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Image, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  Pressable,
+  Animated,
+} from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import NameFlagSubCard from "../nameFlagSubCard";
 import { countryCodes } from "~/constants/countryCodes";
@@ -188,7 +194,7 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
       <View className="h-[0.8] bg-[#252525] my-1" />
 
       {/* Teams Section */}
-      <TouchableOpacity onPress={onCardPress}>
+      <Pressable onPress={onCardPress}>
         <View className="px-4 mt-1">
           {/* Team 1 */}
           <View className="flex-row items-center justify-between mt-2 mb-1">
@@ -281,7 +287,7 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
             </TextScallingFalse>
           )}
         </View>
-      </TouchableOpacity>
+      </Pressable>
     </>
   );
 };

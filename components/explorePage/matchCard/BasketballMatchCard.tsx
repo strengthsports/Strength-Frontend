@@ -3,6 +3,7 @@ import {
   View,
   Image,
   TouchableOpacity,
+  Pressable,
   Animated,
   ScrollView,
 } from "react-native";
@@ -210,7 +211,7 @@ const BasketballMatchCard = ({
 
       {/* Teams & Scores Section */}
 
-      <TouchableOpacity onPress={onCardPress}>
+      <Pressable onPress={onCardPress}>
         <View className="mt-1">
           <View className="mt-5 px-5">
             {/* Team 1 */}
@@ -286,7 +287,7 @@ const BasketballMatchCard = ({
             </ScrollView>
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Match Status */}
       {/* <TextScallingFalse className="absolute bottom-4 left-4 text-neutral-400 text-base mt-2">

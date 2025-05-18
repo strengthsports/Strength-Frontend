@@ -10,7 +10,7 @@ export const handleCommentApi = feedApi.injectEndpoints({
       }),
     }),
     fetchReplies: builder.query({
-      query: ({ commentId, limit = 2, cursor }) => ({
+      query: ({ commentId, limit = 3, cursor }) => ({
         url: `/post/comments/${commentId}/replies`,
         params: { limit, ...(cursor ? { cursor } : {}) },
       }),

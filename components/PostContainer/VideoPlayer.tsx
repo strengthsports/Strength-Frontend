@@ -22,6 +22,7 @@ import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import PauseIcon from "../SvgIcons/clips/PauseIcon";
 import TextScallingFalse from "../CentralText";
 import { useIsFocused } from "@react-navigation/native";
+import { ActivityIndicator } from "react-native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const DEFAULT_VIDEO =
@@ -43,6 +44,7 @@ export default function YouTubeStyleVideoPlayer({
   const [duration, setDuration] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
   const isFocused = useIsFocused();
+  const [isLoading, setIsLoading] = useState(true);
 
   const playerRef = useRef<VideoView>();
 
@@ -134,6 +136,29 @@ export default function YouTubeStyleVideoPlayer({
     const handleStatusChange = () => {
       if (player.duration > 0) {
         setDuration(player.duration);
+      }
+    };
+
+    player.addListener("statusChange", handleStatusChange);
+
+    return () => {
+      if (isPlayerValid()) {
+        player.removeListener("statusChange", handleStatusChange);
+      }
+    };
+  }, [player]);
+
+  // Loading video
+  useEffect(() => {
+    if (!isPlayerValid()) return;
+
+    const handleStatusChange = (status: any) => {
+      console.log("Stataus : ", status);
+      if (status.status === "readyToPlay") {
+        setIsLoading(false);
+        setDuration(player.duration);
+      } else if (status.status === "error") {
+        setIsLoading(false);
       }
     };
 
@@ -289,69 +314,81 @@ export default function YouTubeStyleVideoPlayer({
               borderTopLeftRadius: editable ? 16 : 0,
               borderBottomLeftRadius: editable ? 16 : 0,
               marginLeft: editable ? 8 : 0,
-              borderWidth: editable ? 1 : 0,
-              borderColor: editable ? "#222222" : "transparent",
+              borderWidth: editable ? 5 : 0,
+              borderColor: "#222222",
             },
           ]}
           player={player}
-          contentFit={editable ? "cover" : "contain"}
+          contentFit="cover"
           nativeControls={isFullscreen ? true : false}
           allowsFullscreen
           onFullscreenExit={() => setIsFullscreen(false)}
         />
 
+        {/* Loader Overlay */}
+        {isLoading && (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#cecece" />
+          </View>
+        )}
+
         {/* Controls overlay */}
-        <Animated.View
-          style={[styles.controlsContainer, { opacity: fadeAnim }]}
-        >
-          <View style={styles.progressBarContainer}>
-            <View
-              style={[styles.progressBar, { width: `${progressPercentage}%` }]}
-            />
-          </View>
-          {/* Top right controls */}
-          {!editable && (
-            <View style={styles.topRightControls}>
-              <TouchableOpacity
-                onPress={toggleMute}
-                style={styles.controlButton}
-              >
-                <MaterialIcons
-                  name={isMuted ? "volume-off" : "volume-up"}
-                  size={16}
-                  color="#fff"
-                  className="bg-black/20 p-1 rounded-md"
-                />
-              </TouchableOpacity>
+        {!isLoading && (
+          <Animated.View
+            style={[styles.controlsContainer, { opacity: fadeAnim }]}
+          >
+            <View style={styles.progressBarContainer}>
+              <View
+                style={[
+                  styles.progressBar,
+                  { width: `${progressPercentage}%` },
+                ]}
+              />
             </View>
-          )}
-          {/* Center controls */}
-          <View style={styles.centerControls}>
-            {isPlaying ? <PauseIcon /> : <ClipsIconRP />}
-          </View>
-          {/* Bottom time display */}
-          <View style={styles.timeContainer}>
-            <TextScallingFalse style={styles.timeText}>
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </TextScallingFalse>
-          </View>
-          {/* Bottom right controls */}
-          {!editable && (
-            <View style={styles.rightControls}>
-              <TouchableOpacity
-                onPress={handleFullScreen}
-                style={styles.controlButton}
-              >
-                <MaterialCommunityIcons
-                  name="fullscreen"
-                  size={18}
-                  color="#E6E6E6"
-                  className="bg-black/20 p-1 rounded-md"
-                />
-              </TouchableOpacity>
+            {/* Top right controls */}
+            {!editable && (
+              <View style={styles.topRightControls}>
+                <TouchableOpacity
+                  onPress={toggleMute}
+                  style={styles.controlButton}
+                >
+                  <MaterialIcons
+                    name={isMuted ? "volume-off" : "volume-up"}
+                    size={16}
+                    color="#fff"
+                    className="bg-black/20 p-1 rounded-md"
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
+            {/* Center controls */}
+            <View style={styles.centerControls}>
+              {isPlaying ? <PauseIcon /> : <ClipsIconRP />}
             </View>
-          )}
-        </Animated.View>
+            {/* Bottom time display */}
+            <View style={styles.timeContainer}>
+              <TextScallingFalse style={styles.timeText}>
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </TextScallingFalse>
+            </View>
+            {/* Bottom right controls */}
+            {!editable && (
+              <View style={styles.rightControls}>
+                <TouchableOpacity
+                  onPress={handleFullScreen}
+                  style={styles.controlButton}
+                >
+                  <MaterialCommunityIcons
+                    name="fullscreen"
+                    size={18}
+                    color="#E6E6E6"
+                    className="bg-black/20 p-1 rounded-md"
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
+          </Animated.View>
+        )}
 
         {editable && !isFullscreen && (
           <TouchableOpacity
@@ -404,6 +441,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
+  },
+  loaderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   fullscreenVideo: {
     width: SCREEN_HEIGHT,
@@ -485,7 +528,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 5,
+    height: 2,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   progressBar: {

@@ -36,7 +36,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
   const [modalVisible, setModalVisible] = useState(false);
 
   const images = [{
-    url: teamLogo || 'https://via.placeholder.com/150',
+    url: teamLogo || '',
     props: {
       // Optional props for the image
     }
@@ -78,7 +78,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
       <View className="flex flex-row py-4 w-64 max-w-84">
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image 
-            source={{ uri: teamLogo || 'https://via.placeholder.com/150' }} 
+            source={{ uri: teamLogo || "" }} 
             className="w-32 h-32 mt-1 border-2 border-[#181818] rounded-[8px] ml-8" 
             resizeMode="cover"
           />

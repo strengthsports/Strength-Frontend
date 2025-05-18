@@ -44,9 +44,9 @@ const BasketballNextMatch: React.FC<NextBasketballMatchProps> = ({
         )}
         ListEmptyComponent={
           <View className="w-screen justify-center mt-10">
-            <TextScallingFalse className="text-white self-center text-center pr-7">
+            {/* <TextScallingFalse className="text-white self-center text-center pr-7">
               No upcoming matches available
-            </TextScallingFalse>
+            </TextScallingFalse> */}
           </View>
         }
       />

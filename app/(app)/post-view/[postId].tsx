@@ -9,7 +9,13 @@ import {
   LayoutAnimation,
   Dimensions,
 } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { TouchableOpacity } from "react-native";
 import {
   RelativePathString,
@@ -106,29 +112,124 @@ const Post = () => {
     }
   }, []);
 
-  const renderCaptionWithHashtags = (caption: string) => {
-    return caption?.split(/(\#[a-zA-Z0-9_]+)/g).map((word, index) => {
-      if (word.startsWith("#")) {
-        return (
+  const goToHashtag = useCallback(
+    (tag: string) => {
+      // string version is faster than object
+      router.push(`/hashtag/${tag}/top`);
+    },
+    [router]
+  );
+
+  const goToUser = useCallback(
+    (serializedUser: any, userId?: string) => {
+      userId === post.postedBy?._id
+        ? router.push("/(app)/(tabs)/profile")
+        : router.push(`/(app)/(profile)/profile/${serializedUser}`);
+    },
+    [router]
+  );
+
+  const renderCaptionWithHashtags = (
+    caption: string,
+    taggedUsers: any,
+    isExpanded: boolean,
+    onPressSeeMore: () => void
+  ) => {
+    const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+    const elements = [];
+    let remainingChars = isExpanded ? Infinity : 94;
+    let showSeeMore = false;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (!part || remainingChars <= 0) continue;
+
+      if (part.startsWith("#")) {
+        if (part.length > remainingChars) {
+          showSeeMore = true;
+          return;
+        }
+        const tag = part.slice(1);
+        elements.push(
           <TextScallingFalse
-            key={index}
-            onPress={() =>
-              router.push(
-                `/(app)/(post)/hashtag/${word.substring(
-                  1,
-                  word.length
-                )}` as RelativePathString
-              )
-            }
-            className={`text-xl text-[#12956B]`}
+            key={i}
+            onPress={() => goToHashtag(tag)}
+            className={`text-xl text-[#12956B] active:bg-gray-600`}
           >
-            {word}
+            {part}
           </TextScallingFalse>
         );
+        remainingChars -= part.length;
+      } else if (part.startsWith("@")) {
+        const uname = part.slice(1);
+        const user = taggedUsers.find((u) => u.username === uname);
+        if (!user || part.length > remainingChars) {
+          showSeeMore = true;
+          return;
+        }
+        elements.push(
+          <TextScallingFalse
+            key={i}
+            onPress={() =>
+              goToUser(
+                encodeURIComponent(
+                  JSON.stringify({ id: user._id, type: user.type })
+                ),
+                user._id
+              )
+            }
+            className="text-xl text-[#12956B] active:bg-gray-600"
+          >
+            {part}
+          </TextScallingFalse>
+        );
+        remainingChars -= part.length;
+      } else {
+        const allowed = Math.min(remainingChars, part.length);
+        const visibleText = part.slice(0, allowed);
+        if (visibleText) {
+          elements.push(
+            <TextScallingFalse key={i} className={`text-white`}>
+              {visibleText}
+            </TextScallingFalse>
+          );
+          remainingChars -= allowed;
+
+          // Add see more immediately if we're truncating
+          if (allowed < part.length) {
+            showSeeMore = true;
+            break;
+          }
+        }
       }
-      return word;
-    });
+    }
+
+    if (!isExpanded && showSeeMore) {
+      elements.push(
+        <TextScallingFalse
+          key="see-more"
+          onPress={onPressSeeMore}
+          className="text-[#808080] text-xl"
+        >
+          ...more
+        </TextScallingFalse>
+      );
+    }
+
+    return elements;
   };
+
+  // Memoized Caption
+  const memoizedCaption = useMemo(
+    () =>
+      renderCaptionWithHashtags(
+        post.caption,
+        post.taggedUsers || [],
+        isExpanded,
+        () => setIsExpanded(true)
+      ),
+    [post, post.caption, post.taggedUsers, isExpanded]
+  );
 
   const handleTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = e.nativeEvent;
@@ -325,8 +426,9 @@ const Post = () => {
             position: "absolute",
             bottom: 130,
             zIndex: 20,
+            maxHeight: 180,
           }}
-          className={`w-full max-h-52 ${!isHeaderFooterVisible && "opacity-0"}`}
+          className={`w-full ${!isHeaderFooterVisible && "opacity-0"}`}
         >
           <ScrollView>
             <TextScallingFalse
@@ -339,7 +441,7 @@ const Post = () => {
                 toggleExpand();
               }}
             >
-              {post?.caption && renderCaptionWithHashtags(post?.caption)}
+              {post?.caption && memoizedCaption}
             </TextScallingFalse>
           </ScrollView>
         </LinearGradient>

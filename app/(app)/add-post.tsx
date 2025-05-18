@@ -466,7 +466,7 @@ export default function AddPostContainer() {
   };
 
   return (
-    <>
+    
       <PageThemeView>
         <View className="h-full">
           {/* Header */}
@@ -542,7 +542,7 @@ export default function AddPostContainer() {
 
           {/* only render when any feature which is under development is clicked */}
           {showFeatureModal && (
-            <ThisFeatureUnderDev
+            <FeatureUnderDev
               isVisible={showFeatureModal}
               onClose={() => setShowFeatureModal(false)}
             />
@@ -666,6 +666,6 @@ export default function AddPostContainer() {
           />
         )}
       </PageThemeView>
-    </>
+ 
   );
 }

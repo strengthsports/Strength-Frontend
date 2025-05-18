@@ -1,7 +1,7 @@
 import { View } from "moti";
 import { StyleSheet, Text, Image } from "react-native";
 import CountryFlag from "react-native-country-flag";
-import teamLogos from "~/constants/teamLogos";
+import { teamLogos } from "~/constants/teamLogos";
 
 const NameFlagSubCard = ({
   flag,

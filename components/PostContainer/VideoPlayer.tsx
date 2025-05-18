@@ -289,8 +289,8 @@ export default function YouTubeStyleVideoPlayer({
               borderTopLeftRadius: editable ? 16 : 0,
               borderBottomLeftRadius: editable ? 16 : 0,
               marginLeft: editable ? 8 : 0,
-              borderWidth: editable ? 1 : 0,
-              borderColor: editable ? "#222222" : "transparent",
+              borderWidth: editable ? 5 : 0,
+              borderColor: "#222222",
             },
           ]}
           player={player}

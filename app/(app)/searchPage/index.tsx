@@ -241,6 +241,7 @@ const SearchPage: React.FC = () => {
               keyExtractor={(item) => item._id}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 150 }}
             />
           )}
         </View>

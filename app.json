@@ -8,10 +8,6 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#000000",
-      "resizeMode": "contain"
-    },
     "ios": {
       "supportsTablet":  false,
       "bundleIdentifier": "strength.net.in",
@@ -41,7 +37,7 @@
             "backgroundColor": "#000000"
           },
           "imageWidth": 100,
-          "resizeMode": "contain"
+          "resizeMode": "cover"
         }
       ],
       "expo-secure-store",

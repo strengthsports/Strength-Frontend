@@ -8,6 +8,7 @@ import PageThemeView from '~/components/PageThemeView';
 import { router } from 'expo-router';
 import TextScallingFalse from '~/components/CentralText';
 import BackIcon2 from '~/components/SvgIcons/Common_Icons/BackIcon2';
+import SportsIndicator from '~/components/SvgIcons/SideMenu/SportsIndicator';
 // import TextScallingFalse from '~/components/TextScallingFalse';
 
 const TeamListView = () => {
@@ -19,6 +20,7 @@ const TeamListView = () => {
 
   useEffect(() => {
     dispatch(fetchAllTeams({ page: 1, limit: 90 }));
+    console.log("All Teams --->", JSON.stringify(teams, null, 2));
   }, [dispatch]);
 
   const filteredTeams = teams.filter(team =>
@@ -29,14 +31,23 @@ const TeamListView = () => {
     <TouchableOpacity 
       style={styles.teamCard}
       activeOpacity={0.7}
-      onPress={() => router.push(`/team/${item._id}`)}
+      onPress={() => router.push(`../(team)/teams/${item._id}`)}
     >
       <Image
         source={{ uri: item.logo?.url || 'https://via.placeholder.com/50' }}
         style={styles.teamLogo}
-        resizeMode="contain"
+       
       />
-      <TextScallingFalse style={styles.teamName}>{item.name}</TextScallingFalse>
+      <View style={{gap: 4}}>
+      <TextScallingFalse className="text-white text-[14px] font-semibold ">{item.name}</TextScallingFalse>
+      <View className="flex-row" style={{justifyContent:'center', alignItems:'center', gap: 3}}>
+      <SportsIndicator/> 
+      
+      <TextScallingFalse className='text-[#12956B] text-[12px] font-regular mr-[3px]'>{item.sport.name}</TextScallingFalse>
+      <View className='w-[2px] h-[2px] bg-[#9FAAB5] rounded-full'></View>
+      <TextScallingFalse className="text-[#9FAAB5] text-[12px] font-regular ml-[3px]">{item.address.city},{" "}{item.address.state},{" "}{item.address.country}</TextScallingFalse>
+      </View>
+      </View>
     </TouchableOpacity>
   );
 
@@ -112,7 +123,7 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: "#121212", // Dark background
+    backgroundColor: "black", // Dark background
   },
   
   // Team card matching modal's styling
@@ -120,27 +131,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#303030', // Darker border
-    backgroundColor: "#202020", // Matching modal background
     borderRadius: 8,
     marginBottom: 10,
     paddingHorizontal: 15,
   },
   
   teamLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    borderWidth:1,
+    borderColor:"#181818",
+    width: 44,
+    height: 44,
+    borderRadius: 6,
     marginRight: 15,
     backgroundColor: '#303030', // Dark placeholder
   },
   
-  teamName: {
-    fontSize: 16,
-    color: '#FFFFFF', // White text
-    fontWeight: '500',
-  },
+  
   
   // Loading and empty states
   loadingContainer: {

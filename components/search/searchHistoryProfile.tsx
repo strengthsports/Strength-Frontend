@@ -12,12 +12,14 @@ const SearchHistoryProfile = ({
   profilePic,
   _id,
   type,
+  isOwnProfile,
 }: {
   name: string;
   username: string;
   profilePic?: string; // ✅ Accept profilePic as an optional prop
   _id: string;
   type: string;
+  isOwnProfile: boolean;
 }) => {
   const serializedUser = encodeURIComponent(
     JSON.stringify({ id: _id, type: type })
@@ -28,7 +30,14 @@ const SearchHistoryProfile = ({
       className="items-center rounded-xl border-[0.5px] border-[#606060] py-4"
       style={{ width: width * 0.22 }}
     >
-      <Link href={`/(app)/(profile)/profile/${serializedUser}`} asChild>
+      <Link
+        href={
+          isOwnProfile
+            ? "/(app)/(tabs)/profile"
+            : `/(app)/(profile)/profile/${serializedUser}`
+        }
+        asChild
+      >
         <TouchableOpacity className="items-center" style={{ gap: 4 }}>
           {/* Profile Image */}
           <Image

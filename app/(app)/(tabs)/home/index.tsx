@@ -199,7 +199,7 @@ const Home = () => {
           </View>
         );
       }
-      return <DiscoverPeopleList key={item.id} />;
+      return <DiscoverPeopleList key={item.id} isFeedPage={true} />;
     },
     [visiblePostIds]
   );

@@ -12,17 +12,10 @@ import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { router, Href } from "expo-router";
 import { AppDispatch, RootState } from "~/reduxStore";
-import { Post } from "~/types/post";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
 import { BlurView } from "expo-blur";
 import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
-import {
-  fetchHashtagContents,
-  fetchNonFeedPosts,
-  selectAllNonFeedPosts,
-  selectNonFeedState,
-} from "~/reduxStore/slices/feed/feedSlice";
 import { Colors } from "~/constants/Colors";
 import {
   makeSelectHashtagPosts,
@@ -56,20 +49,21 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
-
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const selectHashtagPosts = useCallback(
-    makeSelectHashtagPosts(hashtag, "media"),
+  const selectHashtagPosts = useMemo(
+    () => makeSelectHashtagPosts(hashtag, "media"),
     [hashtag]
   );
-  const selectUserPosts = useCallback(makeSelectUserPosts(userId, "media"), [
-    userId,
-  ]);
+  const selectUserPosts = useMemo(
+    () => makeSelectUserPosts(userId, "media"),
+    [userId]
+  );
 
   const hashtagposts = useSelector(selectHashtagPosts);
   const userposts = useSelector(selectUserPosts);
+
   const nextHashtagCursor = useSelector(
     (state: RootState) =>
       state.views.hashtag[hashtag]?.["media"]?.nextCursor ?? null
@@ -78,199 +72,270 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     (state: RootState) =>
       state.views.user[userId]?.["media"]?.nextCursor ?? null
   );
-  const loadPosts = async (cursor?: string | null) => {
-    if (pageType === "Hashtag")
-      await dispatch(
-        fetchHashtagPosts({ hashtag, type: "media", limit: 10, cursor })
-      );
-    else if (pageType === "Activity")
-      await dispatch(
-        fetchUserPosts({ userId, type: "media", limit: 10, cursor })
-      );
-  };
+
+  const loadPosts = useCallback(
+    async (cursor?: string | null) => {
+      try {
+        if (pageType === "Hashtag" && hashtag) {
+          await dispatch(
+            fetchHashtagPosts({
+              hashtag,
+              type: "media",
+              limit: 10,
+              cursor,
+            })
+          );
+        } else if (pageType === "Activity" && userId) {
+          await dispatch(
+            fetchUserPosts({
+              userId,
+              type: "media",
+              limit: 10,
+              cursor,
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Failed to load posts:", error);
+      }
+    },
+    [dispatch, pageType, hashtag, userId]
+  );
 
   useEffect(() => {
     setIsInitialLoad(true);
+    setProcessedImageData([]);
     loadPosts().finally(() => setIsInitialLoad(false));
-  }, [pageType, userId, hashtag]);
+  }, [loadPosts]);
 
   const handleLoadMore = async () => {
+    let cursor: string | null = null;
     if (pageType === "Activity") {
-      if (!nextUserCursor || isLoadingMore) return;
-      setIsLoadingMore(true);
-      await loadPosts(nextUserCursor);
-      setIsLoadingMore(false);
+      cursor = nextUserCursor;
     } else if (pageType === "Hashtag") {
-      if (!nextHashtagCursor || isLoadingMore) return;
-      setIsLoadingMore(true);
-      await loadPosts(nextHashtagCursor);
+      cursor = nextHashtagCursor;
+    }
+
+    if (!cursor || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      await loadPosts(cursor);
+    } catch (error) {
+      console.error("Failed to load more posts:", error);
+    } finally {
       setIsLoadingMore(false);
     }
   };
 
-  // Process posts into media items
-  const initialImageData = useMemo<MediaItem[]>(() => {
-    let posts: Post[];
-    pageType === "Activity"
-      ? (posts = userposts)
-      : pageType === "Hashtag"
-      ? (posts = hashtagposts)
-      : (posts = []);
+  const initialImageData = useMemo(() => {
+    const posts = pageType === "Activity" ? userposts : hashtagposts;
 
-    return posts.flatMap((post: Post): MediaItem[] => {
-      if (!post?._id || !post.assets || post.assets.length === 0) return [];
+    return posts.flatMap((post): MediaItem[] => {
+      if (!post?._id || !post.assets?.length) return [];
 
-      const isVideoPost = post.isVideo === true;
-
-      if (isVideoPost) {
-        return post.assets
-          .filter((asset) => asset?.url)
-          .map((asset) => ({
+      return post.assets
+        .filter((asset) => asset?.url)
+        .slice(0, post.isVideo ? undefined : 1)
+        .map(
+          (asset): MediaItem => ({
             imageUrl: asset.url,
             postId: post._id!,
-            isVideoAsset: true,
-            thumbnailUrl: undefined,
-            hasMultipleAssets: false,
-          }));
-      } else {
-        const firstAsset = post.assets[0];
-        if (!firstAsset?.url) return [];
-        return [
-          {
-            imageUrl: firstAsset.url,
-            postId: post._id!,
-            isVideoAsset: false,
-            thumbnailUrl: undefined,
-            hasMultipleAssets: post.assets.length > 1,
-          },
-        ];
-      }
-    });
-  }, [pageType, userId, hashtag]);
-
-  // Thumbnail generation (existing logic)
-  useEffect(() => {
-    const generateThumbnails = async (mediaItems: MediaItem[]) => {
-      setThumbnailsLoading(true);
-      const thumbnailPromises = mediaItems.map(async (item, index) => {
-        if (item.isVideoAsset && item.imageUrl && !item.thumbnailUrl) {
-          try {
-            const { uri } = await VideoThumbnails.getThumbnailAsync(
-              item.imageUrl,
-              {
-                time: 1000,
-                quality: 0.5,
-              }
-            );
-            return { index, thumbnailUrl: uri };
-          } catch (error) {
-            console.warn("Failed to generate thumbnail:", error);
-            return null;
-          }
-        }
-        return null;
-      });
-
-      const results = await Promise.all(thumbnailPromises);
-      setProcessedImageData((current) =>
-        results.reduce(
-          (acc, result) => {
-            if (result) {
-              acc[result.index] = {
-                ...current[result.index],
-                thumbnailUrl: result.thumbnailUrl,
-              };
-            }
-            return acc;
-          },
-          [...current]
+            isVideoAsset: post.isVideo,
+            hasMultipleAssets: post.assets.filter((a) => a?.url).length > 1,
+          })
         )
-      );
-      setThumbnailsLoading(false);
-    };
+        .filter((item) => !!item.postId && !!item.imageUrl);
+    });
+  }, [userposts, hashtagposts, pageType]);
 
-    if (initialImageData.length > 0) {
+  useEffect(() => {
+    if (isInitialLoad) {
+      return;
+    }
+    if (initialImageData.length === 0 && processedImageData.length === 0) {
+      setProcessedImageData([]);
+      return;
+    }
+
+    const videosToProcess = initialImageData.filter(
+      (item) => item.isVideoAsset && !item.thumbnailUrl
+    );
+
+    if (videosToProcess.length > 0) {
+      setThumbnailsLoading(true);
+
+      const generateAndMergeThumbnails = async () => {
+        try {
+          const thumbnailGenerationPromises = videosToProcess.map(
+            async (item) => {
+              if (item.isVideoAsset && item.imageUrl) {
+                try {
+                  const { uri } = await VideoThumbnails.getThumbnailAsync(
+                    item.imageUrl,
+                    { time: 1000, quality: 0.5 }
+                  );
+                  return {
+                    postId: item.postId,
+                    imageUrl: item.imageUrl,
+                    thumbnailUrl: uri,
+                  };
+                } catch (error) {
+                  console.warn(
+                    "Failed to generate thumbnail for:",
+                    item.imageUrl,
+                    error
+                  );
+                  return {
+                    postId: item.postId,
+                    imageUrl: item.imageUrl,
+                    thumbnailUrl: null,
+                  };
+                }
+              }
+              return null;
+            }
+          );
+
+          const thumbnailResults = (
+            await Promise.all(thumbnailGenerationPromises)
+          ).filter(
+            (
+              r
+            ): r is {
+              postId: string;
+              imageUrl: string;
+              thumbnailUrl: string | null;
+            } => r !== null
+          );
+
+          const thumbnailMap = new Map<string, string | null>();
+          thumbnailResults.forEach((result) => {
+            thumbnailMap.set(
+              `${result.postId}-${result.imageUrl}`,
+              result.thumbnailUrl
+            );
+          });
+
+          setProcessedImageData(() => {
+            return initialImageData.map((item) => {
+              const key = `${item.postId}-${item.imageUrl}`;
+              if (thumbnailMap.has(key)) {
+                return {
+                  ...item,
+                  thumbnailUrl: thumbnailMap.get(key) || undefined,
+                };
+              }
+              return item;
+            });
+          });
+        } catch (error) {
+          console.error("Error in thumbnail generation process:", error);
+          setProcessedImageData(initialImageData);
+        } finally {
+          setThumbnailsLoading(false);
+        }
+      };
+
+      generateAndMergeThumbnails();
+    } else {
       setProcessedImageData(initialImageData);
-      const videosToProcess = initialImageData.filter(
-        (item) => item.isVideoAsset && !item.thumbnailUrl
-      );
-      if (videosToProcess.length > 0) {
-        generateThumbnails(initialImageData);
+      if (thumbnailsLoading) {
+        setThumbnailsLoading(false);
       }
     }
-  }, [initialImageData]);
+  }, [initialImageData, isInitialLoad]);
 
-  const renderGridItem = useCallback(({ item }: { item: MediaItem }) => {
-    const displayUri = item.isVideoAsset
-      ? item.thumbnailUrl || item.imageUrl
-      : item.imageUrl;
-    const sourceUri = typeof displayUri === "string" ? displayUri : null;
+  const renderGridItem = useCallback(
+    ({ item }: { item: MediaItem }) => {
+      if (!item?.postId) return null;
 
-    const handlePress = () => {
-      if (item.postId) {
-        router.push({
-          pathname: "/post-details/[postId]",
-          params: { postId: item.postId },
-        } as Href);
-      } else {
-        console.warn(
-          "Could not navigate: postId is missing for media item",
-          item.imageUrl
-        );
-      }
-    };
+      const displayUri = item.isVideoAsset
+        ? item.thumbnailUrl || item.imageUrl
+        : item.imageUrl;
 
-    const currentIconSize = iconSizeInsideCircle;
+      const sourceUri = typeof displayUri === "string" ? displayUri : null;
 
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        style={styles.itemContainer}
-        onPress={handlePress}
-      >
-        {sourceUri ? (
-          <Image
-            source={{ uri: sourceUri }}
-            resizeMode="cover"
-            style={styles.image}
-          />
-        ) : (
-          <View style={[styles.image, styles.placeholder]}>
-            {item.isVideoAsset && (
+      const handlePress = () => {
+        if (item.postId) {
+          router.push({
+            pathname: "/post-details/[postId]",
+            params: { postId: item.postId },
+          } as Href<"pathname">);
+        } else {
+          console.warn(
+            "Could not navigate: postId is missing for media item",
+            item.imageUrl
+          );
+        }
+      };
+
+      const currentIconSize = iconSizeInsideCircle;
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.itemContainer}
+          onPress={handlePress}
+        >
+          {item.isVideoAsset && !item.thumbnailUrl && thumbnailsLoading && (
+            <View style={[styles.image, styles.placeholder]}>
               <ActivityIndicator size="small" color="#ccc" />
+            </View>
+          )}
+          {sourceUri &&
+            (!item.isVideoAsset || item.thumbnailUrl || !thumbnailsLoading) && (
+              <Image
+                source={{ uri: sourceUri }}
+                resizeMode="cover"
+                style={styles.image}
+                onError={(e) =>
+                  console.warn(
+                    "Failed to load image:",
+                    sourceUri,
+                    e.nativeEvent.error
+                  )
+                }
+              />
             )}
-          </View>
-        )}
+          {(!sourceUri ||
+            (item.isVideoAsset && !item.thumbnailUrl && !thumbnailsLoading)) &&
+            !(item.isVideoAsset && !item.thumbnailUrl && thumbnailsLoading) && (
+              <View style={[styles.image, styles.placeholder]}></View>
+            )}
 
-        {item.isVideoAsset && (
-          <BlurView
-            intensity={30}
-            tint="dark"
-            style={styles.videoIconContainer}
-          >
-            <ClipsIconMedia size={currentIconSize} />
-          </BlurView>
-        )}
+          {item.isVideoAsset && (
+            <BlurView
+              intensity={30}
+              tint="dark"
+              style={styles.videoIconContainer}
+            >
+              <ClipsIconMedia size={currentIconSize} />
+            </BlurView>
+          )}
 
-        {item.hasMultipleAssets && !item.isVideoAsset && (
-          <BlurView
-            intensity={30}
-            tint="dark"
-            style={styles.multipleIconContainer}
-          >
-            <MultipleImageIcon size={16} />
-          </BlurView>
-        )}
-      </TouchableOpacity>
-    );
-  }, []);
+          {item.hasMultipleAssets && !item.isVideoAsset && (
+            <BlurView
+              intensity={30}
+              tint="dark"
+              style={styles.multipleIconContainer}
+            >
+              <MultipleImageIcon size={16} />
+            </BlurView>
+          )}
+        </TouchableOpacity>
+      );
+    },
+    [thumbnailsLoading]
+  );
 
   const keyExtractor = useCallback(
-    (item: MediaItem) => `${item.postId}-${item.imageUrl}`,
+    (item: MediaItem, index: number) =>
+      `${item.postId}-${item.imageUrl}-${index}`,
     []
   );
 
-  if (isInitialLoad) {
+  if (isInitialLoad && processedImageData.length === 0) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={Colors.themeColor} />
@@ -278,23 +343,20 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     );
   }
 
-  console.log("Hashtag posts : ", hashtagposts, " userposts : ", userposts);
-
-  if (
-    (!hashtagposts || hashtagposts.length === 0) &&
-    (!userposts || userposts.length === 0)
-  ) {
+  if (!isInitialLoad && processedImageData.length === 0 && !isLoadingMore) {
+    const message =
+      pageType === "Hashtag" && hashtag ? `No media found for #${hashtag}` : "";
     return (
-      <View className="w-full items-center mt-8 gap-y-2">
-        <TextScallingFalse className="text-[#808080] font-normal text-4xl mb-3 text-center">
-          No Media posts yet
+      <View style={styles.centerContent}>
+        <TextScallingFalse style={styles.emptyListText}>
+          {message}
         </TextScallingFalse>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 pb-5">
+    <View style={styles.container}>
       <FlatList
         data={processedImageData}
         keyExtractor={keyExtractor}
@@ -308,7 +370,9 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
         ]}
         ListFooterComponent={
           isLoadingMore ? (
-            <ActivityIndicator size="small" color={Colors.themeColor} />
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={Colors.themeColor} />
+            </View>
           ) : null
         }
         windowSize={11}
@@ -321,15 +385,21 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
   );
 };
 
-// Keep existing styles unchanged
 const { width } = Dimensions.get("window");
 const itemMargin = 1;
 const numColumns = 3;
-const itemSize = (width - itemMargin * (numColumns - 1) * 2) / numColumns;
+const availableWidth = width - itemMargin * 2 * numColumns;
+const itemSize = availableWidth / numColumns;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.black,
+  },
   centerContent: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   center: {
@@ -341,6 +411,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  emptyListText: {
+    color: "#808080",
+    fontSize: 18,
+    textAlign: "center",
   },
   image: {
     width: "100%",
@@ -367,7 +442,6 @@ const styles = StyleSheet.create({
     width: iconContainerSize,
     height: iconContainerSize,
     borderRadius: iconContainerSize / 2,
-    // backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
@@ -380,24 +454,15 @@ const styles = StyleSheet.create({
     width: iconContainerSize,
     height: iconContainerSize,
     borderRadius: iconContainerSize / 2,
-    // backgroundColor: "rgba(0, 0, 0, 0.4)",
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
   },
   listContentContainer: {
-    paddingBottom: itemMargin,
+    padding: itemMargin,
   },
-  bottomLoader: {
-    position: "absolute",
-    bottom: 10,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  fullScreenLoader: {
-    flex: 1,
-    justifyContent: "center",
+  footerLoader: {
+    paddingVertical: 20,
     alignItems: "center",
   },
 });

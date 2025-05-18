@@ -3,11 +3,11 @@ import Svg, { Path, Circle, Line } from "react-native-svg";
 
 const TickIcon = ({ color, fw }: { color?: string; fw?: string }) => {
   return (
-    <Svg width="19" height="19" viewBox="0 0 19 19" fill="none">
+    <Svg width="13" height="11" viewBox="0 0 13 11" fill="none">
       <Path
-        d="M3.95898 11.0835L6.72982 13.8543L15.0423 5.146"
-        stroke="#E6E6E6"
-        stroke-width="1.67647"
+        d="M0.958984 7.0835L3.72982 9.85433L12.0423 1.146"
+        stroke="white"
+        stroke-width="1.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />

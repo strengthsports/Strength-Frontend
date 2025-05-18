@@ -333,7 +333,7 @@ const Overview = () => {
         />
       )}
 
-      <DiscoverPeopleList />
+      <DiscoverPeopleList isFeedPage={false} />
 
       <View
         style={{ height: 30, width: "100%", backgroundColor: "transparent" }}

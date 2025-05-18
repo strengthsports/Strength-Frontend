@@ -95,7 +95,7 @@ const CustomDrawer2 = () => {
         >
           <Image
             source={user?.profilePic ? { uri: user.profilePic } : nopic}
-            className="w-14 h-14 rounded-full border-[1px] border-[#C1C1C1]"
+            className="w-14 h-14 rounded-full border-[1px] border-[#202020]"
             resizeMode="cover"
           />
           <View className="pl-4">

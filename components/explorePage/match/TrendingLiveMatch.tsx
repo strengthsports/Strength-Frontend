@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   FlatList,
@@ -13,6 +13,7 @@ import FootballMatchCard from "../matchCard/FootballMatchCard";
 import BadmintonMatchCard from "../matchCard/BadmintonMatchCard";
 import BasketballMatchCard from "../matchCard/BasketballMatchCard";
 import ScoresSkeletonLoader from "../../skeletonLoaders/ScoresSkeletonLoader";
+import ThisFeatureUnderDev from "~/components/modals/ThisFeatureUnderDev";
 
 interface LiveTrendingMatchProps {
   liveCricketMatches: any[];
@@ -31,6 +32,7 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
   isFootballFetching,
   isBasketballFetching,
 }) => {
+  const [modalVisible, setModalVisible] = useState(false);
   const isLoading =
     isCricketFetching || isFootballFetching || isBasketballFetching;
 
@@ -52,14 +54,30 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
 
     switch (item.type) {
       case "cricket":
-        CardComponent = <CricketMatchCard match={item.match} isLive={true} />;
+        CardComponent = (
+          <CricketMatchCard
+            match={item.match}
+            isLive={true}
+            onCardPress={() => setModalVisible(true)}
+          />
+        );
         break;
       case "football":
-        CardComponent = <FootballMatchCard match={item.match} isLive={true} />;
+        CardComponent = (
+          <FootballMatchCard
+            match={item.match}
+            isLive={true}
+            onCardPress={() => setModalVisible(true)}
+          />
+        );
         break;
       case "basketball":
         CardComponent = (
-          <BasketballMatchCard match={item.match} isLive={true} />
+          <BasketballMatchCard
+            match={item.match}
+            isLive={true}
+            onCardPress={() => setModalVisible(true)}
+          />
         );
         break;
       default:
@@ -100,6 +118,10 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 12 }}
+      />
+      <ThisFeatureUnderDev
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
       />
     </View>
   );

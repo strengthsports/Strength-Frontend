@@ -3,7 +3,7 @@ import { useState } from "react";
 import TextScallingFalse from "../../CentralText";
 import CountryFlag from "react-native-country-flag";
 import { countryCodes } from "~/constants/countryCodes";
-import teamLogos from "~/constants/teamLogos";
+import { seriesLogos } from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
 
 interface MatchCardProps {
@@ -54,7 +54,6 @@ interface GroupedMatchProps {
   matches: MatchCardProps[];
 }
 
-
 const CricketNextMatchCard = ({
   seriesId,
   seriesName,
@@ -64,6 +63,7 @@ const CricketNextMatchCard = ({
   const toggleNumberOfLines = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
+  const seriesLogo = seriesLogos[seriesName];
 
   const extractMatchNum = (matchNum: string): string | null => {
     const match = matchNum.match(/\d+/);
@@ -108,12 +108,12 @@ const CricketNextMatchCard = ({
           className="flex-row items-center gap-2"
           onPress={toggleNumberOfLines}
         >
-          {/* <View className="py-1">
+          <View className="py-1">
             <Image
-              source={iplImg}
+              source={{ uri: seriesLogo }}
               className="w-[24px] h-[16px] rounded-[2px]"
             />
-          </View> */}
+          </View>
           <TextScallingFalse
             className="text-white text-3xl w-[88%]"
             numberOfLines={numberOfLinesTitle}
@@ -147,13 +147,13 @@ const CricketNextMatchCard = ({
               <View className="flex-column gap-y-3">
                 {/* Team 1 */}
                 <NameFlagSubCard
-                  flag={match.matchInfo.team1.teamName}
+                  flag={match.matchInfo.team1.teamSName}
                   teamName={match.matchInfo.team1.teamSName}
                 />
 
                 {/* Team 2 */}
                 <NameFlagSubCard
-                  flag={match.matchInfo.team2.teamName}
+                  flag={match.matchInfo.team2.teamSName}
                   teamName={match.matchInfo.team2.teamSName}
                 />
               </View>

@@ -34,8 +34,6 @@ const CricketMatch = ({
       })
     ),
   ];
-  console.log("liveCricketMatches", liveCricketMatches);
-  console.log("recentCricketMatches", recentCricketMatches);
 
   const isLoading = isCricketLiveFetching || isCricketRecentFetching;
 

@@ -3,7 +3,7 @@ import { useState } from "react";
 import TextScallingFalse from "../../CentralText";
 import CountryFlag from "react-native-country-flag";
 import { countryCodes } from "~/constants/countryCodes";
-import teamLogos from "~/constants/teamLogos";
+import { seriesLogos } from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -53,7 +53,8 @@ interface GroupedMatchProps {
   matches: MatchCardProps[];
 }
 
-const iplImg = require("~/assets/images/ipl.png.png");
+const iplImg =
+  "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747497481948-ipl-logo.jpg";
 
 const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
@@ -61,6 +62,7 @@ const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
     matches?.[0]?.matchInfo?.seriesName ?? "Upcoming Matches";
   const [seriesName, setSeriesName] = useState(initialSeriesName);
   const [visibleCount, setVisibleCount] = useState(3);
+  const seriesLogo = seriesLogos[seriesName];
   const loadMoreMatches = () => {
     setVisibleCount((prev) => prev + 3);
   };
@@ -154,7 +156,7 @@ const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
         >
           <View className="py-1">
             <Image
-              source={iplImg}
+              source={{ uri: seriesLogo }}
               className="w-[24px] h-[16px] rounded-[2px] self-center"
             />
           </View>

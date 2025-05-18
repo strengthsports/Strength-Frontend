@@ -426,8 +426,9 @@ const Post = () => {
             position: "absolute",
             bottom: 130,
             zIndex: 20,
+            maxHeight: 180,
           }}
-          className={`w-full max-h-52 ${!isHeaderFooterVisible && "opacity-0"}`}
+          className={`w-full ${!isHeaderFooterVisible && "opacity-0"}`}
         >
           <ScrollView>
             <TextScallingFalse

@@ -156,7 +156,7 @@ const NotificationPage = () => {
 
   return (
     <SafeAreaView className="flex-1 pt-6 bg-black">
-      <View className="mb-4">
+      <View>
         <View className="w-full flex-row justify-between items-center px-5">
           <TextScallingFalse className="text-6xl font-normal text-white">
             Notifications

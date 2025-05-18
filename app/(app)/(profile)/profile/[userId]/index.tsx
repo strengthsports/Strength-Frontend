@@ -15,7 +15,7 @@ import { ProfileContext } from "./_layout";
 import DiscoverPeopleList from "~/components/discover/discoverPeopleList";
 import RecentPostsSection from "~/components/profilePage/RecentPostsSection";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import TeamEntry from "~/components/profilePage/TeamEntry";
 import { AppDispatch } from "~/reduxStore";
@@ -37,6 +37,8 @@ const Overview = () => {
       ? JSON.parse(decodeURIComponent(params?.userId as string))
       : null;
   }, [params.userId]);
+
+  console.log("user id --------->", fetchedUserId);
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -310,7 +312,9 @@ const Overview = () => {
           posts={postsWithImages}
           onSeeAllPress={() => {
             router.push(
-              `/(app)/(profile)/profile/${fetchedUserId.id}/activity`
+              `/(app)/(profile)/profile/${
+                params?.userId as string
+              }/activity` as Href
             );
           }}
           scaleFactor={scaleFactor}

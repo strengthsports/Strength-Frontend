@@ -110,7 +110,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
   });
 
   const handleBackFromTeamPage = () => {
-    router.back();
+    router.push("/(app)/(tabs)/home");
     dispatch(resetTeamState());
   };
 

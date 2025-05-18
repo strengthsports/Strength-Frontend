@@ -26,6 +26,7 @@ import { SuggestionUser } from "~/types/user";
 import { throttle } from "lodash";
 import SuggestedUserCardLoader from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
 import UserCardSkeleton from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
+import { setAuthState } from "~/reduxStore/slices/user/authSlice";
 
 interface SupportCardProps {
   user: any;
@@ -47,7 +48,6 @@ const SuggestedSupportScreen: React.FC = () => {
   );
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   const { user } = useSelector((state: RootState) => state.auth);
-
 
   useEffect(() => {
     console.log("Selected Sports id:", selectedSports);
@@ -79,10 +79,10 @@ const SuggestedSupportScreen: React.FC = () => {
   }, 500); // only once every 500ms
 
   const handleClose = (id: string) => {
-    setUsers(prevUsers => prevUsers.filter(user => user._id !== id));
+    setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
   };
 
-  const [finalLoading, setFinalLoading] = useState(false)
+  const [finalLoading, setFinalLoading] = useState(false);
   const handleContinue = async () => {
     console.log("Selected Sports:", selectedSports);
     setFinalLoading(true);
@@ -113,8 +113,12 @@ const SuggestedSupportScreen: React.FC = () => {
 
       console.log("FormData object before dispatch:");
       for (let pair of (finalOnboardingData as any).entries()) {
-        console.log(`${pair[0]}: ${typeof pair[1] === 'object' ? JSON.stringify(pair[1]) : pair[1]}`);
-      }      
+        console.log(
+          `${pair[0]}: ${
+            typeof pair[1] === "object" ? JSON.stringify(pair[1]) : pair[1]
+          }`
+        );
+      }
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
@@ -129,6 +133,7 @@ const SuggestedSupportScreen: React.FC = () => {
         text1: "Successfully Updated Profile",
         visibilityTime: 1500,
       });
+      dispatch(setAuthState());
       router.replace("/(app)/(tabs)/home");
     } catch (error: unknown) {
       console.log(error);
@@ -151,7 +156,6 @@ const SuggestedSupportScreen: React.FC = () => {
       prev.includes(id) ? prev.filter((player) => player !== id) : [...prev, id]
     );
   };
-
 
   const handleSkip = async () => {
     setFinalLoading(true);
@@ -224,7 +228,7 @@ const SuggestedSupportScreen: React.FC = () => {
           paddingHorizontal: 16,
           paddingBottom: 100, // space for fixed skip button
           gap: 12,
-          paddingTop: 40
+          paddingTop: 40,
         }}
         columnWrapperStyle={{ justifyContent: "center", gap: 12 }}
         ListHeaderComponent={
@@ -246,9 +250,9 @@ const SuggestedSupportScreen: React.FC = () => {
         ListEmptyComponent={() => (
           <View
             style={{
-              height:'100%',
-              width:'100%',
-              alignItems:'center',
+              height: "100%",
+              width: "100%",
+              alignItems: "center",
               justifyContent: "center",
             }}
           >
@@ -256,7 +260,7 @@ const SuggestedSupportScreen: React.FC = () => {
               <UserCardSkeleton key={index} size="large" />
             ))} */}
             <View style={{ transform: [{ scale: 1.5 }] }}>
-            <ActivityIndicator color={'gray'} size={'small'}/>
+              <ActivityIndicator color={"gray"} size={"small"} />
             </View>
           </View>
         )}
@@ -265,38 +269,54 @@ const SuggestedSupportScreen: React.FC = () => {
         ListFooterComponent={
           users.length > 0 && loading ? (
             <ActivityIndicator size={24} color="#12956B" />
-            // <SuggestedUserCardLoader />
-          ) : null
+          ) : // <SuggestedUserCardLoader />
+          null
         }
       />
 
       {/* Fixed Skip/Continue Button */}
-      <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 70, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
-        {
-          finalLoading ?
-            <ActivityIndicator size={'small'} color={'#606060'} />
-            :
-            <TouchableOpacity activeOpacity={0.7}
-              className={`py-2 rounded-full ${selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
-                }`}
-              style={{
-                width: "60%",
-                height: 36, justifyContent: 'center', alignItems: 'center',
-              }}
-              onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+          height: 70,
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingBottom: 20,
+        }}
+      >
+        {finalLoading ? (
+          <ActivityIndicator size={"small"} color={"#606060"} />
+        ) : (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            className={`py-2 rounded-full ${
+              selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
+            }`}
+            style={{
+              width: "60%",
+              height: 36,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
+          >
+            <TextScallingFalse
+              className={`${
+                selectedPlayers.length > 0
+                  ? "text-white font-semibold"
+                  : "text-gray-400"
+              } text-center`}
             >
-              <TextScallingFalse
-                className={`${selectedPlayers.length > 0 ? "text-white font-semibold" : "text-gray-400"
-                  } text-center`}
-              >
-                {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
-              </TextScallingFalse>
-            </TouchableOpacity>
-        }
+              {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
+            </TextScallingFalse>
+          </TouchableOpacity>
+        )}
       </View>
       <Toast />
     </SafeAreaView>
-
   );
 };
 

@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   deleteTeam,
   fetchTeamDetails,
+    removeTeamMember, 
 } from "~/reduxStore/slices/team/teamSlice";
 import {
   sendTeamJoinRequest,
@@ -166,15 +167,60 @@ const TeamPage: React.FC = () => {
     }
   }, [joinSuccess, joinError, dispatch]);
 
-  const handleDeleteTeam = useCallback(async () => {
-    try {
-      const message = await dispatch(deleteTeam(teamId)).unwrap();
-      alert("Success: " + message);
-      router.push("/(app)/(tabs)/home");
-    } catch (error) {
-      alert("Error deleting team");
-    }
-  }, [dispatch, teamId, router]);
+  // const handleDeleteTeam = useCallback(async () => {
+  //   try {
+  //     const message = await dispatch(deleteTeam(teamId)).unwrap();
+  //     alert("Success: " + message);
+  //     router.push("/(app)/(tabs)/home");
+  //   } catch (error) {
+  //     alert("Error deleting team");
+  //   }
+  // }, [dispatch, teamId, router]);
+
+
+const handleLeaveTeam = useCallback(async () => {
+  if (!user?._id || !teamId) {
+    Alert.alert("Error", "Missing user or team information");
+    return;
+  }
+
+  Alert.alert(
+    "Leave Team",
+    "Are you sure you want to leave this team?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Leave",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const result = await dispatch(
+              removeTeamMember({
+                teamId: teamId,
+                userId: user._id,
+              })
+            ).unwrap();
+
+            Alert.alert("Success", "You have left the team successfully");
+            router.push("/(app)/(tabs)/home");
+          } catch (error) {
+            Alert.alert("Error", "Failed to leave the team");
+            console.error("Failed to leave team:", error);
+          }
+        },
+      },
+    ],
+    { cancelable: true }
+  );
+}, [dispatch, teamId, user?._id, router]);
+
+
+
+
+
 
   const handleJoinTeam = useCallback(async () => {
     setJoining(true);
@@ -250,7 +296,7 @@ const TeamPage: React.FC = () => {
         label: "Leave Team",
         logo: LeaveTeam,
         color: "red",
-        onPress: handleDeleteTeam,
+        onPress: handleLeaveTeam,
       },
     ];
 
@@ -278,7 +324,7 @@ const TeamPage: React.FC = () => {
     }
 
     return baseMenuItems;
-  }, [isAdmin, teamData.membersCount, teamId, router, handleDeleteTeam]);
+  }, [isAdmin, teamData.membersCount, teamId, router, handleLeaveTeam]);
 
   return (
     <View style={styles.container}

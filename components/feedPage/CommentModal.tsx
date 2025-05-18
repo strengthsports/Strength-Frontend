@@ -28,6 +28,8 @@ import {
   deleteComment,
   postComment,
 } from "~/reduxStore/slices/post/postActions";
+import ReplySection from "../comment/ReplySection";
+import { ReplyPaginationState } from "~/app/(app)/post-details/[postId]";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const DRAG_THRESHOLD = 100;
@@ -44,51 +46,6 @@ const ModalHeader = memo(() => {
     </View>
   );
 });
-
-// Reply section component (same as in your original code)
-const ReplySection = memo(
-  ({
-    commentId,
-    replies,
-    hasNextPage,
-    loading,
-    loadMoreReplies,
-    handleReply,
-    parentComment,
-  }) => {
-    if (replies.length === 0 && !loading) return null;
-
-    return (
-      <View className="ml-8 mt-2">
-        {replies.map((reply) => (
-          <CommenterCard
-            key={reply._id}
-            parent={parentComment}
-            comment={reply}
-            targetId={commentId}
-            targetType="Comment"
-            onReply={handleReply}
-          />
-        ))}
-
-        {hasNextPage && (
-          <TouchableOpacity
-            className="px-20 py-2"
-            onPress={() => loadMoreReplies(commentId)}
-          >
-            <TextScallingFalse className="font-semibold text-theme">
-              Show more replies...
-            </TextScallingFalse>
-          </TouchableOpacity>
-        )}
-
-        {loading && (
-          <ActivityIndicator size="small" color={Colors.themeColor} />
-        )}
-      </View>
-    );
-  }
-);
 
 const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -108,7 +65,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   const [comments, setComments] = useState([]);
   const [cursor, setCursor] = useState(null);
   const [hasMoreComments, setHasMoreComments] = useState(true);
-  const [replyStates, setReplyStates] = useState({});
+  const [replyStates, setReplyStates] = useState<ReplyPaginationState>({});
   const [loadingComments, setLoadingComments] = useState(false);
 
   // Animated progress bar
@@ -120,6 +77,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   const [commentText, setCommentText] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [rootCommentId, setRootCommentId] = useState("");
 
   // RTK Query hooks
   const [fetchComments] = useLazyFetchCommentsQuery();
@@ -185,10 +143,6 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
       },
     })
   ).current;
-
-  // Calculate dynamic modal height when keyboard is open
-  const dynamicModalHeight =
-    keyboardHeight > 0 ? SCREEN_HEIGHT - keyboardHeight : MODAL_HEIGHT;
 
   // Focus input on mount if autoFocusKeyboard is true
   useEffect(() => {
@@ -367,7 +321,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   }, [comments]);
 
   // Handle Reply button tap
-  const handleReply = useCallback((comment) => {
+  const handleReply = useCallback((comment: Comment) => {
     const replyTag = `${
       comment.postedBy.firstName + " " + comment.postedBy.lastName
     }`;
@@ -377,6 +331,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
       username: comment.postedBy.username,
     });
     textInputRef.current?.focus();
+    setRootCommentId(comment.rootCommentId || comment._id);
   }, []);
 
   // Handle posting a new comment or reply
@@ -422,28 +377,32 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
           : showFeedback("Comment posted successfully", "success");
         // Dismiss keyboard
         Keyboard.dismiss();
+        // Scroll to top
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
         if (isReply) {
           // Add the new reply to its parent comment's replies
           setReplyStates((prev) => {
-            const currentReplies = prev[parentCommentId]?.replies || [];
-            const currentCount = prev[parentCommentId]?.replyCount || 0;
+            const current = prev[rootCommentId] ?? {
+              replies: [],
+              cursor: null,
+              hasNextPage: false,
+              loading: false,
+            };
 
             return {
               ...prev,
-              [parentCommentId]: {
-                ...prev[parentCommentId],
-                replies: [newComment, ...currentReplies],
-                replyCount: currentCount + 1,
-                hasNextPage: true,
+              [rootCommentId]: {
+                ...current,
+                replies: [newComment, ...current.replies],
+                replyCount: current.replyCount + 1,
               },
             };
           });
+          incrementReplyCount(rootCommentId as string);
         } else {
           // Add the new comment to the top of the comments list
           setComments((prev) => [newComment, ...prev]);
-          // Scroll to top
-          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
         }
       }
     } catch (error) {
@@ -465,6 +424,24 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
     [targetId, dispatch]
   );
 
+  const incrementReplyCount = (commentId: string) =>
+    setReplyStates((prev) => ({
+      ...prev,
+      [commentId]: {
+        ...prev[commentId],
+        replyCount: (prev[commentId]?.replyCount || 0) + 1,
+      },
+    }));
+
+  const decrementReplyCount = (commentId: string) =>
+    setReplyStates((prev) => ({
+      ...prev,
+      [commentId]: {
+        ...prev[commentId],
+        replyCount: Math.max(0, (prev[commentId]?.replyCount || 0) - 1),
+      },
+    }));
+
   // Animate the progress bar while posting
   useEffect(() => {
     if (isPosting) {
@@ -480,19 +457,21 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
 
   // Memoize renderItem to avoid unnecessary re-renders
   const renderItem = useCallback(
-    ({ item }) => {
-      const replyState = replyStates[item._id] || {
-        replies: [],
-        cursor: null,
-        hasNextPage: item.commentsCount > 0,
-        loading: false,
-        replyCount: item.commentsCount,
+    ({ item }: { item: Comment }) => {
+      const baseState = replyStates[item._id] ?? {};
+      const replyState = {
+        replies: baseState.replies ?? [],
+        cursor: baseState.cursor ?? null,
+        hasNextPage: baseState.hasNextPage ?? item.commentsCount > 2,
+        loading: baseState.loading ?? false,
+        replyCount: item.commentsCount, // Explicitly use item.commentsCount here
       };
 
       return (
         <View className="px-2 mb-4">
           <CommenterCard
             comment={item}
+            commentCount={replyState.replyCount}
             targetId={targetId}
             targetType="Post"
             onReply={handleReply}
@@ -500,17 +479,15 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
             onDelete={handleDeleteComment}
           />
 
-          {item.commentsCount > 0 && (
+          {(item.commentsCount > 0 || replyState.replyCount > 0) && (
             <ReplySection
               commentId={item._id}
               replies={replyState.replies}
-              hasNextPage={
-                replyState.hasNextPage && replyState.replies.length > 2
-              }
+              hasNextPage={replyState.hasNextPage}
               loading={replyState.loading}
               loadMoreReplies={loadMoreReplies}
               handleReply={handleReply}
-              parentComment={item}
+              onDelete={handleDeleteComment}
             />
           )}
         </View>

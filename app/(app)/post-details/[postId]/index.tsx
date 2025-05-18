@@ -42,14 +42,15 @@ import {
   postComment,
 } from "~/reduxStore/slices/post/postActions";
 import { fetchPostById } from "~/api/post/fetchPostById";
+import ReplySection from "~/components/comment/ReplySection";
 
-type ReplyPaginationState = {
+export type ReplyPaginationState = {
   [commentId: string]: {
     replies: Comment[];
     cursor: string | null;
     hasNextPage: boolean;
     loading: boolean;
-    replyCount: number;
+    [key: string]: any;
   };
 };
 
@@ -75,61 +76,6 @@ const ListHeader = memo(
             />
           </View>
         </View>
-      </View>
-    );
-  }
-);
-
-// Memoized Reply section to prevent unnecessary re-renders
-const ReplySection = memo(
-  ({
-    commentId,
-    replies,
-    hasNextPage,
-    loading,
-    loadMoreReplies,
-    handleReply,
-    parentComment,
-  }: {
-    commentId: string;
-    replies: Comment[];
-    hasNextPage: boolean;
-    loading: boolean;
-    loadMoreReplies: (commentId: string) => void;
-    handleReply: (comment: Comment) => void;
-    parentComment: Comment;
-  }) => {
-    if (replies.length === 0 && !loading) return null;
-
-    console.log("Parent Comm", parentComment);
-
-    return (
-      <View className="ml-8 mt-2">
-        {replies.map((reply) => (
-          <CommenterCard
-            key={reply._id}
-            parent={parentComment}
-            comment={reply}
-            targetId={commentId}
-            targetType="Comment"
-            onReply={handleReply}
-          />
-        ))}
-
-        {hasNextPage && (
-          <TouchableOpacity
-            className="px-20 py-2"
-            onPress={() => loadMoreReplies(commentId)}
-          >
-            <TextScallingFalse className="font-semibold text-theme">
-              Show more replies...
-            </TextScallingFalse>
-          </TouchableOpacity>
-        )}
-
-        {loading && (
-          <ActivityIndicator size="small" color={Colors.themeColor} />
-        )}
       </View>
     );
   }
@@ -161,11 +107,11 @@ const PostDetailsPage = () => {
   // State for comment input and reply context
   const [commentText, setCommentText] = useState<string>("");
   const [isPosting, setIsPosting] = useState<boolean>(false);
-  const [inputHeight, setInputHeight] = useState(40);
   const [replyingTo, setReplyingTo] = useState<{
     commentId: string;
     name: string;
   } | null>(null);
+  const [rootCommentId, setRootCommentId] = useState("");
 
   // RTK Query hooks
   const [fetchComments] = useLazyFetchCommentsQuery();
@@ -216,7 +162,7 @@ const PostDetailsPage = () => {
       try {
         const response = await fetchComments({
           postId,
-          limit: 4,
+          limit: 10,
           cursor: refresh ? null : cursor,
         }).unwrap();
 
@@ -282,11 +228,11 @@ const PostDetailsPage = () => {
       try {
         const response = await fetchReplies({
           commentId,
-          limit: 2,
+          limit: 3,
           cursor: currentState.cursor,
         }).unwrap();
 
-        console.log(response);
+        // console.log(response.data.replies);
 
         if (response?.data) {
           const newReplies = response.data.replies || [];
@@ -299,10 +245,6 @@ const PostDetailsPage = () => {
               cursor: response.data.endCursor,
               hasNextPage: response.data.hasNextPage,
               loading: false,
-              replyCount:
-                currentState.replyCount ||
-                response.data.totalCount ||
-                updatedReplies.length,
             },
           }));
         }
@@ -358,6 +300,10 @@ const PostDetailsPage = () => {
     const replyTag = `${comment.postedBy.firstName} ${comment.postedBy.lastName}`;
     setReplyingTo({ commentId: comment._id, name: replyTag });
     textInputRef.current?.focus();
+
+    // console.log("Comment", comment);
+    // console.log("Root : ", comment.rootCommentId || comment._id);
+    setRootCommentId(comment.rootCommentId || comment._id);
   }, []);
 
   // Handle posting a new comment or reply
@@ -407,21 +353,38 @@ const PostDetailsPage = () => {
         flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
         if (isReply) {
+          // console.log("\n\nIs reply : ", isReply);
+          // console.log("\nNew Comment : ", newComment);
           // Add the new reply to its parent comment's replies
           setReplyStates((prev) => {
-            const currentReplies = prev[targetId as string]?.replies || [];
-            const currentCount = prev[targetId as string]?.replyCount || 0;
+            const current = prev[rootCommentId] ?? {
+              replies: [],
+              cursor: null,
+              hasNextPage: false,
+              loading: false,
+            };
+
+            // console.log("Target Id : ", targetId);
+            // console.log("Rootcomment Id : ", rootCommentId);
+            // console.log("State to be set : ", {
+            //   ...prev,
+            //   [rootCommentId]: {
+            //     ...current,
+            //     replies: [newComment, ...current.replies],
+            //     replyCount: current.replyCount,
+            //   },
+            // });
 
             return {
               ...prev,
-              [targetId as string]: {
-                ...prev[targetId as string],
-                replies: [newComment, ...currentReplies],
-                replyCount: currentCount + 1,
-                hasNextPage: true,
+              [rootCommentId]: {
+                ...current,
+                replies: [newComment, ...current.replies],
+                replyCount: current.replyCount + 1,
               },
             };
           });
+          incrementReplyCount(rootCommentId as string);
         } else {
           // Add the new comment to the top of the comments list
           setComments((prev) => [newComment, ...prev]);
@@ -446,6 +409,24 @@ const PostDetailsPage = () => {
     [postId, dispatch]
   );
 
+  const incrementReplyCount = (commentId: string) =>
+    setReplyStates((prev) => ({
+      ...prev,
+      [commentId]: {
+        ...prev[commentId],
+        replyCount: (prev[commentId]?.replyCount || 0) + 1,
+      },
+    }));
+
+  const decrementReplyCount = (commentId: string) =>
+    setReplyStates((prev) => ({
+      ...prev,
+      [commentId]: {
+        ...prev[commentId],
+        replyCount: Math.max(0, (prev[commentId]?.replyCount || 0) - 1),
+      },
+    }));
+
   // Animate the progress bar while posting
   useEffect(() => {
     if (isPosting) {
@@ -462,18 +443,20 @@ const PostDetailsPage = () => {
   // Memoize renderItem to avoid unnecessary re-renders
   const renderItem = useCallback(
     ({ item }: { item: Comment }) => {
-      const replyState = replyStates[item._id] || {
-        replies: [],
-        cursor: null,
-        hasNextPage: item.commentsCount > 0,
-        loading: false,
-        replyCount: item.commentsCount,
+      const baseState = replyStates[item._id] ?? {};
+      const replyState = {
+        replies: baseState.replies ?? [],
+        cursor: baseState.cursor ?? null,
+        hasNextPage: baseState.hasNextPage ?? item.commentsCount > 2,
+        loading: baseState.loading ?? false,
+        replyCount: item.commentsCount, // Explicitly use item.commentsCount here
       };
 
       return (
         <View className="px-2 mb-4">
           <CommenterCard
             comment={item}
+            commentCount={replyState.replyCount}
             targetId={postId}
             targetType="Post"
             onReply={handleReply}
@@ -481,17 +464,15 @@ const PostDetailsPage = () => {
             onDelete={handleDeleteComment}
           />
 
-          {item.commentsCount > 0 && (
+          {(item.commentsCount > 0 || replyState.replyCount > 0) && (
             <ReplySection
               commentId={item._id}
               replies={replyState.replies}
-              hasNextPage={
-                replyState.hasNextPage && replyState.replies.length > 2
-              }
+              hasNextPage={replyState.hasNextPage}
               loading={replyState.loading}
               loadMoreReplies={loadMoreReplies}
               handleReply={handleReply}
-              parentComment={item}
+              onDelete={handleDeleteComment}
             />
           )}
         </View>

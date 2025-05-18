@@ -16,6 +16,7 @@ import {
   Modal as RNModal,
   ActivityIndicator,
   Platform,
+  Text,
 } from "react-native";
 import Modal from "react-native-modal";
 import { Slot, useLocalSearchParams } from "expo-router";
@@ -63,6 +64,7 @@ import { calculateAge } from "~/utils/calculateAge";
 import TickIcon from "~/components/SvgIcons/Common_Icons/TickIcon";
 import { RefreshControl } from "react-native";
 import { getCountryFlag } from "~/utils/getCountryFlag";
+import { Linking } from "react-native";
 
 // Define the context type
 interface ProfileContextType {
@@ -191,6 +193,18 @@ const ProfileLayout = () => {
     },
     []
   );
+  const handlePress = async () => {
+    if (profileData?.websiteLink) {
+      const supported = await Linking.canOpenURL(profileData.websiteLink);
+      if (supported) {
+        await Linking.openURL(profileData.websiteLink);
+      } else {
+        console.log(
+          `Don't know how to open this URL: ${profileData.websiteLink}`
+        );
+      }
+    }
+  };
 
   //handle follow
   const handleFollow = async () => {
@@ -482,6 +496,8 @@ const ProfileLayout = () => {
                         <View
                           style={{
                             flexDirection: "row",
+                            justifyContent: "center",
+                            alignItems: "center",
                             gap: 4,
                           }}
                         >
@@ -691,25 +707,6 @@ const ProfileLayout = () => {
                               </TextScallingFalse>
                             </TextScallingFalse>
                           </View>
-                          {/* website */}
-                          {profileData?.websiteLink && (
-                            <View style={{ flexDirection: "row" }}>
-                              <Entypo
-                                name="dot-single"
-                                size={responsiveDotSize}
-                                color="white"
-                              />
-                              <TextScallingFalse
-                                style={styles.ProfileKeyPoints}
-                              >
-                                {" "}
-                                Website:{" "}
-                                <TextScallingFalse style={{ color: "#12956B" }}>
-                                  https://www.eastbengal.in
-                                </TextScallingFalse>
-                              </TextScallingFalse>
-                            </View>
-                          )}
                           {/* established on */}
                           {profileData?.dateOfBirth && (
                             <View style={{ flexDirection: "row" }}>
@@ -726,6 +723,48 @@ const ProfileLayout = () => {
                                 <TextScallingFalse style={{ color: "grey" }}>
                                   Sept, 1997
                                 </TextScallingFalse>
+                              </TextScallingFalse>
+                            </View>
+                          )}
+                          {/* website */}
+                          {profileData?.websiteLink && (
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Entypo
+                                name="dot-single"
+                                size={responsiveDotSize}
+                                color="white"
+                              />
+                              <TextScallingFalse
+                                style={styles.ProfileKeyPoints}
+                              >
+                                {" "}
+                                Website:{" "}
+                                <TextScallingFalse
+                                  style={{
+                                    color: "#E1E1E1",
+                                    fontSize: responsiveFontSize(1.4),
+                                  }}
+                                >
+                                  {profileData?.websiteLink}
+                                  {"  "}
+                                </TextScallingFalse>
+                                <TouchableOpacity
+                                  className="mt-[5px]"
+                                  onPress={handlePress}
+                                  activeOpacity={0.7}
+                                >
+                                  <FontAwesome6
+                                    name="arrow-up-right-from-square"
+                                    size={10}
+                                    color="#E1E1E1"
+                                  />
+                                </TouchableOpacity>
                               </TextScallingFalse>
                             </View>
                           )}

@@ -1,6 +1,12 @@
 import TextScallingFalse from "../../CentralText";
 import CountryFlag from "react-native-country-flag";
-import { Image, TouchableOpacity, View, Animated } from "react-native";
+import {
+  Image,
+  TouchableOpacity,
+  Pressable,
+  View,
+  Animated,
+} from "react-native";
 import { useState, useEffect, useRef } from "react";
 import { countryCodes } from "~/constants/countryCodes";
 
@@ -224,7 +230,7 @@ const FootballMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
       {/* Border */}
       <View className="h-[0.8] bg-[#252525]" />
 
-      <TouchableOpacity onPress={onCardPress}>
+      <Pressable onPress={onCardPress}>
         <View className=" h-28 flex-row justify-center items-center pb-2">
           {/* view 1 */}
           <View className="items-center justify-center flex-1">
@@ -262,7 +268,7 @@ const FootballMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
             </TextScallingFalse>
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* <TextScallingFalse className="text-white text-center text-base mb-2">{match?.t1}</TextScallingFalse> */}
     </>

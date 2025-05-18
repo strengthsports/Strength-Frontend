@@ -15,7 +15,7 @@ import {
   Keyboard,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter, useFocusEffect } from "expo-router";
 import AddPostHeader from "~/components/feedPage/AddPostHeader";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
@@ -27,7 +27,7 @@ import AlertModal from "~/components/modals/AlertModal";
 import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from "expo-media-library";
 import {
   resetUploadProgress,
   setUploadLoading,
@@ -205,6 +205,41 @@ export default function AddPostContainer() {
     pickedVideoUri,
   ]);
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (postText.trim().length > 0) return true;
+    if (pickedImageUris.length > 0) return true;
+    if (pickedVideoUri) return true;
+    if (showPollInput) {
+      return true;
+    }
+    return false;
+  }, [postText, pickedImageUris, pickedVideoUri, showPollInput]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (isAlertModalOpen || !hasUnsavedChanges) {
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Show the alert modal
+      setAlertModalOpen(true);
+    });
+
+    return unsubscribe; // Cleanup the listener when the component unmounts
+  }, [navigation, isAlertModalOpen, hasUnsavedChanges, router]);
+
+  // Called by the header's back button
+  const handleAttemptGoBack = () => {
+    if (hasUnsavedChanges) {
+      setAlertModalOpen(true);
+    } else {
+      router.back();
+    }
+  };
+
   // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(async () => {
     if (!isPostButtonEnabled) return;
@@ -272,10 +307,9 @@ export default function AddPostContainer() {
     dispatch,
   ]);
 
-
   // For selecting the first image with aspect ratio
   const selectFirstImage = useCallback(async (ratio: [number, number]) => {
-    console.log('yes selectFirstImage is called')
+    console.log("yes selectFirstImage is called");
     setSelectedAspectRatio(ratio);
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -296,7 +330,6 @@ export default function AddPostContainer() {
       alert("Failed to pick image. Please try again.");
     }
   }, []);
-
 
   // For adding more images (using same aspect ratio)
   const addMoreImages = useCallback(async () => {
@@ -323,7 +356,6 @@ export default function AddPostContainer() {
     }
   }, [pickedImageUris.length, selectedAspectRatio]);
 
-  
   // Optimize image removal
   const removeImage = useCallback((index: number) => {
     setPickedImageUris((prevUris) => prevUris.filter((_, i) => i !== index));
@@ -384,31 +416,44 @@ export default function AddPostContainer() {
   // Handle close poll
   const handleClosePoll = () => {
     setShowPollInput(false);
-    // setPlaceholderText(text.toString());
+    setPlaceholderText("What's on your mind");
     setNewPollOptions(["", ""]);
   };
 
-  const handleCloseAddPostContainer = () => {
-    if ((isPostButtonEnabled || showPollInput) && !isAlertModalOpen) {
-      setAlertModalOpen(true);
-    } else if (isAlertModalOpen) {
-      setPostText("");
-      setAlertModalOpen(false);
-      //   dispatch(setAddPostContainerOpen(false));
-      router.back();
-    } else {
-      //   dispatch(setAddPostContainerOpen(false));
-      router.back();
-    }
-  };
+  // const handleCloseAddPostContainer = () => {
+  //   if ((isPostButtonEnabled || showPollInput) && !isAlertModalOpen) {
+  //     setAlertModalOpen(true);
+  //   } else if (isAlertModalOpen) {
+  //     setPostText("");
+  //     setAlertModalOpen(false);
+  //     //   dispatch(setAddPostContainerOpen(false));
+  //     router.back();
+  //   } else {
+  //     //   dispatch(setAddPostContainerOpen(false));
+  //     router.back();
+  //   }
+  // };
 
   const handleDiscard = () => {
-    setShowPollInput(false);
+    setPostText("");
+    setPickedImageUris([]);
+    setPickedVideoUri(null);
     setTypeVideo(false);
-    setPickedVideoUri("");
-    setAlertModalOpen(false);
-    handleCloseAddPostContainer();
-    console.log("Discard pressed. isAlertModalOpen will become false.");
+    setNewPollOptions(["", ""]); // Reset poll options
+    setShowPollInput(false); // Hide poll input
+    setTaggedUsers([]); // Reset tagged users
+    setPlaceholderText("What's on your mind"); // Reset placeholder
+
+    // dispatch(resetUploadProgress()); // Uncomment if you have this action and it's relevant
+    // dispatch(setUploadLoading(false)); // Reset loading state if necessary
+
+    setAlertModalOpen(false); // Close the modal
+    console.log("Discard pressed. Navigating back."); // For debugging
+    router.back();
+  };
+
+  const handleCancelDiscard = () => {
+    setAlertModalOpen(false); // Just close the modal, user can continue editing
   };
 
   return (
@@ -417,10 +462,11 @@ export default function AddPostContainer() {
         <View className="h-full">
           {/* Header */}
           <View className="flex flex-row items-center justify-between p-4">
-            <AddPostHeader onBackPress={handleCloseAddPostContainer} />
+            <AddPostHeader onBackPress={handleAttemptGoBack} />
             <TouchableOpacity
-              className={`px-6 py-1 rounded-full ${isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-                }`}
+              className={`px-6 py-1 rounded-full ${
+                isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+              }`}
               onPress={handlePostSubmit}
               disabled={!isPostButtonEnabled}
             >
@@ -428,8 +474,9 @@ export default function AddPostContainer() {
                 <ActivityIndicator color={"white"} />
               ) : (
                 <TextScallingFalse
-                  className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                    } text-3xl font-semibold`}
+                  className={`${
+                    isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                  } text-3xl font-semibold`}
                 >
                   Post
                 </TextScallingFalse>
@@ -486,7 +533,7 @@ export default function AddPostContainer() {
 
           {/* only render when any feature which is under development is clicked */}
           {showFeatureModal && (
-            <ThisFeatureUnderDev
+            <FeatureUnderDev
               isVisible={showFeatureModal}
               onClose={() => setShowFeatureModal(false)}
             />
@@ -529,8 +576,8 @@ export default function AddPostContainer() {
                 <ClipsIcon
                   color={
                     showPollInput ||
-                      pickedImageUris.length > 0 ||
-                      (isTypeVideo && pickedVideoUri !== null)
+                    pickedImageUris.length > 0 ||
+                    (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }
@@ -584,8 +631,8 @@ export default function AddPostContainer() {
                 <PollsIcon
                   color={
                     showPollInput ||
-                      pickedImageUris.length > 0 ||
-                      (isTypeVideo && pickedVideoUri !== null)
+                    pickedImageUris.length > 0 ||
+                    (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }
@@ -605,7 +652,7 @@ export default function AddPostContainer() {
               cancelMessage: "Cancel",
               confirmMessage: "Discard",
               confirmAction: handleDiscard,
-              discardAction: () => setAlertModalOpen(false),
+              discardAction: handleCancelDiscard,
             }}
           />
         )}

@@ -75,7 +75,7 @@ const Forgot_Password_Enter_Email = () => {
   return (
     <PageThemeView>
         <View style={{marginTop: 80, flexDirection:'row', justifyContent:'space-between', alignItems:'center', paddingHorizontal: 25}}>
-          <TouchableOpacity onPress={()=>router.push("/(auth)/login")} activeOpacity={0.4} style={{width: 50, height: 30}}>
+          <TouchableOpacity onPress={()=>router.back()} activeOpacity={0.4} style={{width: 50, height: 30}}>
           <BackIcon />
           </TouchableOpacity>
           <Logo />

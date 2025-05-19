@@ -8,7 +8,9 @@ import TextScallingFalse from "../CentralText";
 import { NotificationType } from "~/types/others";
 import { AppDispatch } from "~/reduxStore";
 import {
+  acceptJoinRequest,
   acceptTeamInvitation,
+  rejectJoinRequest,
   rejectTeamInvitation,
 } from "~/reduxStore/slices/team/teamSlice";
 import renderCaptionWithTags from "~/utils/renderCaptionWithTags";
@@ -104,13 +106,44 @@ const NotificationCardLayout = React.memo(
       );
     }, [dispatch]);
 
-    const handleAcceptRequest = useCallback(() => {
-      // Handle team join request accept function
-    }, []);
+const handleAcceptRequest = useCallback(() => {
+  dispatch(
+    acceptJoinRequest({
+      senderId: sender._id,
+      teamId: target._id,
+      notificationId: _id as string,
+    })
+  )
+  .unwrap()
+  .then((response) => {
+    // Now properly accessing the response data
+    console.log("Join request accepted:", response.message);
+    // You might want to update UI or show a success message here
+  })
+  .catch((error) => {
+    console.error("Failed to accept join request:", error);
+    // Show error message to user
+  });
+}, [dispatch, sender._id, target._id, _id]);
 
-    const handleRejectRequest = useCallback(() => {
-      // Handle team join request reject function
-    }, []);
+
+
+  const handleRejectRequest = useCallback(() => {
+  dispatch(
+    rejectJoinRequest({
+      notificationId: _id as string,
+      userId: userId,
+    })
+  )
+  .unwrap()
+  .then(() => {
+    // Optional: Show success message or update UI
+  })
+  .catch((error) => {
+    // Optional: Show error message
+    console.error("Failed to reject join request:", error);
+  });
+}, [dispatch, _id, userId]);
 
     // Custom rendering for different notification types
     const renderNotificationContent = () => {
@@ -436,6 +469,7 @@ const PostPreview = React.memo(
 );
 
 // Team view
+// Update your TeamPreview component to handle loading states
 const TeamPreview = React.memo(
   ({
     image,
@@ -448,12 +482,30 @@ const TeamPreview = React.memo(
   }) => {
     const [isAccepted, setIsAccepted] = useState(false);
     const [isDeclined, setIsDeclined] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleAcceptPress = () => {
+      setIsProcessing(true);
+      handleAccept();
+      // Note: The actual state change should be handled by the Redux action
+      // This local state is just for UI feedback
+      setTimeout(() => {
+        setIsAccepted(true);
+        setIsProcessing(false);
+      }, 500);
+    };
+
+    const handleDeclinePress = () => {
+      setIsProcessing(true);
+      handleDecline();
+      setTimeout(() => {
+        setIsDeclined(true);
+        setIsProcessing(false);
+      }, 500);
+    };
 
     return (
-      <View
-        className={`mt-2 overflow-hidden rounded-xl`}
-        style={{ width: "86%" }}
-      >
+      <View className={`mt-2 overflow-hidden rounded-xl`} style={{ width: "86%" }}>
         <View className="flex-row bg-[#262626] justify-between items-center">
           {image && (
             <Image
@@ -470,11 +522,13 @@ const TeamPreview = React.memo(
             {!isAccepted && (
               <TouchableOpacity
                 className="bg-transparent self-start px-4 justify-center rounded-lg border"
-                style={{ height: 32, borderColor: "#646464" }}
-                onPress={() => {
-                  setIsDeclined(true);
-                  handleDecline();
+                style={{ 
+                  height: 32, 
+                  borderColor: "#646464",
+                  opacity: isProcessing ? 0.7 : 1
                 }}
+                onPress={handleDeclinePress}
+                disabled={isProcessing}
               >
                 <TextScallingFalse
                   className="font-medium text-[12px]"
@@ -488,10 +542,7 @@ const TeamPreview = React.memo(
               <TouchableOpacity
                 className="bg-theme self-start px-4 flex-row justify-center items-center rounded-lg border-theme"
                 style={{ height: 32 }}
-                onPress={() => {
-                  setIsAccepted(true);
-                  handleAccept();
-                }}
+                disabled
               >
                 <TickIcon />
                 <TextScallingFalse className="text-white font-medium text-[12px]">
@@ -501,14 +552,15 @@ const TeamPreview = React.memo(
             ) : (
               <TouchableOpacity
                 className="bg-theme self-start px-4 justify-center items-center rounded-lg border-theme"
-                style={{ height: 32 }}
-                onPress={() => {
-                  setIsAccepted(true);
-                  handleAccept();
+                style={{ 
+                  height: 32,
+                  opacity: isProcessing ? 0.7 : 1
                 }}
+                onPress={handleAcceptPress}
+                disabled={isProcessing}
               >
                 <TextScallingFalse className="text-white font-medium text-[12px]">
-                  Accept
+                  {isProcessing ? "Processing..." : "Accept"}
                 </TextScallingFalse>
               </TouchableOpacity>
             )}

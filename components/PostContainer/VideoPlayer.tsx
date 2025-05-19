@@ -157,8 +157,10 @@ export default function YouTubeStyleVideoPlayer({
       if (status.status === "readyToPlay") {
         setIsLoading(false);
         setDuration(player.duration);
+      } else if (status.status === "loading") {
+        setIsLoading(true);
       } else if (status.status === "error") {
-        setIsLoading(false);
+        setIsLoading(true);
       }
     };
 
@@ -337,14 +339,16 @@ export default function YouTubeStyleVideoPlayer({
           <Animated.View
             style={[styles.controlsContainer, { opacity: fadeAnim }]}
           >
-            <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBar,
-                  { width: `${progressPercentage}%` },
-                ]}
-              />
-            </View>
+            {!editable && (
+              <View style={styles.progressBarContainer}>
+                <View
+                  style={[
+                    styles.progressBar,
+                    { width: `${progressPercentage}%` },
+                  ]}
+                />
+              </View>
+            )}
             {/* Top right controls */}
             {!editable && (
               <View style={styles.topRightControls}>
@@ -372,7 +376,7 @@ export default function YouTubeStyleVideoPlayer({
               </TextScallingFalse>
             </View>
             {/* Bottom right controls */}
-            {!editable && (
+            {/* {!editable && (
               <View style={styles.rightControls}>
                 <TouchableOpacity
                   onPress={handleFullScreen}
@@ -386,7 +390,7 @@ export default function YouTubeStyleVideoPlayer({
                   />
                 </TouchableOpacity>
               </View>
-            )}
+            )} */}
           </Animated.View>
         )}
 

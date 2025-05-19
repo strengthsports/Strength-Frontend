@@ -53,7 +53,7 @@ const DiscoverPeopleList = ({
       }}
     >
       <TextScallingFalse className="text-white text-4xl ml-3 my-2 font-bold">
-        Discover People
+        Suggested Followings
       </TextScallingFalse>
       {/* <Divider width={2} color="#1e1e1e" /> */}
 

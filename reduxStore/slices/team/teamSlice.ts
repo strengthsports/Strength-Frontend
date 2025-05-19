@@ -144,6 +144,29 @@ export type TeamFilterParams = {
   searchQuery?: string;
 };
 
+
+export type AcceptJoinRequestResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    teamId: string;
+    newMemberId: string;
+  };
+};
+
+export type AcceptJoinRequestPayload = {
+  senderId: string;
+  teamId: string;
+  notificationId: string;
+};
+
+
+
+
+
+
+
+
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 // --- Utils ---
@@ -759,6 +782,87 @@ export const fetchAllTeams = createAsyncThunk<
 });
 
 
+// Add to your teamSlice.ts
+// Update the acceptJoinRequest thunk to match your Postman response
+export const acceptJoinRequest = createAsyncThunk<
+  { 
+    success: boolean;
+    message: string;
+    data: {
+      teamId: string;
+      newMemberId: string;
+    }
+  },
+  { senderId: string; teamId: string; notificationId: string },
+  { rejectValue: string }
+>(
+  'team/acceptJoinRequest',
+  async ({ senderId, teamId, notificationId }, { rejectWithValue }) => {
+    try {
+      const token = await getToken('accessToken');
+      
+      const response = await fetch(
+        `${BASE_URL}/api/v1/team/accept-request`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ senderId, teamId, notificationId }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        return rejectWithValue(data.message || 'Failed to accept join request');
+      }
+
+      // Return the entire response structure
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || 'Network error');
+    }
+  }
+);
+
+export const rejectJoinRequest = createAsyncThunk<
+  { success: boolean; message: string },
+  { notificationId: string; userId: string },
+  { rejectValue: string }
+>(
+  'team/rejectJoinRequest',
+  async ({ notificationId, userId }, { rejectWithValue }) => {
+    try {
+      const token = await getToken('accessToken');
+      
+      const response = await fetch(
+        `${BASE_URL}/api/v1/team/reject-join-request`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ notificationId, userId }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to reject join request');
+      }
+
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || 'Network error');
+    }
+  }
+);
+
+
 const teamSlice = createSlice({
   name: "team",
   initialState,
@@ -882,8 +986,8 @@ const teamSlice = createSlice({
         (state, action: PayloadAction<TeamMember>) => {
           state.loading = false;
           if (state.currentTeam) {
-            const memberIndex = state.currentTeam.members.findIndex(
-              (m) => m.user._id === action.payload.user._id
+            const memberIndex = state.currentTeam?.members.findIndex(
+              (m) => m.user._id === action.payload?.user._id
             );
             if (memberIndex !== -1) {
               state.currentTeam.members[memberIndex].role = action.payload.role;
@@ -895,31 +999,6 @@ const teamSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to change user role";
       })
-
-      // .addCase(removeTeamMember.pending, (state) => {
-      //   state.loading = true;
-      //   state.error = null;
-      // })
-      // .addCase(removeTeamMember.fulfilled, (state, action) => {
-      //   state.loading = false;
-      //   // Remove the user from the team members if team exists
-      //   if (state.team) {
-      //     state.team.members = state.team.members.filter(
-      //       (member: any) => member.user._id !== action.meta.arg.userId
-      //     );
-      //     // Also remove from admin and coach arrays if present
-      //     state.team.admin = state.team.admin.filter(
-      //       (adminId: any) => adminId.toString() !== action.meta.arg.userId
-      //     );
-      //     state.team.coach = state.team.coach.filter(
-      //       (coachId: any) => coachId.toString() !== action.meta.arg.userId
-      //     );
-      //   }
-      // })
-      // .addCase(removeTeamMember.rejected, (state, action) => {
-      //   state.loading = false;
-      //   state.error = action.payload || "Failed to remove team member";
-      // })
 
  .addCase(removeTeamMember.pending, (state) => {
   state.loading = true;
@@ -1033,7 +1112,37 @@ const teamSlice = createSlice({
       state.allTeamsLoading = false;
       state.allTeamsError = action.payload || 'Failed to fetch teams';
     });
-      
+      builder
+  .addCase(acceptJoinRequest.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+ .addCase(acceptJoinRequest.fulfilled, (state, action) => {
+  state.loading = false;
+  const { teamId, newMemberId } = action.payload.data; // Now properly accessing nested data
+  
+  // Update the team in state
+  if (state.team && state.team._id === teamId) {
+    // Check if member already exists
+    const isAlreadyMember = state.team.members.some(
+      member => member.user.toString() === newMemberId
+    );
+    
+    if (!isAlreadyMember) {
+      state.team.members.push({
+        user: newMemberId,
+        role: '',
+        position: '',
+        joinedAt: new Date().toISOString()
+      });
+      state.team.membersLength++;
+    }
+  }
+})
+  .addCase(acceptJoinRequest.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload || 'Failed to accept join request';
+  })
       
       ;
   },

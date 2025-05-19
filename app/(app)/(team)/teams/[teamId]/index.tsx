@@ -34,6 +34,8 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import TeamCard from "~/components/teamPage/TeamCard";
 import SubCategories from "~/components/teamPage/SubCategories";
 import CombinedDrawer from "~/components/teamPage/CombinedDrawer";
+import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
+import { useFocusEffect } from "@react-navigation/native";
 import SettingsIcon from "~/components/SvgIcons/teams/SettingsIcon";
 import InviteMembers from "~/components/SvgIcons/teams/InviteMembers";
 import LeaveTeam from "~/components/SvgIcons/teams/LeaveTeam";
@@ -276,6 +278,17 @@ const handleLeaveTeam = useCallback(async () => {
         (member: any) => member.user?._id === user?._id
       ),
     [teamDetails?.members, user?._id]
+  );
+
+  useFocusEffect(
+      React.useCallback(() => {
+        if (user?._id) {
+          dispatch(fetchMyProfile({ 
+            targetUserId: user._id, 
+            targetUserType: "User" 
+          }));
+        }
+      }, [dispatch, user?._id])
   );
 
   // Memoized menu items

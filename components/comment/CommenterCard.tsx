@@ -157,6 +157,7 @@ export const CommenterCard = memo(
             onPress={() =>
               router.push(`/(app)/(profile)/profile/${serializedUser}`)
             }
+            className="w-10/12"
           >
             <TextScallingFalse className="font-bold text-white text-lg">
               {comment?.postedBy?.firstName} {comment?.postedBy?.lastName}

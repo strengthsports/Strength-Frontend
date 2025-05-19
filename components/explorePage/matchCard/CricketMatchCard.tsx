@@ -9,6 +9,7 @@ import {
 import TextScallingFalse from "~/components/CentralText";
 import NameFlagSubCard from "../nameFlagSubCard";
 import { countryCodes } from "~/constants/countryCodes";
+import { getCountryFlag } from "~/utils/getCountryFlag";
 
 interface MatchCardProps {
   match: {
@@ -60,9 +61,21 @@ interface MatchCardProps {
           wickets: number;
           overs: number; // may appear as 7.6 or 19.6
         };
+        inngs2?: {
+          inningsId: number;
+          runs: number;
+          wickets: number;
+          overs: number; // may appear as 7.6 or 19.6
+        };
       };
       team2Score?: {
         inngs1?: {
+          inningsId: number;
+          runs: number;
+          wickets: number;
+          overs: number;
+        };
+        inngs2?: {
           inningsId: number;
           runs: number;
           wickets: number;
@@ -136,6 +149,9 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
       : result.replace(teamB, teamB_short).trim();
   };
 
+  const inngs1Exist = match.matchScore?.team1Score?.inngs2;
+  const inngs2Exist = match.matchScore?.team2Score?.inngs2;
+
   return (
     <>
       {/* Title Section */}
@@ -199,7 +215,7 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
           {/* Team 1 */}
           <View className="flex-row items-center justify-between mt-2 mb-1">
             <NameFlagSubCard
-              flag={match.matchInfo?.team1?.teamName}
+              flag={getCountryFlag(match.matchInfo?.team1?.teamName) || ""}
               teamName={match.matchInfo?.team1?.teamSName}
             />
             <TextScallingFalse
@@ -215,7 +231,15 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
                 teamRun: match.matchScore?.team1Score?.inngs1?.runs ?? 0,
                 teamWicket: match.matchScore?.team1Score?.inngs1?.wickets ?? 0,
                 teamOver: match.matchScore?.team1Score?.inngs1?.overs ?? 0,
-              })}
+              })}{" "}
+              {inngs1Exist &&
+                Object.keys(inngs1Exist).length > 0 &&
+                determineScore({
+                  teamRun: match.matchScore?.team1Score?.inngs2?.runs ?? 0,
+                  teamWicket:
+                    match.matchScore?.team1Score?.inngs2?.wickets ?? 0,
+                  teamOver: match.matchScore?.team1Score?.inngs2?.overs ?? 0,
+                })}
               {!isMatchComplete && (
                 <TextScallingFalse
                   style={{
@@ -237,7 +261,7 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
           {/* Team 2 */}
           <View className="flex-row items-center justify-between mt-1 mb-2">
             <NameFlagSubCard
-              flag={match.matchInfo?.team2?.teamName}
+              flag={getCountryFlag(match.matchInfo?.team2?.teamName) || ""}
               teamName={match.matchInfo?.team2?.teamSName}
             />
             <TextScallingFalse
@@ -253,7 +277,15 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
                 teamRun: match.matchScore?.team2Score?.inngs1?.runs ?? 0,
                 teamWicket: match.matchScore?.team2Score?.inngs1?.wickets ?? 0,
                 teamOver: match.matchScore?.team2Score?.inngs1?.overs ?? 0,
-              })}
+              })}{" "}
+              {inngs2Exist &&
+                Object.keys(inngs2Exist).length > 0 &&
+                determineScore({
+                  teamRun: match.matchScore?.team2Score?.inngs2?.runs ?? 0,
+                  teamWicket:
+                    match.matchScore?.team2Score?.inngs2?.wickets ?? 0,
+                  teamOver: match.matchScore?.team2Score?.inngs2?.overs ?? 0,
+                })}
               {!isMatchComplete && (
                 <TextScallingFalse
                   style={{

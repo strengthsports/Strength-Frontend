@@ -223,7 +223,8 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                   <TouchableOpacity
                     style={[
                       styles.optionInputBase,
-                      localSelectedOption === index &&
+                      localUserVoted &&
+                        localSelectedOption === index &&
                         styles.selectedOptionBorder,
                     ]}
                     disabled={localUserVoted}
@@ -244,7 +245,7 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                     >
                       <TextScallingFalse style={styles.optionText}>
                         {option}
-                        {localSelectedOption === index && (
+                        {localUserVoted && localSelectedOption === index && (
                           <View style={{ paddingLeft: 5 }}>
                             <PollsTickIcon />
                           </View>

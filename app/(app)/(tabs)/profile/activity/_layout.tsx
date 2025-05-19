@@ -43,13 +43,13 @@ export default function ActivityTabLayout() {
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"
         contentContainerStyle={{
-          marginTop: 5,
+          paddingVertical: 2,
           paddingStart: 15 * scaleFactor,
           paddingEnd: 80 * scaleFactor,
           justifyContent: "flex-start",
           alignItems: "center",
           gap: 12,
-          // width: "auto",
+          // width: "au",
         }}
       >
         {tabs.map((tab) => {
@@ -58,7 +58,7 @@ export default function ActivityTabLayout() {
             <Pressable
               key={tab.name}
               onPress={() => handleTabPress(tab.segment)}
-              className={`px-4 py-[9px] flex flex-row items-center justify-center rounded-[10px] border ${
+              className={`px-4 py-[8px] flex flex-row items-center justify-center rounded-[10px] border ${
                 isActive ? "bg-[#12956B]" : "bg-black border-[#454545]"
               }`}
             >

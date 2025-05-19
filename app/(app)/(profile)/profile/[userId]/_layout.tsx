@@ -362,7 +362,9 @@ const ProfileLayout = () => {
   return (
     <PageThemeView>
       {isLoading ? (
+        <View style={{width:'100%', height:'80%',justifyContent:'center', alignItems:'center'}}>
         <ActivityIndicator size="large" color="#12956B" style={styles.loader} />
+        </View>
       ) : (
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}

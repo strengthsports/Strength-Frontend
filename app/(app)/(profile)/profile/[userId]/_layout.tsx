@@ -92,6 +92,114 @@ const shadowStyle = Platform.select({
   },
 });
 
+const countryAbbreviations = {
+  "United Arab Emirates": "UAE",
+  "United States of America": "USA",
+  "United States": "USA",
+  "United Kingdom": "UK",
+  "Antigua and Barbuda": "ANT",
+  "Bosnia and Herzegovina": "BIH",
+  "British Virgin Islands": "BVI",
+  "Cayman Islands": "CAY",
+  "Central African Republic": "CAF",
+  "Cook Islands": "COK",
+  "Costa Rica": "CRI",
+  "Czech Republic": "CZE",
+  "Dominican Republic": "DOM",
+  "El Salvador": "SLV",
+  "Equatorial Guinea": "GNQ",
+  "Falkland Islands": "FLK",
+  "Faroe Islands": "FRO",
+  "French Polynesia": "PYF",
+  "Marshall Islands": "MHL",
+  "New Caledonia": "NCL",
+  "New Zealand": "NZL",
+  "North Macedonia": "MKD",
+  "Papua New Guinea": "PNG",
+  "Puerto Rico": "PRI",
+  "Saint Kitts and Nevis": "KNA",
+  "Saint Lucia": "LCA",
+  "Saint Vincent and the Grenadines": "VCT",
+  "San Marino": "SMR",
+  "Sao Tome and Principe": "STP",
+  "Saudi Arabia": "SAU",
+  "Sierra Leone": "SLE",
+  "Solomon Islands": "SLB",
+  "South Africa": "ZAF",
+  "South Korea": "KOR",
+  "Sri Lanka": "LKA",
+  "Trinidad and Tobago": "TTO",
+  "Turks and Caicos Islands": "TCA",
+  "Vatican City": "VAT",
+  "Democratic Republic of the Congo": "DRC",
+  "Republic of the Congo": "COG",
+  "United States Minor Outlying Islands": "UMI",
+  "Northern Mariana Islands": "MNP",
+  "Saint Helena, Ascension and Tristan da Cunha": "SHN",
+  "Svalbard and Jan Mayen": "SJM",
+  "Timor-Leste": "TLS",
+  "Virgin Islands, British": "VGB",
+  "Virgin Islands, U.S.": "VIR",
+  "Wallis and Futuna": "WLF",
+  "Western Sahara": "ESH",
+  "Bouvet Island": "BVT",
+  "Heard Island and McDonald Islands": "HMD",
+  "British Indian Ocean Territory": "IOT",
+  "Federated States of Micronesia": "FSM",
+  "Saint Pierre and Miquelon": "SPM",
+  "American Samoa": "ASM",
+  "French Southern Territories": "ATF",
+  "Isle of Man": "IMN",
+  "Norfolk Island": "NFK",
+  "Pitcairn Islands": "PCN",
+  "South Georgia and the South Sandwich Islands": "SGS",
+  "Lao People's Democratic Republic": "LAO",
+  "Democratic People's Republic of Korea": "PRK",
+  "Republic of Korea": "KOR",
+  "Russian Federation": "RUS",
+  "Syrian Arab Republic": "SYR",
+  "United Republic of Tanzania": "TZA",
+  "Bolivarian Republic of Venezuela": "VEN",
+  Australia: "AUS",
+  Afghanistan: "AFG",
+  Argentina: "ARG",
+  Bangladesh: "BGD",
+  Cambodia: "KHM",
+  Colombia: "COL",
+  Ethiopia: "ETH",
+  Indonesia: "IDN",
+  Madagascar: "MDG",
+  Mozambique: "MOZ",
+  Philippines: "PHL",
+  Switzerland: "CHE",
+  Luxembourg: "LUX",
+  Mauritania: "MRT",
+  Mauritius: "MUS",
+  Nicaragua: "NIC",
+  Paraguay: "PRY",
+  Singapore: "SGP",
+  Slovakia: "SVK",
+  Slovenia: "SVN",
+  Tajikistan: "TJK",
+  Turkmenistan: "TKM",
+  Uzbekistan: "UZB",
+  Uruguay: "URY",
+  Netherlands: "NLD",
+};
+
+const getShortCountryName = (countryName, maxLength = 6) => {
+  if (!countryName) {
+    return "undefined";
+  }
+  if (countryAbbreviations[countryName]) {
+    return countryAbbreviations[countryName];
+  }
+  if (countryName.length > maxLength) {
+    return `${countryName.substring(0, maxLength)}...`;
+  }
+  return countryName;
+};
+
 // Main function
 const ProfileLayout = () => {
   const params = useLocalSearchParams();
@@ -371,7 +479,13 @@ const ProfileLayout = () => {
           showsVerticalScrollIndicator={false}
           stickyHeaderIndices={[0]}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#12956B"]}
+              tintColor="#12956B"
+              progressBackgroundColor="#000"
+            />
           }
         >
           <View
@@ -479,7 +593,14 @@ const ProfileLayout = () => {
                   gap: 4,
                 }}
               >
-                <View style={{ width: "50%", flexDirection: "row", gap: 15 }}>
+                <View
+                  style={{
+                    width: "50%",
+                    flexDirection: "row",
+                    gap: 15,
+                    // marginBottom: 5,
+                  }}
+                >
                   <TextScallingFalse
                     style={{
                       color: "white",
@@ -492,15 +613,15 @@ const ProfileLayout = () => {
 
                   {!profileData?.blockingStatus && (
                     <View
-                      style={{ marginTop: 6, marginRight: 5, height: "auto" }}
+                      style={{ marginTop: 5, marginRight: 5, height: "auto" }}
                     >
                       {profileData?.address?.country && (
                         <View
                           style={{
                             flexDirection: "row",
-                            justifyContent: "center",
                             alignItems: "center",
                             gap: 4,
+                            marginBottom: 5,
                           }}
                         >
                           <Image
@@ -514,19 +635,21 @@ const ProfileLayout = () => {
                               height: 18,
                               borderRadius: 5,
                               overflow: "hidden",
-                              marginBottom: 5,
                             }}
                             defaultSource={require("@/assets/images/IN.png")}
                           />
                           <TextScallingFalse
                             style={{
-                              marginTop: 1,
+                              // marginTop: 1,
                               color: "#EAEAEA",
                               fontSize: responsiveFontSize(1.41),
                               fontWeight: "300",
                             }}
                           >
-                            {profileData?.address?.country || "undefined"}
+                            {getShortCountryName(
+                              profileData?.address?.country,
+                              6
+                            )}
                           </TextScallingFalse>
                         </View>
                       )}
@@ -874,7 +997,7 @@ const ProfileLayout = () => {
                     <View
                       style={{
                         flexDirection: "row",
-                        gap: 3,
+                        gap: 6,
                         justifyContent: "center",
                         alignItems: "center",
                       }}

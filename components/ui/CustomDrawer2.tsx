@@ -5,6 +5,7 @@ import { ScrollView } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "react-native";
+import { useIsFocused } from '@react-navigation/native';
 import TextScallingFalse from "../CentralText";
 import SportsIndicator from "../SvgIcons/SideMenu/SportsIndicator";
 import { AntDesign, Feather } from "@expo/vector-icons";
@@ -23,8 +24,10 @@ interface Team {
 
 const CustomDrawer2 = () => {
   const router = useRouter();
+   const isFocused = useIsFocused();
   const dispatch = useDispatch<AppDispatch>();
   const isNavigatingRef = useRef(false);
+   
   const [showAllTeams, setShowAllTeams] = useState(false);
 
   const user = useSelector((state: RootState) => state.profile.user);
@@ -53,6 +56,14 @@ const CustomDrawer2 = () => {
   useEffect(() => {
     dispatch(fetchTeams());
   }, []);
+
+    useEffect(() => {
+    if (isFocused) {
+     
+      console.log('Drawer screen is focused, refreshing data...');
+      dispatch(fetchTeams());
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     processTeams();

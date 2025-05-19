@@ -47,6 +47,7 @@ import {
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import CaptainSq from "~/components/SvgIcons/teams/CaptainSq";
 import ViceCaptainSq from "~/components/SvgIcons/teams/ViceCaptainSq";
+import TransferAdminScreen from "./TransferAdmin";
 
 // Types
 interface Role {
@@ -214,7 +215,7 @@ const ActionButtonRole = React.memo(
       style={{ backgroundColor }}
     >
       <TextScallingFalse
-        className="text-3xl mt-1  font-regular"
+        className="text-[16px] mt-1  font-regular"
         style={{ color: textColor }}
       >
         {label}
@@ -250,6 +251,20 @@ const ProfileSection = React.memo(({ member }: { member: any }) => (
   </View>
 ));
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Main component
 const MemberDetails = () => {
   const {
@@ -282,6 +297,7 @@ const MemberDetails = () => {
   const [memberPosition, setMemberPosition] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isFollowingLoading, setIsFollowingLoading] = useState(false);
+  const [transferModalVisible, setTransferModalVisible] = useState(false);
 
   // Alert modal state
   const [alertVisible, setAlertVisible] = useState(false);
@@ -293,6 +309,96 @@ const MemberDetails = () => {
     confirmMessage: "Confirm",
     cancelMessage: "Cancel",
   });
+
+
+const TransferAdminModal = React.memo(() => (
+  <Modal
+    visible={transferModalVisible}
+    transparent
+    animationType="fade"
+    onRequestClose={() => setTransferModalVisible(false)}
+  >
+    <TouchableWithoutFeedback onPress={() => setTransferModalVisible(false)}>
+      <View style={styles.transferModalOverlay} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.transferModalContainer}>
+      <View style={styles.transferModalContent}>
+        <TextScallingFalse style={styles.transferModalTitle}>
+          Transfer Admin Rights
+        </TextScallingFalse>
+        
+        <View style={styles.transferProfilesContainer}>
+          {/* Current Admin */}
+          <View style={styles.transferProfile}>
+            <Image
+              source={user?.profilePic ? { uri: user.profilePic } : Nopic}
+              style={styles.transferProfileImage}
+            />
+            <TextScallingFalse style={styles.transferProfileName}>
+              {user?.firstName} {user?.lastName}
+            </TextScallingFalse>
+            <TextScallingFalse style={styles.transferProfileRole}>
+              Current Admin
+            </TextScallingFalse>
+          </View>
+          
+          {/* Transfer Arrow */}
+          <MaterialCommunityIcons 
+            name="arrow-right" 
+            size={30} 
+            color="#12956B" 
+            style={styles.transferArrow}
+          />
+          
+          {/* New Admin */}
+          <View style={styles.transferProfile}>
+            <Image
+              source={parsedMember?.profilePic ? { uri: parsedMember.profilePic } : Nopic}
+              style={styles.transferProfileImage}
+            />
+            <TextScallingFalse style={styles.transferProfileName}>
+              {parsedMember?.firstName} {parsedMember?.lastName}
+            </TextScallingFalse>
+            <TextScallingFalse style={styles.transferProfileRole}>
+              New Admin
+            </TextScallingFalse>
+          </View>
+        </View>
+        
+        <View style={styles.transferButtonsContainer}>
+          <TouchableOpacity
+            style={[styles.transferButton, styles.cancelTransferButton]}
+            onPress={() => setTransferModalVisible(false)}
+          >
+            <TextScallingFalse style={styles.cancelTransferButtonText}>
+              Cancel
+            </TextScallingFalse>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.transferButton, styles.confirmTransferButton]}
+            onPress={() => {
+              setTransferModalVisible(false);
+              // Show the confirmation alert after closing this modal
+              showAlert(
+                "Confirm Transfer",
+                `Are you absolutely sure you want to transfer admin rights to ${parsedMember?.firstName} ${parsedMember?.lastName}?`,
+                handleTransferAdmin,
+                "Transfer",
+                true
+              );
+            }}
+          >
+            <TextScallingFalse style={styles.confirmTransferButtonText}>
+              Transfer Admin
+            </TextScallingFalse>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  </Modal>
+));
 
  const [followingStatus, setFollowingStatus] = useState<boolean>(
     parsedMember?.isFollowing ?? false
@@ -338,6 +444,18 @@ const MemberDetails = () => {
     if (!parsedMember) return;
     router.push(`/(app)/(profile)/profile/${serializedUser}`);
   };
+
+
+const handleTransferAdminFlow = useCallback(() => {
+  if (!team || !parsedMember) {
+    showToastMessage("Missing team or member data", "error");
+    return;
+  }
+  
+  // Show the visual transfer modal
+  setTransferModalVisible(true);
+}, [team, parsedMember]);
+
 
 
 
@@ -707,13 +825,16 @@ const handleRemoveFromTeam = useCallback(() => {
   );
 }, [teamId, parsedMember, dispatch]);
 
-  // Handle admin transfer
+
+
+
 // In your MemberDetails component, update the handleTransferAdmin function:
 const handleTransferAdmin = useCallback(() => {
   if (!team || !parsedMember) {
     showToastMessage("Missing team or member data", "error");
     return;
   }
+  
 
   showAlert(
     "Transfer Admin",
@@ -751,6 +872,9 @@ const handleTransferAdmin = useCallback(() => {
     true
   );
 }, [team, parsedMember, dispatch, router]);
+
+
+
 
   // Render position-specific buttons - memoized to prevent re-renders
   const renderPositionButtons = useMemo(() => {
@@ -847,6 +971,9 @@ const handleTransferAdmin = useCallback(() => {
       );
     }
   }, [memberPosition, handlePositionChange, handleRemovePosition]);
+
+
+
 
   // Show loading state during initial fetch
   if (loading && !team) {
@@ -950,7 +1077,7 @@ const handleTransferAdmin = useCallback(() => {
             label={
               team?.admin[0]._id === member?._id
                 ? "Leave Team"
-                : "Remove from team"
+                : "Remove from the Team"
             }
             onPress={handleRemoveFromTeam}
             backgroundColor="#141414"
@@ -961,8 +1088,17 @@ const handleTransferAdmin = useCallback(() => {
 
         {isCurrentUserAdmin && !isMemberAdmin && (
           <ActionButtonRole
-            label="Transfer Admin"
-            onPress={handleTransferAdmin}
+            label="Transfer Administration"
+            onPress={() => {
+  router.push({
+    pathname: './TransferAdmin',
+    params: {
+      teamId: teamId,
+      member: member,
+    },
+  });
+}}
+
             backgroundColor="#141414"
             textColor="#D44044"
             icon={<TransferAdmin />}
@@ -978,7 +1114,7 @@ const handleTransferAdmin = useCallback(() => {
         onSelect={handleRoleSelect}
         currentRole={role}
       />
-
+<TransferAdminModal />
       {/* Toast Component */}
       <Toast
        config={toastConfig}
@@ -998,6 +1134,89 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: "space-between",
   },
+  transferModalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.7)',
+},
+transferModalContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+transferModalContent: {
+  backgroundColor: 'black',
+  borderRadius: 15,
+  padding: 20,
+  width: '100%',
+  height:'100%',
+},
+transferModalTitle: {
+  color: 'white',
+  fontSize: 18,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  marginBottom: 20,
+},
+transferProfilesContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 25,
+},
+transferProfile: {
+  alignItems: 'center',
+  flex: 1,
+},
+transferProfileImage: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  borderWidth: 2,
+  borderColor: '#2B2B2B',
+  marginBottom: 10,
+},
+transferProfileName: {
+  color: 'white',
+  fontSize: 14,
+  fontWeight: '600',
+  textAlign: 'center',
+  marginBottom: 5,
+},
+transferProfileRole: {
+  color: '#9FAAB5',
+  fontSize: 12,
+  textAlign: 'center',
+},
+transferArrow: {
+  marginHorizontal: 10,
+},
+transferButtonsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+},
+transferButton: {
+  borderRadius: 10,
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  flex: 1,
+  alignItems: 'center',
+},
+cancelTransferButton: {
+  backgroundColor: '#2B2B2B',
+  marginRight: 10,
+},
+confirmTransferButton: {
+  backgroundColor: '#D44044',
+},
+cancelTransferButtonText: {
+  color: 'white',
+  fontWeight: '600',
+},
+confirmTransferButtonText: {
+  color: 'white',
+  fontWeight: '600',
+},
+
   headerText: {
     color: "white",
     fontSize: 16,

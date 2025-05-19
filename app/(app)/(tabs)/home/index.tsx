@@ -39,7 +39,7 @@ import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
 import SuggestedArticlesCard from "~/components/Cards/SuggestedArticlesCard";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 
-const INTERLEAVE_INTERVAL = 6;
+const INTERLEAVE_INTERVAL = 2;
 
 const ListFooterComponent = memo(
   ({ isLoading, hasMore }: { isLoading: boolean; hasMore: boolean }) => {

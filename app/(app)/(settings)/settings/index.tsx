@@ -226,17 +226,19 @@ const index = () => {
             Log Out
           </TextScallingFalse>
         </TouchableOpacity>
-                {/* LogOut Bypass*/}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={styles.OptionButtonView}
-          onPress={()=>router.push('/(auth)/login')}
-        >
-          <Ionicons name="exit-outline" size={31} color="white" />
-          <TextScallingFalse style={styles.OptionText}>
-            Log Out Bypass
-          </TextScallingFalse>
-        </TouchableOpacity>
+        {/* LogOut Bypass*/}
+        {__DEV__ && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.OptionButtonView}
+            onPress={() => router.push("/(auth)/login")}
+          >
+            <Ionicons name="exit-outline" size={31} color="white" />
+            <TextScallingFalse style={styles.OptionText}>
+              Log Out Bypass
+            </TextScallingFalse>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Account Settings Modal */}

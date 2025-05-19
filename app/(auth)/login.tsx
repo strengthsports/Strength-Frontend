@@ -232,7 +232,14 @@ const LoginScreen = () => {
             <TextScallingFalse
               style={{ color: "white", fontSize: 14.5, fontWeight: "400" }}
             >
-              New to Strength? Join now
+              New to{" "}
+              <TextScallingFalse className="font-normal">
+                Strength
+              </TextScallingFalse>
+              ?{" "}
+              <TextScallingFalse className="text-theme">
+                Join now
+              </TextScallingFalse>
             </TextScallingFalse>
           </TouchableOpacity>
           {/* 

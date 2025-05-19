@@ -51,15 +51,15 @@ import { calculateAge } from "~/utils/calculateAge";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 import { getCountryFlag } from "~/utils/getCountryFlag";
 
-const countryAbbreviations = {
+const countryAbbreviations: { [key: string]: string } = {
   "United Arab Emirates": "UAE",
   "United States of America": "USA",
   "United States": "USA",
   "United Kingdom": "UK",
-  "Antigua and Barbuda": "ANT",
+  "Antigua and Barbuda": "ATG",
   "Bosnia and Herzegovina": "BIH",
-  "British Virgin Islands": "BVI",
-  "Cayman Islands": "CAY",
+  "British Virgin Islands": "VGB",
+  "Cayman Islands": "CYM",
   "Central African Republic": "CAF",
   "Cook Islands": "COK",
   "Costa Rica": "CRI",
@@ -90,7 +90,7 @@ const countryAbbreviations = {
   "Trinidad and Tobago": "TTO",
   "Turks and Caicos Islands": "TCA",
   "Vatican City": "VAT",
-  "Democratic Republic of the Congo": "DRC",
+  "Democratic Republic of the Congo": "COD",
   "Republic of the Congo": "COG",
   "United States Minor Outlying Islands": "UMI",
   "Northern Mariana Islands": "MNP",
@@ -144,9 +144,98 @@ const countryAbbreviations = {
   Uzbekistan: "UZB",
   Uruguay: "URY",
   Netherlands: "NLD",
+  "Aland Islands": "ALA",
+  Albania: "ALB",
+  Algeria: "DZA",
+  Andorra: "AND",
+  Anguilla: "AIA",
+  Armenia: "ARM",
+  Austria: "AUT",
+  Azerbaijan: "AZE",
+  Bahamas: "BHS",
+  Bahrain: "BHR",
+  Barbados: "BRB",
+  Belarus: "BLR",
+  Belgium: "BEL",
+  Bermuda: "BMU",
+  Bolivia: "BOL",
+  Botswana: "BWA",
+  "Brunei Darussalam": "BRN",
+  Bulgaria: "BGR",
+  "Burkina Faso": "BFA",
+  Burundi: "BDI",
+  "Cabo Verde": "CPV",
+  Cameroon: "CMR",
+  "Christmas Island": "CXR",
+  "Cocos (Keeling) Islands": "CCK",
+  Comoros: "COM",
+  Croatia: "HRV",
+  Curacao: "CUW",
+  Czechia: "CZE",
+  Denmark: "DNK",
+  Djibouti: "DJI",
+  Ecuador: "ECU",
+  Eritrea: "ERI",
+  Estonia: "EST",
+  Eswatini: "SWZ",
+  Finland: "FIN",
+  Georgia: "GEO",
+  Germany: "DEU",
+  Gibraltar: "GIB",
+  Greenland: "GRL",
+  Grenada: "GRD",
+  Guadeloupe: "GLP",
+  Guatemala: "GTM",
+  Guernsey: "GGY",
+  "Guinea-Bissau": "GNB",
+  Honduras: "HND",
+  "Hong Kong": "HKG",
+  Hungary: "HUN",
+  Iceland: "ISL",
+  Ireland: "IRL",
+  Jamaica: "JAM",
+  Kazakhstan: "KAZ",
+  Kiribati: "KIR",
+  Kyrgyzstan: "KGZ",
+  Lebanon: "LBN",
+  Lesotho: "LSO",
+  Liberia: "LBR",
+  Liechtenstein: "LIE",
+  Lithuania: "LTU",
+  Malaysia: "MYS",
+  Maldives: "MDV",
+  Martinique: "MTQ",
+  Mayotte: "MYT",
+  Moldova: "MDA",
+  Mongolia: "MNG",
+  Montenegro: "MNE",
+  Montserrat: "MSR",
+  Morocco: "MAR",
+  Myanmar: "MMR",
+  Namibia: "NAM",
+  Nigeria: "NGA",
+  Pakistan: "PAK",
+  "Palestine, State of": "PSE",
+  Portugal: "PRT",
+  Reunion: "REU",
+  Romania: "ROU",
+  Senegal: "SEN",
+  Seychelles: "SYC",
+  "Sint Maarten (Dutch part)": "SXM",
+  Somalia: "SOM",
+  "South Sudan": "SSD",
+  Suriname: "SUR",
+  Thailand: "THA",
+  Tokelau: "TKL",
+  Tunisia: "TUN",
+  Türkiye: "TUR",
+  Ukraine: "UKR",
+  Vanuatu: "VUT",
+  Vietnam: "VNM",
+  Zimbabwe: "ZWE",
 };
 
-const getShortCountryName = (countryName, maxLength = 6) => {
+const getShortCountryName = (countryName: string, maxLength: number = 6) => {
   if (!countryName) {
     return "undefined";
   }
@@ -248,6 +337,7 @@ const ProfileLayout = () => {
     status: false,
     message: "",
   });
+  const [isLinkTextPressed, setIsLinkTextPressed] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -451,13 +541,14 @@ const ProfileLayout = () => {
                     color: "white",
                     fontSize: responsiveFontSize(2.35),
                     fontWeight: "bold",
+                    marginBottom: 5,
                   }}
                 >
                   {user?.firstName} {user?.lastName}
                 </TextScallingFalse>
 
                 <View style={{ marginTop: 5, marginRight: 5, height: "auto" }}>
-                  {user?.address?.country && (
+                  {user?.address?.country && user?.type !== "Page" && (
                     <View
                       style={{
                         flexDirection: "row",
@@ -685,27 +776,36 @@ const ProfileLayout = () => {
                         <TextScallingFalse style={styles.ProfileKeyPoints}>
                           {" "}
                           Website:{" "}
+                        </TextScallingFalse>
+                        <TouchableOpacity
+                          onPressIn={() => setIsLinkTextPressed(true)}
+                          onPressOut={() => setIsLinkTextPressed(false)}
+                          onPress={handlePress}
+                          activeOpacity={0.7}
+                        >
                           <TextScallingFalse
                             style={{
-                              color: "#E1E1E1",
+                              color: isLinkTextPressed ? "#12956B" : "#E1E1E1",
                               fontSize: responsiveFontSize(1.4),
+                              textDecorationLine: isLinkTextPressed
+                                ? "underline"
+                                : "none",
                             }}
                           >
-                            {user?.websiteLink}
-                            {"  "}
+                            {user.websiteLink}
                           </TextScallingFalse>
-                          <TouchableOpacity
-                            className="mt-[5px]"
-                            onPress={handlePress}
-                            activeOpacity={0.7}
-                          >
-                            <FontAwesome6
-                              name="arrow-up-right-from-square"
-                              size={10}
-                              color="#E1E1E1"
-                            />
-                          </TouchableOpacity>
-                        </TextScallingFalse>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className="pl-[5px]"
+                          onPress={handlePress}
+                          activeOpacity={0.7}
+                        >
+                          <FontAwesome6
+                            name="arrow-up-right-from-square"
+                            size={10}
+                            color="#E1E1E1"
+                          />
+                        </TouchableOpacity>
                       </View>
                     )}
                   </View>

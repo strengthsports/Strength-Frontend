@@ -39,7 +39,7 @@ import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
 import SuggestedArticlesCard from "~/components/Cards/SuggestedArticlesCard";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 
-const INTERLEAVE_INTERVAL = 2;
+const INTERLEAVE_INTERVAL = 6;
 
 const ListFooterComponent = memo(
   ({ isLoading, hasMore }: { isLoading: boolean; hasMore: boolean }) => {
@@ -104,12 +104,12 @@ const Home = () => {
     }
   ).current;
 
-  // Load feed posts function
+
   const loadPosts = async (cursor?: string | null) => {
     await dispatch(fetchFeedPosts({ limit: 10, cursor }));
   };
 
-  // Refresh function
+
   const handleRefresh = useCallback(async () => {
     if (isRefreshing) return; // Prevent multiple simultaneous refreshes
     setIsRefreshing(true);
@@ -286,7 +286,6 @@ const renderItem = useCallback(
           onEndReached={handleLoadMore}
           onEndReachedThreshold={2}
           ListHeaderComponent={
-            // Show FeedTopFtu if at least one state is false, hide if all are true
             !(
               profile?.hasVisitedEditProfile &&
               profile?.hasVisitedEditOverview &&

@@ -297,7 +297,7 @@ const Overview = () => {
                     onPress={handleToggle}
                     className="text-[#808080] font-light text-lg"
                   >
-                    {isExpanded ? "" : " see more"}
+                    {isExpanded ? "" : " more"}
                   </TextScallingFalse>
                 )}
               </TextScallingFalse>

@@ -28,14 +28,18 @@ import ProfileFTU from "~/components/ui/FTU/profilePage/ProfileFTU";
 import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
 import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
 
+// const EMPTY_ARRAY_GENERAL: any[] = [];
+const EMPTY_MEMBER_ARRAY: Member[] = [];
+const EMPTY_SELECTED_SPORTS_ARRAY: any[] = [];
+
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
 
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const sports = user?.selectedSports ? [...user.selectedSports] : [];
-  console.log("----->", sports);
+  const selectedSportsToRender =
+    user?.selectedSports ?? EMPTY_SELECTED_SPORTS_ARRAY;
 
   // Dynamic scaling for responsiveness
   const containerWidth = width > 768 ? "50%" : "96%";
@@ -44,8 +48,21 @@ const Overview = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSubSection, setActiveSubSection] = useState(
-    sports[0]?.sport?.name || ""
+    () => selectedSportsToRender[0]?.sport?.name || ""
   );
+
+  useEffect(() => {
+    if (selectedSportsToRender.length > 0) {
+      const currentSportStillExists = selectedSportsToRender.some(
+        (s: any) => s.sport?.name === activeSubSection
+      );
+      if (!currentSportStillExists) {
+        setActiveSubSection(selectedSportsToRender[0]?.sport?.name || "");
+      }
+    } else {
+      setActiveSubSection("");
+    }
+  }, [selectedSportsToRender, activeSubSection]);
 
   // Get filtered posts from Redux
   // const userPosts = useSelector((state: RootState) =>
@@ -57,14 +74,15 @@ const Overview = () => {
   // );
 
   const selectUserPosts = useMemo(
-    () => makeSelectUserPosts(user._id, "recent"),
-    [user._id]
+    () => makeSelectUserPosts(user?._id, "recent"),
+    [user?._id]
   );
   const postsWithImages = useSelector(selectUserPosts);
 
   // Get associates list
   const associates = useSelector(
-    (state: RootState) => (state.profile.user?.associates as Member[]) || []
+    (state: RootState) =>
+      (state.profile.user?.associates as Member[]) ?? EMPTY_MEMBER_ARRAY
   );
 
   // Fetch initial posts
@@ -137,7 +155,7 @@ const Overview = () => {
 
   return (
     <ScrollView style={{ flex: 1, paddingBottom: 120 }}>
-      {user?.selectedSports?.length > 0 && (
+      {selectedSportsToRender.length > 0 && (
         <Tabs value={activeSubSection} onValueChange={setActiveSubSection}>
           <ScrollView
             horizontal
@@ -145,7 +163,7 @@ const Overview = () => {
             contentContainerStyle={{ paddingStart: 15 * scaleFactor }}
           >
             <TabsList className="flex-row gap-x-2 w-[100%] py-1 px-0.5">
-              {user?.selectedSports?.map((sport: any) => (
+              {selectedSportsToRender.map((sport: any) => (
                 <TouchableOpacity
                   key={`sport-tab-${sport.sport?._id}`}
                   onPress={() => setActiveSubSection(sport.sport?.name)}
@@ -326,7 +344,7 @@ const Overview = () => {
                     onPress={handleToggle}
                     className="text-[#808080] font-light text-lg"
                   >
-                    {isExpanded ? "" : " see more"}
+                    {isExpanded ? "" : " more"}
                   </TextScallingFalse>
                 )}
               </TextScallingFalse>

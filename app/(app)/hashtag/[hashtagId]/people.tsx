@@ -4,10 +4,13 @@ import { useGetHashtagContentsQuery } from "~/reduxStore/api/feed/features/feedA
 import { Colors } from "~/constants/Colors";
 import TextScallingFalse from "~/components/CentralText";
 import UserCard from "~/components/Cards/UserCard";
+import { useSelector } from "react-redux";
+import { RootState } from "~/reduxStore";
 
 const ITEM_HEIGHT = 60;
 
 const PeopleScreen = ({ hashtag }: { hashtag: string }) => {
+  const userId = useSelector((state: RootState) => state.profile.user?._id);
   const { data, isLoading, isError } = useGetHashtagContentsQuery({
     hashtag,
     limit: 10,
@@ -24,7 +27,7 @@ const PeopleScreen = ({ hashtag }: { hashtag: string }) => {
   }, [data]);
 
   const renderFollowerItem = ({ item }: { item: any }) => (
-    <UserCard user={item} />
+    <UserCard user={item} isOwnProfile={userId === item._id} />
   );
 
   const getItemLayout = (_: any, index: number) => ({

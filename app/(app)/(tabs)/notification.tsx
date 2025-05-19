@@ -217,6 +217,7 @@ const NotificationPage = () => {
             />
           }
           contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
         />
       ) : (
         !isLoading && (

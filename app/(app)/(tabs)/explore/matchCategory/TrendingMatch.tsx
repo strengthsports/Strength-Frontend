@@ -24,6 +24,7 @@ import TrendingLiveMatch from "~/components/explorePage/match/TrendingLiveMatch"
 import ScoresSkeletonLoader from "~/components/skeletonLoaders/ScoresSkeletonLoader";
 import BasketballNextMatch from "~/components/explorePage/nextMatch/BasketballNextMatch";
 import CricketNextBySeriesMatch from "~/components/explorePage/nextMatch/CricketNextBySeriesMatch";
+import { ActivityIndicator } from "react-native-paper";
 // import { ExploreSportsCategoryHeader } from '~/components/explorePage/exploreHeader';
 
 const TrendingMatch = () => {
@@ -114,12 +115,13 @@ const TrendingMatch = () => {
 
     if (isLoading) {
       return (
-        <View className="mt-5">
-          <ScoresSkeletonLoader />
+        <View style={{ width:'100%', height: 230, justifyContent:'center', alignItems:'center'}}>
+            <ActivityIndicator color="#12956B" size={'small'}/>
         </View>
       );
     }
     return (
+      <View style={{ width:'100%', height: 230, justifyContent:'center', alignItems:'center'}}>
       <TrendingLiveMatch
         liveCricketMatches={singleLiveCricketMatch}
         liveFootballMatches={singleLiveFootballMatch}
@@ -128,6 +130,7 @@ const TrendingMatch = () => {
         isFootballFetching={isFootballLiveFetching}
         isBasketballFetching={isBasketballLiveFetching}
       />
+      </View>
     );
   };
 

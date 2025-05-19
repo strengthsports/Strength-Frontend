@@ -91,7 +91,7 @@ const ThisFeatureUnderDev = ({
               textAlign: "center",
             }}
           >
-            This is Feature is under development
+            This Feature is under development
           </TextScallingFalse>
           {/* <TouchableOpacity activeOpacity={0.5} style={{width: '70%', borderRadius: 20, justifyContent:'center', backgroundColor:'#12956B', alignItems:'center', padding: 5,}} onPress={onClose}>
             <TextScallingFalse style={{ color: 'white', fontSize: 12, fontWeight: '400' }}>Close</TextScallingFalse>

@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Dimensions,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import SignupButton from "~/components/SignupButton";
@@ -74,7 +75,7 @@ const InitiateCreateTeam = () => {
 
         <View style={{ height: 20 }} />
         {/* Join Team Link */}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=>{router.push("/(app)/(team)/join-team")}}>
           <ThemedText
             style={{ color: "#909090", textAlign: "center", fontSize: 16 }}
           >

@@ -71,6 +71,7 @@ const InteractionBar = ({
           ? "bg-neutral-900 relative left-[5%] bottom-1 z-[-10] pt-1 w-[100%] rounded-br-[35px] rounded-bl-[40px]"
           : "w-[100%] bg-transparent"
       } min-h-12 h-auto`}
+      // style={{ backgroundColor: "pink" }}
     >
       {/* counts */}
       <View
@@ -86,7 +87,7 @@ const InteractionBar = ({
         >
           <TouchableOpacity
             activeOpacity={0.7}
-            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }} 
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
           >
             <AntDesign name="like1" size={13} color="#fbbf24" />
             <TextScallingFalse className="text-base text-white font-light">
@@ -173,13 +174,16 @@ const InteractionBar = ({
 
       {/* actions */}
       <View
-        className={`mx-auto py-5 mb-1 flex flex-row ${
-          isPostContainer ? "w-[80%] justify-end" : "w-[90%] justify-center"
+        className={`${!isPostContainer && "mx-auto"} py-5 mb-1 flex flex-row ${
+          isPostContainer ? "justify-end" : "justify-center"
         } items-center border-t`}
         style={{
           columnGap: isPostContainer ? 16 : 32,
           borderColor: "#303030",
-          marginTop: 1
+          marginTop: 1,
+          // backgroundColor: "green",
+          width: isPostContainer ? "81%" : "90%",
+          left: isPostContainer ? 32 : 0,
         }}
       >
         {/* like */}

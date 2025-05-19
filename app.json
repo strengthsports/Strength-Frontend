@@ -4,9 +4,9 @@
     "slug": "Strength",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
+    "icon": "./assets/images/ios-dark.png",
     "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "backgroundColor": "#000000",
@@ -40,7 +40,7 @@
             "image": "./assets/images/Splash/splash-icon-dark.png",
             "backgroundColor": "#000000"
           },
-          "imageWidth": 100,
+          "imageWidth": 300,
           "resizeMode": "contain"
         }
       ],

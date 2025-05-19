@@ -14,7 +14,11 @@ import SuggestionCard from "../Cards/SuggestionCard";
 import { useRouter } from "expo-router";
 import MultipleProfiles from "../ui/atom/MultipleProfiles";
 
-const DiscoverPeopleList = () => {
+const DiscoverPeopleList = ({
+  isFeedPage = false,
+}: {
+  isFeedPage: boolean;
+}) => {
   const router = useRouter();
   const { data: popularUsers, isLoading: loadingPopularUsers } =
     useSuggestUsersQuery({ limit: 13, start: 0 });
@@ -42,11 +46,14 @@ const DiscoverPeopleList = () => {
 
   return (
     <View
-      className="flex-1 pb-5"
-      style={{ borderBottomWidth: 1, borderColor: "#1c1c1c" }}
+      className={`flex-1 ${isFeedPage && "pb-5"}`}
+      style={{
+        borderBottomWidth: isFeedPage ? 1 : 0,
+        borderColor: isFeedPage ? "#1c1c1c" : "transparent",
+      }}
     >
       <TextScallingFalse className="text-white text-4xl ml-3 my-2 font-bold">
-        Discover People
+        Suggested Followings
       </TextScallingFalse>
       {/* <Divider width={2} color="#1e1e1e" /> */}
 

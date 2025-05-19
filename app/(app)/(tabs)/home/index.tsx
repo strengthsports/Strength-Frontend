@@ -36,6 +36,8 @@ import FeedTopFtu from "~/components/ui/FTU/feedPage/FeedTopFtu";
 import { makeSelectFeedPosts } from "~/reduxStore/slices/post/selectors";
 import { fetchFeedPosts } from "~/reduxStore/slices/post/hooks";
 import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
+import SuggestedArticlesCard from "~/components/Cards/SuggestedArticlesCard";
+import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -102,12 +104,12 @@ const Home = () => {
     }
   ).current;
 
-  // Load feed posts function
+
   const loadPosts = async (cursor?: string | null) => {
     await dispatch(fetchFeedPosts({ limit: 10, cursor }));
   };
 
-  // Refresh function
+
   const handleRefresh = useCallback(async () => {
     if (isRefreshing) return; // Prevent multiple simultaneous refreshes
     setIsRefreshing(true);
@@ -167,42 +169,71 @@ const Home = () => {
 
   // Mix Posts and discover section
   const interleavedData = useMemo(() => {
-    return posts.reduce(
-      (
-        acc: Array<
-          { type: "post"; data: Post } | { type: "discover"; id: string }
-        >,
-        post,
-        index
-      ) => {
-        acc.push({ type: "post", data: post });
-        if ((index + 1) % INTERLEAVE_INTERVAL === 0) {
-          acc.push({ type: "discover", id: `discover-${index}` });
-        }
-        return acc;
-      },
-      []
-    );
-  }, [posts]);
+  return posts.reduce(
+    (
+      acc: Array<
+        { type: "post"; data: Post } | { type: "discover"; id: string } | { type: "article"; id: string }
+      >,
+      post,
+      index
+    ) => {
+      acc.push({ type: "post", data: post });
 
-  const renderItem = useCallback(
-    ({ item }: { item: { type: string; data?: Post; id?: string } }) => {
-      if (item.type === "post" && item.data) {
-        return (
-          <View style={styles.fullWidth}>
-            <PostContainer
-              item={item.data}
-              isFeedPage={true}
-              isVisible={visiblePostIds.includes(item.data._id)}
-            />
-            <Divider style={styles.divider} width={1} color="#1c1c1c" />
-          </View>
-        );
+      if ((index + 1) % INTERLEAVE_INTERVAL === 0) {
+        const blockIndex = Math.floor((index + 1) / INTERLEAVE_INTERVAL);
+        if (blockIndex % 2 === 1) {
+          // odd block (1st, 3rd...) → Discover
+          acc.push({ type: "discover", id: `discover-${index}` });
+        } else {
+          // even block (2nd, 4th...) → SuggestedArticle
+          acc.push({ type: "article", id: `article-${index}` });
+        }
       }
-      return <DiscoverPeopleList key={item.id} />;
+
+      return acc;
     },
-    [visiblePostIds]
+    []
   );
+}, [posts]);
+
+
+  const {
+    data: articles,
+    error,
+    refetch: refetchSportArticles,
+  } = useGetSportArticleQuery();
+  const topFiveArticles = articles?.slice(0, 6);
+
+const renderItem = useCallback(
+  ({ item }: { item: { type: string; data?: Post; id?: string } }) => {
+    if (item.type === "post" && item.data) {
+      return (
+        <View style={styles.fullWidth}>
+          <PostContainer
+            item={item.data}
+            isFeedPage={true}
+            isVisible={visiblePostIds.includes(item.data._id)}
+          />
+          <Divider style={styles.divider} width={1} color="#1c1c1c" />
+        </View>
+      );
+    }
+
+    if (item.type === "discover") {
+      return <DiscoverPeopleList key={item.id} />;
+    }
+
+    if (item.type === "article" && topFiveArticles?.length) {
+      return (
+          <SuggestedArticlesCard swiperData={topFiveArticles ?? []} key={item.id}/>
+      );
+    }
+
+    return null;
+  },
+  [visiblePostIds]
+);
+
 
   const keyExtractor = useCallback(
     (item: { type: "post"; data: Post } | { type: "discover"; id: string }) => {
@@ -255,7 +286,6 @@ const Home = () => {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={2}
           ListHeaderComponent={
-            // Show FeedTopFtu if at least one state is false, hide if all are true
             !(
               profile?.hasVisitedEditProfile &&
               profile?.hasVisitedEditOverview &&

@@ -111,6 +111,7 @@ const HashtagPosts = ({
           <ActivityIndicator size="small" color={Colors.themeColor} />
         ) : null
       }
+       showsVerticalScrollIndicator={false}
     />
   );
 };

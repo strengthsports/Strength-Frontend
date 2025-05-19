@@ -6,7 +6,8 @@ import {
   Platform,
   Vibration,
   ToastAndroid,
-  ActivityIndicator, ScrollView
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -52,11 +53,11 @@ const signupSetPassword5 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-          type,
-          text1: message,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+            type,
+            text1: message,
+            visibilityTime: 3000,
+            autoHide: true,
+          });
     } else {
       Toast.show({
         type,
@@ -92,8 +93,8 @@ const signupSetPassword5 = () => {
       const result = await dispatch(
         completeSignup(completeSignupPayload)
       ).unwrap();
-      
-    dispatch(setAuthState());
+
+      // dispatch(setAuthState());
       feedback(result.message, "success");
       router.replace("/Signup/signupAccountCreated6");
     } catch (error) {
@@ -104,97 +105,98 @@ const signupSetPassword5 = () => {
 
   return (
     <PageThemeView>
-      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
-      <View style={{ marginTop: 80 }}>
-        <Logo />
-      </View>
-      <View
-        style={{
-          width: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-      </View>
-      <View
-        style={{
-          width: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={{ marginTop: 80 }}>
+          <Logo />
+        </View>
         <View
           style={{
-            gap: 20,
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        ></View>
+        <View
+          style={{
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <View style={{ marginTop: 55 }}>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 23, fontWeight: "500" }}
-            >
-              You'll need a password
-            </TextScallingFalse>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 12, fontWeight: "400" }}
-            >
-              Make sure it's 8 characters or more.
-            </TextScallingFalse>
-          </View>
-          <View>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 14, fontWeight: "400" }}
-            >
-              Create a password
-            </TextScallingFalse>
-            <TextInputSection
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View>
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 14, fontWeight: "400" }}
-            >
-              Confirm password
-            </TextScallingFalse>
-            <TextInputSection
-              placeholder="Password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-            />
-          </View>
-        </View>
-        <View style={{ width: "81%", alignItems: "flex-end" }}>
-          <View style={{ marginTop: 6, flexDirection: "row" }}>
-            <TouchableOpacity activeOpacity={0.5} onPress={toggleShowPassword}>
-              <TextScallingFalse style={{ color: "#12956B", fontSize: 13 }}>
-                {showPassword ? "Hide" : "Show"} Password
-              </TextScallingFalse>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={{ marginTop: 40 }}>
-          {
-            loading ? 
-            <ActivityIndicator size={'small'}/>
-            :
-            <SignupButton onPress={handleNext}>
+          <View
+            style={{
+              gap: 20,
+            }}
+          >
+            <View style={{ marginTop: 55 }}>
               <TextScallingFalse
-                style={{ color: "white", fontSize: 15, fontWeight: "600" }}
+                style={{ color: "white", fontSize: 23, fontWeight: "500" }}
               >
-                Next
+                You'll need a password
               </TextScallingFalse>
-          </SignupButton>
-          }
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 12, fontWeight: "400" }}
+              >
+                Make sure it's 8 characters or more.
+              </TextScallingFalse>
+            </View>
+            <View>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+              >
+                Create a password
+              </TextScallingFalse>
+              <TextInputSection
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 14, fontWeight: "400" }}
+              >
+                Confirm password
+              </TextScallingFalse>
+              <TextInputSection
+                placeholder="Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+          <View style={{ width: "81%", alignItems: "flex-end" }}>
+            <View style={{ marginTop: 6, flexDirection: "row" }}>
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={toggleShowPassword}
+              >
+                <TextScallingFalse style={{ color: "#12956B", fontSize: 13 }}>
+                  {showPassword ? "Hide" : "Show"} Password
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={{ marginTop: 40 }}>
+            {loading ? (
+              <ActivityIndicator size={"small"} />
+            ) : (
+              <SignupButton onPress={handleNext}>
+                <TextScallingFalse
+                  style={{ color: "white", fontSize: 15, fontWeight: "600" }}
+                >
+                  Next
+                </TextScallingFalse>
+              </SignupButton>
+            )}
+          </View>
         </View>
-      </View>
       </ScrollView>
     </PageThemeView>
   );

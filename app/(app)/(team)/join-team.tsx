@@ -4,11 +4,10 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllTeams, selectAllTeams, selectAllTeamsLoading } from "~/reduxStore/slices/team/teamSlice";
 import PageThemeView from '~/components/PageThemeView';
-// import { BackIcon2 } from '~/components/Icons';
 import { router } from 'expo-router';
 import TextScallingFalse from '~/components/CentralText';
 import BackIcon2 from '~/components/SvgIcons/Common_Icons/BackIcon2';
-// import TextScallingFalse from '~/components/TextScallingFalse';
+import SportsIndicator from '~/components/SvgIcons/SideMenu/SportsIndicator';
 
 const TeamListView = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -16,29 +15,64 @@ const TeamListView = () => {
   const loading = useSelector(selectAllTeamsLoading);
   const [searchText, setSearchText] = useState('');
   const [searchBarHeight, setSearchBarHeight] = useState(0);
+  const [displayLimit, setDisplayLimit] = useState(5);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchAllTeams({ page: 1, limit: 90 }));
+    dispatch(fetchAllTeams({ page: 1, limit: 100 }));
   }, [dispatch]);
 
+  // Filter teams based on search text (searches through complete list)
   const filteredTeams = teams.filter(team =>
     team.name.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  // Teams to display (limited initially, or all if searching)
+  const displayTeams = searchText ? filteredTeams : filteredTeams.slice(0, displayLimit);
+
+  const loadMoreTeams = () => {
+    if (!searchText && displayLimit < teams.length && !isLoadingMore) {
+      setIsLoadingMore(true);
+      // Simulate network request delay
+      setTimeout(() => {
+        setDisplayLimit(prev => prev + 10);
+        setIsLoadingMore(false);
+      }, 2000);
+    }
+  };
 
   const renderTeamItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.teamCard}
       activeOpacity={0.7}
-      onPress={() => router.push(`/team/${item._id}`)}
+      onPress={() => router.push(`../(team)/teams/${item._id}`)}
     >
       <Image
         source={{ uri: item.logo?.url || 'https://via.placeholder.com/50' }}
         style={styles.teamLogo}
-        resizeMode="contain"
       />
-      <TextScallingFalse style={styles.teamName}>{item.name}</TextScallingFalse>
+      <View style={{gap: 4}}>
+        <TextScallingFalse className="text-white text-[14px] font-semibold ">{item.name}</TextScallingFalse>
+        <View className="flex-row" style={{justifyContent:'center', alignItems:'center', gap: 3}}>
+          <SportsIndicator/> 
+          <TextScallingFalse className='text-[#12956B] text-[12px] font-regular mr-[3px]'>{item.sport.name}</TextScallingFalse>
+          <View className='w-[2px] h-[2px] bg-[#9FAAB5] rounded-full'></View>
+          <TextScallingFalse className="text-[#9FAAB5] text-[12px] font-regular ml-[3px]">
+            {item.address.city},{" "}{item.address.state},{" "}{item.address.country}
+          </TextScallingFalse>
+        </View>
+      </View>
     </TouchableOpacity>
   );
+
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={styles.loadingMoreContainer}>
+        <ActivityIndicator size="small" color="#808080" />
+      </View>
+    );
+  };
 
   return (
     <PageThemeView>
@@ -59,7 +93,13 @@ const TeamListView = () => {
             placeholder="Search teams..."
             placeholderTextColor="#808080"
             value={searchText}
-            onChangeText={setSearchText}
+            onChangeText={(text) => {
+              setSearchText(text);
+              // Reset display limit when searching
+              if (text) {
+                setDisplayLimit(10);
+              }
+            }}
             autoCapitalize="none"
             autoCorrect={false}
           />
@@ -73,12 +113,15 @@ const TeamListView = () => {
         </View>
       ) : (
         <FlatList
-          data={filteredTeams}
+          data={displayTeams}
           renderItem={renderTeamItem}
           keyExtractor={(item) => item._id}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
+          onEndReached={loadMoreTeams}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <TextScallingFalse style={styles.emptyText}>
@@ -93,7 +136,6 @@ const TeamListView = () => {
 };
 
 const styles = StyleSheet.create({
-  // Search styles matching your modal's dark theme
   searchInputContainer: {
     flex: 1,
     backgroundColor: "#202020",
@@ -107,42 +149,30 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     paddingVertical: 0,
   },
-  
-  // List container with dark theme
   listContainer: {
+    marginTop: 10,
+    marginBottom:50,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: "#121212", // Dark background
+    backgroundColor: "black",
   },
-  
-  // Team card matching modal's styling
   teamCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#303030', // Darker border
-    backgroundColor: "#202020", // Matching modal background
+    paddingVertical: 4,
     borderRadius: 8,
     marginBottom: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
-  
   teamLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#181818",
+    width: 44,
+    height: 44,
+    borderRadius: 6,
     marginRight: 15,
-    backgroundColor: '#303030', // Dark placeholder
+    backgroundColor: '#303030',
   },
-  
-  teamName: {
-    fontSize: 16,
-    color: '#FFFFFF', // White text
-    fontWeight: '500',
-  },
-  
-  // Loading and empty states
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -150,7 +180,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#121212",
     paddingTop: 20,
   },
-  
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -158,32 +187,14 @@ const styles = StyleSheet.create({
     paddingTop: 100,
     backgroundColor: "#121212",
   },
-  
   emptyText: {
-    color: '#808080', // Gray text
+    color: '#808080',
     fontWeight: '400',
     fontSize: 14,
   },
-  
-  // Modal-like overlay (if needed for any future modal in this component)
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    zIndex: 1000,
-  },
-  
-  modalContainer: {
-    backgroundColor: "#202020",
-    padding: 22,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    height: 180,
-    gap: 12,
-    width: "85%",
-    alignItems: "center",
-    justifyContent: "center",
+  loadingMoreContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
   },
 });
 

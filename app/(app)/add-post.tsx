@@ -136,6 +136,7 @@ export default function AddPostContainer() {
   const [activeIndex, setActiveIndex] = useState<any>(0);
   const [isAlertModalOpen, setAlertModalOpen] = useState<boolean>(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const isSubmitting = React.useRef(false);
 
   useLayoutEffect(() => {
     const tabParent = navigation.getParent();
@@ -215,22 +216,6 @@ export default function AddPostContainer() {
     return false;
   }, [postText, pickedImageUris, pickedVideoUri, showPollInput]);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
-      if (isAlertModalOpen || !hasUnsavedChanges) {
-        return;
-      }
-
-      // Prevent default behavior of leaving the screen
-      e.preventDefault();
-
-      // Show the alert modal
-      setAlertModalOpen(true);
-    });
-
-    return unsubscribe; // Cleanup the listener when the component unmounts
-  }, [navigation, isAlertModalOpen, hasUnsavedChanges, router]);
-
   // Called by the header's back button
   const handleAttemptGoBack = () => {
     if (hasUnsavedChanges) {
@@ -243,16 +228,17 @@ export default function AddPostContainer() {
   // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(async () => {
     if (!isPostButtonEnabled) return;
+
+    isSubmitting.current = true;
+
     dispatch(resetUploadProgress());
     dispatch(setUploadLoading(true));
-    // dispatch(setAddPostContainerOpen(false));
     router.back();
 
     try {
       const formData = new FormData();
       formData.append("caption", postText.trim());
 
-      // Optimize image appending
       if (isTypeVideo && pickedVideoUri) {
         const file = {
           uri: pickedVideoUri,
@@ -266,7 +252,7 @@ export default function AddPostContainer() {
           const file = {
             uri,
             name: `image_${index}.jpg`,
-            type: isTypeVideo ? "video/mp4" : "image/jpeg",
+            type: "image/jpeg",
           };
           formData.append(`assets${index + 1}`, file as any);
         });
@@ -275,7 +261,6 @@ export default function AddPostContainer() {
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
       formData.append("taggedUsers", JSON.stringify(taggedUsers));
       console.log("tagged Users : ", taggedUsers);
-      // For poll
       const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
       console.log("Valid Options : ", validOptions);
       validOptions.forEach((option) => {
@@ -284,12 +269,14 @@ export default function AddPostContainer() {
 
       setPostText("");
       setPickedImageUris([]);
-
-      // Reset video states if needed
       if (isTypeVideo) {
         setPickedVideoUri(null);
         setTypeVideo(false);
       }
+      setNewPollOptions(["", ""]);
+      setShowPollInput(false);
+      setPlaceholderText("What's on your mind");
+      setTaggedUsers([]);
 
       await dispatch(uploadPost(formData)).unwrap();
     } catch (error) {
@@ -297,15 +284,37 @@ export default function AddPostContainer() {
       showFeedback("Failed to add post. Please try again.");
     }
   }, [
-    addPost,
     isPostButtonEnabled,
-    pickedImageUris,
-    postText,
-    newPollOptions,
-    router,
-    selectedAspectRatio,
     dispatch,
+    router,
+    postText,
+    isTypeVideo,
+    pickedVideoUri,
+    pickedImageUris,
+    selectedAspectRatio,
+    taggedUsers,
+    newPollOptions,
   ]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (isSubmitting.current || isAlertModalOpen || !hasUnsavedChanges) {
+        if (isSubmitting.current) {
+          isSubmitting.current = false;
+        }
+        return;
+      }
+
+      e.preventDefault();
+
+      setAlertModalOpen(true);
+    });
+
+    return () => {
+      unsubscribe();
+      isSubmitting.current = false;
+    };
+  }, [navigation, isAlertModalOpen, hasUnsavedChanges]);
 
   // For selecting the first image with aspect ratio
   const selectFirstImage = useCallback(async (ratio: [number, number]) => {
@@ -457,7 +466,7 @@ export default function AddPostContainer() {
   };
 
   return (
-    <>
+    
       <PageThemeView>
         <View className="h-full">
           {/* Header */}
@@ -657,6 +666,6 @@ export default function AddPostContainer() {
           />
         )}
       </PageThemeView>
-    </>
+ 
   );
 }

@@ -115,7 +115,9 @@ const SearchPage: React.FC = () => {
       const serializedUser = encodeURIComponent(
         JSON.stringify({ id: user._id, type: user.type })
       );
-      router.push(`/(app)/(profile)/profile/${serializedUser}`);
+      userId === user._id
+        ? router.push(`/(app)/(tabs)/profile`)
+        : router.push(`/(app)/(profile)/profile/${serializedUser}`);
     },
     [dispatch, router]
   );
@@ -141,6 +143,7 @@ const SearchPage: React.FC = () => {
         profilePic={item.profilePic}
         _id={item._id}
         type={item.type}
+        isOwnProfile={userId === item._id}
       />
     ),
     []
@@ -241,6 +244,7 @@ const SearchPage: React.FC = () => {
               keyExtractor={(item) => item._id}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 150 }}
             />
           )}
         </View>

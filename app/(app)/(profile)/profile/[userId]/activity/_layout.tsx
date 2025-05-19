@@ -47,12 +47,12 @@ const ActivityLayout = () => {
           // snapToInterval={200}
           // snapToAlignment="start"
           contentContainerStyle={{
-            marginTop: 5,
             paddingStart: 15 * scaleFactor,
             justifyContent: "flex-start",
             alignItems: "center",
             paddingEnd: 80 * scaleFactor,
             gap: 12,
+            paddingVertical: 10,
           }}
         >
           <TabsList className="flex-row items-center gap-x-3">
@@ -68,7 +68,7 @@ const ActivityLayout = () => {
                         : (`/profile/${params?.userId}/activity/${tab}` as any)
                     );
                   }}
-                  className={`px-4 py-[9px] flex flex-row gap-x-3 items-center justify-center rounded-[10px] ${
+                  className={`px-4 py-[8px] flex flex-row gap-x-3 items-center justify-center rounded-[10px] ${
                     activeSubSection === tab
                       ? "bg-[#12956B]"
                       : "bg-black border-[#454545]"

@@ -56,7 +56,7 @@ const Header = ({
       <View className="flex-row">
         {/* back to home button */}
         {isBackButtonVisible && (
-          <TouchableOpacity activeOpacity={0.5} onPress={() => router.back()}>
+          <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 20, right: 24 }} activeOpacity={0.5} onPress={() => router.back()}>
             <Feather name="chevron-left" size={28} color="white" />
           </TouchableOpacity>
         )}

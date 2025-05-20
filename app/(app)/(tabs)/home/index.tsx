@@ -39,7 +39,7 @@ import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
 import SuggestedArticlesCard from "~/components/Cards/SuggestedArticlesCard";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 
-const INTERLEAVE_INTERVAL = 6;
+const INTERLEAVE_INTERVAL = 1;
 
 const ListFooterComponent = memo(
   ({ isLoading, hasMore }: { isLoading: boolean; hasMore: boolean }) => {
@@ -202,7 +202,7 @@ const Home = () => {
     error,
     refetch: refetchSportArticles,
   } = useGetSportArticleQuery();
-  const topFiveArticles = articles?.slice(0, 6);
+  const topFiveArticles = articles?.slice(0, 8);
 
 const renderItem = useCallback(
   ({ item }: { item: { type: string; data?: Post; id?: string } }) => {

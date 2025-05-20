@@ -70,9 +70,10 @@ const UserInfoModal = ({ visible, onClose, member, isTeam }: any) => {
 
   const handleViewProfile = () => {
     if (!member) return;
-    console.log("Handle view profile");
     onClose();
-    router.push(`/(app)/(profile)/profile/${serializedUser}`);
+    user?._id === member._id
+      ? router.push(`/(app)/(tabs)/profile`)
+      : router.push(`/(app)/(profile)/profile/${serializedUser}`);
   };
 
   if (!visible || !member) return null;

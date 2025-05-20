@@ -161,11 +161,11 @@ const SwiperTop: React.FC<SwiperTopProps> = ({ swiperData }) => {
                 <TextScallingFalse className="text-[#12956B] text-xl font-semibold text-start">
                   {slide.sportsName}
                 </TextScallingFalse>
-                <TextScallingFalse className="text-white text-xl">
-                  {"  "}• {slide.date}
+                <TextScallingFalse className="text-[#D6D5D5] text-xl">
+                  {"  "}•  {slide.date}
                 </TextScallingFalse>
-                <TextScallingFalse className="text-white text-xl">
-                  {"  "}• {slide.time}
+                <TextScallingFalse className="text-[#D6D5D5] text-xl">
+                  {"  "}•  {slide.time}
                 </TextScallingFalse>
               </View>
             </View>

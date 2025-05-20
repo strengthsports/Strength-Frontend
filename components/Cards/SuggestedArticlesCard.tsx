@@ -201,7 +201,7 @@ const SuggestedArticlesCard = ({ swiperData }: SuggestedArticlesCardProps) => {
                 <TextScallingFalse
                   style={{ fontSize: 11, color: "gray", fontWeight: "400" }}
                 >
-                  {"•"}   {article.date}
+                  {"•"}  {article.date}
                 </TextScallingFalse>
               </View>
             </View>

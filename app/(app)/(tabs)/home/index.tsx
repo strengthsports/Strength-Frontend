@@ -201,7 +201,7 @@ const Home = () => {
     error,
     refetch: refetchSportArticles,
   } = useGetSportArticleQuery();
-  const topFiveArticles = articles?.slice(0, 6);
+  const topFiveArticles = articles?.slice(0, 8);
 
   const renderItem = useCallback(
     ({ item }: { item: { type: string; data?: Post; id?: string } }) => {

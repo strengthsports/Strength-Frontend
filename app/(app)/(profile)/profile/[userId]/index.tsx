@@ -26,6 +26,7 @@ import { useGetPageMembersQuery } from "~/reduxStore/api/profile/profileApi.prof
 import { responsiveFontSize } from "react-native-responsive-dimensions";
 import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
 import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
+import AddPostFTU from "~/components/ui/FTU/profilePage/AddPostFTU";
 
 const Overview = () => {
   const params = useLocalSearchParams();
@@ -307,7 +308,7 @@ const Overview = () => {
       )}
 
       {/* recent posts*/}
-      {postsWithImages?.length > 0 && (
+      {postsWithImages?.length > 0 ? (
         <RecentPostsSection
           posts={postsWithImages}
           onSeeAllPress={() => {
@@ -319,6 +320,8 @@ const Overview = () => {
           }}
           scaleFactor={scaleFactor}
         />
+      ) : (
+        <AddPostFTU otherProfile={true} />
       )}
 
       {/* members */}
@@ -337,7 +340,8 @@ const Overview = () => {
         />
       )}
 
-      <DiscoverPeopleList isFeedPage={false} />
+      {/* Issue - redirect to profile from other profile (to be solved) */}
+      {/* <DiscoverPeopleList isFeedPage={false} /> */}
 
       <View
         style={{ height: 30, width: "100%", backgroundColor: "transparent" }}

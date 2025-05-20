@@ -117,7 +117,7 @@ const BasketballNextMatchCard = ({
   return (
     <>
       {/* Title Section */}
-      <View className="px-4 pt-3 pb-2 w-full h-16 rounded-t-xl bg-[#262626]">
+      <View className="px-4 pt-3 pb-2 w-full rounded-t-xl bg-[#262626]">
         <TouchableOpacity
           className="flex-row items-center w-4/5 gap-2"
           onPress={toggleNumberOfLines}

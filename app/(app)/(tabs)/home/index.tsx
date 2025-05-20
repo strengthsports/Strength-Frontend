@@ -104,11 +104,9 @@ const Home = () => {
     }
   ).current;
 
-
   const loadPosts = async (cursor?: string | null) => {
     await dispatch(fetchFeedPosts({ limit: 10, cursor }));
   };
-
 
   const handleRefresh = useCallback(async () => {
     if (isRefreshing) return; // Prevent multiple simultaneous refreshes
@@ -169,33 +167,34 @@ const Home = () => {
 
   // Mix Posts and discover section
   const interleavedData = useMemo(() => {
-  return posts.reduce(
-    (
-      acc: Array<
-        { type: "post"; data: Post } | { type: "discover"; id: string } | { type: "article"; id: string }
-      >,
-      post,
-      index
-    ) => {
-      acc.push({ type: "post", data: post });
+    return posts.reduce(
+      (
+        acc: Array<
+          | { type: "post"; data: Post }
+          | { type: "discover"; id: string }
+          | { type: "article"; id: string }
+        >,
+        post,
+        index
+      ) => {
+        acc.push({ type: "post", data: post });
 
-      if ((index + 1) % INTERLEAVE_INTERVAL === 0) {
-        const blockIndex = Math.floor((index + 1) / INTERLEAVE_INTERVAL);
-        if (blockIndex % 2 === 1) {
-          // odd block (1st, 3rd...) → Discover
-          acc.push({ type: "discover", id: `discover-${index}` });
-        } else {
-          // even block (2nd, 4th...) → SuggestedArticle
-          acc.push({ type: "article", id: `article-${index}` });
+        if ((index + 1) % INTERLEAVE_INTERVAL === 0) {
+          const blockIndex = Math.floor((index + 1) / INTERLEAVE_INTERVAL);
+          if (blockIndex % 2 === 1) {
+            // odd block (1st, 3rd...) → Discover
+            acc.push({ type: "discover", id: `discover-${index}` });
+          } else {
+            // even block (2nd, 4th...) → SuggestedArticle
+            acc.push({ type: "article", id: `article-${index}` });
+          }
         }
-      }
 
-      return acc;
-    },
-    []
-  );
-}, [posts]);
-
+        return acc;
+      },
+      []
+    );
+  }, [posts]);
 
   const {
     data: articles,
@@ -204,36 +203,38 @@ const Home = () => {
   } = useGetSportArticleQuery();
   const topFiveArticles = articles?.slice(0, 6);
 
-const renderItem = useCallback(
-  ({ item }: { item: { type: string; data?: Post; id?: string } }) => {
-    if (item.type === "post" && item.data) {
-      return (
-        <View style={styles.fullWidth}>
-          <PostContainer
-            item={item.data}
-            isFeedPage={true}
-            isVisible={visiblePostIds.includes(item.data._id)}
+  const renderItem = useCallback(
+    ({ item }: { item: { type: string; data?: Post; id?: string } }) => {
+      if (item.type === "post" && item.data) {
+        return (
+          <View style={styles.fullWidth}>
+            <PostContainer
+              item={item.data}
+              isFeedPage={true}
+              isVisible={visiblePostIds.includes(item.data._id)}
+            />
+            <Divider style={styles.divider} width={1} color="#1c1c1c" />
+          </View>
+        );
+      }
+
+      if (item.type === "discover") {
+        return <DiscoverPeopleList key={item.id} isFeedPage={true} />;
+      }
+
+      if (item.type === "article" && topFiveArticles?.length) {
+        return (
+          <SuggestedArticlesCard
+            swiperData={topFiveArticles ?? []}
+            key={item.id}
           />
-          <Divider style={styles.divider} width={1} color="#1c1c1c" />
-        </View>
-      );
-    }
+        );
+      }
 
-    if (item.type === "discover") {
-      return <DiscoverPeopleList key={item.id} />;
-    }
-
-    if (item.type === "article" && topFiveArticles?.length) {
-      return (
-          <SuggestedArticlesCard swiperData={topFiveArticles ?? []} key={item.id}/>
-      );
-    }
-
-    return null;
-  },
-  [visiblePostIds]
-);
-
+      return null;
+    },
+    [visiblePostIds]
+  );
 
   const keyExtractor = useCallback(
     (item: { type: "post"; data: Post } | { type: "discover"; id: string }) => {

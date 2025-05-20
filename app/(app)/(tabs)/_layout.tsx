@@ -85,7 +85,7 @@ import {
   incrementCount,
   setHasNewNotification,
 } from "~/reduxStore/slices/notification/notificationSlice";
-import { useGetNotificationsQuery } from "~/reduxStore/api/notificationApi";
+import { useGetUnreadNotificationsQuery } from "~/reduxStore/api/notificationApi";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { Redirect } from "expo-router";
@@ -128,10 +128,12 @@ const tabs = [
 export default function TabLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
-  const { data: notificationsData, refetch } = useGetNotificationsQuery();
+  const { data } = useGetUnreadNotificationsQuery(null);
   const { notificationCount } = useSelector(
     (state: RootState) => state.notification
   );
+
+  console.log("Notification data : ", data);
 
   useEffect(() => {
     console.log("Socket function mounted");
@@ -159,13 +161,13 @@ export default function TabLayout() {
 
   // Update notification count when notifications data changes
   useEffect(() => {
-    if (notificationsData) {
-      const unreadCount = notificationsData.unreadCount || 0;
-      console.log(unreadCount);
+    if (data?.data.unreadCount) {
+      const unreadCount = data?.data.unreadCount || 0;
+      console.log("Notification count : ", unreadCount);
       dispatch(incrementCount(unreadCount));
       dispatch(setHasNewNotification(unreadCount > 0));
     }
-  }, [notificationsData, dispatch]);
+  }, [data?.data.unreadCount, dispatch]);
 
   if (!isLoggedIn) {
     return <Redirect href="/(auth)/login" />;

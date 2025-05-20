@@ -28,6 +28,15 @@ export default function AppLayout() {
             },
           }}
         />
+        <Stack.Screen
+          name="searchPage/index"
+          options={{
+            animation: "none",
+            contentStyle: {
+              backgroundColor: "black",
+            },
+          }}
+        />
       </Stack>
       <AppBottomSheet />
     </BottomSheetProvider>

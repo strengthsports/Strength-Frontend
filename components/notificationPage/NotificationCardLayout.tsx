@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import React, { useState, useCallback, useMemo } from "react";
 import nopic from "@/assets/images/nopic.jpg";
 import { formatShortTimeAgo } from "~/utils/formatTime";
-import { RelativePathString, useRouter } from "expo-router";
+import { RelativePathString, router, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "../CentralText";
 import { NotificationType } from "~/types/others";
@@ -106,44 +106,42 @@ const NotificationCardLayout = React.memo(
       );
     }, [dispatch]);
 
-const handleAcceptRequest = useCallback(() => {
-  dispatch(
-    acceptJoinRequest({
-      senderId: sender._id,
-      teamId: target._id,
-      notificationId: _id as string,
-    })
-  )
-  .unwrap()
-  .then((response) => {
-    // Now properly accessing the response data
-    console.log("Join request accepted:", response.message);
-    // You might want to update UI or show a success message here
-  })
-  .catch((error) => {
-    console.error("Failed to accept join request:", error);
-    // Show error message to user
-  });
-}, [dispatch, sender._id, target._id, _id]);
+    const handleAcceptRequest = useCallback(() => {
+      dispatch(
+        acceptJoinRequest({
+          senderId: sender._id,
+          teamId: target._id,
+          notificationId: _id as string,
+        })
+      )
+        .unwrap()
+        .then((response) => {
+          // Now properly accessing the response data
+          console.log("Join request accepted:", response.message);
+          // You might want to update UI or show a success message here
+        })
+        .catch((error) => {
+          console.error("Failed to accept join request:", error);
+          // Show error message to user
+        });
+    }, [dispatch, sender._id, target._id, _id]);
 
-
-
-  const handleRejectRequest = useCallback(() => {
-  dispatch(
-    rejectJoinRequest({
-      notificationId: _id as string,
-      userId: userId,
-    })
-  )
-  .unwrap()
-  .then(() => {
-    // Optional: Show success message or update UI
-  })
-  .catch((error) => {
-    // Optional: Show error message
-    console.error("Failed to reject join request:", error);
-  });
-}, [dispatch, _id, userId]);
+    const handleRejectRequest = useCallback(() => {
+      dispatch(
+        rejectJoinRequest({
+          notificationId: _id as string,
+          userId: userId,
+        })
+      )
+        .unwrap()
+        .then(() => {
+          // Optional: Show success message or update UI
+        })
+        .catch((error) => {
+          // Optional: Show error message
+          console.error("Failed to reject join request:", error);
+        });
+    }, [dispatch, _id, userId]);
 
     // Custom rendering for different notification types
     const renderNotificationContent = () => {
@@ -266,6 +264,7 @@ const handleAcceptRequest = useCallback(() => {
               // role={role}
             />
             <TeamPreview
+              teamId={target._id}
               image={target.logo && target.logo.url}
               handleAccept={handleAcceptTeamInvitaion}
               handleDecline={handleRejectTeamInvitaion}
@@ -286,6 +285,7 @@ const handleAcceptRequest = useCallback(() => {
               // role={role}
             />
             <TeamPreview
+              teamId={target._id}
               image={target.logo && target.logo.url}
               handleAccept={handleAcceptRequest}
               handleDecline={handleRejectRequest}
@@ -328,7 +328,7 @@ const handleAcceptRequest = useCallback(() => {
     };
 
     return (
-      <View className={`py-3 px-3 h-fit ${isNew && "bg-[#181818]"}`}>
+      <View className={`py-3 px-4 h-fit ${isNew && "bg-[#181818]"}`}>
         <View className="flex-row h-fit gap-x-3">
           {/* Profile Image */}
           <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
@@ -472,10 +472,12 @@ const PostPreview = React.memo(
 // Update your TeamPreview component to handle loading states
 const TeamPreview = React.memo(
   ({
+    teamId,
     image,
     handleDecline,
     handleAccept,
   }: {
+    teamId: string;
     image?: string;
     handleDecline: () => void;
     handleAccept: () => void;
@@ -505,27 +507,40 @@ const TeamPreview = React.memo(
     };
 
     return (
-      <View className={`mt-2 overflow-hidden rounded-xl`} style={{ width: "86%" }}>
+      <View
+        className={`mt-2 overflow-hidden rounded-xl`}
+        style={{ width: "86%" }}
+      >
         <View className="flex-row bg-[#262626] justify-between items-center">
           {image && (
-            <Image
-              source={{ uri: image }}
+            <TouchableOpacity
               style={{
                 width: 64,
                 height: 64,
                 borderWidth: 1,
                 borderColor: "#262626",
               }}
-            />
+              onPress={() => router.push(`/teams/${teamId}`)}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={{ uri: image }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
+                className="rounded-l-xl"
+              />
+            </TouchableOpacity>
           )}
           <View className="flex-row items-center justify-center gap-x-5 flex-1">
             {!isAccepted && (
               <TouchableOpacity
                 className="bg-transparent self-start px-4 justify-center rounded-lg border"
-                style={{ 
-                  height: 32, 
+                style={{
+                  height: 32,
                   borderColor: "#646464",
-                  opacity: isProcessing ? 0.7 : 1
+                  opacity: isProcessing ? 0.7 : 1,
                 }}
                 onPress={handleDeclinePress}
                 disabled={isProcessing}
@@ -552,9 +567,9 @@ const TeamPreview = React.memo(
             ) : (
               <TouchableOpacity
                 className="bg-theme self-start px-4 justify-center items-center rounded-lg border-theme"
-                style={{ 
+                style={{
                   height: 32,
-                  opacity: isProcessing ? 0.7 : 1
+                  opacity: isProcessing ? 0.7 : 1,
                 }}
                 onPress={handleAcceptPress}
                 disabled={isProcessing}

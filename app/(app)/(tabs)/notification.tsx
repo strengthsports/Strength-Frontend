@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,15 +19,17 @@ import moment from "moment";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "~/constants/Colors";
 import debounce from "lodash.debounce";
-import { RefreshControl as RControl } from "react-native";
 import { Notification, NotificationType } from "~/types/others";
 import {
   useGetNotificationsQuery,
   useMarkNotificationsAsReadMutation,
 } from "~/reduxStore/api/notificationApi";
-import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import NotificationNotFound from "~/components/notfound/notificationNotFound";
 import TextScallingFalse from "~/components/CentralText";
+import TooltipBox, { TooltipOption } from "~/components/ui/atom/TooltipBox";
+
+const NOTIFICATION_ITEM_HEIGHT = 64;
 
 // Tab configuration
 const tabs = [
@@ -60,85 +62,138 @@ const getTypesForTab = (tab: any) => {
   }
 };
 
+type SortType = "latest" | "unread";
+
 const NotificationPage = () => {
   const { hasNewNotification } = useSelector(
     (state: RootState) => state.notification
   );
   const dispatch = useDispatch<AppDispatch>();
 
-  const { data, isLoading, isError, isSuccess, refetch } =
-    useGetNotificationsQuery();
-  const [markAsRead] = useMarkNotificationsAsReadMutation();
-
-  const [newNotificationIds, setNewNotificationIds] = useState<string[]>([]);
+  // ──── Pagination / Sorting State ─────────────────────────────────────
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<SortType>("latest");
   const [activeTab, setActiveTab] = useState("All");
   const [refreshing, setRefreshing] = useState(false);
-  const initialLoad = useRef(true);
-  const previousData = useRef<Notification[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
+  const [hasMorePages, setHasMorePages] = useState(true);
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
-  // Mark unread notifications as read when new notification flag is set
+  // ──── RTK Query: fetch notifications based on (page, sortBy) ─────────
+  const { data, isLoading, isError, isSuccess, refetch } =
+    useGetNotificationsQuery({
+      page,
+      limit: 10,
+      sortBy,
+    });
+
+  const [markAsRead] = useMarkNotificationsAsReadMutation();
+
+  // ──── Single useEffect to update `allNotifications` + pagination ───────
   useEffect(() => {
-    if (!hasNewNotification) return;
+    if (!isSuccess || !data?.data?.notifications) return;
+
+    const incomingList: Notification[] = data.data.notifications;
+
+    if (page === 1) {
+      // Page 1: replace everything
+      setAllNotifications(incomingList);
+      setRefreshing(false);
+    } else {
+      // Page > 1: append only new IDs
+      setAllNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n._id));
+        const onlyNew = incomingList.filter((n) => !existingIds.has(n._id));
+        return [...prev, ...onlyNew];
+      });
+    }
+
+    // Update hasMorePages exactly once
+    if (data.data.pagination) {
+      setHasMorePages(data.data.pagination.page < data.data.pagination.pages);
+    } else {
+      setHasMorePages(false);
+    }
+
+    // Turn off loading flags
+    setLoadingMore(false);
+    setIsFetching(false);
+  }, [data, isSuccess, page]);
+
+  // ──── Mark all unread notifications as read if `hasNewNotification` is true ─
+  useEffect(() => {
+    if (allNotifications.length === 0) return;
 
     const markNotificationsRead = async () => {
-      const unreadIds =
-        data?.notifications
-          ?.filter((n) => !n.isNotificationRead)
-          ?.map((n) => n._id) || [];
+      const unreadIds = allNotifications
+        .filter((n) => !n.isNotificationRead)
+        .map((n) => n._id);
 
-      dispatch(resetCount());
-      if (unreadIds?.length > 0) {
-        await markAsRead({ notificationIds: unreadIds }).unwrap();
-        dispatch(setHasNewNotification(false));
-        dispatch(resetCount());
+      if (unreadIds.length > 0 || hasNewNotification) {
+        try {
+          await markAsRead(null).unwrap();
+          dispatch(setHasNewNotification(false));
+          dispatch(resetCount());
+        } catch (error) {
+          console.error("Failed to mark notifications as read:", error);
+        }
       }
     };
 
     markNotificationsRead();
-  }, [hasNewNotification, data]);
+  }, [hasNewNotification, allNotifications, dispatch, markAsRead]);
 
-  // Track new notifications for highlighting
+  // ──── Reset to page 1 when sortBy changes (no manual refetch()) ──────────
   useEffect(() => {
-    if (isSuccess && !initialLoad.current) {
-      const newNotifications = data.notifications.filter(
-        (n) => !previousData.current.some((prev) => prev._id === n._id)
-      );
+    setPage(1);
+    // setAllNotifications([]);
+  }, [sortBy]);
 
-      if (newNotifications?.length > 0) {
-        const newIds = newNotifications.map((n) => n._id);
-        setNewNotificationIds((prev) => [...prev, ...newIds]);
-        const timeout = setTimeout(() => {
-          setNewNotificationIds((prev) =>
-            prev.filter((id) => !newIds.includes(id))
-          );
-        }, 5000);
-        return () => clearTimeout(timeout);
-      }
-    }
-
-    if (isSuccess) {
-      previousData.current = data.notifications;
-      initialLoad.current = false;
-    }
-  }, [data, isSuccess]);
-
-  const handleRefresh = debounce(async () => {
+  // ──── Pull‐to‐refresh: set page = 1, clear list ────────────────────────
+  const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    try {
-      await refetch();
-    } finally {
-      setRefreshing(false);
+
+    if (page === 1) {
+      refetch()
+        .unwrap()
+        .finally(() => setRefreshing(false));
+    } else {
+      setPage(1);
+      setAllNotifications([]);
+      // RTK Query will fetch page 1 automatically, so wait for data/isSuccess below:
+      // In your `useEffect` that watches `isSuccess && data`, you could then:
+      //   useEffect(() => {
+      //     if (isSuccess && page === 1) {
+      //       setRefreshing(false);
+      //     }
+      //   }, [isSuccess, page]);
     }
-  }, 1000);
+  }, [page, refetch]);
 
-  // Filter and sort notifications
-  const allNotifications = data?.notifications || [];
-  const filtered = allNotifications
-    .filter((n) => getTypesForTab(activeTab).includes(n.type))
-    .sort(
-      (a, b) => moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf()
-    );
+  // ──── Infinite scroll: increment `page` if there are more ─────────────
+  const handleLoadMore = useCallback(() => {
+    if (!isFetching && hasMorePages && !loadingMore) {
+      setLoadingMore(true);
+      setIsFetching(true);
+      setPage((prev) => prev + 1);
+    }
+  }, [hasMorePages, isFetching, loadingMore]);
 
+  // ──── Filter + sort locally before rendering ─────────────────────────
+  const filtered = useMemo(
+    () =>
+      allNotifications
+        .filter((n) => getTypesForTab(activeTab).includes(n.type))
+        .sort(
+          (a, b) =>
+            moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf()
+        ),
+    [allNotifications, activeTab]
+  );
+
+  // ──── Render each notification card ─────────────────────────────────────
   const renderItem = useCallback(
     ({ item }: { item: Notification }) => (
       <NotificationCardLayout
@@ -147,12 +202,41 @@ const NotificationPage = () => {
         type={item.type as NotificationType}
         sender={item.sender}
         target={item.target}
-        isNew={newNotificationIds.includes(item._id)}
+        isNew={!item.isNotificationRead} // highlight unread ones
         comment={item.comment}
       />
     ),
-    [newNotificationIds]
+    []
   );
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View className="py-5 flex items-center justify-center">
+        <ActivityIndicator size="small" color="gray" />
+      </View>
+    );
+  };
+
+  // ──── Tooltip options for “Sort By” ───────────────────────────────────
+  const tooltipConfig: TooltipOption[] = [
+    {
+      label: "Sort by Latest",
+      onPress: () => {
+        setSortBy("latest");
+      },
+      type: "radio",
+      selected: sortBy === "latest",
+    },
+    {
+      label: "Sort by Unread",
+      onPress: () => {
+        setSortBy("unread");
+      },
+      type: "radio",
+      selected: sortBy === "unread",
+    },
+  ];
 
   return (
     <SafeAreaView className="flex-1 pt-6 bg-black">
@@ -161,7 +245,12 @@ const NotificationPage = () => {
           <TextScallingFalse className="text-6xl font-normal text-white">
             Notifications
           </TextScallingFalse>
-          <MaterialCommunityIcons name="tune-variant" color="#fff" size={20} />
+          <MaterialCommunityIcons
+            name="tune-variant"
+            color="#fff"
+            size={20}
+            onPress={() => setIsTooltipVisible(true)}
+          />
         </View>
         <ScrollView
           horizontal
@@ -197,12 +286,24 @@ const NotificationPage = () => {
         </ScrollView>
       </View>
 
-      {isLoading && <ActivityIndicator size="large" color="gray" />}
-      {isError && (
-        <Text className="text-red-500">Failed to load notifications.</Text>
+      {isLoading && page === 1 && (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="gray" />
+        </View>
       )}
 
-      {!isLoading && filtered?.length > 0 ? (
+      {isError && (
+        <View className="flex-1 justify-center items-center">
+          <TextScallingFalse className="text-red-500">
+            Failed to load notifications.{" "}
+            <TextScallingFalse className="underline" onPress={handleRefresh}>
+              Try again
+            </TextScallingFalse>
+          </TextScallingFalse>
+        </View>
+      )}
+
+      {!isLoading && filtered.length > 0 ? (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item._id}
@@ -216,16 +317,27 @@ const NotificationPage = () => {
               progressBackgroundColor="#181A1B"
             />
           }
-          contentContainerStyle={{ paddingBottom: 20 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={10}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={{ paddingBottom: 60 }}
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        !isLoading && (
-          <View className="flex-1 justify-center items-center">
-            <NotificationNotFound type={activeTab} />
-          </View>
-        )
+        <View className="flex-1 justify-center items-center">
+          <NotificationNotFound type={activeTab} />
+        </View>
       )}
+
+      {isTooltipVisible ? (
+        <TooltipBox
+          config={tooltipConfig}
+          onDismiss={() => setIsTooltipVisible(false)}
+        />
+      ) : null}
     </SafeAreaView>
   );
 };

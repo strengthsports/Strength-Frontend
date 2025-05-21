@@ -31,7 +31,7 @@ interface SignupPayload {
 }
 // Thunk for Signup
 export const signupUser = createAsyncThunk<
-  { message: string; userId: string; email: string }, // Returned data type on success
+  { message: string; userId: string; email: string }, // Returned daa type on success
   SignupPayload, // Argument type
   { rejectValue: string } // Rejected value type
 >("auth/signupUser", async (SignupPayload, { rejectWithValue }) => {

@@ -1059,6 +1059,9 @@ const ProfileLayout = () => {
         bgcolor="#151515"
       >
         <ProfileOptionsBottomSheet
+          onClose={() =>
+            setProfileOptionsVisible((prev) => ({ ...prev, status: false }))
+          }
           onNavigate={(path: any) => router.push(path as any)}
           onShare={handleShareProfile}
         />

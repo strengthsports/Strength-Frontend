@@ -74,13 +74,13 @@ export const CommenterCard = memo(
         <TouchableOpacity
           className={`${
             targetType === "Comment" ? "size-10" : "size-12"
-          } absolute top-2 left-4 z-10 aspect-square rounded-full bg-slate-400`}
+          } absolute top-2 left-4 z-10 aspect-square rounded-full bg-[#000]`}
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
         >
           <Image
-            className="w-full h-full rounded-full"
+            className="w-full h-full rounded-full border-[1px] border-[#202020]"
             source={
               comment?.postedBy?.profilePic
                 ? { uri: comment.postedBy.profilePic }

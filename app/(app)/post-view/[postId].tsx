@@ -324,7 +324,7 @@ const Post = () => {
           >
             <View
               className="rounded-full overflow-hidden"
-              style={{ width: 30, height: 30 }}
+              style={{ width: 30, height: 30, borderWidth: 1, borderColor:'#202020'}}
             >
               <Image
                 source={

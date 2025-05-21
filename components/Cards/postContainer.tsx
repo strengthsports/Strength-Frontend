@@ -494,7 +494,12 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               className="overflow-hidden bg-transparent"
             >
               <TouchableWithDoublePress
-                className="flex-1 relative overflow-hidden ml-2"
+                className="flex-1 relative overflow-hidden ml-2 border-[#222222]"
+                style={{  borderTopLeftRadius: 16,
+                    borderBottomLeftRadius: 16,               
+                    borderTopWidth: 1,
+                    borderBottomWidth: 1,
+                    borderLeftWidth: 1,}}
                 activeOpacity={0.7}
                 onSinglePress={() => {
                   if (item) {
@@ -516,9 +521,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     inset: 0,
                     borderTopLeftRadius: 16,
                     borderBottomLeftRadius: 16,
-                    borderTopWidth: 0.5,
-                    borderBottomWidth: 0.5,
-                    borderLeftWidth: 0.5,
                     borderColor: "#2F2F2F",
                   }}
                 />

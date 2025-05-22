@@ -47,6 +47,7 @@ export default function renderCaptionWithTags(
           key={i}
           className={`active:bg-gray-600`}
           style={{ color: "#12956B", fontSize: fontSize }}
+          onPress={() => goToHashtag(tag)}
         >
           {part}
         </TextScallingFalse>

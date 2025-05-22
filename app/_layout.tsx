@@ -63,6 +63,7 @@ function AuthNavigation() {
           width: SCREEN_WIDTH * 0.69,
           backgroundColor: "#000",
         },
+        swipeEnabled: false,
       }}
       drawerContent={(props) => <CustomDrawer2 />}
     />

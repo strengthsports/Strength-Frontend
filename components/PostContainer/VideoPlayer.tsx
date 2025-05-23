@@ -313,9 +313,9 @@ export default function YouTubeStyleVideoPlayer({
           style={[
             styles.video,
             {
-              borderTopLeftRadius: 16,
-              borderBottomLeftRadius: 16,
-              marginLeft: 8,
+              borderTopLeftRadius: editable ? 16 : 0,
+              borderBottomLeftRadius: editable ? 16 : 0,
+              marginLeft: editable ? 8 : 0,
               borderWidth: 1,
               borderColor: "#222222",
             },
@@ -394,7 +394,7 @@ export default function YouTubeStyleVideoPlayer({
           </Animated.View>
         )}
 
-        {editable && !isFullscreen && (
+        {editable && (
           <TouchableOpacity
             onPress={onRemove}
             style={styles.removeButton}

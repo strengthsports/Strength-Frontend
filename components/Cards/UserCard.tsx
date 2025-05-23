@@ -3,7 +3,7 @@ import { Image, TouchableOpacity, View } from "react-native";
 import TextScallingFalse from "../CentralText";
 import nopic from "@/assets/images/nopic.jpg";
 import FollowButton from "../FollowButton";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
 import { Alert } from "react-native";
@@ -77,7 +77,10 @@ const UserCard = ({
             resizeMode="cover"
           />
         </TouchableOpacity>
-        <View className="flex-1 -ml-1">
+        <TouchableOpacity  activeOpacity={0.7}
+         onPress={() =>
+            router.push(`/(app)/(profile)/profile/${serializedUser}`)
+          } className="flex-1 -ml-1">
           <TextScallingFalse className="text-white font-semibold text-xl">
             {user.firstName} {user.lastName}
           </TextScallingFalse>
@@ -91,7 +94,7 @@ const UserCard = ({
             <TextScallingFalse className="text-lg">|</TextScallingFalse>{" "}
             {user.headline}
           </TextScallingFalse>
-        </View>
+        </TouchableOpacity>
         {!isOwnProfile && (
           <View className="basis-[24%]">
             <FollowButton
@@ -107,4 +110,4 @@ const UserCard = ({
   );
 };
 
-export default UserCard;
+export default memo(UserCard);

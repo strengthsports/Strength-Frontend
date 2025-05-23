@@ -167,33 +167,30 @@ const Home = () => {
 
   // Mix Posts and discover section
   const interleavedData = useMemo(() => {
-    return posts.reduce(
-      (
-        acc: Array<
-          | { type: "post"; data: Post }
-          | { type: "discover"; id: string }
-          | { type: "article"; id: string }
-        >,
-        post,
-        index
-      ) => {
-        acc.push({ type: "post", data: post });
+    const result: Array<
+      | { type: "post"; data: Post }
+      | { type: "discover"; id: string }
+      | { type: "article"; id: string }
+    > = [];
 
-        if ((index + 1) % INTERLEAVE_INTERVAL === 0) {
-          const blockIndex = Math.floor((index + 1) / INTERLEAVE_INTERVAL);
-          if (blockIndex % 2 === 1) {
-            // odd block (1st, 3rd...) → Discover
-            acc.push({ type: "discover", id: `discover-${index}` });
-          } else {
-            // even block (2nd, 4th...) → SuggestedArticle
-            acc.push({ type: "article", id: `article-${index}` });
-          }
-        }
+    let discoverAdded = false;
+    let articleAdded = false;
 
-        return acc;
-      },
-      []
-    );
+    posts.forEach((post, index) => {
+      result.push({ type: "post", data: post });
+
+      if (!discoverAdded && index === 5) {
+        result.push({ type: "discover", id: `discover-${index}` });
+        discoverAdded = true;
+      }
+
+      if (!articleAdded && index === 11) {
+        result.push({ type: "article", id: `article-${index}` });
+        articleAdded = true;
+      }
+    });
+
+    return result;
   }, [posts]);
 
   const {

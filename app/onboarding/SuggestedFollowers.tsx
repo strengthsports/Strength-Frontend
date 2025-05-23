@@ -27,6 +27,7 @@ import { throttle } from "lodash";
 import SuggestedUserCardLoader from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
 import UserCardSkeleton from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
 import { setAuthState } from "~/reduxStore/slices/user/authSlice";
+import { setExpiry } from "~/utils/secureStore";
 
 interface SupportCardProps {
   user: any;
@@ -43,9 +44,8 @@ const SuggestedSupportScreen: React.FC = () => {
   const [page, SetPage] = useState(1);
   const [users, setUsers] = useState<SuggestionUser[]>([]);
 
-  const { headline, profilePic, selectedSports, loading, error } = useSelector(
-    (state: RootState) => state.onboarding
-  );
+  const { headline, profilePic, selectedSports, isLoading, isError } =
+    useSelector((state: RootState) => state.onboarding);
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -73,7 +73,7 @@ const SuggestedSupportScreen: React.FC = () => {
   // Update `users` when `fetchedUsers` changes
 
   const loadMoreUsers = throttle(() => {
-    if (!loading) {
+    if (!isLoading) {
       SetPage((prevPage) => prevPage + 1);
     }
   }, 500); // only once every 500ms
@@ -178,6 +178,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
       // console.log(response);
       setFinalLoading(false);
+      dispatch(setAuthState());
       // Alert the successful response
       Toast.show({
         type: "success",
@@ -220,7 +221,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
       {/* FlatList scrolls everything from Logo to suggestions */}
       <FlatList
-        data={loading ? [] : users}
+        data={isLoading ? [] : users}
         keyExtractor={(item) => item._id}
         numColumns={2}
         renderItem={renderItem}
@@ -267,7 +268,7 @@ const SuggestedSupportScreen: React.FC = () => {
         onEndReached={loadMoreUsers}
         onEndReachedThreshold={0.9}
         ListFooterComponent={
-          users.length > 0 && loading ? (
+          users.length > 0 && isLoading ? (
             <ActivityIndicator size={24} color="#12956B" />
           ) : // <SuggestedUserCardLoader />
           null

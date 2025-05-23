@@ -22,6 +22,7 @@ import debounce from "lodash.debounce";
 import { Notification, NotificationType } from "~/types/others";
 import {
   useGetNotificationsQuery,
+  useMarkNotificationAsVisitedMutation,
   useMarkNotificationsAsReadMutation,
 } from "~/reduxStore/api/notificationApi";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -90,6 +91,7 @@ const NotificationPage = () => {
     });
 
   const [markAsRead] = useMarkNotificationsAsReadMutation();
+  const [markAsVisited] = useMarkNotificationAsVisitedMutation();
 
   // ──── Single useEffect to update `allNotifications` + pagination ───────
   useEffect(() => {
@@ -144,6 +146,18 @@ const NotificationPage = () => {
 
     markNotificationsRead();
   }, [hasNewNotification, allNotifications, dispatch, markAsRead]);
+
+  // ──── Mark a notification as visited
+  const handleMarkNotificationVisited = useCallback(
+    async (notificationId: string) => {
+      try {
+        await markAsVisited({ notificationId }).unwrap();
+      } catch (error) {
+        console.error("Failed to mark notifications as read:", error);
+      }
+    },
+    []
+  );
 
   // ──── Reset to page 1 when sortBy changes (no manual refetch()) ──────────
   useEffect(() => {
@@ -202,8 +216,9 @@ const NotificationPage = () => {
         type={item.type as NotificationType}
         sender={item.sender}
         target={item.target}
-        isNew={!item.isNotificationRead} // highlight unread ones
+        isNew={!item.isNotificationVisited} // highlight unread ones
         comment={item.comment}
+        handleMarkNotificationVisited={handleMarkNotificationVisited}
       />
     ),
     []
@@ -327,9 +342,11 @@ const NotificationPage = () => {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        <View className="flex-1 justify-center items-center">
-          <NotificationNotFound type={activeTab} />
-        </View>
+        page !== 1 && (
+          <View className="flex-1 justify-center items-center">
+            <NotificationNotFound type={activeTab} />
+          </View>
+        )
       )}
 
       {isTooltipVisible ? (

@@ -147,7 +147,7 @@ const Post = () => {
       if (part.startsWith("#")) {
         if (part.length > remainingChars) {
           showSeeMore = true;
-          return;
+          break;
         }
         const tag = part.slice(1);
         elements.push(
@@ -165,7 +165,7 @@ const Post = () => {
         const user = taggedUsers.find((u) => u.username === uname);
         if (!user || part.length > remainingChars) {
           showSeeMore = true;
-          return;
+          break;
         }
         elements.push(
           <TextScallingFalse
@@ -324,7 +324,12 @@ const Post = () => {
           >
             <View
               className="rounded-full overflow-hidden"
-              style={{ width: 30, height: 30 }}
+              style={{
+                width: 30,
+                height: 30,
+                borderWidth: 1,
+                borderColor: "#202020",
+              }}
             >
               <Image
                 source={

@@ -44,8 +44,14 @@ export const footballApi = createApi({
           ? response.data.recentMatches
           : [];
 
+        const recentTrendingMatches = Array.isArray(
+          response.data.recentTrendingMatches
+        )
+          ? response.data.recentTrendingMatches
+          : [];
+
         // console.log("Recent Football Matches :", recentMatches);
-        return { recentMatches };
+        return { recentMatches, recentTrendingMatches };
       },
     }),
   }),

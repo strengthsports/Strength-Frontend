@@ -19,22 +19,34 @@ interface LiveTrendingMatchProps {
   liveCricketMatches: any[];
   liveFootballMatches: any[];
   liveBasketballMatches: any[];
+  recentCricketMatches: any[];
+  recentFootballMatches: any[];
   isCricketFetching: boolean;
   isFootballFetching: boolean;
   isBasketballFetching: boolean;
+  isCricketRecentFetching: boolean;
+  isFootballRecentFetching: boolean;
 }
 
 const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
   liveCricketMatches,
   liveFootballMatches,
   liveBasketballMatches,
+  recentCricketMatches,
+  recentFootballMatches,
   isCricketFetching,
   isFootballFetching,
   isBasketballFetching,
+  isCricketRecentFetching,
+  isFootballRecentFetching,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const isLoading =
-    isCricketFetching || isFootballFetching || isBasketballFetching;
+    isCricketFetching ||
+    isFootballFetching ||
+    isBasketballFetching ||
+    isCricketRecentFetching ||
+    isFootballRecentFetching;
 
   // Combine and mark the type of match
   const combinedMatches = [
@@ -45,6 +57,14 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
     })),
     ...(liveBasketballMatches || []).map((match) => ({
       type: "basketball",
+      match,
+    })),
+    ...(recentCricketMatches || []).map((match) => ({
+      type: "recentCricket",
+      match,
+    })),
+    ...(recentFootballMatches || []).map((match) => ({
+      type: "recentFootball",
       match,
     })),
   ];
@@ -76,6 +96,24 @@ const TrendingLiveMatch: React.FC<LiveTrendingMatchProps> = ({
           <BasketballMatchCard
             match={item.match}
             isLive={true}
+            onCardPress={() => setModalVisible(true)}
+          />
+        );
+        break;
+      case "recentCricket":
+        CardComponent = (
+          <CricketMatchCard
+            match={item.match}
+            isLive={false}
+            onCardPress={() => setModalVisible(true)}
+          />
+        );
+        break;
+      case "recentFootball":
+        CardComponent = (
+          <FootballMatchCard
+            match={item.match}
+            isLive={false}
             onCardPress={() => setModalVisible(true)}
           />
         );

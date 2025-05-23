@@ -19,10 +19,12 @@ import {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
   useGetCricketNextMatchesBySeriesQuery,
+  useGetCricketRecentMatchesQuery,
 } from "~/reduxStore/api/explore/cricketApi";
 import {
   useGetFootballLiveMatchesQuery,
   useGetFootballNextMatchesQuery,
+  useGetFootballRecentMatchesQuery,
 } from "~/reduxStore/api/explore/footballApi";
 import {
   useGetBasketballLiveMatchesQuery,
@@ -187,6 +189,14 @@ const TrendingAll = () => {
     cricketNextBySeriesData || {};
 
   const {
+    data: cricketRecentTrendingData,
+    isFetching: isCricketRecentTrendingFetching,
+    refetch: refetchRecentTrendingCricket,
+  } = useGetCricketRecentMatchesQuery({});
+  const { recentTrendingMatches: recentTrendingCricketMatches = [] } =
+    cricketRecentTrendingData || {};
+
+  const {
     data: footballLiveData,
     isFetching: isFootballLiveFetching,
     refetch: refetchLiveFootball,
@@ -199,6 +209,14 @@ const TrendingAll = () => {
     refetch: refetchNextFootball,
   } = useGetFootballNextMatchesQuery({});
   const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
+
+  const {
+    data: footballRecentTrendingData,
+    isFetching: isFootballRecentTrendingFetching,
+    refetch: refetchRecentTrendingFootball,
+  } = useGetFootballRecentMatchesQuery({});
+  const { recentTrendingMatches: recentTrendingFootballMatches = [] } =
+    footballRecentTrendingData || {};
 
   const {
     data: basketballLiveData,
@@ -237,9 +255,13 @@ const TrendingAll = () => {
         liveCricketMatches={singleLiveCricketMatch}
         liveFootballMatches={singleLiveFootballMatch}
         liveBasketballMatches={singleLiveBasketballMatch}
+        recentCricketMatches={recentTrendingCricketMatches}
+        recentFootballMatches={recentTrendingFootballMatches}
         isCricketFetching={isCricketLiveFetching}
         isFootballFetching={isFootballLiveFetching}
         isBasketballFetching={isBasketballLiveFetching}
+        isCricketRecentFetching={isCricketRecentTrendingFetching}
+        isFootballRecentFetching={isFootballRecentTrendingFetching}
       />
     );
   };
@@ -334,8 +356,11 @@ const TrendingAll = () => {
       await Promise.all([
         refetchLiveCricket(),
         refetchNextCricket(),
+        refetchNextBySeriesCricket(),
+        refetchRecentTrendingCricket(),
         refetchLiveFootball(),
         refetchNextFootball(),
+        refetchRecentTrendingFootball(),
         refetchLiveBasketball(),
         refetchNextBasketball(),
         refetchSportArticles(),

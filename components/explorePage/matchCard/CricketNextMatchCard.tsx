@@ -5,6 +5,7 @@ import CountryFlag from "react-native-country-flag";
 import { countryCodes } from "~/constants/countryCodes";
 import { seriesLogos } from "~/constants/teamLogos";
 import NameFlagSubCard from ".././nameFlagSubCard";
+import { getCountryFlag } from "~/utils/getCountryFlag";
 
 interface MatchCardProps {
   matchInfo: {
@@ -147,13 +148,13 @@ const CricketNextMatchCard = ({
               <View className="flex-column gap-y-3">
                 {/* Team 1 */}
                 <NameFlagSubCard
-                  flag={match.matchInfo.team1.teamSName}
+                  flag={getCountryFlag(match.matchInfo.team1.teamName) || ""}
                   teamName={match.matchInfo.team1.teamSName}
                 />
 
                 {/* Team 2 */}
                 <NameFlagSubCard
-                  flag={match.matchInfo.team2.teamSName}
+                  flag={getCountryFlag(match.matchInfo.team2.teamName) || ""}
                   teamName={match.matchInfo.team2.teamSName}
                 />
               </View>

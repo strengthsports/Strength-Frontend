@@ -527,7 +527,7 @@ const ProfileLayout = () => {
             >
               <View
                 style={{
-                  width: "50%",
+                  width: user?.type === "Page" ? "68%" : "50%",
                   flexDirection: "row",
                   gap: 15,
                   // marginBottom: 5,

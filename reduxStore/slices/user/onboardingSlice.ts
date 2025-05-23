@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken } from "@/utils/secureStore";
 import { SuggestionUser, User } from "@/types/user";
-import { selectAllPosts } from "../feed/feedSlice";
 
 interface OnboardingState {
   sportsData: { _id: string; name: string }[];
@@ -127,7 +126,7 @@ export const onboardingUser = createAsyncThunk<
 
     const fullURL = `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`;
     console.log("Posting to URL:", fullURL);
-    
+
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/onboard-user`,
       {
@@ -164,7 +163,6 @@ const onboardingSlice = createSlice({
         ? state.selectedSports.filter((id) => id !== sportId) // Remove sport if it's already selected
         : [...state.selectedSports, sportId]; // Add sport if not selected
       state.selectedSports = updatedSelectedSports;
-      
     },
 
     // Action to set the selected sports array

@@ -52,8 +52,8 @@ const DiscoverPeopleList = ({
         borderColor: isFeedPage ? "#1c1c1c" : "transparent",
       }}
     >
-      <TextScallingFalse className="text-white text-4xl ml-3 my-2 font-bold">
-        Suggested Followings
+      <TextScallingFalse className="text-white text-4xl ml-3 my-2 font-semibold">
+        Suggested for you
       </TextScallingFalse>
       {/* <Divider width={2} color="#1e1e1e" /> */}
 

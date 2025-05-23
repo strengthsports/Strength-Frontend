@@ -22,13 +22,15 @@ const ProfileFTU = () => {
   const navigation = useNavigation();
   const user = useSelector((state: RootState) => state.profile.user);
   const loading = useSelector((state: RootState) => state.profile.loading);
+  const PLACEHOLDER_HEADLINE = "Hey! I am on Strength";
 
   if (loading || !user) {
     return <ActivityIndicator size="large" style={styles.loader} />;
   }
 
   const showProfileFTU = !user?.profilePic;
-  const showHeadlineFTU = !user?.headline;
+  const showHeadlineFTU =
+    user?.headline === PLACEHOLDER_HEADLINE || !user?.headline;
   const showAboutFTU = !user?.about;
 
   if (!showProfileFTU && !showHeadlineFTU && !showAboutFTU) {

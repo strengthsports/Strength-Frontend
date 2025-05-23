@@ -345,7 +345,9 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
 
   if (!isInitialLoad && processedImageData.length === 0 && !isLoadingMore) {
     const message =
-      pageType === "Hashtag" && hashtag ? `No media found for #${hashtag}` : "";
+      pageType === "Hashtag" && hashtag
+        ? `No media found for #${hashtag}`
+        : "No media found";
     return (
       <View style={styles.centerContent}>
         <TextScallingFalse style={styles.emptyListText}>

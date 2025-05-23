@@ -2,12 +2,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useMemo } from "react";
 import TextScallingFalse from "../CentralText";
 import { AntDesign } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const NotificationNotFound = ({ type }: { type: string }) => {
   const content = useMemo(() => {
     let content;
     switch (type) {
-      case "Tags":
+      case "Mentions":
         content = {
           text: "No new mentions yet",
           subText: "Time to join the conversation. Drop a highlight post!",
@@ -43,12 +44,15 @@ const NotificationNotFound = ({ type }: { type: string }) => {
         <TouchableOpacity
           className="mt-4 rounded-full border border-[#808080] px-5 py-2 flex-row items-center gap-x-2"
           activeOpacity={0.7}
+          onPress={() =>
+            type === "Teams"
+              ? router.push("/(app)/(team)/teams")
+              : router.push("/add-post")
+          }
         >
-          {type === "Teams" ? (
-            <AntDesign name="plus" size={12} color="#eaeaea" />
-          ) : (
-            <TextScallingFalse className="text-[#eaeaea]">@</TextScallingFalse>
-          )}
+          <TextScallingFalse className="text-[#eaeaea]">
+            {type === "Mentions" ? "@" : "+"}
+          </TextScallingFalse>
           <TextScallingFalse className="text-[#eaeaea]">
             {type === "Teams" ? "Create Team" : "Add Post"}
           </TextScallingFalse>

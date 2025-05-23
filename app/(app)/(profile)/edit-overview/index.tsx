@@ -637,15 +637,9 @@ function EditOverview() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-            onPress={() => {
-              if (isTeamAvailable) {
-                router.push(
-                  "/(app)/(profile)/edit-overview/(modal)/current-team"
-                );
-              } else {
-                router.push("/(app)/(team)/teams");
-              }
-            }}
+            onPress={() =>
+              router.push("/(app)/(profile)/edit-overview/(modal)/current-team")
+            }
           >
             <TextScallingFalse
               style={{ color: "white", fontSize: 16, fontWeight: "500" }}

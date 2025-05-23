@@ -70,13 +70,12 @@ const SuggestedArticlesCard = ({ swiperData }: SuggestedArticlesCardProps) => {
     <View
       style={{
         width: "100%",
-        height: 236,
+        height: 220,
         justifyContent: "center",
         alignItems: "center",
         borderBottomColor: "#202020",
         borderBottomWidth: 1,
         borderTopColor: "#202020",
-        borderTopWidth: 1,
         paddingVertical: 20,
       }}
     >
@@ -108,12 +107,12 @@ const SuggestedArticlesCard = ({ swiperData }: SuggestedArticlesCardProps) => {
               <View
                 key={index}
                 style={{
-                  height: 7.2,
-                  width: 7.2,
+                  height: 6,
+                  width: 6,
                   borderRadius: 4,
                   marginHorizontal: 5,
                   backgroundColor:
-                    index === activeIndex ? "white" : "#505050",
+                    index === activeIndex ? "#D9D9D9" : "#454545",
                 }}
               />
             ))}
@@ -123,7 +122,7 @@ const SuggestedArticlesCard = ({ swiperData }: SuggestedArticlesCardProps) => {
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => {
-           router.push('/(app)/(tabs)/explore/allCategory/TrendingAll')
+           router.push('/(app)/(tabs)/explore/articleCategory/TrendingArticle')
           }}
         >
           <TextScallingFalse
@@ -202,7 +201,7 @@ const SuggestedArticlesCard = ({ swiperData }: SuggestedArticlesCardProps) => {
                 <TextScallingFalse
                   style={{ fontSize: 11, color: "gray", fontWeight: "400" }}
                 >
-                  {"•"}   {article.date}
+                  {"•"}  {article.date}
                 </TextScallingFalse>
               </View>
             </View>

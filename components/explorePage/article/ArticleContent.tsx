@@ -76,7 +76,7 @@ const ArticleContent: React.FC<ArticleProps> = ({ articleData }) => {
           }}
           className="flex-row pt-2 h-28 gap-4 px-2 mt-2"
         >
-          <View className="w-[125px] h-[80px] overflow-hidden rounded-xl border border-[#181818] bg-[#c7c7c7]">
+          <View className="w-[125px] h-[80px] overflow-hidden rounded-xl border-[1px] border-[#181818] bg-[#000]">
             <Image
               source={{ uri: item.imageUrl }}
               className="w-full h-full"

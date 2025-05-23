@@ -176,7 +176,7 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
 
       {/* Footer */}
       <View className="w-auto h-[8%] justify-center items-center">
-        <View className="h-[0.5px] w-[90%] bg-gray-500" />
+        <View className="h-[1px] w-[90%] bg-[#2B2B2B]" />
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={onSeeAllPress}
@@ -185,23 +185,23 @@ const RecentPostsSection: React.FC<RecentPostsSectionProps> = ({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            marginVertical: 6,
+            marginVertical: 8,
           }}
         >
           <Text
             style={{
               color: "#808080",
               fontSize: 15,
-              fontWeight: "700", // Bold
+              fontWeight: "600", // Bold
             }}
           >
             See all posts
           </Text>
           <Feather
             name="arrow-right"
-            size={20}
+            size={18}
             color={"#808080"}
-            style={{ marginLeft: 5 }}
+            style={{ marginLeft: 5, marginTop: 3 }}
           />
         </TouchableOpacity>
       </View>

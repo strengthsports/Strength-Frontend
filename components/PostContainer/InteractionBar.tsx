@@ -175,16 +175,16 @@ const InteractionBar = ({
 
       {/* actions */}
       <View
-        className={`${!isPostContainer && "mx-auto"} py-5 mb-1 flex flex-row ${
+        className={`mx-auto py-5 mb-1 flex flex-row ${
           isPostContainer ? "justify-end" : "justify-center"
         } items-center border-t`}
         style={{
-          columnGap: isPostContainer ? 16 : 32,
+          columnGap: 16,
           borderColor: "#303030",
           marginTop: 1,
           // backgroundColor: "green",
-          width: isPostContainer ? "81%" : "90%",
-          left: isPostContainer ? 32 : 0,
+          width: isPostContainer ? "80%" : "90%",
+          // left: isPostContainer ? 32 : 0,
         }}
       >
         {/* like */}

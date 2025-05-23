@@ -419,12 +419,7 @@ export default function AddPostContainer() {
   const selectVideo = useCallback(async () => {
     // Activate video mode explicitly
     setTypeVideo(true);
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert("Permission to access media library is required.");
-      return;
-    }
+
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,

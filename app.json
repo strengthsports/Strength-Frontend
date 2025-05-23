@@ -2,7 +2,7 @@
   "expo": {
     "name": "Strength",
     "slug": "Strength",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/ios-dark.png",
     "scheme": "myapp",
@@ -13,9 +13,15 @@
       "resizeMode": "contain"
     },
     "ios": {
-      "supportsTablet":  false,
+      "supportsTablet": false,
+      "buildNumber": "2",
       "bundleIdentifier": "strength.net.in",
-      "icon": "./assets/images/ios-dark.png"
+      "icon": "./assets/images/ios-dark.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "We use your location to help you discover and connect with nearby teams and events.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location to enable location-based team discovery and notify you about nearby activity, even when the app is in the background."
+      }
     },
     "android": {
       "package": "strength.net.in",
@@ -45,7 +51,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

@@ -41,6 +41,7 @@ import UserInfo from "../ui/atom/UserInfo";
 import { RelativePathString } from "expo-router";
 import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
+import { useShare } from "~/hooks/useShare";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -100,6 +101,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       useState(false);
 
     const { followUser, unFollowUser } = useFollow();
+    // Share post
+    const { sharePost } = useShare();
 
     // State for individual post
     const [isExpanded, setIsExpanded] = useState(false);
@@ -141,6 +144,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               isReported={item.isReported}
               handleFollow={handleFollow}
               handleUnfollow={handleUnfollow}
+              handleShare={handleShare}
             />
           ),
           height: item.postedBy._id === user?._id ? "20%" : "25%",
@@ -149,10 +153,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           maxHeight: item.postedBy._id === user?._id ? "20%" : "25%",
           draggableDirection: "down",
         });
-      } else if (type === "comment") {
-        <Modal transparent visible={true} animationType="slide">
-          <CommentModal targetId={item._id} autoFocusKeyboard={true} />
-        </Modal>;
       }
     };
 
@@ -218,6 +218,14 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           selectedOption: optionIndex,
         })
       );
+    };
+
+    // Handle share
+    const handleShare = () => {
+      sharePost({
+        imageUrl: item.assets ? item.assets[0]?.url : "",
+        ...(item.caption && { caption: item.caption }),
+      });
     };
 
     // Set slider active index

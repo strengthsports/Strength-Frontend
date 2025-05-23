@@ -59,7 +59,6 @@ const InteractionBar = ({
       sharePost({
         imageUrl: assets[0]?.url,
         caption: caption,
-        link: "https://play.google.com/store/apps/details?id=strength.net.in",
       });
     }
   };

@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   TextInput,
-  Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -13,6 +12,8 @@ import { useSelector } from "react-redux";
 import { HASHTAG_CATEGORIES } from "~/data/hashtags";
 import { RootState } from "~/reduxStore";
 import { useSearchUsersMutation } from "~/reduxStore/api/explore/searchApi";
+import ParsedText from "react-native-parsed-text";
+import TextScallingFalse from "./CentralText";
 
 const TRENDING_HASHTAGS = [
   { id: "t1", name: "Strength", type: "Trending" },
@@ -45,7 +46,7 @@ const MentionHashtagInput2 = ({
   // RTK Query mutation for searching users
   const [searchUsers] = useSearchUsersMutation();
 
-  // Debounced user search to prevent frequent re-renders
+  // Debounced user search
   const debouncedSearch = useRef(
     debounce((query: string) => {
       searchUsers({ username: query, limit: 5, page: 1, userId })
@@ -82,46 +83,6 @@ const MentionHashtagInput2 = ({
     },
     [ALL_HASHTAGS]
   );
-
-  const parseText = useCallback((text: string) => {
-    const segments: { text: string; type: "mention" | "hashtag" | "plain" }[] =
-      [];
-    let remainingText = text;
-
-    while (remainingText.length > 0) {
-      if (remainingText.startsWith("@")) {
-        const endOfWord = remainingText.search(/[ \n]/);
-        const mentionText =
-          endOfWord === -1
-            ? remainingText
-            : remainingText.substring(0, endOfWord);
-        segments.push({ text: mentionText, type: "mention" });
-        remainingText =
-          endOfWord === -1 ? "" : remainingText.substring(endOfWord);
-      } else if (remainingText.startsWith("#")) {
-        const endOfWord = remainingText.search(/[ \n]/);
-        const hashtagText =
-          endOfWord === -1
-            ? remainingText
-            : remainingText.substring(0, endOfWord);
-        segments.push({ text: hashtagText, type: "hashtag" });
-        remainingText =
-          endOfWord === -1 ? "" : remainingText.substring(endOfWord);
-      } else {
-        const nextSpecialChar = remainingText.search(/[@#]/);
-        const plainText =
-          nextSpecialChar === -1
-            ? remainingText
-            : remainingText.substring(0, nextSpecialChar);
-        if (plainText) segments.push({ text: plainText, type: "plain" });
-        remainingText =
-          nextSpecialChar === -1
-            ? ""
-            : remainingText.substring(nextSpecialChar);
-      }
-    }
-    return segments;
-  }, []);
 
   const onSelectionChange = useCallback((event: any) => {
     const { selection } = event.nativeEvent;
@@ -180,7 +141,6 @@ const MentionHashtagInput2 = ({
       const newText = `${prefix}${insertText}${suffix}`;
       setPostText(newText);
 
-      // compute new cursor position and update both native and state
       const newCursorPos = prefix.length + insertText.length;
       setTimeout(() => {
         inputRef.current?.setNativeProps({
@@ -191,14 +151,12 @@ const MentionHashtagInput2 = ({
 
       setShowSuggestions(false);
     },
-    [selection, suggestionType, text]
+    [selection, suggestionType, text, setPostText]
   );
 
   const handleSetTaggedUser = (taggedUser: string) => {
     setTaggedUsers((prev) => [...prev, taggedUser]);
   };
-
-  console.log("User results : ", userResults);
 
   const renderSuggestionItem = useCallback(
     ({ item }: { item: any }) => (
@@ -213,21 +171,27 @@ const MentionHashtagInput2 = ({
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image style={styles.avatarPlaceholder} source={item.profilePic} />
             <View>
-              <Text style={styles.suggestionName}>
+              <TextScallingFalse style={styles.suggestionName}>
                 {item.firstName} {item.lastName}
-              </Text>
-              <Text style={styles.suggestionUsername}>@{item.username}</Text>
+              </TextScallingFalse>
+              <TextScallingFalse style={styles.suggestionUsername}>
+                @{item.username}
+              </TextScallingFalse>
             </View>
           </View>
         ) : (
           <View>
-            <Text style={styles.hashtag}>#{item.name}</Text>
-            <Text style={styles.hashtagType}>{item.type}</Text>
+            <TextScallingFalse style={styles.hashtag}>
+              #{item.name}
+            </TextScallingFalse>
+            <TextScallingFalse style={styles.hashtagType}>
+              {item.type}
+            </TextScallingFalse>
           </View>
         )}
       </TouchableOpacity>
     ),
-    [suggestionType]
+    [suggestionType, insertSuggestion]
   );
 
   return (
@@ -247,20 +211,15 @@ const MentionHashtagInput2 = ({
           autoCorrect={false}
         />
         <View style={styles.textOverlay} pointerEvents="none">
-          <Text style={styles.inputOverlay}>
-            {parseText(text).map((segment, index) => (
-              <Text
-                key={`segment-${index}`}
-                style={[
-                  styles.overlayText,
-                  segment.type === "mention" && styles.mentionText,
-                  segment.type === "hashtag" && styles.hashtagText,
-                ]}
-              >
-                {segment.text}
-              </Text>
-            ))}
-          </Text>
+          <ParsedText
+            style={styles.inputOverlay}
+            parse={[
+              { pattern: /@[\w]+/, style: styles.mentionText },
+              { pattern: /#[\w]+/, style: styles.hashtagText },
+            ]}
+          >
+            {text}
+          </ParsedText>
         </View>
       </View>
 
@@ -318,9 +277,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: "#fff",
   },
-  overlayText: {
-    includeFontPadding: false,
-  },
   mentionText: {
     color: "#12956B",
     fontWeight: "600",
@@ -366,11 +322,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
-
-const mockUsers = [
-  { id: "1", name: "John Doe", username: "johndoe" },
-  { id: "2", name: "Jane Smith", username: "janesmith" },
-  { id: "3", name: "Bob Johnson", username: "bobjohnson" },
-];
 
 export default MentionHashtagInput2;

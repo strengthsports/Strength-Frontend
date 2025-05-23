@@ -50,6 +50,7 @@ const NotificationCardLayout = React.memo(
     isNew,
     count,
     comment,
+    handleMarkNotificationVisited,
   }: NotificationCardProps) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -83,10 +84,17 @@ const NotificationCardLayout = React.memo(
           ? "/(app)/(tabs)/profile"
           : `../(profile)/profile/${serializedUser}`;
       router.push(route as RelativePathString);
+      handleMarkNotificationVisited(_id);
     }, [userId, sender._id, serializedUser]);
 
     const handlePostPress = useCallback(() => {
       router.push(`/post-details/${target._id}`);
+      handleMarkNotificationVisited(_id);
+    }, [target?._id]);
+
+    const handleTeamPress = useCallback(() => {
+      router.push(`/teams/${target._id}`);
+      handleMarkNotificationVisited(_id);
     }, [target?._id]);
 
     const handleAcceptTeamInvitaion = useCallback(() => {
@@ -264,8 +272,8 @@ const NotificationCardLayout = React.memo(
               // role={role}
             />
             <TeamPreview
-              teamId={target._id}
               image={target.logo && target.logo.url}
+              handleTeamPress={handleTeamPress}
               handleAccept={handleAcceptTeamInvitaion}
               handleDecline={handleRejectTeamInvitaion}
             />
@@ -285,8 +293,8 @@ const NotificationCardLayout = React.memo(
               // role={role}
             />
             <TeamPreview
-              teamId={target._id}
               image={target.logo && target.logo.url}
+              handleTeamPress={handleTeamPress}
               handleAccept={handleAcceptRequest}
               handleDecline={handleRejectRequest}
             />
@@ -472,13 +480,13 @@ const PostPreview = React.memo(
 // Update your TeamPreview component to handle loading states
 const TeamPreview = React.memo(
   ({
-    teamId,
     image,
+    handleTeamPress,
     handleDecline,
     handleAccept,
   }: {
-    teamId: string;
     image?: string;
+    handleTeamPress: () => void;
     handleDecline: () => void;
     handleAccept: () => void;
   }) => {
@@ -520,7 +528,7 @@ const TeamPreview = React.memo(
                 borderWidth: 1,
                 borderColor: "#262626",
               }}
-              onPress={() => router.push(`/teams/${teamId}`)}
+              onPress={handleTeamPress}
               activeOpacity={0.7}
             >
               <Image

@@ -61,6 +61,7 @@ const index = () => {
       const response = await dispatch(logoutUser()).unwrap();
       // Dispatch resetUserData to clear user-related data from Redux store
       dispatch(resetUserData());
+      !isAndroid && router.replace("/login");
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({

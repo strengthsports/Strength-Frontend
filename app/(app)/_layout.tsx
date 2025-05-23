@@ -1,15 +1,23 @@
 import { Redirect, Stack } from "expo-router";
-import { useSelector } from "react-redux";
-import { RootState } from "@/reduxStore";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/reduxStore";
 import { BottomSheetProvider } from "~/context/BottomSheetContext";
 import AppBottomSheet from "~/components/ui/AppBottomSheet";
+import { useEffect } from "react";
+import { tokenMonitor } from "~/services/tokenMonitor";
 
 export default function AppLayout() {
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
 
   if (!isLoggedIn) {
     return <Redirect href="/(auth)/login" />;
   }
+
+  useEffect(() => {
+    tokenMonitor.start(dispatch);
+    return () => tokenMonitor.stop();
+  }, [dispatch]);
 
   return (
     <BottomSheetProvider>

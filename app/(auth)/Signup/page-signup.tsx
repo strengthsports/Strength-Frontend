@@ -5,6 +5,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ToastAndroid,
+  Vibration,
+  Platform
 } from "react-native";
 import React, { useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
@@ -22,7 +25,9 @@ import Modal from "react-native-modal";
 import { showFeedback } from "~/utils/feedbackToast";
 import { signupUser } from "~/reduxStore/slices/user/signupSlice";
 import { useDispatch } from "react-redux";
+import Toast from "react-native-toast-message";
 import { AppDispatch } from "~/reduxStore";
+import { vibrationPattern } from "~/constants/vibrationPattern";
 
 const options = [
   "Academy",
@@ -52,6 +57,7 @@ const PageSignup = () => {
   const [pageName, setPageName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const isAndroid = Platform.OS === "android";
 
   // StatusBar.setBackgroundColor("black");
 
@@ -79,10 +85,32 @@ const PageSignup = () => {
     return true;
   };
 
-  const handleSignup = async () => {
-    if (!validateForm()) return;
 
-    setLoading(true);
+  const feedback = (message: string, type: "error" | "success" = "error") => {
+  if (isAndroid) {
+    // Always vibrate on error
+    if (type === "error") Vibration.vibrate(vibrationPattern);
+
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+    return;
+  }
+
+  // For iOS or Web, use Toast from `react-native-toast-message`
+  Toast.show({
+    type,
+    text1: message,
+    visibilityTime: 3000,
+    autoHide: true,
+  });
+};
+
+
+const handleSignup = async () => {
+  if (!validateForm()) return;
+
+  setLoading(true);
+
+  try {
     const response = await dispatch(
       signupUser({
         email,
@@ -91,16 +119,20 @@ const PageSignup = () => {
         userType: "Page",
       })
     ).unwrap();
-    // console.log('frontend response',response)
-    showFeedback(response.message || "OTP sent to email", "success");
+
+    feedback(response.message || "OTP sent to email", "success");
 
     router.push({
       pathname: "/Signup/signupEnterOtp2",
     });
-    router.push({
-      pathname: "/Signup/signupEnterOtp2",
-    });
-  };
+  } catch (err: any) {
+    console.log("Page signup error:", err);
+    feedback(err || "An error occurred. Please try again.", "error");
+  } finally {
+    setLoading(false); // ✅ Always stop loading
+  }
+};
+
 
   return (
     <PageThemeView>
@@ -153,7 +185,6 @@ const PageSignup = () => {
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
-              keyboardType="email-address"
               autoCapitalize="none"
             />
           </View>

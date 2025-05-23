@@ -18,7 +18,10 @@ const initialState: ProfileState = {
   currentPost: null,
 };
 
-type FirstTimeFields = "hasVisitedEditProfile" | "hasVisitedCommunity" | "hasVisitedEditOverview";
+type FirstTimeFields =
+  | "hasVisitedEditProfile"
+  | "hasVisitedCommunity"
+  | "hasVisitedEditOverview";
 
 // Edit user profile details
 export const editUserProfile = createAsyncThunk<
@@ -55,7 +58,7 @@ export const editUserProfile = createAsyncThunk<
     if (!response.ok) {
       return rejectWithValue(data.message || "Error getting user");
     }
-    // console.log("Data : ", data.data.updatedUser);
+    console.log("Data : ", data.data.updatedUser);
     return data.data.updatedUser;
   } catch (error: unknown) {
     // console.log("Actual api error : ", error);
@@ -430,30 +433,27 @@ export const removeAssociates = createAsyncThunk<
 export const setFirstTimeUseFlag = createAsyncThunk<
   FirstTimeFields, // Return type
   { field: FirstTimeFields } // Argument type
->(
-  "firstTimeUse/setFirstTimeUseFlag",
-  async ({ field }, thunkAPI) => {
-    const token = await getToken("accessToken");
-console.log("Called");
-    try {
-      await axios.patch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/set-firstTimeUserFlag`,
-        { field },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+>("firstTimeUse/setFirstTimeUseFlag", async ({ field }, thunkAPI) => {
+  const token = await getToken("accessToken");
+  console.log("Called");
+  try {
+    await axios.patch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/set-firstTimeUserFlag`,
+      { field },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      console.log(field)
-      return field; // return updated field key
-    } catch (error: any) {
-      console.log(error)
-      return thunkAPI.rejectWithValue("Failed to update flag");
-    }
+    console.log(field);
+    return field; // return updated field key
+  } catch (error: any) {
+    console.log(error);
+    return thunkAPI.rejectWithValue("Failed to update flag");
   }
-);
+});
 
 const profileSlice = createSlice({
   name: "profile",
@@ -500,12 +500,12 @@ const profileSlice = createSlice({
     },
     updateProfileSports: (state, action: PayloadAction<string[]>) => {
       if (state.user) {
-        state.user.favouriteSports = action.payload.map(id => ({ 
+        state.user.favouriteSports = action.payload.map((id) => ({
           _id: id,
-          name: '' 
+          name: "",
         }));
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     // Login
@@ -597,10 +597,13 @@ const profileSlice = createSlice({
       })
       .addCase(editUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload?.data?.updatedUser) {
-          state.user = action.payload.data.updatedUser;
+        if (action.payload) {
+          console.log("Payload", action.payload);
+          state.user = {
+            ...state.user,
+            ...action.payload,
+          };
         }
-        console.log(action.payload)
         state.msgBackend = action.payload.message;
         state.error = null;
       })
@@ -738,18 +741,18 @@ const profileSlice = createSlice({
     });
 
     builder.addCase(setFirstTimeUseFlag.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-          })
-          builder.addCase(setFirstTimeUseFlag.fulfilled, (state, action) => {
-            state.loading = false;
-            state[action.payload] = true;
-            // state.profile.user[action.payload] = true; ← avoid this unless you merge into profile reducer
-          })
-          builder.addCase(setFirstTimeUseFlag.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.payload as string;
-          });
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(setFirstTimeUseFlag.fulfilled, (state, action) => {
+      state.loading = false;
+      state[action.payload] = true;
+      // state.profile.user[action.payload] = true; ← avoid this unless you merge into profile reducer
+    });
+    builder.addCase(setFirstTimeUseFlag.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 
@@ -762,7 +765,7 @@ export const {
   pullFollowings,
   pushFollowings,
   setCurrentPost,
-  updateProfileSports
+  updateProfileSports,
 } = profileSlice.actions;
 
 export default profileSlice.reducer;

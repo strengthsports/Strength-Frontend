@@ -1,9 +1,12 @@
 import {
   getToken,
+  removeRToken,
   removeToken,
   removeUserId,
+  saveRToken,
   saveToken,
   saveUserId,
+  setExpiry,
 } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { User, AuthState } from "@/types/user";
@@ -61,9 +64,10 @@ export const loginUser = createAsyncThunk<
     }
 
     // Convert tokens to strings and save in Secure Store
-    console.log("saving accessToken and user id");
+    console.log("saving accessToken,refreshToken and user id");
     saveToken("accessToken", data.data.accessToken);
-    console.log("user id ", data.data.user._id);
+    setExpiry();
+    saveRToken("refreshToken", data.data.refreshToken);
     saveUserId("user_id", data.data.user._id);
 
     return { user: data.data.user, message: data.message };
@@ -102,6 +106,7 @@ export const logoutUser = createAsyncThunk(
 
       // Clear Secure Store
       removeToken("accessToken");
+      removeRToken("refreshToken");
       removeUserId("user_id");
       console.log("From Redux - Logged out successfully!");
 
@@ -114,6 +119,47 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// Refresh access token
+export const refreshAccessToken = createAsyncThunk<
+  any,
+  string,
+  { rejectValue: string }
+>("auth/refreshAccessToken", async (refreshToken, { rejectWithValue }) => {
+  try {
+    console.log("ReTo", refreshToken);
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/refresh-token`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      }
+    );
+    const data = await response.json();
+    console.log("Data : ", data);
+
+    if (!response.ok) {
+      return rejectWithValue("Refresh failed.");
+    }
+
+    // Convert tokens to strings and save in Secure Store
+    console.log("saving new accessToken,refreshToken");
+    console.log(data.data.accessToken, data.data.refreshToken);
+    removeToken("accessToken");
+    removeRToken("refreshToken");
+    saveToken("accessToken", data.data.accessToken);
+    saveRToken("refreshToken", data.data.refreshToken);
+
+    return;
+  } catch (err: any) {
+    return rejectWithValue(
+      err.message || "Something went wrong. Please try again."
+    );
+  }
+});
+
 // Slice
 const authSlice = createSlice({
   name: "auth",
@@ -121,6 +167,7 @@ const authSlice = createSlice({
   reducers: {
     setAuthState: (state) => {
       state.isLoggedIn = true;
+      setExpiry();
     },
     resetAuthState: (state) => {
       state.error = null;
@@ -161,5 +208,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetAuthState, setAuthState, resetUserData } = authSlice.actions;
+export const { resetAuthState, setAuthState, resetUserData } =
+  authSlice.actions;
 export default authSlice.reducer;

@@ -251,7 +251,10 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     ) => {
       if (!caption) return null;
 
+      console.log("Org caption ::", caption);
+
       const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+      console.log(parts);
       const elements = [];
       let remainingChars = isExpanded ? Infinity : 94;
       let showSeeMore = false;
@@ -263,7 +266,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         if (part.startsWith("#")) {
           if (part.length > remainingChars) {
             showSeeMore = true;
-            return;
+            break;
           }
           const tag = part.slice(1);
           elements.push(
@@ -283,7 +286,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           const user = taggedUsers.find((u) => u.username === uname);
           if (!user || part.length > remainingChars) {
             showSeeMore = true;
-            return;
+            break;
           }
           elements.push(
             <TextScallingFalse
@@ -334,6 +337,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         );
       }
 
+      console.log(elements);
       return elements;
     };
 
@@ -348,6 +352,8 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         ),
       [item, item.caption, item.taggedUsers, isExpanded]
     );
+
+    console.log("Memoized caption : ", memoizedCaption);
 
     const [thumbnail, setThumbnail] = useState("");
 
@@ -494,7 +500,14 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               className="overflow-hidden bg-transparent"
             >
               <TouchableWithDoublePress
-                className="flex-1 relative overflow-hidden ml-2"
+                className="flex-1 relative overflow-hidden ml-2 border-[#222222]"
+                style={{
+                  borderTopLeftRadius: 16,
+                  borderBottomLeftRadius: 16,
+                  borderTopWidth: 1,
+                  borderBottomWidth: 1,
+                  borderLeftWidth: 1,
+                }}
                 activeOpacity={0.7}
                 onSinglePress={() => {
                   if (item) {
@@ -516,9 +529,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     inset: 0,
                     borderTopLeftRadius: 16,
                     borderBottomLeftRadius: 16,
-                    borderTopWidth: 0.5,
-                    borderBottomWidth: 0.5,
-                    borderLeftWidth: 0.5,
                     borderColor: "#2F2F2F",
                   }}
                 />

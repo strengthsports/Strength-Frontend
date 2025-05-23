@@ -6,9 +6,10 @@ import TextScallingFalse from "../CentralText";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Comment } from "~/types/post";
 import nopic from "@/assets/images/nopic.jpg";
-import { formatTimeAgo } from "~/utils/formatTime";
+import { formatShortTimeAgo } from "~/utils/formatTime";
 import { toggleLikeComment } from "~/api/like/toggleLikeComment";
 import ModalLayout1 from "../modals/layout/ModalLayout1";
+import renderCaptionWithTags from "~/utils/renderCaptionWithTags";
 
 interface CommenterCardProps {
   comment: Comment;
@@ -74,13 +75,13 @@ export const CommenterCard = memo(
         <TouchableOpacity
           className={`${
             targetType === "Comment" ? "size-10" : "size-12"
-          } absolute top-2 left-4 z-10 aspect-square rounded-full bg-slate-400`}
+          } absolute top-2 left-4 z-10 aspect-square rounded-full bg-[#000]`}
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
         >
           <Image
-            className="w-full h-full rounded-full"
+            className="w-full h-full rounded-full border-[1px] border-[#202020]"
             source={
               comment?.postedBy?.profilePic
                 ? { uri: comment.postedBy.profilePic }
@@ -96,7 +97,7 @@ export const CommenterCard = memo(
         >
           <View className="absolute right-3 top-2 flex flex-row items-center gap-2">
             <TextScallingFalse className="text-xs text-neutral-300 right-8">
-              {formatTimeAgo(comment?.createdAt)}
+              {formatShortTimeAgo(comment?.createdAt)}
             </TextScallingFalse>
             <TouchableOpacity
               onPress={() => setIsReportModalVisible(true)}
@@ -179,7 +180,7 @@ export const CommenterCard = memo(
           >
             {targetType === "Comment" && "@" + parent?.username + " "}
             <TextScallingFalse className="text-xl font-normal text-white mt-4 mb-3">
-              {comment?.text}
+              {renderCaptionWithTags(comment?.text, "#fff", 12)}
             </TextScallingFalse>
           </TextScallingFalse>
         </View>

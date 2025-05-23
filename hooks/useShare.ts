@@ -129,5 +129,85 @@ export const useShare = () => {
     []
   );
 
-  return { sharePost, shareProfile };
+  //   const shareArticles = useCallback(
+  //   async ({
+  //     tittle,
+  //     content,
+  //     banner,
+  //     sportsName = [], // Array of sports for users
+  //     isAthlete = false,
+  //     gender,
+  //     isPage = false, // Flag for page profiles
+  //   }: {
+  //     content?: string;
+  //     tittle?: string;
+  //     banner?: string;
+  //     sportsName?: string[];
+  //     isAthlete?: boolean;
+  //     gender?: string;
+  //     isPage?: boolean;
+  //   }) => {
+  //     try {
+  //       // Gender pronoun handling
+  //       const pronoun =
+  //         gender === "male" ? "him" : gender === "female" ? "her" : "them";
+
+  //       let message: string;
+
+  //       if (isPage) {
+  //         // Page profile message (teams/clubs/orgs)
+  //         message =
+  //           `🏟️ ${fullname} is on ${APP_NAME}!\n\n` +
+  //           `${
+  //             sports.length > 0 ? `🏆 Sports: ${sports.join(", ")}\n\n` : ""
+  //           }` +
+  //           `Follow to:\n` +
+  //           `• Get latest updates and news\n` +
+  //           `• Connect with members\n` +
+  //           `• Never miss an event\n\n` +
+  //           `Official link: ${link || LINK}`;
+  //       } else {
+  //         // User profile message
+  //         const sportsText =
+  //           sports.length > 0
+  //             ? `🔥 ${sports.length > 1 ? "Sports" : "Sport"}: ${sports.join(
+  //                 ", "
+  //               )}\n\n`
+  //             : "";
+
+  //         message =
+  //           `${
+  //             isAthlete ? "🏅 Pro Athlete" : "🙌 Meet"
+  //           } ${fullname} on ${APP_NAME}!\n\n` +
+  //           sportsText +
+  //           `Join ${pronoun} to:\n` +
+  //           `• ${
+  //             isAthlete ? "Follow their journey" : "Connect with the community"
+  //           }\n` +
+  //           `• Discuss games and strategies\n` +
+  //           `• Find teams, players, events and more\n\n` +
+  //           `Download ${APP_NAME} now: ${link || LINK}`;
+  //       }
+
+  //       if (Platform.OS === "ios") {
+  //         await Share.share({ message });
+  //       } else if (Platform.OS === "android" && imageUrl) {
+  //         const fileUri = `${FileSystem.cacheDirectory}${Date.now()}.jpg`;
+  //         await FileSystem.downloadAsync(imageUrl, fileUri);
+  //         await Share.share({
+  //           message,
+  //           url: fileUri,
+  //         });
+  //       } else {
+  //         await Share.share({ message });
+  //       }
+  //     } catch (err) {
+  //       console.error("Sharing failed", err);
+  //       showFeedback("Failed to share profile.");
+  //     }
+  //   },
+  //   []
+  // );
+
+  return { sharePost, shareProfile};
 };

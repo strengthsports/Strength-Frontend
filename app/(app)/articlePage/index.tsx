@@ -17,6 +17,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
+import { useShare } from "~/hooks/useShare";
 
 const formatDateTime = (isoString: string) => {
   const dateObj = new Date(isoString);
@@ -73,6 +74,7 @@ const ArticlePage = () => {
   }, [articles, id]);
 
   const { width } = useWindowDimensions();
+
 
   const renderItem = ({ item }: any) => {
     const { date, time } = formatDateTime(item.updatedAt);
@@ -147,7 +149,7 @@ const ArticlePage = () => {
           <TextScallingFalse className="text-white text-3xl font-bold">
             {validSportsName} articles
           </TextScallingFalse>
-          <TouchableOpacity onPress={() => console.log("Share button")}>
+          <TouchableOpacity>
             <MaterialCommunityIcons name="share" size={24} color="white" />
           </TouchableOpacity>
         </View>

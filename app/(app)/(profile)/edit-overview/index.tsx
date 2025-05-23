@@ -630,28 +630,32 @@ function EditOverview() {
           </View>
         </View>
 
-        <View
-          style={{ width: "90%", padding: 20 }}
-          className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
-            onPress={() =>
-              router.push("/(app)/(profile)/edit-overview/(modal)/current-team")
-            }
+        {user?.type !== "Page" && (
+          <View
+            style={{ width: "90%", padding: 20 }}
+            className="mx-auto py-2 px-0 border-b-[0.5px] border-[#808080]"
           >
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              className="border-[0.4] border-y-[#353535] w-full h-14 items-center justify-between flex-row"
+              onPress={() =>
+                router.push(
+                  "/(app)/(profile)/edit-overview/(modal)/current-team"
+                )
+              }
             >
-              Current Teams
-            </TextScallingFalse>
-            <RightArrow />
-          </TouchableOpacity>
-        </View>
+              <TextScallingFalse
+                style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+              >
+                Current Teams
+              </TextScallingFalse>
+              <RightArrow />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Members section */}
-        {user?.type === "Page" && (
+        {/* {user?.type === "Page" && (
           <>
             <View
               style={{ width: "90%", padding: 20 }}
@@ -690,7 +694,7 @@ function EditOverview() {
               </TouchableOpacity>
             </View>
           </>
-        )}
+        )} */}
       </ScrollView>
 
       {/* Alert modal */}

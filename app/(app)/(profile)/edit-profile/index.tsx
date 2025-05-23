@@ -46,8 +46,12 @@ import debounce from "lodash/debounce";
 import nopic from "@/assets/images/nopic.jpg";
 import nocoverpic from "@/assets/images/nocover.png";
 import { Divider } from "react-native-elements";
+import { z } from "zod";
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_API;
+const WebsiteLinkSchema = z.string().url({
+  message: "Please enter a valid website link (e.g., https://example.com).",
+});
 
 //type: PicType for modal-editable fields
 type PicType =
@@ -136,6 +140,7 @@ const EditProfile = () => {
   const isAndroid = Platform.OS === "android";
   const { value } = useLocalSearchParams();
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isUrlErrorModalVisible, setUrlErrorModalVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [picType, setPicType] = useState<PicType>("");
@@ -483,7 +488,7 @@ const EditProfile = () => {
         return {
           label: "Website",
           description: "Give your website link here",
-          placeholder: "www.example.com",
+          placeholder: "https://example.com",
         };
       default:
         return { label: "", placeholder: "", description: "" };
@@ -655,6 +660,21 @@ const EditProfile = () => {
       } catch (error) {
         console.error("Error checking username:", error);
         showToast("Something went wrong. Please try again.");
+        return;
+      }
+    } else if (field === "websiteLink") {
+      if (value.trim() === "") {
+        setFormData((prev) => ({ ...prev, [field]: "" }));
+        finalUploadData.set(field, "");
+        closeModal();
+        return;
+      }
+      try {
+        WebsiteLinkSchema.parse(value);
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        finalUploadData.set(field, value);
+      } catch (error: any) {
+        setUrlErrorModalVisible(true);
         return;
       }
     } else {
@@ -1684,7 +1704,10 @@ const EditProfile = () => {
               )}
               {picType === "websiteLink" && (
                 <TouchableOpacity className="self-center">
-                  <TextScallingFalse className="text-[#D44044] text-xl mt-4">
+                  <TextScallingFalse
+                    className="text-[#D44044] text-xl mt-4"
+                    onPress={() => setInputValue("")}
+                  >
                     Remove Link
                   </TextScallingFalse>
                 </TouchableOpacity>
@@ -1729,6 +1752,36 @@ const EditProfile = () => {
               )}
             </View>
           </PageThemeView>
+        </View>
+      </Modal>
+      <Modal
+        visible={isUrlErrorModalVisible}
+        onRequestClose={() => setUrlErrorModalVisible(false)}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.AlertModalView}>
+          <View style={styles.AlertModalContainer}>
+            <TextScallingFalse style={styles.AlertModalHeader}>
+              Invalid Website Link
+            </TextScallingFalse>
+            <TextScallingFalse style={styles.ModalContentText}>
+              Please enter a complete and valid URL (e.g.,
+              "https://example.com").
+            </TextScallingFalse>
+            <View style={styles.ModalButtonsView}>
+              <TouchableOpacity
+                style={[styles.RightButton, { width: "100%" }]}
+                onPress={() => setUrlErrorModalVisible(false)}
+              >
+                <TextScallingFalse
+                  style={{ ...styles.AlertModalButtonsText, color: "#007AFF" }}
+                >
+                  OK
+                </TextScallingFalse>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
     </PageThemeView>

@@ -43,6 +43,12 @@ import { Modal } from "react-native";
 import CommentModal from "~/components/feedPage/CommentModal";
 import { fetchPostById } from "~/api/post/fetchPostById";
 import { ActivityIndicator } from "react-native";
+import MoreModal from "~/components/feedPage/MoreModal";
+import { useBottomSheet } from "~/context/BottomSheetContext";
+import { FollowUser } from "~/types/user";
+import { showFeedback } from "~/utils/feedbackToast";
+import { useFollow } from "~/hooks/useFollow";
+import { useShare } from "~/hooks/useShare";
 
 const { width } = Dimensions.get("window");
 
@@ -50,6 +56,7 @@ const Post = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const navigation = useNavigation();
+  const userId = useSelector((state: RootState) => state.profile.user?._id);
   const postId = params?.postId as string; // Extract postId from URL params
   let post = useSelector((state: RootState) => selectPostById(state, postId));
   const dispatch = useDispatch<AppDispatch>();
@@ -65,6 +72,13 @@ const Post = () => {
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
   const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
     useState(false);
+
+  // Get the openBottomSheet function from context
+  const { openBottomSheet } = useBottomSheet();
+  // Follow following hook
+  const { followUser, unFollowUser } = useFollow();
+  // Share post
+  const { sharePost } = useShare();
 
   // Fallback to db for post fetching
   useEffect(() => {
@@ -251,6 +265,62 @@ const Post = () => {
     dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
   };
 
+  // Handle Follow
+  const handleFollow = async () => {
+    const followData: FollowUser = {
+      followingId: post.postedBy._id,
+      followingType: post.postedBy.type,
+    };
+
+    showFeedback(`You are now following ${post.postedBy.firstName}`, "success");
+    await followUser(followData);
+  };
+
+  // Handle Unfollow
+  const handleUnfollow = async () => {
+    const unfollowData: FollowUser = {
+      followingId: post.postedBy._id,
+      followingType: post.postedBy.type,
+    };
+
+    await unFollowUser(unfollowData);
+  };
+
+  // Handle share
+  const handleShare = () => {
+    sharePost({
+      imageUrl: post.assets ? post.assets[0]?.url : "",
+      ...(post.caption && { caption: post.caption }),
+    });
+  };
+
+  // Define the menu items for this specific post
+  const handleOpenBottomSheet = ({ type }: { type: string }) => {
+    // Open the bottom sheet with these items
+    if (type === "settings") {
+      openBottomSheet({
+        isVisible: true,
+        content: (
+          <MoreModal
+            firstName={post.postedBy.firstName}
+            followingStatus={post.isFollowing}
+            isOwnPost={post.postedBy._id === userId}
+            postId={post._id}
+            isReported={post.isReported}
+            handleFollow={handleFollow}
+            handleUnfollow={handleUnfollow}
+            handleShare={handleShare}
+          />
+        ),
+        height: post.postedBy._id === userId ? "20%" : "25%",
+        bgcolor: "#151515", // Ensure bgcolor is always defined
+        border: false,
+        maxHeight: post.postedBy._id === userId ? "20%" : "25%",
+        draggableDirection: "down",
+      });
+    }
+  };
+
   // Calculate the image height based on aspect ratio or use default
   const getImageHeight = () => {
     if (post?.aspectRatio) {
@@ -357,6 +427,7 @@ const Post = () => {
               flex: 0.15,
               alignItems: "flex-end",
             }}
+            onPress={() => handleOpenBottomSheet({ type: "settings" })}
           >
             <MaterialIcons name="more-horiz" size={24} color="white" />
           </TouchableOpacity>

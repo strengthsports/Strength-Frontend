@@ -59,7 +59,7 @@ const ListHeader = memo(
   ({ post, router }: { post: Post; router: ReturnType<typeof useRouter> }) => {
     return (
       <View>
-        <TopBar heading="" backHandler={() => router.back()} />
+        {/* <TopBar heading="" backHandler={() => router.back()} /> */}
         <PostContainer
           item={post}
           isFeedPage={false}
@@ -71,8 +71,8 @@ const ListHeader = memo(
               Comments
             </TextScallingFalse>
             <Divider
-              className="absolute top-4 right-0 w-[70%] rounded-full bg-neutral-700 opacity-25"
-              width={0.3}
+              className="absolute top-4 right-0 w-[70%] rounded-full bg-[#202020] opacity-25"
+              width={1}
             />
           </View>
         </View>
@@ -543,6 +543,7 @@ const PostDetailsPage = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
+         <TopBar heading="" backHandler={() => router.back()} />
         <FlatList
           ref={flatListRef}
           data={comments}

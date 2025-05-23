@@ -32,6 +32,7 @@ const MoreModal = memo(
     postId,
     handleFollow,
     handleUnfollow,
+    handleShare,
   }: {
     firstName: string;
     followingStatus: boolean;
@@ -40,6 +41,7 @@ const MoreModal = memo(
     postId: string;
     handleFollow?: () => void;
     handleUnfollow?: () => void;
+    handleShare?: () => void;
   }) => {
     const isAndroid = Platform.OS === "android";
     const dispatch = useDispatch<AppDispatch>();
@@ -94,7 +96,7 @@ const MoreModal = memo(
       <View className="w-full" onStartShouldSetResponder={() => true}>
         <TouchableOpacity
           className={modalOption}
-          onPress={() => showFeedback("Checking Share Post!", "success")}
+          onPress={handleShare}
           activeOpacity={0.5}
         >
           <FontAwesome name="share" size={20} color="white" />

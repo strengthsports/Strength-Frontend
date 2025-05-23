@@ -696,7 +696,7 @@ const ProfileLayout = () => {
               >
                 <View
                   style={{
-                    width: "50%",
+                    width: profileData?.type === "Page" ? "68%" : "50%",
                     flexDirection: "row",
                     gap: 15,
                     // marginBottom: 5,

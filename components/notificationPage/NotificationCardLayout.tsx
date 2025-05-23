@@ -74,8 +74,8 @@ const NotificationCardLayout = React.memo(
     const timeAgo = formatShortTimeAgo
       ? formatShortTimeAgo(date)
       : date
-      ? "10h"
-      : "";
+        ? "10h"
+        : "";
 
     // Handlers
     const handleProfilePress = useCallback(() => {
@@ -157,11 +157,13 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               count={count}
               isNew={isNew}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
             />
 
             {/* Comment preview */}
@@ -180,11 +182,13 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               count={count}
               isNew={isNew}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
             />
 
             {/* Post preview */}
@@ -203,11 +207,13 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type="Reply"
               timeAgo={timeAgo}
               count={count}
               isNew={isNew}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
             />
 
             {/* Comment preview */}
@@ -226,10 +232,12 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               isNew={isNew}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
             />
 
             {/* <View className="ml-12 mt-1">
@@ -247,13 +255,15 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               isNew={isNew}
               customText={`promoted you as the `}
               teamName={target.name}
-              // role={role}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
+            // role={role}
             />
           </>
         );
@@ -263,13 +273,15 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               isNew={isNew}
               customText={`is inviting you to join team`}
               teamName={target.name}
-              // role={role}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
+            // role={role}
             />
             <TeamPreview
               image={target.logo && target.logo.url}
@@ -285,12 +297,14 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               isNew={isNew}
               teamName={target.name}
-              // role={role}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
+            // role={role}
             />
             <TeamPreview
               image={target.logo && target.logo.url}
@@ -306,11 +320,13 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
+            _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               count={count}
               isNew={isNew}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
             />
 
             {/* Post preview */}
@@ -326,12 +342,14 @@ const NotificationCardLayout = React.memo(
       // Default rendering
       return (
         <NotificationHeader
+        _id={_id}
           sender={sender}
           caption={target.caption}
           type={type}
           timeAgo={timeAgo}
           isNew={isNew}
           count={count}
+          handleMarkNotificationVisited={handleMarkNotificationVisited}
         />
       );
     };
@@ -354,7 +372,7 @@ const NotificationCardLayout = React.memo(
           </TouchableOpacity>
           <View
             className="flex-1 flex-col"
-            // style={{ backgroundColor: "yellow" }}
+          // style={{ backgroundColor: "yellow" }}
           >
             {renderNotificationContent()}
           </View>
@@ -366,6 +384,7 @@ const NotificationCardLayout = React.memo(
 
 // Notification header with profile image, text and indicator
 const NotificationHeader = ({
+  _id,
   sender,
   caption,
   type,
@@ -375,17 +394,39 @@ const NotificationHeader = ({
   customText,
   teamName,
   role,
+  handleMarkNotificationVisited,
 }: any) => {
   // Format count text
   const countText = count > 1 ? ` and ${count - 1} other` : "";
 
+      // Memoized values
+    const serializedUser = useMemo(
+      () =>
+        encodeURIComponent(
+          JSON.stringify({ id: sender._id, type: sender.type })
+        ),
+      [sender._id, sender.type]
+    );
+
   // Get notification text based on type or use custom text
   const actionText = customText || NOTIFICATION_TEXTS[type] || "";
+  const userId = useSelector((state: any) => state.profile.user._id);
+
+  // Handlers
+  const handleProfilePress = useCallback(() => {
+    const route =
+      userId === sender._id
+        ? "/(app)/(tabs)/profile"
+        : `../(profile)/profile/${serializedUser}`;
+    router.push(route as RelativePathString);
+    handleMarkNotificationVisited(_id);
+  }, [userId, sender._id, serializedUser]);
 
   return (
     <View className="mt-1">
       <View className="flex-row justify-between">
-        <View className={`flex-row flex-wrap pr-6 ${actionText === 'started following you' ? 'mt-2' : 'mt-0'}`}>
+        <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.5}
+          className={`flex-row flex-wrap pr-6 ${actionText === 'started following you' ? 'mt-2' : 'mt-0'}`}>
           <TextScallingFalse className="text-white text-xl px-1">
             <TextScallingFalse className="font-bold">
               {sender.firstName} {sender.lastName}
@@ -417,7 +458,7 @@ const NotificationHeader = ({
               {timeAgo}
             </TextScallingFalse>
           </TextScallingFalse>
-        </View>
+        </TouchableOpacity>
 
         {/* New notification indicator */}
         {isNew && <View className="w-2 h-2 rounded-full bg-green-500 mt-2" />}
@@ -442,9 +483,8 @@ const PostPreview = React.memo(
     <TouchableOpacity
       onPress={handlePostPress}
       activeOpacity={0.7}
-      className={`mt-2 overflow-hidden ${
-        comment ? "rounded-[10px] border border-b-0" : "rounded-xl"
-      }`}
+      className={`mt-2 overflow-hidden ${comment ? "rounded-[10px] border border-b-0" : "rounded-xl"
+        }`}
       style={{ borderColor: comment ? "#262626" : "transparent", width: "90%" }}
     >
       {comment && (

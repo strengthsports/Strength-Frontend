@@ -5,10 +5,13 @@ import { BottomSheetProvider } from "~/context/BottomSheetContext";
 import AppBottomSheet from "~/components/ui/AppBottomSheet";
 import { useEffect } from "react";
 import { tokenMonitor } from "~/services/tokenMonitor";
+import useFCMNotifications from "~/hooks/useFCMNotifications";
 
 export default function AppLayout() {
   const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
+
+  useFCMNotifications();
 
   if (!isLoggedIn) {
     return <Redirect href="/(auth)/login" />;

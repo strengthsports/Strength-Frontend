@@ -15,9 +15,9 @@ import {
   Keyboard,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import { useNavigation, useRouter, useFocusEffect } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import AddPostHeader from "~/components/feedPage/AddPostHeader";
-import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
@@ -27,9 +27,7 @@ import AlertModal from "~/components/modals/AlertModal";
 import PageThemeView from "~/components/PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import * as MediaLibrary from "expo-media-library";
 import {
-  resetUploadProgress,
   setUploadLoading,
   uploadPost,
   setUploadPreviewData,
@@ -44,7 +42,6 @@ import ClipsIcon from "@/components/SvgIcons/addpost/ClipsIcon";
 import MentionHashtagInput2 from "@/components/MentionHashtagInput2";
 import VideoPlayer from "@/components/PostContainer/VideoPlayer";
 import AddImagePlusIcon from "~/components/SvgIcons/addpost/AddImagePlusIcon";
-import ThisFeatureUnderDev from "~/components/modals/ThisFeatureUnderDev";
 import * as VideoThumbnails from "expo-video-thumbnails";
 
 // Memoized sub-components for better performance
@@ -108,6 +105,43 @@ const ImageRatioModal = React.memo(
   )
 );
 
+// New: Modal for selecting video aspect ratio
+const VideoRatioModal = React.memo(
+  ({ pickVideo }: { pickVideo: (ratio: [number, number]) => void }) => (
+    <View className="h-1/3 w-[104%] bg-neutral-900 self-center rounded-t-[40px] p-4 border-t border-x border-neutral-700">
+      <Divider
+        className="w-16 self-center rounded-full bg-neutral-700 my-1"
+        width={4}
+      />
+      <TextScallingFalse className="text-white self-center text-4xl my-4">
+        Select Video Aspect Ratio
+      </TextScallingFalse>
+      <View className="flex flex-row items-center">
+        <View className="flex w-full gap-4 pr-8 mx-4">
+          <Figure
+            width={36}
+            height={36}
+            text="1:1"
+            onPress={() => pickVideo([1, 1])}
+          />
+          <Figure
+            width={36}
+            height={24}
+            text="3:2"
+            onPress={() => pickVideo([3, 2])}
+          />
+          <Figure
+            width={36}
+            height={45}
+            text="4:5"
+            onPress={() => pickVideo([4, 5])}
+          />
+        </View>
+      </View>
+    </View>
+  )
+);
+
 export default function AddPostContainer() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -128,6 +162,9 @@ export default function AddPostContainer() {
   const [pickedVideoUri, setPickedVideoUri] = useState<string | null>(null);
   const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
   const [thumbnailUri, setThumbnailUri] = useState<string | null>(null);
+  // New: State for video aspect ratio modal
+  const [isVideoRatioModalVisible, setIsVideoRatioModalVisible] =
+    useState(false);
 
   // Poll
   const [showPollInput, setShowPollInput] = useState(false);
@@ -145,11 +182,9 @@ export default function AddPostContainer() {
 
   useLayoutEffect(() => {
     const tabParent = navigation.getParent();
-
     tabParent?.setOptions({
       tabBarStyle: { display: "none" },
     });
-
     return () => {
       tabParent?.setOptions({
         tabBarStyle: undefined,
@@ -170,7 +205,6 @@ export default function AddPostContainer() {
         setKeyboardHeight(0);
       }
     );
-
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -181,26 +215,15 @@ export default function AddPostContainer() {
     setActiveIndex(index);
   };
 
-  // Conditions for posting content
   const isPostButtonEnabled = useMemo(() => {
-    // Count non-empty poll options
     const validOptionsCount = newPollOptions.filter(
       (opt) => opt.trim() !== ""
     ).length;
-
-    // Always require valid poll when poll input is shown
     const pollValidation =
       !showPollInput || (showPollInput && validOptionsCount >= 2);
-
-    // If video mode, require a video; otherwise check caption/images
     if (isTypeVideo) {
       return pickedVideoUri !== null && pollValidation;
     }
-
-    // Enable button if:
-    // 1. There's either caption OR images
-    // AND
-    // 2. If poll is shown, it must be valid
     return (postText.trim() || pickedImageUris.length > 0) && pollValidation;
   }, [
     postText,
@@ -221,7 +244,6 @@ export default function AddPostContainer() {
     return false;
   }, [postText, pickedImageUris, pickedVideoUri, showPollInput]);
 
-  // Called by the header's back button
   const handleAttemptGoBack = () => {
     if (hasUnsavedChanges) {
       setAlertModalOpen(true);
@@ -230,10 +252,8 @@ export default function AddPostContainer() {
     }
   };
 
-  // Use callbacks for event handlers to prevent unnecessary re-renders
   const handlePostSubmit = useCallback(async () => {
     if (!isPostButtonEnabled) return;
-
     isSubmitting.current = true;
 
     let previewData: UploadPreviewData | null = null;
@@ -248,7 +268,6 @@ export default function AddPostContainer() {
     }
 
     dispatch(setUploadPreviewData(previewData));
-    // dispatch(resetUploadProgress());
     dispatch(setUploadLoading(true));
     router.back();
 
@@ -270,8 +289,6 @@ export default function AddPostContainer() {
           type: "image/jpeg",
         };
         formData.append("thumbnail", thumbnailFile as any);
-        console.log(thumbnailFile);
-
         formData.append("isVideo", "true");
       } else {
         pickedImageUris.forEach((uri, index) => {
@@ -286,9 +303,7 @@ export default function AddPostContainer() {
 
       formData.append("aspectRatio", JSON.stringify(selectedAspectRatio));
       formData.append("taggedUsers", JSON.stringify(taggedUsers));
-      console.log("tagged Users : ", taggedUsers);
       const validOptions = newPollOptions.filter((opt) => opt.trim() !== "");
-      console.log("Valid Options : ", validOptions);
       validOptions.forEach((option) => {
         formData.append("options", option);
       });
@@ -333,29 +348,23 @@ export default function AddPostContainer() {
         }
         return;
       }
-
       e.preventDefault();
-
       setAlertModalOpen(true);
     });
-
     return () => {
       unsubscribe();
       isSubmitting.current = false;
     };
   }, [navigation, isAlertModalOpen, hasUnsavedChanges]);
 
-  // For selecting the first image with aspect ratio
   const selectFirstImage = useCallback(async (ratio: [number, number]) => {
-    console.log("yes selectFirstImage is called");
     setSelectedAspectRatio(ratio);
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        aspect: Platform.OS === "ios" ? ratio : ratio,
+        aspect: ratio,
         quality: 0.8,
         allowsEditing: true,
-        // mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 
       if (!result.canceled && result.assets.length > 0) {
@@ -366,10 +375,11 @@ export default function AddPostContainer() {
     } catch (error) {
       console.error("Error picking image:", error);
       alert("Failed to pick image. Please try again.");
+    } finally {
+      setIsImageRatioModalVisible(false);
     }
   }, []);
 
-  // For adding more images (using same aspect ratio)
   const addMoreImages = useCallback(async () => {
     if (pickedImageUris.length === 0) {
       setIsImageRatioModalVisible(true);
@@ -377,8 +387,7 @@ export default function AddPostContainer() {
     }
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        aspect:
-          Platform.OS === "ios" ? selectedAspectRatio : selectedAspectRatio,
+        aspect: selectedAspectRatio,
         quality: 0.8,
         allowsEditing: true,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -394,64 +403,70 @@ export default function AddPostContainer() {
     }
   }, [pickedImageUris.length, selectedAspectRatio]);
 
-  // Optimize image removal
   const removeImage = useCallback((index: number) => {
     setPickedImageUris((prevUris) => prevUris.filter((_, i) => i !== index));
   }, []);
 
-  // Smart handler for image button
   const handlePickImageOrAddMore = useCallback(() => {
     if (pickedImageUris.length === 0) {
       setIsImageRatioModalVisible(true);
     } else {
       addMoreImages();
     }
-  }, [addMoreImages, pickedImageUris.length, isTypeVideo]);
+  }, [addMoreImages, pickedImageUris.length]);
 
-  // Close modal handler
   const closeRatioModal = useCallback(() => {
     setIsImageRatioModalVisible(false);
   }, []);
 
-  // ---------------------
-  // New video selection and trimmer support
-  // ---------------------
-  const selectVideo = useCallback(async () => {
-    // Activate video mode explicitly
+  const handleSelectVideo = useCallback(() => {
+    setIsVideoRatioModalVisible(true);
+  }, []);
+
+  const closeVideoRatioModal = useCallback(() => {
+    setIsVideoRatioModalVisible(false);
+  }, []);
+
+  const pickVideoWithRatio = useCallback(async (ratio: [number, number]) => {
+    setSelectedAspectRatio(ratio);
     setTypeVideo(true);
+
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       alert("Permission to access media library is required.");
+      setIsVideoRatioModalVisible(false);
       return;
     }
+
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
         quality: 1,
         videoMaxDuration: 10 * 60,
+        allowsEditing: true, // Required to enforce aspect ratio
+        aspect: ratio, // Apply the selected aspect ratio
       });
+
       if (!result.canceled && result.assets.length > 0) {
         const uri = result.assets[0].uri;
         setPickedVideoUri(uri);
 
-        // thumbnail generation
         try {
           const { uri: thumbUri } = await VideoThumbnails.getThumbnailAsync(
             uri,
-            {
-              time: 1000, // Capture thumbnail at the start of the video
-            }
+            { time: 1000 }
           );
           setThumbnailUri(thumbUri);
         } catch (error) {
           console.error("Error generating thumbnail:", error);
-          // alert("Failed to generate thumbnail. Please try again.");
         }
       }
     } catch (error) {
       console.error("Error picking video:", error);
       alert("Failed to pick video. Please try again.");
+    } finally {
+      setIsVideoRatioModalVisible(false); // Close modal regardless of outcome
     }
   }, []);
 
@@ -459,32 +474,16 @@ export default function AddPostContainer() {
     setNewPollOptions(updatedOptions);
   };
 
-  // Handle open poll
   const handleOpenPoll = () => {
     setPlaceholderText("Add your question...");
     setShowPollInput(true);
   };
 
-  // Handle close poll
   const handleClosePoll = () => {
     setShowPollInput(false);
     setPlaceholderText("What's on your mind");
     setNewPollOptions(["", ""]);
   };
-
-  // const handleCloseAddPostContainer = () => {
-  //   if ((isPostButtonEnabled || showPollInput) && !isAlertModalOpen) {
-  //     setAlertModalOpen(true);
-  //   } else if (isAlertModalOpen) {
-  //     setPostText("");
-  //     setAlertModalOpen(false);
-  //     //   dispatch(setAddPostContainerOpen(false));
-  //     router.back();
-  //   } else {
-  //     //   dispatch(setAddPostContainerOpen(false));
-  //     router.back();
-  //   }
-  // };
 
   const handleDiscard = () => {
     setPostText("");
@@ -492,21 +491,16 @@ export default function AddPostContainer() {
     setPickedVideoUri(null);
     setThumbnailUri(null);
     setTypeVideo(false);
-    setNewPollOptions(["", ""]); // Reset poll options
-    setShowPollInput(false); // Hide poll input
-    setTaggedUsers([]); // Reset tagged users
-    setPlaceholderText("What's on your mind"); // Reset placeholder
-
-    // dispatch(resetUploadProgress()); // Uncomment if you have this action and it's relevant
-    // dispatch(setUploadLoading(false)); // Reset loading state if necessary
-
-    setAlertModalOpen(false); // Close the modal
-    console.log("Discard pressed. Navigating back."); // For debugging
+    setNewPollOptions(["", ""]);
+    setShowPollInput(false);
+    setTaggedUsers([]);
+    setPlaceholderText("What's on your mind");
+    setAlertModalOpen(false);
     router.back();
   };
 
   const handleCancelDiscard = () => {
-    setAlertModalOpen(false); // Just close the modal, user can continue editing
+    setAlertModalOpen(false);
   };
 
   return (
@@ -550,7 +544,6 @@ export default function AddPostContainer() {
             />
           </View>
 
-          {/* Only render PollsContainer when polls is selected */}
           {showPollInput && (
             <PollsContainer
               onClose={handleClosePoll}
@@ -560,7 +553,6 @@ export default function AddPostContainer() {
             />
           )}
 
-          {/* Only render CustomImageSlider when there are images */}
           {pickedImageUris.length > 0 && (
             <CustomImageSlider
               images={pickedImageUris}
@@ -570,7 +562,6 @@ export default function AddPostContainer() {
             />
           )}
 
-          {/* Only render VideoPlayer when there is a video */}
           {isTypeVideo && pickedVideoUri && (
             <VideoPlayer
               videoSource={pickedVideoUri as string}
@@ -583,7 +574,6 @@ export default function AddPostContainer() {
           )}
         </ScrollView>
 
-        {/* only render when any feature which is under development is clicked */}
         {showFeatureModal && (
           <FeatureUnderDev
             isVisible={showFeatureModal}
@@ -614,11 +604,10 @@ export default function AddPostContainer() {
           </TouchableOpacity>
 
           <View className="flex flex-row justify-between items-center gap-2">
-            {/* Video button - calls selectVideo */}
             <TouchableOpacity
               activeOpacity={0.5}
               className="p-[5px] w-[35px]"
-              onPress={selectVideo}
+              onPress={handleSelectVideo}
               disabled={
                 showPollInput ||
                 pickedImageUris.length > 0 ||
@@ -635,6 +624,7 @@ export default function AddPostContainer() {
                 }
               />
             </TouchableOpacity>
+
             {/* Image button */}
             <TouchableOpacity
               onPress={handlePickImageOrAddMore}
@@ -656,6 +646,8 @@ export default function AddPostContainer() {
                 <AddImagePlusIcon color={Colors.themeColor} />
               )}
             </TouchableOpacity>
+
+            {/* Image Ratio Modal */}
             <Modal
               visible={isImageRatioModalVisible}
               transparent
@@ -670,6 +662,23 @@ export default function AddPostContainer() {
                 <ImageRatioModal pickImage={selectFirstImage} />
               </TouchableOpacity>
             </Modal>
+
+            {/* New: Video Ratio Modal */}
+            <Modal
+              visible={isVideoRatioModalVisible}
+              transparent
+              animationType="slide"
+              onRequestClose={closeVideoRatioModal}
+            >
+              <TouchableOpacity
+                className="flex-1 justify-end bg-black/50"
+                activeOpacity={1}
+                onPress={closeVideoRatioModal}
+              >
+                <VideoRatioModal pickVideo={pickVideoWithRatio} />
+              </TouchableOpacity>
+            </Modal>
+
             <TouchableOpacity
               onPress={handleOpenPoll}
               className="p-[5px]"
@@ -694,7 +703,7 @@ export default function AddPostContainer() {
         </View>
       </View>
 
-      {/* alert modal */}
+      {/* Alert Modal */}
       {isAlertModalOpen && (
         <AlertModal
           isVisible={isAlertModalOpen}

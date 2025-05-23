@@ -430,15 +430,7 @@ export default function AddPostContainer() {
   const pickVideoWithRatio = useCallback(async (ratio: [number, number]) => {
     setSelectedAspectRatio(ratio);
     setTypeVideo(true);
-
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert("Permission to access media library is required.");
-      setIsVideoRatioModalVisible(false);
-      return;
-    }
-
+    
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,

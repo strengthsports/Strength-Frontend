@@ -1,9 +1,16 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showFeedback } from "~/utils/feedbackToast";
 import { getToken } from "~/utils/secureStore";
 import { addPost, upsertPosts } from "./postsSlice";
 import { addPostToTopOfFeed } from "./viewsSlice";
+
+export type UploadPreviewType = 'image' | 'video' | 'text' | 'poll' | null;
+
+export interface UploadPreviewData {
+  type: UploadPreviewType;
+  uri?: string;
+}
 
 // Initial State
 const initialState = {
@@ -12,6 +19,7 @@ const initialState = {
   isLoading: false,
   isUploadingCompleted: false,
   currentPost: null,
+  uploadPreviewData: null as UploadPreviewData | null,
 };
 
 // Upload Post
@@ -31,10 +39,11 @@ export const uploadPost = createAsyncThunk(
             Authorization: `Bearer ${token}`,
           },
           onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / (progressEvent.total || 1)
-            );
-            dispatch(setUploadProgress(percentCompleted));
+            const total = progressEvent.total ?? 1;
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / total
+        );
+        dispatch(setUploadProgress(percentCompleted));
           },
         }
       );
@@ -60,14 +69,27 @@ const postSlice = createSlice({
     setUploadProgress: (state, action) => {
       state.progress = action.payload;
     },
-    setUploadLoading: (state, action) => {
-      state.isLoading = action.payload;
-      state.isUploadingCompleted = !action.payload;
-    },
+    setUploadLoading: (state, action: PayloadAction<boolean>) => {
+  state.isLoading = action.payload;
+  if (!action.payload) { 
+    state.isUploadingCompleted = true;
+  } else { 
+    state.isUploadingCompleted = false;
+    state.progress = 0;
+  }
+},
     setUploadingCompleted: (state, action) => {
       state.isUploadingCompleted = action.payload;
     },
-    resetUploadProgress: () => initialState,
+    resetUploadProgress: (state) => { 
+  return {
+    ...initialState,
+    isAddPostContainerOpen: state.isAddPostContainerOpen,
+  };
+},
+setUploadPreviewData: (state, action: PayloadAction<UploadPreviewData | null>) => {
+  state.uploadPreviewData = action.payload;
+},
     setAddPostContainerOpen: (state, action) => {
       state.isAddPostContainerOpen = action.payload;
     },
@@ -84,5 +106,6 @@ export const {
   setAddPostContainerOpen,
   setUploadingCompleted,
   setCurrentPost,
+  setUploadPreviewData,
 } = postSlice.actions;
 export default postSlice.reducer;

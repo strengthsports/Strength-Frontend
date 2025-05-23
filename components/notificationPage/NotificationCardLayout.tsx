@@ -327,6 +327,7 @@ const NotificationCardLayout = React.memo(
       return (
         <NotificationHeader
           sender={sender}
+          caption={target.caption}
           type={type}
           timeAgo={timeAgo}
           isNew={isNew}
@@ -336,7 +337,7 @@ const NotificationCardLayout = React.memo(
     };
 
     return (
-      <View className={`py-3 px-4 h-fit ${isNew && "bg-[#181818]"}`}>
+      <View className={`py-3 px-[14px] h-fit ${isNew && "bg-[#181818]"}`}>
         <View className="flex-row h-fit gap-x-3">
           {/* Profile Image */}
           <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
@@ -366,6 +367,7 @@ const NotificationCardLayout = React.memo(
 // Notification header with profile image, text and indicator
 const NotificationHeader = ({
   sender,
+  caption,
   type,
   timeAgo,
   count,
@@ -383,8 +385,8 @@ const NotificationHeader = ({
   return (
     <View className="mt-1">
       <View className="flex-row justify-between">
-        <View className="flex-row flex-wrap pr-6">
-          <TextScallingFalse className="text-white text-xl">
+        <View className={`flex-row flex-wrap pr-6 ${actionText === 'started following you' ? 'mt-2' : 'mt-0'}`}>
+          <TextScallingFalse className="text-white text-xl px-1">
             <TextScallingFalse className="font-bold">
               {sender.firstName} {sender.lastName}
             </TextScallingFalse>
@@ -443,7 +445,7 @@ const PostPreview = React.memo(
       className={`mt-2 overflow-hidden ${
         comment ? "rounded-[10px] border border-b-0" : "rounded-xl"
       }`}
-      style={{ borderColor: comment ? "#262626" : "transparent", width: "86%" }}
+      style={{ borderColor: comment ? "#262626" : "transparent", width: "90%" }}
     >
       {comment && (
         <View className="p-3">

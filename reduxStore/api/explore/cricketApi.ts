@@ -57,8 +57,15 @@ export const cricketApi = createApi({
           ? response.data.recentMatches
           : [];
 
+        const recentTrendingMatches = Array.isArray(
+          response.data.recentTrendingMatches
+        )
+          ? response.data.recentTrendingMatches
+          : [];
+
         // console.log("Recent Cricket Matches :", recentMatches);
-        return { recentMatches };
+        // console.log("Recent Trending Cricket Matches: ", recentTrendingMatches);
+        return { recentMatches, recentTrendingMatches };
       },
     }),
   }),

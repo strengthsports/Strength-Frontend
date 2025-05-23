@@ -13,14 +13,15 @@ const getCountryCode = (countryName: string) => {
     "UNITED STATES OF AMERICA": "US",
     UK: "GB",
     "UNITED KINGDOM": "GB",
-    Scotland: "GB",
+    ENGLAND: "GB",
+    SCOTLAND: "GB",
     UAE: "AE",
     RUSSIA: "RU",
     "SOUTH KOREA": "KR",
     "NORTH KOREA": "KP",
     PHILIPPINES: "PH",
-    "New Zealand A": "NZ",
-    "Bangladesh A": "BD",
+    "NEW ZEALAND A": "NZ",
+    "BANGLADESH A": "BD",
   };
 
   return specialCases[cleanName] || countries.getAlpha2Code(cleanName, "en");
@@ -30,5 +31,6 @@ export const getCountryFlag = (countryName: string) => {
   const countryCode = getCountryCode(countryName);
   if (!countryCode) return null;
 
+  // console.log("Flag: ", `https://flagsapi.com/${countryCode}/flat/64.png`);
   return `https://flagsapi.com/${countryCode}/flat/64.png`;
 };

@@ -50,6 +50,7 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { calculateAge } from "~/utils/calculateAge";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 import { getCountryFlag } from "~/utils/getCountryFlag";
+import { useShare } from "~/hooks/useShare";
 
 const countryAbbreviations: { [key: string]: string } = {
   "United Arab Emirates": "UAE",
@@ -316,11 +317,13 @@ const shadowStyle = Platform.select({
 });
 
 const ProfileLayout = () => {
-  const { error, loading, user } = useSelector((state: any) => state?.profile);
+  const { user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const segments = useSegments();
-  const { openBottomSheet, closeBottomSheet } = useBottomSheet();
+
+  // Share post
+  const { shareProfile } = useShare();
 
   const currentProfileSegment = useMemo(() => {
     const profileIndex = segments.findIndex((s) => s === "profile");
@@ -367,22 +370,6 @@ const ProfileLayout = () => {
     [router]
   );
 
-  const handleShareProfile = async () => {
-    try {
-      // TODO: need modification of the profile url
-      const profileUrl = `strength://profile/${user?._id}`;
-      const result = await Share.share({
-        message: `Check out ${
-          user?.firstName || "this"
-        } profile on Strength! ${profileUrl}`,
-        url: Platform.OS === "ios" ? profileUrl : undefined,
-        title: "Share Profile",
-      });
-    } catch (error: any) {
-      console.error("Error sharing profile:", error.message);
-    }
-  };
-
   const handleOpenProfileOptions = (optionType: string) => {
     setProfileOptionsVisible({ status: true, message: optionType });
   };
@@ -407,6 +394,16 @@ const ProfileLayout = () => {
         console.log(`Don't know how to open this URL: ${user.websiteLink}`);
       }
     }
+  };
+
+  const handleShareProfile = () => {
+    shareProfile({
+      fullname: `${user.firstName} ${user.lastName}`,
+      imageUrl: user.profilePic ? user.profilePic : "",
+      gender: user.gender,
+      sports: user.selectedSports.map((sport: any) => sport.sport.name),
+      isPage: user.type === "Page",
+    });
   };
 
   const getDisplaySportNames = (

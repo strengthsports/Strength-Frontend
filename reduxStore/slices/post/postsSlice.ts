@@ -67,6 +67,46 @@ export const postsSlice = createSlice({
         postsAdapter.updateMany(state, updates);
       }
     },
+    updateAllFeedPostsPostedBy: (
+      state,
+      action: PayloadAction<{
+        userId: string;
+        profilePic?: string;
+        firstName?: string;
+        lastName?: string;
+        username?: string;
+        headline?: string;
+      }>
+    ) => {
+      const { userId, ...updatedFields } = action.payload;
+
+      // Filter out undefined fields to only update what's provided
+      const changes = Object.fromEntries(
+        Object.entries(updatedFields).filter(
+          ([_, value]) => value !== undefined
+        )
+      );
+
+      // Find all posts by this user
+      const updates = Object.values(state.entities)
+        .filter((post) => post?.postedBy._id === userId)
+        .map((post) => ({
+          id: post._id,
+          changes: {
+            postedBy: {
+              ...post.postedBy, // Keep existing postedBy fields
+              ...changes, // Override with provided updates
+            },
+          },
+        }));
+
+      console.log(updates);
+
+      // Update all matching posts
+      if (updates.length > 0) {
+        postsAdapter.updateMany(state, updates);
+      }
+    },
   },
 });
 
@@ -78,6 +118,7 @@ export const {
   resetFeed,
   updateAllFeedPostsFollowStatus,
   updateAllFeedPostsReportStatus,
+  updateAllFeedPostsPostedBy,
 } = postsSlice.actions;
 export default postsSlice.reducer;
 

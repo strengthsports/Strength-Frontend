@@ -75,18 +75,6 @@ const ArticlePage = () => {
 
   const { width } = useWindowDimensions();
 
-  const { shareProfile } = useShare();
-  const handleShareProfile = () => {
-    const currentArticle = articles[currentIndex];
-    const { date } = formatDateTime(currentArticle.updatedAt);
-    shareProfile({
-      title: item.title,
-      sportsName: item.sportsName,
-      imageUrl: item.imageUrl ? item.imageUrl : "",
-      content: item.content,
-      date: date,
-    });
-  };
 
   const renderItem = ({ item }: any) => {
     const { date, time } = formatDateTime(item.updatedAt);
@@ -161,7 +149,7 @@ const ArticlePage = () => {
           <TextScallingFalse className="text-white text-3xl font-bold">
             {validSportsName} articles
           </TextScallingFalse>
-          <TouchableOpacity onPress={handleShareProfile}>
+          <TouchableOpacity>
             <MaterialCommunityIcons name="share" size={24} color="white" />
           </TouchableOpacity>
         </View>

@@ -4,23 +4,23 @@ countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 
 const getCountryCode = (countryName: string) => {
   if (!countryName) return null;
-  
-  const cleanName = countryName
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toUpperCase();
+
+  const cleanName = countryName.replace(/\s+/g, " ").trim().toUpperCase();
 
   const specialCases: Record<string, string> = {
-    "USA": "US",
+    USA: "US",
     "UNITED STATES": "US",
     "UNITED STATES OF AMERICA": "US",
-    "UK": "GB",
+    UK: "GB",
     "UNITED KINGDOM": "GB",
-    "UAE": "AE",
-    "RUSSIA": "RU",
+    Scotland: "GB",
+    UAE: "AE",
+    RUSSIA: "RU",
     "SOUTH KOREA": "KR",
     "NORTH KOREA": "KP",
-    "PHILIPPINES": "PH",
+    PHILIPPINES: "PH",
+    "New Zealand A": "NZ",
+    "Bangladesh A": "BD",
   };
 
   return specialCases[cleanName] || countries.getAlpha2Code(cleanName, "en");
@@ -29,6 +29,6 @@ const getCountryCode = (countryName: string) => {
 export const getCountryFlag = (countryName: string) => {
   const countryCode = getCountryCode(countryName);
   if (!countryCode) return null;
-  
+
   return `https://flagsapi.com/${countryCode}/flat/64.png`;
 };

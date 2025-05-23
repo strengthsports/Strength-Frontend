@@ -259,10 +259,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     ) => {
       if (!caption) return null;
 
-      console.log("Org caption ::", caption);
-
       const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
-      console.log(parts);
       const elements = [];
       let remainingChars = isExpanded ? Infinity : 94;
       let showSeeMore = false;
@@ -360,31 +357,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         ),
       [item, item.caption, item.taggedUsers, isExpanded]
     );
-
-    console.log("Memoized caption : ", memoizedCaption);
-
-    const [thumbnail, setThumbnail] = useState("");
-
-    useEffect(() => {
-      const generateThumbnail = async () => {
-        if (!item?.isVideo || !item.assets[0].url) return;
-
-        try {
-          const { uri } = await VideoThumbnails.getThumbnailAsync(
-            item.assets[0].url,
-            {
-              time: 1000,
-              quality: 0.5,
-            }
-          );
-          setThumbnail(uri);
-        } catch (e) {
-          console.warn(e);
-        }
-      };
-
-      generateThumbnail();
-    }, [item?.assets]);
 
     return (
       <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
@@ -502,7 +474,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           {item.isVideo ? (
             <View
               style={{
-                aspectRatio: 16 / 9,
+                aspectRatio: item.aspectRatio
+                  ? item.aspectRatio[0] / item.aspectRatio[1]
+                  : 3 / 2,
                 width: containerWidth,
               }}
               className="overflow-hidden bg-transparent"
@@ -527,7 +501,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onDoublePress={handleDoubleTap}
               >
                 <Image
-                  source={thumbnail ? { uri: thumbnail } : nothumbnail}
+                  source={
+                    item.thumbnail ? { uri: item.thumbnail.url } : nothumbnail
+                  }
                   resizeMode="cover"
                   fadeDuration={0}
                   style={{

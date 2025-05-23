@@ -33,6 +33,7 @@ export default function YouTubeStyleVideoPlayer({
   onRemove,
   editable = false,
   title = "Big Buck Bunny",
+  aspectRatio = 3 / 2,
 }: any) {
   // Player state
   const [isMuted, setIsMuted] = useState(false);
@@ -300,11 +301,15 @@ export default function YouTubeStyleVideoPlayer({
 
   // Calculate progress percentage
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+  // console.log(aspectRatio[0], aspectRatio[1]);
 
   return (
     <SafeAreaView style={[styles.container]}>
       <Pressable
-        style={[styles.videoContainer]}
+        style={[
+          styles.videoContainer,
+          { aspectRatio: aspectRatio[0] / aspectRatio[1] },
+        ]}
         onPress={togglePlayPause}
         onStartShouldSetResponder={() => false}
       >
@@ -440,7 +445,6 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     width: "100%",
-    aspectRatio: 16 / 9,
     backgroundColor: "black",
     justifyContent: "center",
     alignItems: "center",
@@ -461,11 +465,11 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  controlsContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "space-between",
-    padding: 16,
-  },
+  // controlsContainer: {
+  //   ...StyleSheet.absoluteFillObject,
+  //   justifyContent: "space-between",
+  //   padding: 16,
+  // },
   topControls: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -482,24 +486,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  topRightControls: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  // topRightControls: {
+  //   position: "absolute",
+  //   right: 0,
+  //   top: 0,
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  // },
   controlButton: {
     padding: 8,
     marginLeft: 8,
   },
-  centerControls: {
-    flexDirection: "row",
-    columnGap: 20,
-    alignItems: "center",
-    alignSelf: "center",
-    paddingTop: 70,
-  },
+  // centerControls: {
+  //   flexDirection: "row",
+  //   columnGap: 20,
+  //   alignItems: "center",
+  //   alignSelf: "center",
+  //   paddingTop: 70,
+  // },
   playButton: {
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     width: 72,
@@ -517,11 +521,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  timeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    // paddingHorizontal: 8,
-  },
+  // timeContainer: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   // paddingHorizontal: 8,
+  // },
   timeText: {
     color: "#E6E6E6",
     fontSize: 12,
@@ -562,5 +566,34 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 20,
     marginHorizontal: 8,
+  },
+  controlsContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center", // Changed from "space-between"
+    alignItems: "center", // Add this to center horizontally
+    padding: 16,
+  },
+  centerControls: {
+    // Remove paddingTop and other positioning
+    // Keep it simple for true centering
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // Keep your timeContainer positioned absolutely at the bottom
+  timeContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  // Similarly position top controls absolutely
+  topRightControls: {
+    position: "absolute",
+    right: 8,
+    top: 8,
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

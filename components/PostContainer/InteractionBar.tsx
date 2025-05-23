@@ -47,6 +47,7 @@ const InteractionBar = ({
     isLiked,
     likesCount,
     assets,
+    isVideo,
     _id: postId,
   } = post;
 
@@ -95,7 +96,7 @@ const InteractionBar = ({
           </TouchableOpacity>
         </Link>
 
-        {isPostContainer && assets && assets.length > 1 ? (
+        {isPostContainer && assets && !isVideo && assets.length > 1 ? (
           <View className="flex-row justify-center">
             <AnimatedDotsCarousel
               length={assets.length}

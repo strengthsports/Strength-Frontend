@@ -73,10 +73,11 @@ const SuggestedSupportScreen: React.FC = () => {
   // Update `users` when `fetchedUsers` changes
 
   const loadMoreUsers = throttle(() => {
-    if (!isLoading) {
+    if (!isLoading && users.length < 20) {
       SetPage((prevPage) => prevPage + 1);
     }
-  }, 500); // only once every 500ms
+  }, 500);
+  // only once every 500ms
 
   const handleClose = (id: string) => {
     setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
@@ -114,8 +115,7 @@ const SuggestedSupportScreen: React.FC = () => {
       console.log("FormData object before dispatch:");
       for (let pair of (finalOnboardingData as any).entries()) {
         console.log(
-          `${pair[0]}: ${
-            typeof pair[1] === "object" ? JSON.stringify(pair[1]) : pair[1]
+          `${pair[0]}: ${typeof pair[1] === "object" ? JSON.stringify(pair[1]) : pair[1]
           }`
         );
       }
@@ -221,7 +221,7 @@ const SuggestedSupportScreen: React.FC = () => {
 
       {/* FlatList scrolls everything from Logo to suggestions */}
       <FlatList
-        data={isLoading ? [] : users}
+        data={users.slice(0, 20)}
         keyExtractor={(item) => item._id}
         numColumns={2}
         renderItem={renderItem}
@@ -271,7 +271,7 @@ const SuggestedSupportScreen: React.FC = () => {
           users.length > 0 && isLoading ? (
             <ActivityIndicator size={24} color="#12956B" />
           ) : // <SuggestedUserCardLoader />
-          null
+            null
         }
       />
 
@@ -293,9 +293,8 @@ const SuggestedSupportScreen: React.FC = () => {
         ) : (
           <TouchableOpacity
             activeOpacity={0.7}
-            className={`py-2 rounded-full ${
-              selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
-            }`}
+            className={`py-2 rounded-full ${selectedPlayers.length > 0 ? "bg-[#12956B]" : "bg-transparent"
+              }`}
             style={{
               width: "60%",
               height: 36,
@@ -305,11 +304,10 @@ const SuggestedSupportScreen: React.FC = () => {
             onPress={selectedPlayers.length > 0 ? handleContinue : handleSkip}
           >
             <TextScallingFalse
-              className={`${
-                selectedPlayers.length > 0
+              className={`${selectedPlayers.length > 0
                   ? "text-white font-semibold"
                   : "text-gray-400"
-              } text-center`}
+                } text-center`}
             >
               {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}
             </TextScallingFalse>

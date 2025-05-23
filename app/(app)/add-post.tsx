@@ -32,6 +32,8 @@ import {
   resetUploadProgress,
   setUploadLoading,
   uploadPost,
+  setUploadPreviewData,
+  UploadPreviewData,
 } from "~/reduxStore/slices/post/postSlice";
 import PollsIcon from "@/components/SvgIcons/addpost/PollsIcon";
 import PollsContainer from "@/components/Cards/PollsContainer";
@@ -43,6 +45,8 @@ import MentionHashtagInput2 from "@/components/MentionHashtagInput2";
 import VideoPlayer from "@/components/PostContainer/VideoPlayer";
 import AddImagePlusIcon from "~/components/SvgIcons/addpost/AddImagePlusIcon";
 import ThisFeatureUnderDev from "~/components/modals/ThisFeatureUnderDev";
+import * as VideoThumbnails from "expo-video-thumbnails";
+
 // Memoized sub-components for better performance
 const Figure = React.memo(
   ({
@@ -123,6 +127,7 @@ export default function AddPostContainer() {
   // Video
   const [pickedVideoUri, setPickedVideoUri] = useState<string | null>(null);
   const [isTypeVideo, setTypeVideo] = useState<boolean>(false);
+  const [thumbnailUri, setThumbnailUri] = useState<string | null>(null);
 
   // Poll
   const [showPollInput, setShowPollInput] = useState(false);
@@ -231,7 +236,19 @@ export default function AddPostContainer() {
 
     isSubmitting.current = true;
 
-    dispatch(resetUploadProgress());
+    let previewData: UploadPreviewData | null = null;
+    if (isTypeVideo && pickedVideoUri) {
+      previewData = { type: "video", uri: pickedVideoUri };
+    } else if (pickedImageUris.length > 0) {
+      previewData = { type: "image", uri: pickedImageUris[0] };
+    } else if (showPollInput) {
+      previewData = { type: "poll" };
+    } else if (postText.trim()) {
+      previewData = { type: "text" };
+    }
+
+    dispatch(setUploadPreviewData(previewData));
+    // dispatch(resetUploadProgress());
     dispatch(setUploadLoading(true));
     router.back();
 
@@ -239,19 +256,28 @@ export default function AddPostContainer() {
       const formData = new FormData();
       formData.append("caption", postText.trim());
 
-      if (isTypeVideo && pickedVideoUri) {
+      if (isTypeVideo && pickedVideoUri && thumbnailUri) {
         const file = {
           uri: pickedVideoUri,
-          name: "video.mp4",
+          name: `video_${Date.now()}.mp4`,
           type: "video/mp4",
         };
         formData.append("assets1", file as any);
+
+        const thumbnailFile = {
+          uri: thumbnailUri,
+          name: `thumbnail_${Date.now()}.jpg`,
+          type: "image/jpeg",
+        };
+        formData.append("thumbnail", thumbnailFile as any);
+        console.log(thumbnailFile);
+
         formData.append("isVideo", "true");
       } else {
         pickedImageUris.forEach((uri, index) => {
           const file = {
             uri,
-            name: `image_${index}.jpg`,
+            name: `image_${index}_${Date.now()}.jpg`,
             type: "image/jpeg",
           };
           formData.append(`assets${index + 1}`, file as any);
@@ -271,6 +297,7 @@ export default function AddPostContainer() {
       setPickedImageUris([]);
       if (isTypeVideo) {
         setPickedVideoUri(null);
+        setThumbnailUri(null);
         setTypeVideo(false);
       }
       setNewPollOptions(["", ""]);
@@ -290,10 +317,12 @@ export default function AddPostContainer() {
     postText,
     isTypeVideo,
     pickedVideoUri,
+    thumbnailUri,
     pickedImageUris,
     selectedAspectRatio,
     taggedUsers,
     newPollOptions,
+    showPollInput,
   ]);
 
   useEffect(() => {
@@ -405,6 +434,20 @@ export default function AddPostContainer() {
       if (!result.canceled && result.assets.length > 0) {
         const uri = result.assets[0].uri;
         setPickedVideoUri(uri);
+
+        // thumbnail generation
+        try {
+          const { uri: thumbUri } = await VideoThumbnails.getThumbnailAsync(
+            uri,
+            {
+              time: 1000, // Capture thumbnail at the start of the video
+            }
+          );
+          setThumbnailUri(thumbUri);
+        } catch (error) {
+          console.error("Error generating thumbnail:", error);
+          // alert("Failed to generate thumbnail. Please try again.");
+        }
       }
     } catch (error) {
       console.error("Error picking video:", error);
@@ -447,6 +490,7 @@ export default function AddPostContainer() {
     setPostText("");
     setPickedImageUris([]);
     setPickedVideoUri(null);
+    setThumbnailUri(null);
     setTypeVideo(false);
     setNewPollOptions(["", ""]); // Reset poll options
     setShowPollInput(false); // Hide poll input
@@ -466,206 +510,204 @@ export default function AddPostContainer() {
   };
 
   return (
-    
-      <PageThemeView>
-        <View className="h-full">
-          {/* Header */}
-          <View className="flex flex-row items-center justify-between p-4">
-            <AddPostHeader onBackPress={handleAttemptGoBack} />
-            <TouchableOpacity
-              className={`px-6 py-1 rounded-full ${
-                isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-              }`}
-              onPress={handlePostSubmit}
-              disabled={!isPostButtonEnabled}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={"white"} />
-              ) : (
-                <TextScallingFalse
-                  className={`${
-                    isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                  } text-3xl font-semibold`}
-                >
-                  Post
-                </TextScallingFalse>
-              )}
-            </TouchableOpacity>
+    <PageThemeView>
+      <View className="h-full">
+        {/* Header */}
+        <View className="flex flex-row items-center justify-between p-4">
+          <AddPostHeader onBackPress={handleAttemptGoBack} />
+          <TouchableOpacity
+            className={`px-6 py-1 rounded-full ${
+              isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+            }`}
+            onPress={handlePostSubmit}
+            disabled={!isPostButtonEnabled}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={"white"} />
+            ) : (
+              <TextScallingFalse
+                className={`${
+                  isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                } text-3xl font-semibold`}
+              >
+                Post
+              </TextScallingFalse>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          className="px-0"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          removeClippedSubviews={true}
+        >
+          <View style={{ minHeight: 100 }}>
+            <MentionHashtagInput2
+              setPostText={setPostText}
+              text={postText}
+              setTaggedUsers={setTaggedUsers}
+            />
           </View>
 
-          <ScrollView
-            className="px-0"
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            removeClippedSubviews={true}
-          >
-            <View style={{ minHeight: 100 }}>
-              <MentionHashtagInput2
-                setPostText={setPostText}
-                text={postText}
-                setTaggedUsers={setTaggedUsers}
-              />
-            </View>
-
-            {/* Only render PollsContainer when polls is selected */}
-            {showPollInput && (
-              <PollsContainer
-                onClose={handleClosePoll}
-                mode="create"
-                options={newPollOptions}
-                onOptionsChange={handleOptionsChange}
-              />
-            )}
-
-            {/* Only render CustomImageSlider when there are images */}
-            {pickedImageUris.length > 0 && (
-              <CustomImageSlider
-                images={pickedImageUris}
-                aspectRatio={selectedAspectRatio}
-                onRemoveImage={removeImage}
-                setIndex={handleSetActiveIndex}
-              />
-            )}
-
-            {/* Only render VideoPlayer when there is a video */}
-            {isTypeVideo && pickedVideoUri && (
-              <VideoPlayer
-                videoSource={pickedVideoUri as string}
-                onRemove={() => {
-                  setTypeVideo(false);
-                  setPickedVideoUri("");
-                }}
-                editable={true}
-              />
-            )}
-          </ScrollView>
-
-          {/* only render when any feature which is under development is clicked */}
-          {showFeatureModal && (
-            <FeatureUnderDev
-              isVisible={showFeatureModal}
-              onClose={() => setShowFeatureModal(false)}
+          {/* Only render PollsContainer when polls is selected */}
+          {showPollInput && (
+            <PollsContainer
+              onClose={handleClosePoll}
+              mode="create"
+              options={newPollOptions}
+              onOptionsChange={handleOptionsChange}
             />
           )}
 
-          {/* Footer */}
-          <View className="flex flex-row justify-between items-center p-3">
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setShowFeatureModal(true)}
-              className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-lg"
-            >
-              <MaterialCommunityIcons
-                name="earth"
-                size={20}
-                color={Colors.themeColor}
-              />
-              <TextScallingFalse className="text-theme text-3xl">
-                Public
-              </TextScallingFalse>
-              <MaterialCommunityIcons
-                name="menu-down"
-                size={24}
-                color={Colors.themeColor}
-              />
-            </TouchableOpacity>
+          {/* Only render CustomImageSlider when there are images */}
+          {pickedImageUris.length > 0 && (
+            <CustomImageSlider
+              images={pickedImageUris}
+              aspectRatio={selectedAspectRatio}
+              onRemoveImage={removeImage}
+              setIndex={handleSetActiveIndex}
+            />
+          )}
 
-            <View className="flex flex-row justify-between items-center gap-2">
-              {/* Video button - calls selectVideo */}
-              <TouchableOpacity
-                activeOpacity={0.5}
-                className="p-[5px] w-[35px]"
-                onPress={selectVideo}
-                disabled={
-                  showPollInput ||
-                  pickedImageUris.length > 0 ||
-                  (isTypeVideo && pickedVideoUri !== null)
-                }
-              >
-                <ClipsIcon
-                  color={
-                    showPollInput ||
-                    pickedImageUris.length > 0 ||
-                    (isTypeVideo && pickedVideoUri !== null)
-                      ? "#737373"
-                      : Colors.themeColor
-                  }
-                />
-              </TouchableOpacity>
-              {/* Image button */}
-              <TouchableOpacity
-                onPress={handlePickImageOrAddMore}
-                disabled={
-                  showPollInput || (isTypeVideo && pickedVideoUri !== null)
-                }
-                activeOpacity={0.7}
-              >
-                {pickedImageUris.length === 0 && (
-                  <AddImageIcon
-                    color={
-                      showPollInput || (isTypeVideo && pickedVideoUri !== null)
-                        ? "#737373"
-                        : Colors.themeColor
-                    }
-                  />
-                )}
-                {pickedImageUris.length > 0 && (
-                  <AddImagePlusIcon color={Colors.themeColor} />
-                )}
-              </TouchableOpacity>
-              <Modal
-                visible={isImageRatioModalVisible}
-                transparent
-                animationType="slide"
-                onRequestClose={closeRatioModal}
-              >
-                <TouchableOpacity
-                  className="flex-1 justify-end bg-black/50"
-                  activeOpacity={1}
-                  onPress={closeRatioModal}
-                >
-                  <ImageRatioModal pickImage={selectFirstImage} />
-                </TouchableOpacity>
-              </Modal>
-              <TouchableOpacity
-                onPress={handleOpenPoll}
-                className="p-[5px]"
-                activeOpacity={0.7}
-                disabled={
-                  showPollInput ||
-                  pickedImageUris.length > 0 ||
-                  (isTypeVideo && pickedVideoUri !== null)
-                }
-              >
-                <PollsIcon
-                  color={
-                    showPollInput ||
-                    pickedImageUris.length > 0 ||
-                    (isTypeVideo && pickedVideoUri !== null)
-                      ? "#737373"
-                      : Colors.themeColor
-                  }
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+          {/* Only render VideoPlayer when there is a video */}
+          {isTypeVideo && pickedVideoUri && (
+            <VideoPlayer
+              videoSource={pickedVideoUri as string}
+              onRemove={() => {
+                setTypeVideo(false);
+                setPickedVideoUri("");
+              }}
+              editable={true}
+            />
+          )}
+        </ScrollView>
 
-        {/* alert modal */}
-        {isAlertModalOpen && (
-          <AlertModal
-            isVisible={isAlertModalOpen}
-            alertConfig={{
-              title: "Discard Post ?",
-              message: "All your changes will be deleted",
-              cancelMessage: "Cancel",
-              confirmMessage: "Discard",
-              confirmAction: handleDiscard,
-              discardAction: handleCancelDiscard,
-            }}
+        {/* only render when any feature which is under development is clicked */}
+        {showFeatureModal && (
+          <FeatureUnderDev
+            isVisible={showFeatureModal}
+            onClose={() => setShowFeatureModal(false)}
           />
         )}
-      </PageThemeView>
- 
+
+        {/* Footer */}
+        <View className="flex flex-row justify-between items-center p-3">
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowFeatureModal(true)}
+            className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-lg"
+          >
+            <MaterialCommunityIcons
+              name="earth"
+              size={20}
+              color={Colors.themeColor}
+            />
+            <TextScallingFalse className="text-theme text-3xl">
+              Public
+            </TextScallingFalse>
+            <MaterialCommunityIcons
+              name="menu-down"
+              size={24}
+              color={Colors.themeColor}
+            />
+          </TouchableOpacity>
+
+          <View className="flex flex-row justify-between items-center gap-2">
+            {/* Video button - calls selectVideo */}
+            <TouchableOpacity
+              activeOpacity={0.5}
+              className="p-[5px] w-[35px]"
+              onPress={selectVideo}
+              disabled={
+                showPollInput ||
+                pickedImageUris.length > 0 ||
+                (isTypeVideo && pickedVideoUri !== null)
+              }
+            >
+              <ClipsIcon
+                color={
+                  showPollInput ||
+                  pickedImageUris.length > 0 ||
+                  (isTypeVideo && pickedVideoUri !== null)
+                    ? "#737373"
+                    : Colors.themeColor
+                }
+              />
+            </TouchableOpacity>
+            {/* Image button */}
+            <TouchableOpacity
+              onPress={handlePickImageOrAddMore}
+              disabled={
+                showPollInput || (isTypeVideo && pickedVideoUri !== null)
+              }
+              activeOpacity={0.7}
+            >
+              {pickedImageUris.length === 0 && (
+                <AddImageIcon
+                  color={
+                    showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                      ? "#737373"
+                      : Colors.themeColor
+                  }
+                />
+              )}
+              {pickedImageUris.length > 0 && (
+                <AddImagePlusIcon color={Colors.themeColor} />
+              )}
+            </TouchableOpacity>
+            <Modal
+              visible={isImageRatioModalVisible}
+              transparent
+              animationType="slide"
+              onRequestClose={closeRatioModal}
+            >
+              <TouchableOpacity
+                className="flex-1 justify-end bg-black/50"
+                activeOpacity={1}
+                onPress={closeRatioModal}
+              >
+                <ImageRatioModal pickImage={selectFirstImage} />
+              </TouchableOpacity>
+            </Modal>
+            <TouchableOpacity
+              onPress={handleOpenPoll}
+              className="p-[5px]"
+              activeOpacity={0.7}
+              disabled={
+                showPollInput ||
+                pickedImageUris.length > 0 ||
+                (isTypeVideo && pickedVideoUri !== null)
+              }
+            >
+              <PollsIcon
+                color={
+                  showPollInput ||
+                  pickedImageUris.length > 0 ||
+                  (isTypeVideo && pickedVideoUri !== null)
+                    ? "#737373"
+                    : Colors.themeColor
+                }
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* alert modal */}
+      {isAlertModalOpen && (
+        <AlertModal
+          isVisible={isAlertModalOpen}
+          alertConfig={{
+            title: "Discard Post ?",
+            message: "All your changes will be deleted",
+            cancelMessage: "Cancel",
+            confirmMessage: "Discard",
+            confirmAction: handleDiscard,
+            discardAction: handleCancelDiscard,
+          }}
+        />
+      )}
+    </PageThemeView>
   );
 }

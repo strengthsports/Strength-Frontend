@@ -247,7 +247,7 @@ const FootballMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
           {/* view 2 */}
           <View className="items-center flex-1">
             <TextScallingFalse className="text-[#F2F2F2] font-semibold text-7xl font-turret-road">
-              {match.goals.away} - {match.goals.away}
+              {match.goals.home} - {match.goals.away}
             </TextScallingFalse>
             <TextScallingFalse className="text-[#8F8F8F] text-center self-center text-base font-monster-bold">
               {determineTimeElapsed(match.fixture.status.short)}

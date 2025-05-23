@@ -215,7 +215,10 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
           {/* Team 1 */}
           <View className="flex-row items-center justify-between mt-2 mb-1">
             <NameFlagSubCard
-              flag={getCountryFlag(match.matchInfo?.team1?.teamName) || ""}
+              flag={
+                getCountryFlag(match.matchInfo?.team1?.teamName) ||
+                match.matchInfo?.team1?.teamSName
+              }
               teamName={match.matchInfo?.team1?.teamSName}
             />
             <TextScallingFalse
@@ -261,7 +264,10 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
           {/* Team 2 */}
           <View className="flex-row items-center justify-between mt-1 mb-2">
             <NameFlagSubCard
-              flag={getCountryFlag(match.matchInfo?.team2?.teamName) || ""}
+              flag={
+                getCountryFlag(match.matchInfo?.team2?.teamName) ||
+                match.matchInfo?.team2?.teamSName
+              }
               teamName={match.matchInfo?.team2?.teamSName}
             />
             <TextScallingFalse

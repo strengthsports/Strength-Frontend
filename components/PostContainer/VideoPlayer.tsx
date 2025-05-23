@@ -321,8 +321,6 @@ export default function YouTubeStyleVideoPlayer({
               borderTopLeftRadius: editable ? 16 : 0,
               borderBottomLeftRadius: editable ? 16 : 0,
               marginLeft: editable ? 8 : 0,
-              borderWidth: 1,
-              borderColor: "#222222",
             },
           ]}
           player={player}

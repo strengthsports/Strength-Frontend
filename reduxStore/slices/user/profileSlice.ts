@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { getToken } from "@/utils/secureStore";
+import { getToken, getUserId } from "@/utils/secureStore";
 import { Member, ProfileState, TargetUser, User } from "@/types/user";
 import { loginUser, logoutUser } from "./authSlice";
 import { InviteMember, PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser, resetOnboardingData } from "./onboardingSlice";
 import axios from "axios";
+import { updateAllFeedPostsPostedBy } from "../post/postsSlice";
 
 // Initial State
 const initialState: ProfileState = {
@@ -28,45 +29,55 @@ export const editUserProfile = createAsyncThunk<
   any,
   any,
   { rejectValue: string }
->("profile/editUserProfile", async (userdata, { rejectWithValue }) => {
-  try {
-    const token = await getToken("accessToken");
-    if (!token) throw new Error("Token not found");
-    console.log("Token : ", token);
-    // console.log("User data input :", userdata);
+>(
+  "profile/editUserProfile",
+  async (userdata, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      const userId = await getUserId("user_id");
+      if (!token) throw new Error("Token not found");
+      console.log("Token : ", token);
+      // console.log("User data input :", userdata);
 
-    // userdata.forEach((value, key) => {
-    //   console.log(`${key}: ${value}`);
-    // });
+      // userdata.forEach((value, key) => {
+      //   console.log(`${key}: ${value}`);
+      // });
 
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: userdata,
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/updateProfile`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: userdata,
+        }
+      );
+
+      // console.log("Response:", response);
+      const data = await response.json();
+      console.log(data);
+      console.log(data.data);
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Error getting user");
       }
-    );
-
-    // console.log("Response:", response);
-    const data = await response.json();
-    console.log(data);
-    console.log(data.data);
-
-    if (!response.ok) {
-      return rejectWithValue(data.message || "Error getting user");
+      console.log("Data : ", data.data.updatedUser);
+      dispatch(
+        updateAllFeedPostsPostedBy({
+          userId,
+          ...data.data.updatedUser,
+        })
+      );
+      return data.data.updatedUser;
+    } catch (error: unknown) {
+      // console.log("Actual api error : ", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return rejectWithValue(errorMessage);
     }
-    console.log("Data : ", data.data.updatedUser);
-    return data.data.updatedUser;
-  } catch (error: unknown) {
-    // console.log("Actual api error : ", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unexpected error occurred";
-    return rejectWithValue(errorMessage);
   }
-});
+);
 
 // Get user's own posts
 export const getOwnPosts = createAsyncThunk<any, null, { rejectValue: string }>(

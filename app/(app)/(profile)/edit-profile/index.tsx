@@ -113,7 +113,7 @@ const userFormConfig = [
 const pageFormConfig = [
   { type: "username", label: "Username*", icon: null },
   { type: "headline", label: "Tagline", icon: null },
-  { type: "favouriteSports", label: "Sports*", icon: null },
+  // { type: "favouriteSports", label: "Sports*", icon: null },
   {
     type: "dateOfBirth",
     label: "Established",

@@ -3,7 +3,7 @@ import { Image, TouchableOpacity, View } from "react-native";
 import TextScallingFalse from "../CentralText";
 import nopic from "@/assets/images/nopic.jpg";
 import FollowButton from "../FollowButton";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useFollow } from "~/hooks/useFollow";
 import { FollowUser } from "~/types/user";
 import { Alert } from "react-native";
@@ -107,4 +107,4 @@ const UserCard = ({
   );
 };
 
-export default UserCard;
+export default memo(UserCard);

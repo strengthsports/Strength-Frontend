@@ -570,6 +570,7 @@ export default function AddPostContainer() {
                 setPickedVideoUri("");
               }}
               editable={true}
+              aspectRatio={selectedAspectRatio}
             />
           )}
         </ScrollView>

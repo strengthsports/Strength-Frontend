@@ -129,6 +129,10 @@ const UserList = memo(({ targetId, type }: UserListProps) => {
           })}
           onEndReached={fetchMore}
           onEndReachedThreshold={0.6}
+          initialNumToRender={6}
+          windowSize={5}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={6}
           ListFooterComponent={
             isFetchingMore && hasMore ? (
               <ActivityIndicator size="small" color="#12956B" />

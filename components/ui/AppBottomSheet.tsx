@@ -7,6 +7,7 @@ import {
   Dimensions,
   StyleSheet,
   Keyboard,
+  BackHandler,
 } from "react-native";
 import { useBottomSheet } from "@/context/BottomSheetContext";
 
@@ -41,6 +42,27 @@ const AppBottomSheet = () => {
   const minTranslateY = SCREEN_HEIGHT - sheetHeight;
   const maxTranslateY = SCREEN_HEIGHT - maxHeightValue;
 
+  // Handle hardware back button
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (isVisible) {
+        closeBottomSheet();
+        return true; // Prevent default back action
+      }
+      return false;
+    };
+
+    if (isVisible) {
+      BackHandler.addEventListener("hardwareBackPress", handleBackButton);
+    } else {
+      BackHandler.removeEventListener("hardwareBackPress", handleBackButton);
+    }
+
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handleBackButton);
+    };
+  }, [isVisible]);
+
   // Animation handling
   useEffect(() => {
     if (isVisible) {
@@ -62,12 +84,11 @@ const AppBottomSheet = () => {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => Keyboard.dismiss(),
       onPanResponderMove: (_, gestureState) => {
-        Keyboard.dismiss();
         let newY = SCREEN_HEIGHT - sheetHeight + gestureState.dy;
 
         if (draggableDirection === "both") {
-          // Correct clamping logic for both directions
           newY = Math.min(Math.max(newY, maxTranslateY), minTranslateY);
         } else {
           newY = Math.max(minTranslateY, newY);
@@ -80,7 +101,6 @@ const AppBottomSheet = () => {
         const velocityThreshold = 0.5;
         const dragThreshold = SCREEN_HEIGHT * 0.1;
 
-        // Enhanced closing logic
         const shouldClose =
           (gestureState.vy > velocityThreshold ||
             gestureState.dy > dragThreshold) &&
@@ -96,10 +116,13 @@ const AppBottomSheet = () => {
             targetY = currentY < midPoint ? maxTranslateY : minTranslateY;
           }
 
-          Animated.spring(translateY, {
-            toValue: targetY,
-            useNativeDriver: true,
-          }).start();
+          // Prevent animation if already at target
+          if (currentY !== targetY) {
+            Animated.spring(translateY, {
+              toValue: targetY,
+              useNativeDriver: true,
+            }).start();
+          }
         }
       },
     })
@@ -109,14 +132,14 @@ const AppBottomSheet = () => {
 
   return (
     <>
-      {/* Backdrop as sibling */}
+      {/* Backdrop */}
       <TouchableOpacity
         style={styles.backdrop}
         activeOpacity={1}
         onPress={closeBottomSheet}
       />
 
-      {/* Sheet content as sibling */}
+      {/* Sheet content */}
       <Animated.View
         style={[
           styles.container,
@@ -134,10 +157,8 @@ const AppBottomSheet = () => {
           <View style={styles.handle} />
         </View>
         <View
-          onStartShouldSetResponder={(event) => true}
-          onTouchEnd={(e) => {
-            e.stopPropagation();
-          }}
+          onStartShouldSetResponder={() => true} // Allow content to handle touches
+          onTouchEnd={(e) => e.stopPropagation()}
           style={styles.content}
         >
           {content}
@@ -147,6 +168,7 @@ const AppBottomSheet = () => {
   );
 };
 
+// Styles remain unchanged from original
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,

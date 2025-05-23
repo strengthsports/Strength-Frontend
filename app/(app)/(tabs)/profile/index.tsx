@@ -167,11 +167,10 @@ const Overview = () => {
                 <TouchableOpacity
                   key={`sport-tab-${sport.sport?._id}`}
                   onPress={() => setActiveSubSection(sport.sport?.name)}
-                  className={`px-5 py-2 flex flex-row gap-x-3 items-center ${
-                    activeSubSection === sport.sport?.name
+                  className={`px-5 py-2 flex flex-row gap-x-3 items-center ${activeSubSection === sport.sport?.name
                       ? "bg-[#12956B]"
                       : "bg-black border-[0.5px] border-[#686868]"
-                  } border`}
+                    } border`}
                   style={{
                     borderRadius:
                       activeSubSection === sport.sport?.name ? 7 : 9,
@@ -187,14 +186,14 @@ const Overview = () => {
                     resizeMode="contain"
                   />
                   <TextScallingFalse
-                    className={`text-lg font-medium ${
-                      activeSubSection === sport.sport?.name
+                    className={`text-lg font-medium ${activeSubSection === sport.sport?.name
                         ? "text-white"
                         : "text-[#CCCCCC]"
-                    }`}
+                      }`}
                   >
-                    {sport.sport?.name.charAt(0).toUpperCase() +
-                      sport.sport?.name.slice(1)}
+                    {sport.sport?.name
+                      ? sport.sport.name.charAt(0).toUpperCase() + sport.sport.name.slice(1)
+                      : "Unnamed"}
                   </TextScallingFalse>
                 </TouchableOpacity>
               ))}
@@ -282,9 +281,8 @@ const Overview = () => {
                       {getFilteredTeams(sport).map(
                         (team: any, index: number) => (
                           <View
-                            key={`team-${sport.sport?._id}-${
-                              team._id || index
-                            }`}
+                            key={`team-${sport.sport?._id}-${team._id || index
+                              }`}
                             style={{ marginVertical: 1 }}
                           >
                             <TeamEntry team={team} />

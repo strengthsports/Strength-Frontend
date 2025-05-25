@@ -35,7 +35,7 @@ const EMPTY_SELECTED_SPORTS_ARRAY: any[] = [];
 const Overview = () => {
   const { error, loading, user } = useSelector((state: any) => state?.profile);
   const dispatch = useDispatch<AppDispatch>();
-
+   console.log("Profile Data comming from backend --------> ",JSON.stringify(user,null,2));
   const router = useRouter();
   const { width } = useWindowDimensions();
   const selectedSportsToRender =

@@ -64,7 +64,8 @@ const TeamEntry = ({ team }: any) => {
               fontWeight: "400", // Regular
             }}
           >
-            {team.location || "Location Not Available"}
+            {team.team.address.state || "Location Not Available"} {team.team.address.country}
+            
             {/* Kolkata, West Bengal, India */}
           </TextScallingFalse>
         </View>

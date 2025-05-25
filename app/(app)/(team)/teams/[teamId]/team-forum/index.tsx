@@ -71,7 +71,6 @@ const TeamForum: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   // Redux selectors
-  const userId = useSelector((state: RootState) => state.auth.user?._id);
   const { team, loading: teamLoading } = useSelector((state: RootState) => state.team);
   const { messages, loading: forumLoading, error: forumError } = useSelector(
     (state: RootState) => state.teamForum
@@ -105,24 +104,24 @@ const TeamForum: React.FC = () => {
     return 'member';
   }, [team, user]);
 
-  const canSendMessages = useMemo(() => {
-    if (!userRole) return false;
-    return ['Admin', 'Captain', 'ViceCaptain'].includes(userRole);
-  }, [userRole]);
+const canSendMessages = useMemo(() => {
+  // Any team member can send messages
+  return userRole !== null; // If user has any role (is a team member), they can send
+}, [userRole]);
 
   // Create welcome message
-  const welcomeMessage = useMemo<Message | null>(() => {
-    if (!team) return null;
+ const welcomeMessage = useMemo<Message | null>(() => {
+  if (!team) return null;
 
-    return {
-      _id: 'welcome-message',
-      userId: 'system',
-      userName: 'System',
-      text: `👋  Welcome to the ${team.name} forum! This is a space for team communication and updates. ${canSendMessages ? 'As a team leader, you can post messages here.' : 'Only team leaders can post messages here.'}`,
-      timestamp: team ? new Date(0).toISOString() : new Date().toISOString(),
-      isSystemMessage: true
-    };
-  }, [team, canSendMessages]);
+  return {
+    _id: 'welcome-message',
+    userId: 'system',
+    userName: 'System',
+    text: `👋  Welcome to the ${team.name} forum! This is a space for team communication and updates. All team members can post messages here.`,
+    timestamp: team ? new Date(0).toISOString() : new Date().toISOString(),
+    isSystemMessage: true
+  };
+}, [team]);
 
   // Combined messages with welcome message
   const combinedMessages = useMemo(() => {
@@ -415,7 +414,7 @@ const TeamForum: React.FC = () => {
               {team?.name || "Team Chat"}
             </TextScallingFalse>
             <TextScallingFalse style={styles.onlineStatus}>
-              {team?.members?.length || 0} members • {canSendMessages ? "Team Leader" : "Member"}
+              {team?.members?.length || 0} members 
             </TextScallingFalse>
           </View>
         </View>
@@ -467,7 +466,7 @@ const TeamForum: React.FC = () => {
       )}
 
       {/* Message Input Box - Only shown for authorized users */}
-      {canSendMessages ? (
+      
         <View style={styles.inputWrapper}>
             <View style={styles.inputContainer}>
               <TextInput
@@ -497,25 +496,7 @@ const TeamForum: React.FC = () => {
               />
             </View>
         </View>
-      ) : (
-        <View style={styles.infoContainer}>
-          <TextScallingFalse style={styles.infoText}>
-            Only
-            </TextScallingFalse>
-            <TextScallingFalse style={{color:'#12956B'}}>
-              admin
-            </TextScallingFalse>
-            <TextScallingFalse style={styles.infoText}>
-             and
-             </TextScallingFalse>
-            <TextScallingFalse style={{color:'#12956B'}}>
-              captains
-            </TextScallingFalse>
-            <TextScallingFalse style={styles.infoText}>
-            can send messages
-          </TextScallingFalse>
-        </View>
-      )}
+     
     </PageThemeView>
   );
 };

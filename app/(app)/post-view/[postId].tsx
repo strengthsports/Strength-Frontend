@@ -49,6 +49,8 @@ import { FollowUser } from "~/types/user";
 import { showFeedback } from "~/utils/feedbackToast";
 import { useFollow } from "~/hooks/useFollow";
 import { useShare } from "~/hooks/useShare";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
 
 const { width } = Dimensions.get("window");
 
@@ -261,6 +263,19 @@ const Post = () => {
     setHeaderFooterVisible(!isHeaderFooterVisible);
   };
 
+  const handleMediaTap = () => {
+    if (isExpanded) {
+      toggleExpand();
+    } else {
+      toggleHeaderFooterVisibility();
+    }
+  };
+
+  const tapGesture = Gesture.Tap().onEnd(() => {
+    "worklet";
+    runOnJS(handleMediaTap)();
+  });
+
   const handleLike = () => {
     dispatch(toggleLike({ targetId: post._id, targetType: "Post" }));
   };
@@ -358,14 +373,14 @@ const Post = () => {
 
   return (
     <PageThemeView>
-      <Pressable
+      <View
         style={{
           flex: 1,
           flexDirection: "column",
         }}
-        onPress={() =>
-          isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
-        }
+        // onPress={() =>
+        //   isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
+        // }
       >
         {/* Header */}
         <View
@@ -441,37 +456,39 @@ const Post = () => {
           }}
         >
           {/* Media section */}
-          <View
-            style={{
-              width: width,
-              height: getImageHeight(),
-            }}
-          >
-            {post?.isVideo ? (
-              // Video player
-              <VideoPlayer videoSource={post.assets[0].url} />
-            ) : (
-              // Image swiper
-              <Swiper {...swiperConfig} style={{ height: getImageHeight() }}>
-                {post.assets.map((asset, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      width: width,
-                      height: getImageHeight(),
-                    }}
-                  >
-                    <Image
-                      source={{ uri: asset.url }}
-                      style={{ width: "100%", height: "100%" }}
-                      contentFit="cover"
-                      transition={1000}
-                    />
-                  </View>
-                ))}
-              </Swiper>
-            )}
-          </View>
+          <GestureDetector gesture={tapGesture}>
+            <View
+              style={{
+                width: width,
+                height: getImageHeight(),
+              }}
+            >
+              {post?.isVideo ? (
+                // Video player
+                <VideoPlayer videoSource={post.assets[0].url} />
+              ) : (
+                // Image swiper
+                <Swiper {...swiperConfig} style={{ height: getImageHeight() }}>
+                  {post.assets.map((asset, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        width: width,
+                        height: getImageHeight(),
+                      }}
+                    >
+                      <Image
+                        source={{ uri: asset.url }}
+                        style={{ width: "100%", height: "100%" }}
+                        contentFit="cover"
+                        transition={1000}
+                      />
+                    </View>
+                  ))}
+                </Swiper>
+              )}
+            </View>
+          </GestureDetector>
         </View>
 
         {/* Interaction Bar */}
@@ -521,7 +538,7 @@ const Post = () => {
             </TextScallingFalse>
           </ScrollView>
         </LinearGradient>
-      </Pressable>
+      </View>
       <Modal
         visible={isCommentCountModalVisible}
         transparent

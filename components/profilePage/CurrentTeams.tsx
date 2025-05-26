@@ -26,6 +26,7 @@ interface SportType {
 }
 
 interface TeamType {
+  address: any;
   _id: string;
   name: string;
   logo: {
@@ -39,6 +40,7 @@ interface TeamType {
 }
 
 interface AssociateType {
+  address: any;
   team: TeamType;
   role: string;
   position?: string;
@@ -230,7 +232,7 @@ const CurrentTeamsScreen = () => {
                     <TeamItem
                       name={team.team.name}
                       logo={{ uri: team.team.logo.url }}
-                      location={team.location || "Location Not Available"}
+                      location={team?.team?.address?.state +" "+ team?.team?.address?.country  || "Not Available"}
                       role={team.role.slice(0, -1) || "NA"}
                       isCaptain={team.position?.toLowerCase() === "captain"}
                       isVC={team.position?.toLowerCase() === "vicecaptain"}

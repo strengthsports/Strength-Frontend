@@ -51,4 +51,5 @@ export type NotificationType =
   | "JoinTeamRequest"
   | "Report"
   | "Tag"
-  | "Reply";
+  | "Reply"
+  | "TeamInvitationAccepted";

@@ -258,7 +258,7 @@ const CustomDrawer2 = () => {
             /> */}
         <View
           style={{
-            height: 120,
+            height: 140,
             borderTopWidth: 1,
             paddingVertical: 20,
             borderTopColor: '#404040',
@@ -266,7 +266,7 @@ const CustomDrawer2 = () => {
           }}
         >
           <TouchableOpacity
-            className="flex-row items-center mb-2"
+            className="flex-row items-center mb-4"
             style={{ paddingLeft: 5 }}
             onPress={() => {
               router.push("/(app)/(settings)/settings");

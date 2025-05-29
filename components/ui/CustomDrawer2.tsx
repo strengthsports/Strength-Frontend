@@ -8,7 +8,7 @@ import { Image } from "react-native";
 import { useIsFocused } from '@react-navigation/native';
 import TextScallingFalse from "../CentralText";
 import SportsIndicator from "../SvgIcons/SideMenu/SportsIndicator";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { fetchTeams, TeamsList } from "~/reduxStore/slices/team/teamSlice";
@@ -24,10 +24,10 @@ interface Team {
 
 const CustomDrawer2 = () => {
   const router = useRouter();
-   const isFocused = useIsFocused();
+  const isFocused = useIsFocused();
   const dispatch = useDispatch<AppDispatch>();
   const isNavigatingRef = useRef(false);
-   
+
   const [showAllTeams, setShowAllTeams] = useState(false);
 
   const user = useSelector((state: RootState) => state.profile.user);
@@ -57,9 +57,9 @@ const CustomDrawer2 = () => {
     dispatch(fetchTeams());
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     if (isFocused) {
-     
+
       console.log('Drawer screen is focused, refreshing data...');
       dispatch(fetchTeams());
     }
@@ -84,9 +84,8 @@ const CustomDrawer2 = () => {
   };
   return (
     <SafeAreaView
-      className={`w-full h-full bg-[#101010] ${
-        Platform.OS === "ios" ? "pt-10" : "pt-4"
-      }`}
+      className={`w-full h-full bg-[#101010] ${Platform.OS === "ios" ? "pt-10" : "pt-4"
+        }`}
       style={{ justifyContent: "space-between" }}
     >
       <ScrollView className="flex-1 pt-12">
@@ -259,20 +258,38 @@ const CustomDrawer2 = () => {
             /> */}
         <View
           style={{
-            height: 100,
+            height: 140,
+            borderTopWidth: 1,
+            paddingVertical: 20,
+            borderTopColor: '#404040',
             width: "85%",
           }}
         >
           <TouchableOpacity
-            className="flex-row items-center py-5"
+            className="flex-row items-center mb-4"
             style={{ paddingLeft: 5 }}
             onPress={() => {
               router.push("/(app)/(settings)/settings");
             }}
+            activeOpacity={0.5}
           >
             <Feather name="settings" size={20} color="white" />
             <TextScallingFalse className="text-white text-4xl font-medium ml-2">
               Settings
+            </TextScallingFalse>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-center"
+            style={{ paddingLeft: 5 }}
+            onPress={() => {
+              router.push("/(app)/(settings)/FeedBack/feedback2");
+            }}
+            activeOpacity={0.5}
+          >
+            <MaterialIcons name="feedback" size={15} color="white" className="ml-1" />
+            <TextScallingFalse className="text-neutral-500 text-2xl ml-2 mb-1">
+              Feedback
             </TextScallingFalse>
           </TouchableOpacity>
         </View>

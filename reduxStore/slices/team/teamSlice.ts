@@ -159,14 +159,6 @@ export type AcceptJoinRequestPayload = {
   teamId: string;
   notificationId: string;
 };
-
-
-
-
-
-
-
-
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 // --- Utils ---
@@ -176,6 +168,10 @@ const convertToDate = (dateString: string): string => {
   if (isNaN(date.getTime())) throw new Error("Invalid date format");
   return date.toISOString().split("T")[0];
 };
+
+
+
+
 
 // Create a new team
 export const createTeam = createAsyncThunk<
@@ -245,6 +241,12 @@ export const createTeam = createAsyncThunk<
   }
 });
 
+
+
+
+
+
+
 export const fetchTeamDetails = createAsyncThunk<
   Team,
   string,
@@ -263,6 +265,11 @@ export const fetchTeamDetails = createAsyncThunk<
     return rejectWithValue(err.message);
   }
 });
+
+
+
+
+
 
 export const fetchTeams = createAsyncThunk<any, void, { rejectValue: string }>(
   "team/fetchTeams",
@@ -287,6 +294,9 @@ export const fetchTeams = createAsyncThunk<any, void, { rejectValue: string }>(
   }
 );
 
+
+
+
 export const deleteTeam = createAsyncThunk<
   string,
   string,
@@ -305,6 +315,11 @@ export const deleteTeam = createAsyncThunk<
     return rejectWithValue(err.message);
   }
 });
+
+
+
+
+
 
 export const updateTeam = createAsyncThunk<
   Team,
@@ -329,6 +344,12 @@ export const updateTeam = createAsyncThunk<
     return rejectWithValue(err.message);
   }
 });
+
+
+
+
+
+
 
 export const fetchMemberSuggestions = createAsyncThunk<
   MemberSuggestionsState,
@@ -366,6 +387,12 @@ export const fetchMemberSuggestions = createAsyncThunk<
     }
   }
 );
+
+
+
+
+
+
 
 // --- Async Action for Sending Invitations ---
 export const sendInvitations = createAsyncThunk<
@@ -418,7 +445,14 @@ export const sendInvitations = createAsyncThunk<
   }
 });
 
-//dispatch the all-team form backend write the slice for it 
+
+
+
+
+
+
+
+
 
 // --- Initial State ---
 const initialState: TeamState = {
@@ -456,6 +490,11 @@ const initialState: TeamState = {
   },
 };
 
+
+
+
+
+
 //change user position
 export const changeUserPosition = createAsyncThunk<
   TeamMember,
@@ -487,6 +526,11 @@ export const changeUserPosition = createAsyncThunk<
     }
   }
 );
+
+
+
+
+
 
 export const changeUserRole = createAsyncThunk<
   TeamMember,
@@ -552,6 +596,9 @@ export const changeUserRole = createAsyncThunk<
 //join team request by user who not present in the team
 
 
+
+
+
 export const joinTeam = createAsyncThunk<
   { team: Team; message: string }, // Return type
   { teamId: string; userId: string }, // Only requires teamId and userId
@@ -583,6 +630,10 @@ export const joinTeam = createAsyncThunk<
     return rejectWithValue(err.message || "Network error");
   }
 });
+
+
+
+
 
 //accept team invitation
 export const acceptTeamInvitation = createAsyncThunk(
@@ -627,6 +678,11 @@ export const acceptTeamInvitation = createAsyncThunk(
     }
   }
 );
+
+
+
+
+
 
 //reject team invitation
 export const rejectTeamInvitation = createAsyncThunk(
@@ -674,6 +730,10 @@ export const rejectTeamInvitation = createAsyncThunk(
 //remove user from team-----> 
 // In teamSlice.ts, ensure the removeTeamMember thunk is properly implemented:
 
+
+
+
+
 export const removeTeamMember = createAsyncThunk<
   { success: boolean; message: string },
   { teamId: string; userId: string },
@@ -702,6 +762,11 @@ export const removeTeamMember = createAsyncThunk<
     return rejectWithValue(err.message || "Network error");
   }
 });
+
+
+
+
+
 
 
 // Add this to your teamSlice.ts file with the other async thunks
@@ -736,6 +801,9 @@ export const transferAdmin = createAsyncThunk<
     return rejectWithValue(err.message || "Network error");
   }
 });
+
+
+
 
 
 
@@ -827,6 +895,13 @@ export const acceptJoinRequest = createAsyncThunk<
   }
 );
 
+
+
+
+
+
+
+
 export const rejectJoinRequest = createAsyncThunk<
   { success: boolean; message: string },
   { notificationId: string; userId: string },
@@ -861,6 +936,11 @@ export const rejectJoinRequest = createAsyncThunk<
     }
   }
 );
+
+
+
+
+
 
 
 const teamSlice = createSlice({

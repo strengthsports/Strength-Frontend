@@ -38,6 +38,7 @@ const NOTIFICATION_TEXTS: Record<NotificationType, string> = {
   JoinTeamRequest: "has requested to join team - ",
   Report: "You are reported",
   Tag: "tagged you",
+  TeamInvitationAccepted: "has accepted your invitation to join team - ",
 };
 
 const NotificationCardLayout = React.memo(
@@ -315,6 +316,29 @@ const NotificationCardLayout = React.memo(
           </>
         );
       }
+      // Add this case in the renderNotificationContent() function
+if (type === "TeamInvitationAccepted") {
+  return (
+    <>
+      <NotificationHeader
+        _id={_id}
+        sender={sender}
+        type={type}
+        timeAgo={timeAgo}
+        isNew={isNew}
+        customText={`has accepted your invitation to join team`}
+        teamName={target.name}
+        role={roleInTeam}
+        handleMarkNotificationVisited={handleMarkNotificationVisited}
+      />
+      <TeamPreview
+        image={target.logo?.url}
+        handleTeamPress={handleTeamPress}
+        isAcceptedRequest={true}
+      />
+    </>
+  );
+}
 
       if (type === "Tag") {
         return (
@@ -526,11 +550,13 @@ const TeamPreview = React.memo(
     handleTeamPress,
     handleDecline,
     handleAccept,
+    isAcceptedRequest = false
   }: {
     image?: string;
     handleTeamPress: () => void;
-    handleDecline: () => void;
-    handleAccept: () => void;
+    handleDecline?: () => void;
+    handleAccept?: () => void;
+    isAcceptedRequest?: boolean;
   }) => {
     const [isAccepted, setIsAccepted] = useState(false);
     const [isDeclined, setIsDeclined] = useState(false);
@@ -538,9 +564,7 @@ const TeamPreview = React.memo(
 
     const handleAcceptPress = () => {
       setIsProcessing(true);
-      handleAccept();
-      // Note: The actual state change should be handled by the Redux action
-      // This local state is just for UI feedback
+      handleAccept?.();
       setTimeout(() => {
         setIsAccepted(true);
         setIsProcessing(false);
@@ -549,18 +573,52 @@ const TeamPreview = React.memo(
 
     const handleDeclinePress = () => {
       setIsProcessing(true);
-      handleDecline();
+      handleDecline?.();
       setTimeout(() => {
         setIsDeclined(true);
         setIsProcessing(false);
       }, 500);
     };
 
+    // For already accepted requests (read-only view)
+    if (isAcceptedRequest) {
+      return (
+        <View className="mt-2" style={{ width: "86%" }}>
+          <TouchableOpacity
+            onPress={handleTeamPress}
+            activeOpacity={0.7}
+            className="flex-row bg-[#262626] items-center rounded-xl p-3"
+          >
+            {image && (
+              <Image
+                source={{ uri: image }}
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 8,
+                  marginRight: 12,
+                }}
+              />
+            )}
+            <View className="flex-1">
+              <View className="flex-row items-center">
+                <TickIcon />
+                <TextScallingFalse className="text-white font-medium text-[14px] ml-2">
+                  Membership Accepted
+                </TextScallingFalse>
+              </View>
+              <TextScallingFalse className="text-zinc-400 text-[12px] mt-1">
+                Tap to view team
+              </TextScallingFalse>
+            </View>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // For pending invitations (with action buttons)
     return (
-      <View
-        className={`mt-2 overflow-hidden rounded-xl`}
-        style={{ width: "86%" }}
-      >
+      <View className={`mt-2 overflow-hidden rounded-xl`} style={{ width: "86%" }}>
         <View className="flex-row bg-[#262626] justify-between items-center">
           {image && (
             <TouchableOpacity

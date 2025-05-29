@@ -75,6 +75,19 @@ const ArticlePage = () => {
 
   const { width } = useWindowDimensions();
 
+  const { shareArticles } = useShare();
+  const handleShareArticle = () => {
+    const article = articles?.[currentIndex];
+    if (!article) return;
+
+    shareArticles({
+      title: article.title,
+      content: article.content,
+      banner: article.imageUrl,
+      sportsName: article.sportsName,
+      date: article.createdAt,
+    });
+  };
 
   const renderItem = ({ item }: any) => {
     const { date, time } = formatDateTime(item.updatedAt);
@@ -149,7 +162,7 @@ const ArticlePage = () => {
           <TextScallingFalse className="text-white text-3xl font-bold">
             {validSportsName} articles
           </TextScallingFalse>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleShareArticle}>
             <MaterialCommunityIcons name="share" size={24} color="white" />
           </TouchableOpacity>
         </View>

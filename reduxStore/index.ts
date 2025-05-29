@@ -43,6 +43,7 @@ import { footballApi } from "./api/explore/footballApi";
 import { basketballApi } from "./api/explore/basketballApi";
 import { articleApi } from "./api/explore/article/articleApi";
 import userCommentsReducer from "./slices/comments/userCommentsSlice";
+import { feedbackApi } from "./api/feedback/feedbackApi";
 
 // Persist configuration
 const persistConfig = {
@@ -89,6 +90,7 @@ const rootReducer = combineReducers({
   [searchApi.reducerPath]: searchApi.reducer,
   [articleApi.reducerPath]: articleApi.reducer,
   [hashtagApi.reducerPath]: hashtagApi.reducer,
+  [feedbackApi.reducerPath]: feedbackApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -113,7 +115,8 @@ export const store = configureStore({
       feedApi.middleware,
       searchApi.middleware,
       articleApi.middleware,
-      hashtagApi.middleware
+      hashtagApi.middleware,
+      feedbackApi.middleware,
     ),
 });
 

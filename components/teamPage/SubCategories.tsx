@@ -34,7 +34,7 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
     
     Animated.timing(slideAnim, {
       toValue: 0,
-      duration: 2000,
+      duration: 200,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
@@ -104,13 +104,13 @@ const SubCategories = ({ teamDetails }: { teamDetails: TeamPayload }) => {
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView 
+      <View 
         stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
         className="flex-1"
       >
         {renderContent()}
-      </ScrollView>
+      </View>
     </View>
   );
 };

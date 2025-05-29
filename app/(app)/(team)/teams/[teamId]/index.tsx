@@ -13,7 +13,6 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import {
   useRouter,
@@ -24,7 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   deleteTeam,
   fetchTeamDetails,
-    removeTeamMember, 
+  removeTeamMember, 
 } from "~/reduxStore/slices/team/teamSlice";
 import {
   sendTeamJoinRequest,
@@ -43,6 +42,15 @@ import TextScallingFalse from "~/components/CentralText";
 import { Modalize } from "react-native-modalize";
 import InviteModal from "~/components/teamPage/InviteModel";
 import { Team } from "~/types/team";
+import AlertModal from "~/components/modals/AlertModal";
+import Toast from "react-native-toast-message";
+import { toastConfig } from "~/configs/toastConfig";
+import {
+  showSuccess,
+  showError,
+  showInfo,
+  showWarning,
+} from "~/utils/feedbackToast";
 
 const { height } = Dimensions.get("window");
 
@@ -54,23 +62,60 @@ const TeamPage: React.FC = () => {
   const teamId = params.teamId ? String(params.teamId) : "";
   const { user } = useSelector((state: RootState) => state.profile);
   const teamDetails = useSelector((state: RootState) => state.team.team);
-  // console.log("Team ------>: ", teamDetails);
   const loading = useSelector((state: RootState) => state.team.loading);
   const [joining, setJoining] = useState(false);
-  // const userId = useSelector((state: RootState) => state.auth.user?._id);
-
-  // Safely access teamJoin state with fallback values
   const teamJoin = useSelector((state: RootState) => state.teamJoin);
   const joinError = teamJoin?.error || null;
   const joinSuccess = teamJoin?.success || false;
-
-  // State to track if a request has been sent
   const [requestSent, setRequestSent] = useState(false);
-  const [isTeamMember,setIsteamMember] = useState(false);
+  const [isTeamMember, setIsteamMember] = useState(false);
+
+  // Refresh state
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Alert modal state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: "",
+    message: "",
+    confirmAction: () => {},
+    discardAction: () => {},
+    confirmMessage: "Confirm",
+    cancelMessage: "Cancel",
+  });
 
   const modalRef = useRef<Modalize>(null);
   const scrollViewRef = useRef<ScrollView>(null);
-  const [refreshing, setRefreshing] = useState(false);
+
+  const showAlert = (
+    title: string,
+    message: string,
+    confirmAction: () => void,
+    confirmMessage = "Confirm",
+    isDestructive = false
+  ) => {
+    const config = {
+      title,
+      message,
+      confirmAction: () => {
+        setAlertVisible(false);
+        confirmAction();
+      },
+      discardAction: () => setAlertVisible(false),
+      confirmMessage,
+      cancelMessage: "Cancel",
+      discardButtonColor: isDestructive
+        ? { bg: "#D44044", text: "white" }
+        : undefined,
+    };
+
+    setAlertConfig(config);
+    setAlertVisible(true);
+  };
+
+  const hideAlert = () => {
+    setAlertVisible(false);
+  };
 
   // Memoized team data
   const teamData = useMemo(
@@ -82,7 +127,7 @@ const TeamPage: React.FC = () => {
       membersCount: teamDetails?.members?.length || 0,
       isRequested: teamDetails?.isRequested || false,
     }),
-    [teamDetails,teamId]
+    [teamDetails, teamId]
   );
 
   // Memoized captain and vice captain data
@@ -126,17 +171,37 @@ const TeamPage: React.FC = () => {
     [teamDetails?.sport?.playerTypes]
   );
 
-  
-
   // Memoized isAdmin check
   const isAdmin = useMemo(
     () => user?._id === teamDetails?.admin?.[0]?._id,
     [user?._id, teamDetails?.admin]
   );
 
-  useEffect(() => {
-    if (teamId) dispatch(fetchTeamDetails(teamId));
+  // Enhanced fetch team details function
+  const fetchTeamData = useCallback(async (showErrorToast = true) => {
+    if (teamId) {
+      try {
+        await dispatch(fetchTeamDetails(teamId)).unwrap();
+        return true;
+      } catch (error) {
+        console.error("Failed to fetch team details:", error);
+        if (showErrorToast) {
+          showError("Failed to fetch team data");
+        }
+        throw error;
+      }
+    }
+    return false;
   }, [teamId, dispatch]);
+
+  // Initial fetch on component mount and teamId change
+  useEffect(() => {
+    if (teamId) {
+      fetchTeamData().catch(() => {
+        // Error already handled in fetchTeamData
+      });
+    }
+  }, [teamId, dispatch]); // Added dispatch dependency
 
   // Reset join status when component unmounts
   useEffect(() => {
@@ -150,7 +215,7 @@ const TeamPage: React.FC = () => {
     if (joinSuccess) {
       setRequestSent(true);
       setJoining(false);
-      Alert.alert("Success", "Join request sent successfully!");
+      showSuccess("Join request sent successfully!");
       dispatch(resetJoinStatus());
     }
 
@@ -158,92 +223,119 @@ const TeamPage: React.FC = () => {
       setJoining(false);
       if (joinError.includes("already sent")) {
         setRequestSent(true);
-        Alert.alert(
-          "Information",
-          "You have already sent a join request to this team."
-        );
+        showInfo("You have already sent a join request to this team.");
       } else {
-        Alert.alert("Error", joinError);
+        showError(joinError);
       }
       dispatch(resetJoinStatus());
     }
   }, [joinSuccess, joinError, dispatch]);
 
-  // const handleDeleteTeam = useCallback(async () => {
-  //   try {
-  //     const message = await dispatch(deleteTeam(teamId)).unwrap();
-  //     alert("Success: " + message);
-  //     router.push("/(app)/(tabs)/home");
-  //   } catch (error) {
-  //     alert("Error deleting team");
-  //   }
-  // }, [dispatch, teamId, router]);
-
+  // Instagram-style pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    console.log("🔄 Starting refresh...");
+    setRefreshing(true);
+    
+    try {
+      // Create array of promises to run simultaneously
+      const promises = [];
+      
+      // Always fetch team details - don't show error toast during refresh
+      if (teamId) {
+        console.log("📡 Fetching team details...");
+        promises.push(
+          dispatch(fetchTeamDetails(teamId)).unwrap()
+        );
+      }
+      
+      // Fetch user profile if available
+      if (user?._id) {
+        console.log("👤 Fetching user profile...");
+        promises.push(
+          dispatch(fetchMyProfile({ 
+            targetUserId: user._id, 
+            targetUserType: "User" 
+          })).unwrap()
+        );
+      }
+      
+      // Wait for all promises to complete
+      await Promise.all(promises);
+      
+      console.log("✅ Refresh completed successfully");
+      // Show success toast only after successful refresh
+      showSuccess("Refreshed successfully");
+      
+    } catch (error) {
+      console.error("❌ Failed to refresh data:", error);
+      showError("Failed to refresh");
+    } finally {
+      console.log("🏁 Setting refreshing to false");
+      // Always set refreshing to false
+      setRefreshing(false);
+    }
+  }, [dispatch, teamId, user?._id]);
 
 const handleLeaveTeam = useCallback(async () => {
   if (!user?._id || !teamId) {
-    Alert.alert("Error", "Missing user or team information");
+    showError("Missing user or team information");
     return;
   }
 
-  Alert.alert(
+  // If admin is trying to leave but there are other members
+  if (isAdmin && teamData.membersCount > 1) {
+    showAlert(
+      "Cannot Leave Team",
+      `To Leave the Team - "${teamDetails?.name}", assign the new admin first `,
+      () => {
+        // Navigate to members screen to manage members
+        router.push(`/(app)/(team)/teams/${teamId}/members` as RelativePathString);
+      },
+      "Assign"
+    );
+    return;
+  }
+
+  showAlert(
     "Leave Team",
     "Are you sure you want to leave this team?",
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Leave",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const result = await dispatch(
-              removeTeamMember({
-                teamId: teamId,
-                userId: user._id,
-              })
-            ).unwrap();
+    async () => {
+      try {
+        const result = await dispatch(
+          removeTeamMember({
+            teamId: teamId,
+            userId: user._id,
+          })
+        ).unwrap();
 
-            Alert.alert("Success", "You have left the team successfully");
-            router.push("/(app)/(tabs)/home");
-          } catch (error) {
-            Alert.alert("Error", "Failed to leave the team");
-            console.error("Failed to leave team:", error);
-          }
-        },
-      },
-    ],
-    { cancelable: true }
+        showSuccess("You have left the team successfully");
+        router.push("/(app)/(tabs)/home");
+      } catch (error) {
+        showError("Failed to leave the team");
+        console.error("Failed to leave team:", error);
+      }
+    },
+    "Leave",
+    true
   );
-}, [dispatch, teamId, user?._id, router]);
-
-
-
-
-
+}, [dispatch, teamId, user?._id, router, isAdmin, teamData.membersCount, teamDetails?.name]);
 
   const handleJoinTeam = useCallback(async () => {
     setJoining(true);
     if (requestSent) {
-      Alert.alert(
-        "Information",
-        "You have already sent a join request to this team."
-      );
+      showInfo("You have already sent a join request to this team.");
       setJoining(false);
       return;
     }
 
     if (!user?._id || !teamId) {
-      Alert.alert("Error", "Missing user or team information");
+      showError("Missing user or team information");
       setJoining(false);
       return;
     }
 
     try {
       const UserId = user?._id || "";
-      // console.log("sending join request----->", UserId, teamId);
       setJoining(true);
       await dispatch(sendTeamJoinRequest({ UserId, teamId }));
     } catch (err) {
@@ -251,16 +343,6 @@ const handleLeaveTeam = useCallback(async () => {
       setJoining(false);
     }
   }, [dispatch, requestSent, teamId, user?._id]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    if (teamId) {
-      dispatch(fetchTeamDetails(teamId))
-        .unwrap()
-        .then(() => setRefreshing(false))
-        .catch(() => setRefreshing(false));
-    }
-  }, [teamId, dispatch]);
 
   const handleInvitePress = useCallback(
     (role: string) => {
@@ -281,112 +363,169 @@ const handleLeaveTeam = useCallback(async () => {
   );
 
   useFocusEffect(
-      React.useCallback(() => {
-        if (user?._id) {
-          dispatch(fetchMyProfile({ 
-            targetUserId: user._id, 
-            targetUserType: "User" 
-          }));
-        }
-      }, [dispatch, user?._id])
+    React.useCallback(() => {
+      if (user?._id) {
+        dispatch(fetchMyProfile({ 
+          targetUserId: user._id, 
+          targetUserType: "User" 
+        }));
+      }
+    }, [dispatch, user?._id])
   );
 
-  // Memoized menu items
-  const menuItems = useMemo(() => {
-    const baseMenuItems = [
+const menuItems = useMemo(() => {
+  const baseMenuItems = [
+    {
+      id: "members",
+      label: `Members`,
+      logo: () => null,
+      color: "white",
+      onPress: () =>
+        router.push(
+          `/(app)/(team)/teams/${teamId}/members` as RelativePathString
+        ),
+    },
+  ];
+
+  // For admin with only 1 member (themselves) - show Delete Team
+  if (isAdmin && teamData.membersCount === 1) {
+    baseMenuItems.push({
+      id: "delete",
+      label: "Delete Team",
+      logo: LeaveTeam,
+      color: "red",
+      onPress: () => showAlert(
+        "Delete Team",
+        "Are you sure you want to delete this team? This action cannot be undone.",
+        async () => {
+          try {
+            await dispatch(deleteTeam(teamId)).unwrap();
+            showSuccess("Team deleted successfully");
+            router.push("/(app)/(tabs)/home");
+          } catch (error) {
+            showError("Failed to delete team");
+          }
+        },
+        "Delete",
+        true
+      ),
+    });
+  }
+  // For admin with more than 1 member - show Leave Team with special logic
+  else if (isAdmin && teamData.membersCount > 1) {
+    baseMenuItems.push({
+      id: "leave",
+      label: "Leave Team",
+      logo: LeaveTeam,
+      color: "red",
+      onPress: handleLeaveTeam, // This will show the "manage members first" alert
+    });
+  }
+  // For regular members - show regular Leave Team
+  else if (!isAdmin && isMember) {
+    baseMenuItems.push({
+      id: "leave",
+      label: "Leave Team",
+      logo: LeaveTeam,
+      color: "red",
+      onPress: handleLeaveTeam,
+    });
+  }
+
+  // Admin-specific menu items (settings and invite)
+  if (isAdmin) {
+    return [
       {
-        id: "members",
-        label: `Members`,
-        logo: () => null,
+        id: "settings",
+        label: "Settings",
+        logo: SettingsIcon,
         color: "white",
         onPress: () =>
           router.push(
-            `/(app)/(team)/teams/${teamId}/members` as RelativePathString
+            `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
           ),
       },
       {
-        id: "leave",
-        label: "Leave Team",
-        logo: LeaveTeam,
-        color: "red",
-        onPress: handleLeaveTeam,
+        id: "invite",
+        label: "Invite Members",
+        logo: InviteMembers,
+        color: "white",
+        onPress: () => modalRef.current?.open(),
       },
+      ...baseMenuItems,
     ];
+  }
 
-    if (isAdmin) {
-      return [
-        {
-          id: "settings",
-          label: "Settings",
-          logo: SettingsIcon,
-          color: "white",
-          onPress: () =>
-            router.push(
-              `/(app)/(team)/teams/${teamId}/settings` as RelativePathString
-            ),
-        },
-        {
-          id: "invite",
-          label: "Invite Members",
-          logo: InviteMembers,
-          color: "white",
-          onPress: () => modalRef.current?.open(),
-        },
-        ...baseMenuItems,
-      ];
-    }
-
-    return baseMenuItems;
-  }, [isAdmin, teamData.membersCount, teamId, router, handleLeaveTeam]);
+  return baseMenuItems;
+}, [isAdmin, isMember, teamData.membersCount, teamId, router, handleLeaveTeam, dispatch]);
 
   return (
-    <View style={styles.container}
-   >
-      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId} memberCount={teamData.membersCount}>
-       
+    <View style={styles.container}>
+      {/* Alert Modal */}
+      {alertVisible && (
+        <AlertModal
+          alertConfig={alertConfig}
+          isVisible={alertVisible}
+          onClose={hideAlert}
+        />
+      )}
 
+      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId} memberCount={teamData.membersCount}>
         <ScrollView
-           showsVerticalScrollIndicator={false}
-           refreshControl={
-          <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        tintColor="#fff"
-        colors={["#fff"]}
-        progressViewOffset={40}
-      />
-    }
           ref={scrollViewRef}
           style={styles.squadContainer}
           contentContainerStyle={styles.scrollContent}
-         
-          // showsVerticalScrollIndicator={false}
-        >
-          {loading && !refreshing ? (
-            <ActivityIndicator
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#fff"
+              colors={["#fff", "#ccc"]}
+              progressBackgroundColor="#1a1a1a"
+              progressViewOffset={0}
               size="large"
-              color="white"
-              style={styles.loader}
+              // Instagram-style refresh control
+              titleColor="#fff"
+              // Add these for better UX
+              style={{ backgroundColor: 'transparent' }}
+              // Make it more responsive
+              threshold={50}
             />
+          }
+        >
+          {/* Show loading indicator during initial load OR refresh */}
+          {(loading && !teamDetails) || refreshing ? (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator
+                size="large"
+                color="white"
+                style={styles.loader}
+              />
+              {refreshing && (
+                <TextScallingFalse style={styles.refreshText}>
+                  Refreshing...
+                </TextScallingFalse>
+              )}
+            </View>
           ) : (
             <>
-            <TeamCard
-          requestSent={teamData.isRequested}
-          teamName={teamData.name}
-          sportCategory={teamData.sportName}
-          captain={captain}
-          viceCapt={viceCapt}
-          location={location}
-          teamLogo={teamData.logo}
-          sportLogo={teamData.sportLogo}
-          showJoinButton={!isMember && !isAdmin}
-          onJoinPress={handleJoinTeam}
-          joining={joining}
-        />
-            <SubCategories teamDetails={teamDetails} />
+              <TeamCard
+                requestSent={teamData.isRequested}
+                teamName={teamData.name}
+                sportCategory={teamData.sportName}
+                captain={captain}
+                viceCapt={viceCapt}
+                location={location}
+                teamLogo={teamData.logo}
+                sportLogo={teamData.sportLogo}
+                showJoinButton={!isMember && !isAdmin}
+                onJoinPress={handleJoinTeam}
+                joining={joining}
+              />
+              <SubCategories teamDetails={teamDetails} />
             </>
           )}
-         
         </ScrollView>
       </CombinedDrawer>
       
@@ -396,6 +535,14 @@ const handleLeaveTeam = useCallback(async () => {
         isAdmin={isAdmin}
         onInvitePress={handleInvitePress}
       />
+
+      {/* Toast Component */}
+      <Toast
+        config={toastConfig}
+        topOffset={50}
+        visibilityTime={2000}
+        autoHide={true}
+      />
     </View>
   );
 };
@@ -403,7 +550,7 @@ const handleLeaveTeam = useCallback(async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:"black",
+    backgroundColor: "black",
   },
   squadContainer: {
     flex: 1,
@@ -412,33 +559,22 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 200,
+    paddingVertical: 50,
+  },
   loader: {
-    marginTop: 20,
     alignSelf: "center",
+    marginBottom: 10,
   },
-  modal: {
-    backgroundColor: "#1C1D23",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-    textAlign: "center",
-    color: "white",
-  },
-  roleButton: {
-    paddingVertical: 18,
-    backgroundColor: "black",
-    marginVertical: 6,
-    padding: 20,
-    borderRadius: 10,
-  },
-  roleText: {
-    fontSize: 17,
-    color: "#CFCFCF",
+  refreshText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 10,
   },
 });
 

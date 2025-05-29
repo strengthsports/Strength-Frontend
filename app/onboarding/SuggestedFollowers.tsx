@@ -175,6 +175,7 @@ const SuggestedSupportScreen: React.FC = () => {
       });
 
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
+      dispatch(fetchMyProfile(user?._id));
 
       // console.log(response);
       setFinalLoading(false);

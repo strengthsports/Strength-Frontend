@@ -19,6 +19,7 @@
       "icon": "./assets/images/ios-dark.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["remote-notification"],
         "NSLocationWhenInUseUsageDescription": "We use your location to help you discover and connect with nearby teams and events.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location to enable location-based team discovery and notify you about nearby activity, even when the app is in the background."
       }
@@ -53,7 +54,16 @@
       ],
       "expo-secure-store",
       "expo-font",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "deploymentTarget": "13.0"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -25,6 +25,7 @@ export interface AuthState {
   success: boolean;
   status: number | null;
   msgBackend: string | null;
+  fcmToken?: string | null;
 }
 
 export interface OnboardingData {

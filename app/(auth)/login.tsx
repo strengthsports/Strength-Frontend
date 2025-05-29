@@ -32,6 +32,7 @@ import {
 import { z } from "zod";
 import loginSchema from "@/schemas/loginSchema";
 import { Colors } from "~/constants/Colors";
+import messaging from "@react-native-firebase/messaging";
 
 const LoginScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -75,6 +76,7 @@ const LoginScreen = () => {
       setLoading(true);
 
       // Dispatch login action
+
       const response = await dispatch(loginUser(loginData)).unwrap();
       await dispatch(initializeAuth());
 
@@ -87,7 +89,7 @@ const LoginScreen = () => {
         const validationError = err.errors[0]?.message || "Invalid input.";
         feedback(validationError);
       } else {
-        feedback(err);
+        feedback(err?.message || "Login failed. Please try again.");
       }
     } finally {
       setLoading(false); // Stop loading
@@ -208,7 +210,7 @@ const LoginScreen = () => {
               color={"#12956B"}
             />
           ) : (
-            <SignupButton disabled={false} onPress={handleLogin}>
+            <SignupButton disabled={loading} onPress={handleLogin}>
               <TextScallingFalse
                 style={{ color: "white", fontSize: 14.5, fontWeight: "700" }}
               >

@@ -21,6 +21,7 @@ const MultipleProfiles = ({
     >
       {users.map((user: any, index: any) => (
         <TouchableOpacity
+          key={user._id || index}
           onPress={() => {
             const serializedUser = encodeURIComponent(
               JSON.stringify({ id: user._id, type: user.type })
@@ -30,7 +31,6 @@ const MultipleProfiles = ({
           activeOpacity={0.7}
         >
           <Image
-            key={user._id}
             source={user.profilePic}
             style={{
               marginLeft: index === 0 ? 0 : size === "regular" ? -20 : -10,

@@ -10,6 +10,7 @@ import {
 } from "@/utils/secureStore";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { User, AuthState } from "@/types/user";
+import { Platform } from "react-native";
 
 type LoginPayload = {
   email?: string;
@@ -26,6 +27,7 @@ const initialState: AuthState = {
   success: false,
   status: null,
   msgBackend: null,
+  fcmToken: null,
 };
 
 // Thunks
@@ -160,6 +162,36 @@ export const refreshAccessToken = createAsyncThunk<
   }
 });
 
+//save fcm token
+export const sendFcmToken = createAsyncThunk<
+  void,
+  string,
+  { rejectValue: string }
+>("auth/sendFcmToken", async (fcmToken, { rejectWithValue }) => {
+  try {
+    const accessToken = await getToken("accessToken");
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/save-fcm-token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ fcmToken, device: Platform.OS }),
+      }
+    );
+
+    if (!response.ok) {
+      const data = await response.json();
+      return rejectWithValue(data.message || "Failed to save FCM token");
+    }
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to save FCM token");
+  }
+});
+
 // Slice
 const authSlice = createSlice({
   name: "auth",
@@ -181,6 +213,7 @@ const authSlice = createSlice({
       state.error = null;
       state.msgBackend = null;
       state.status = null;
+      state.fcmToken = null;
     },
   },
   extraReducers: (builder) => {
@@ -194,6 +227,22 @@ const authSlice = createSlice({
       state.isLoggedIn = true;
       state.error = null;
       state.msgBackend = action.payload.message;
+    });
+
+    //fcm token
+    builder.addCase(sendFcmToken.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+
+    builder.addCase(sendFcmToken.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = null;
+    });
+
+    builder.addCase(sendFcmToken.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "Failed to send FCM token";
     });
 
     // Logout

@@ -44,13 +44,16 @@ const TeamMember: React.FC<TeamMemberProps> = ({
       )}
 
 
-      <View className=" justify-center ">
+      <View className=" justify-center  ">
       {/* Profile Image */}
+
+     
       <Image
         source={imageUrl ? { uri: imageUrl } : Nopic}
         style={styles.image}
         resizeMode="cover"
       />
+     
 
      
 
@@ -107,6 +110,8 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     marginHorizontal:20,
     marginVertical:12,
+    borderWidth:1,
+    borderColor:"#181818",
     // marginTop: 14,
     // justifyContent:"center",
     

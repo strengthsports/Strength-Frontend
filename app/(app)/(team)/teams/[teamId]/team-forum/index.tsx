@@ -346,8 +346,9 @@ const canSendMessages = useMemo(() => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={loadMessages}
-            colors={["#ffffff"]}
-            tintColor="#ffffff"
+            colors={["#12956B"]}
+          tintColor="#12956B" 
+          progressBackgroundColor="gray" // White background
           />
         }
         renderItem={({ item }) => (

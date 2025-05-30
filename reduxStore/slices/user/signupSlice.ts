@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
-import { saveToken } from "~/utils/secureStore";
+import { saveRToken, saveToken, setExpiry } from "~/utils/secureStore";
 import { setAuthState } from "./authSlice";
 
 // Types
@@ -175,6 +175,9 @@ export const completeSignup = createAsyncThunk<
     // Convert tokens to strings and save in Secure Store
     console.log("saving accessToken");
     saveToken("accessToken", data.data.accessToken);
+    saveRToken("refreshToken", data.data.refreshToken);
+    // console.log(data.data.refreshToken);
+    setExpiry();
 
     return { user: data.data.user, message: data.message }; // Return the response data for the fulfilled state
   } catch (error: any) {

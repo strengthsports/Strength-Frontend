@@ -46,7 +46,7 @@ const Overview = () => {
   const { profileData, isLoading, error } = useContext(ProfileContext);
   console.log("User data on Overview page : ", profileData);
 
-  const maxAboutLength = 140;
+  const maxAboutLength = 150;
   const aboutText = profileData?.about || "";
   const needsTruncation = aboutText.length > maxAboutLength;
   const truncatedText = needsTruncation
@@ -286,6 +286,7 @@ const Overview = () => {
               >
                 ABOUT
               </TextScallingFalse>
+              <TouchableOpacity onPress={handleToggle} disabled={isExpanded} activeOpacity={0.9}>
               <TextScallingFalse
                 className="text-white font-light pt-4 leading-5"
                 style={{
@@ -302,6 +303,7 @@ const Overview = () => {
                   </TextScallingFalse>
                 )}
               </TextScallingFalse>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

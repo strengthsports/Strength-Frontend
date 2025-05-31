@@ -496,7 +496,7 @@ const handleImageSelect = async () => {
   </TouchableOpacity>
 </View>
               {/* Form Fields */}
-              <View className="space-y-6">
+              <View className="space-y-6 pb-10">
                 {/* Name */}
                 <View className="mt-2">
                   <TextScallingFalse className="text-white text-2xl mb-1">Name*</TextScallingFalse>
@@ -742,8 +742,11 @@ const handleImageSelect = async () => {
                     placeholderTextColor="#666"
                     multiline
                     numberOfLines={4}
+                    maxLength={800}
                     className="bg-transparent border border-[#515151] rounded-lg p-4 text-white"
                   />
+                  <TextScallingFalse style={{color:'grey', fontSize: 12, fontWeight:'400', padding: 5}}>
+                    {formData.description.length}/800</TextScallingFalse>
                 </View>
               </View>
 

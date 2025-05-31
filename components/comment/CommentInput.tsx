@@ -36,7 +36,7 @@ const CommentInput = ({
   );
 
   return (
-    <View className="bg-black p-2">
+    <View className="bg-black p-2" style={{ gap: 10, }}>
       <View className={`w-full flex bg-[#181818] rounded-3xl`}>
         {replyingTo && (
           <View className="border border-[#181818] bg-black flex-row justify-between items-center px-4 py-2 rounded-t-3xl">
@@ -55,9 +55,8 @@ const CommentInput = ({
           </View>
         )}
         <View
-          className={`flex-row px-3 py-1.5 ${
-            inputHeight <= 40 ? "items-center" : "items-end"
-          }`}
+          className={`flex-row px-3 py-1.5 ${inputHeight <= 40 ? "items-center" : "items-end"
+            }`}
         >
           <Image
             source={user?.profilePic ? { uri: user.profilePic } : nopic}
@@ -79,7 +78,7 @@ const CommentInput = ({
             placeholder="Type your comment here"
             className="flex-1 px-4 bg-[#181818] text-white"
             style={{
-              height: Math.min(Math.max(40, inputHeight), MAX_HEIGHT),
+              // height: Math.min(Math.max(40, inputHeight), MAX_HEIGHT),
               maxHeight: MAX_HEIGHT,
             }}
             multiline={true}
@@ -89,11 +88,12 @@ const CommentInput = ({
                 Math.min(event.nativeEvent.contentSize.height, MAX_HEIGHT)
               )
             }
-            scrollEnabled={inputHeight >= MAX_HEIGHT}
+            scrollEnabled={true}
             placeholderTextColor="grey"
             cursorColor={Colors.themeColor}
             value={commentText}
             onChangeText={handleTextChange}
+            maxLength={1040}
           />
           <TouchableOpacity
             onPress={handlePostComment}
@@ -112,6 +112,12 @@ const CommentInput = ({
           </TouchableOpacity>
         </View>
       </View>
+      {commentText.length === 1040 ? (
+        <TextScallingFalse style={{ color: 'grey', fontSize: 12, fontWeight: '400', borderColor: '#404040', 
+        borderWidth: 1, width: '95%', alignSelf: 'center', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5}}>
+        {commentText.length}/1040   maximum characters limit reached !
+      </TextScallingFalse>
+      ) : null}
     </View>
   );
 };

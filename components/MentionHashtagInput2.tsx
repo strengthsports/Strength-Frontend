@@ -195,7 +195,7 @@ const MentionHashtagInput2 = ({
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.inputContainer}>
       <View style={styles.inputContainer}>
         <TextInput
           ref={inputRef}
@@ -209,6 +209,7 @@ const MentionHashtagInput2 = ({
           selectionColor="#12956B"
           cursorColor="#12956B"
           autoCorrect={false}
+          maxLength={3000}
         />
         <View style={styles.textOverlay} pointerEvents="none">
           <ParsedText
@@ -229,10 +230,10 @@ const MentionHashtagInput2 = ({
             data={
               suggestionType === "@"
                 ? userResults.filter((u) =>
-                    u.username
-                      ?.toLowerCase()
-                      ?.includes(suggestionQuery?.toLowerCase())
-                  )
+                  u.username
+                    ?.toLowerCase()
+                    ?.includes(suggestionQuery?.toLowerCase())
+                )
                 : getFilteredHashtags(suggestionQuery)
             }
             renderItem={renderSuggestionItem}

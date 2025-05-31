@@ -7,6 +7,7 @@ import {
   Modal,
   Linking,
   BackHandler,
+  Share
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
@@ -17,6 +18,7 @@ import {
   Ionicons,
   Octicons,
   Entypo,
+  Feather
 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
@@ -65,24 +67,47 @@ const index = () => {
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-            type: "error",
-            text1: "Logged out successfully",
-            visibilityTime: 1500,
-            autoHide: true,
-          });
+          type: "error",
+          text1: "Logged out successfully",
+          visibilityTime: 1500,
+          autoHide: true,
+        });
       dispatch(resetFeed());
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-            type: "error",
-            text1: "Logged out successfully",
-            visibilityTime: 1500,
-            autoHide: true,
-          });
+          type: "error",
+          text1: "Logged out successfully",
+          visibilityTime: 1500,
+          autoHide: true,
+        });
     }
   };
+
+
+  const handleAppShare = async () => {
+    try {
+      const result = await Share.share({
+        message:
+          "Hey! Just started using Strength — it's like a home for athletes and sports enthusiasts. Thought you’d love it too!\n\nDownload now and let’s level up together! 👇\nhttps://www.yourstrength.in",
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('App shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('Error sharing the app:', error.message);
+    }
+  };
+
 
   // Check if modal close request has came
   useEffect(() => {
@@ -198,13 +223,6 @@ const index = () => {
             Account Settings
           </TextScallingFalse>
         </TouchableOpacity>
-
-        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}>
-          <MaterialIcons name="help-outline" size={31} color="white" />
-          <TextScallingFalse style={styles.OptionText}>
-            Customer Support
-          </TextScallingFalse>
-        </TouchableOpacity>
         {/* Blocked users */}
         <TouchableOpacity
           activeOpacity={0.7}
@@ -214,6 +232,34 @@ const index = () => {
           <MaterialIcons name="block" size={31} color="white" />
           <TextScallingFalse style={styles.OptionText}>
             Blocked Users
+          </TextScallingFalse>
+        </TouchableOpacity>
+        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}>
+          <MaterialIcons name="help-outline" size={31} color="white" />
+          <TextScallingFalse style={styles.OptionText}>
+            Customer Support
+          </TextScallingFalse>
+        </TouchableOpacity>
+        {/* Feedback */}
+        <TouchableOpacity style={styles.OptionButtonView}
+          onPress={() => {
+            router.push("/(app)/(settings)/FeedBack/feedback2");
+          }}
+          activeOpacity={0.5}
+        >
+          <Ionicons name="megaphone-outline" size={31} color="white" />
+          <TextScallingFalse style={styles.OptionText}>
+            Feedback
+          </TextScallingFalse>
+        </TouchableOpacity>
+        {/* Share app  */}
+        <TouchableOpacity style={styles.OptionButtonView}
+          onPress={handleAppShare}
+          activeOpacity={0.5}
+        >
+          <Feather name="share-2" size={29} color="white" />
+          <TextScallingFalse style={styles.OptionText}>
+            Share Strength
           </TextScallingFalse>
         </TouchableOpacity>
         {/* LogOut */}

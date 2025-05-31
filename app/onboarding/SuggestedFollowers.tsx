@@ -35,6 +35,10 @@ interface SupportCardProps {
   onClose: (id: string) => void;
   onSupport: (id: string) => void;
 }
+interface UserState {
+  user: User | null;
+  message: string;
+}
 
 const SuggestedSupportScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -47,7 +51,8 @@ const SuggestedSupportScreen: React.FC = () => {
   const { headline, profilePic, selectedSports, isLoading, isError } =
     useSelector((state: RootState) => state.onboarding);
   const { fetchedUsers } = useSelector((state: RootState) => state.onboarding);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const user = useSelector((state: RootState) => state.auth.user);
+  console.log("state.auth-", useSelector((state: RootState) => state.auth.user));
 
   useEffect(() => {
     console.log("Selected Sports id:", selectedSports);
@@ -123,6 +128,8 @@ const SuggestedSupportScreen: React.FC = () => {
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
       // console.log(response);
+      console.log("User before fetchMyProfile:", user);
+      console.log("User ID before fetch:", user?._id);
 
       dispatch(fetchMyProfile(user?._id));
       setFinalLoading(false);
@@ -174,11 +181,18 @@ const SuggestedSupportScreen: React.FC = () => {
         finalOnboardingData.append("favSports", sportId);
       });
 
-      await dispatch(onboardingUser(finalOnboardingData)).unwrap();
+      const response = await dispatch(onboardingUser(finalOnboardingData)).unwrap();
+      console.log("User after onboarding:", response.user);
+
+      if (!user || !user._id) {
+        console.warn("User not found in auth state.");
+        setFinalLoading(false);
+        return;
+      }
       dispatch(fetchMyProfile(user?._id));
+      console.log("user._id-", user?._id)
 
       // console.log(response);
-      setFinalLoading(false);
       dispatch(setAuthState());
       // Alert the successful response
       Toast.show({
@@ -306,8 +320,8 @@ const SuggestedSupportScreen: React.FC = () => {
           >
             <TextScallingFalse
               className={`${selectedPlayers.length > 0
-                  ? "text-white font-semibold"
-                  : "text-gray-400"
+                ? "text-white font-semibold"
+                : "text-gray-400"
                 } text-center`}
             >
               {selectedPlayers.length > 0 ? "Continue" : "Skip for now"}

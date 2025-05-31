@@ -201,7 +201,7 @@ const feedback2 = () => {
 
     return (
         <PageThemeView>
-            <ScrollView keyboardShouldPersistTaps="handled" style={{ height: '100%', width: '100%', backgroundColor: '#220322' }}>
+            <ScrollView keyboardShouldPersistTaps="handled" style={{ flex: 1, width: '100%', backgroundColor: '#220322' }}>
                 {/* header */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, alignItems: 'center' }}>
                     {(step === 0 || step === 6) ?
@@ -262,7 +262,7 @@ const feedback2 = () => {
                                     tint="dark"
                                     style={StyleSheet.absoluteFill}
                                 />
-                                <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 30, paddingVertical: 40 }}>
+                                <View style={{ alignItems: 'center', paddingHorizontal: 30, paddingVertical: 40 }}>
                                     <View style={{ flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center' }}>
                                         <Image source={logo} style={{ width: 22, height: 22, }} />
                                         <TextScallingFalse style={{ color: 'white', fontSize: 25, fontWeight: '700' }}>Strength</TextScallingFalse>
@@ -271,7 +271,7 @@ const feedback2 = () => {
                                         {!feedbackSteps[step]?.question ? 'Loading...' : feedbackSteps[step].question}
                                     </TextScallingFalse>
                                     <View style={{
-                                        flexDirection: 'row', flexWrap: 'wrap', gap: '5%', rowGap: 14, paddingBottom: step === 3 ? 30 : 0,
+                                        flexDirection: 'row', flexWrap: 'wrap', gap: '5%', rowGap: 14, paddingBottom: step === 0 || step === 6 ? 0 : 60,
                                         justifyContent: 'center', alignItems: 'center',
                                     }}>
 
@@ -308,22 +308,18 @@ const feedback2 = () => {
                                                         borderWidth: 1,
                                                     }}
                                                     onPress={() => {
-                                                        if (selectedOption.trim() !== '') {
-                                                            const currentResponse = {
-                                                                questionId: feedbackSteps[step]._id,
-                                                                questionText: feedbackSteps[step].question,
-                                                                answer: selectedOption,
-                                                            };
+                                                        const currentResponse = {
+                                                            questionId: feedbackSteps[step]._id,
+                                                            questionText: feedbackSteps[step].question,
+                                                            answer: selectedOption,
+                                                        };
 
-                                                            if (step < feedbackSteps.length - 2) {
-                                                                setUserResponses(prev => [...prev, currentResponse]);
-                                                                handleNextStep();
-                                                            } else {
-                                                                const finalResponses = [...userResponses, currentResponse];
-                                                                handleFinalSubmit(finalResponses);
-                                                            }
+                                                        if (step < feedbackSteps.length - 2) {
+                                                            setUserResponses(prev => [...prev, currentResponse]);
+                                                            handleNextStep();
                                                         } else {
-                                                            // Optionally show alert or disable button when empty
+                                                            const finalResponses = [...userResponses, currentResponse];
+                                                            handleFinalSubmit(finalResponses);
                                                         }
                                                     }}
                                                 >
@@ -348,7 +344,6 @@ const feedback2 = () => {
                                                             backgroundColor: selectedOption === label ? 'rgba(114, 33, 124, 0.84)' : 'transparent',
                                                             borderWidth: 1,
                                                             borderColor: 'rgba(255, 255, 255, 0.32)',
-                                                            zIndex: 100,
                                                             alignItems: 'center',
                                                         }}
                                                         onPress={() => {
@@ -474,11 +469,11 @@ const feedback2 = () => {
                         width: '85%',
                         alignItems: 'center'
                     }}>
-                        <TextScallingFalse style={{ fontSize: 20, fontWeight: '600', marginBottom: 10, color:'white'}}>Exit Feedback?</TextScallingFalse>
-                        <TextScallingFalse style={{ fontSize: 16, textAlign: 'center', marginBottom: 20, color:'white'}}>
+                        <TextScallingFalse style={{ fontSize: 20, fontWeight: '600', marginBottom: 10, color: 'white' }}>Exit Feedback?</TextScallingFalse>
+                        <TextScallingFalse style={{ fontSize: 16, textAlign: 'center', marginBottom: 20, color: 'white' }}>
                             Going back will leave the feedback incomplete. Do you want to discard it or continue?
                         </TextScallingFalse>
-                        <View style={{ flexDirection: 'row', gap: 15}}>
+                        <View style={{ flexDirection: 'row', gap: 20 }}>
                             <TouchableOpacity activeOpacity={0.5}
                                 onPress={() => {
                                     setShowExitModal(false);
@@ -486,13 +481,13 @@ const feedback2 = () => {
                                 }}
                                 style={{ padding: 10, backgroundColor: '#505050', borderRadius: 8 }}
                             >
-                                <TextScallingFalse style={{ color: 'white', fontWeight:'500', fontSize: 14,}}>Discard</TextScallingFalse>
+                                <TextScallingFalse style={{ color: 'white', fontWeight: '500', fontSize: 14, }}>Discard</TextScallingFalse>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setShowExitModal(false)} activeOpacity={0.5}
-                                style={{ padding: 10, backgroundColor: 'rgba(rgba(225, 0, 255, 0.84))', borderRadius: 8 }}
+                                style={{ padding: 10, backgroundColor: 'white', borderRadius: 8 }}
                             >
-                                <TextScallingFalse style={{color:'white', fontSize: 14, fontWeight: '700'}}>Continue</TextScallingFalse>
+                                <TextScallingFalse style={{ color: 'black', fontSize: 14, fontWeight: '700' }}>Continue</TextScallingFalse>
                             </TouchableOpacity>
                         </View>
                     </View>

@@ -95,7 +95,7 @@ function EditOverview() {
   const [alertConfig, setAlertConfig] = useState<AlertConfigType>({
     title: "Discard changes?",
     message: "If you go back now, you will lose your changes.",
-    discardAction: () => {},
+    discardAction: () => { },
     confirmMessage: "Discard Changes",
     cancelMessage: "Continue editing",
   });
@@ -153,7 +153,7 @@ function EditOverview() {
 
       const mergedKeyDetails =
         existingSport &&
-        Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
+          Object.values(existingSport.keyDetails || {}).some((val) => val !== "")
           ? existingSport.keyDetails
           : keyDetails;
 
@@ -466,18 +466,17 @@ function EditOverview() {
             onPress={handleSubmitOverviewData}
             disabled={
               JSON.stringify(initialSportsData) ===
-                JSON.stringify(finalSelectedSports) &&
+              JSON.stringify(finalSelectedSports) &&
               initialAbout === user?.about
             }
           >
             <TextScallingFalse
-              className={`${
-                JSON.stringify(initialSportsData) ===
+              className={`${JSON.stringify(initialSportsData) ===
                   JSON.stringify(finalSelectedSports) &&
-                initialAbout === user?.about
+                  initialAbout === user?.about
                   ? "text-[#303030]"
                   : "text-[#12956B]"
-              } text-4xl text-right`}
+                } text-4xl text-right`}
             >
               Save
             </TextScallingFalse>
@@ -999,14 +998,15 @@ function EditOverview() {
               <View className="w-full flex-row flex-wrap justify-center items-center mx-auto gap-3 p-5">
                 {[...filteredSports]
                   .sort((a, b) => {
-                    const aSelected = finalSelectedSports.some(
-                      (s) => s.sportsName === a.name
-                    );
-                    const bSelected = finalSelectedSports.some(
-                      (s) => s.sportsName === b.name
-                    );
-                    return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
+                    const aSelected = finalSelectedSports.some((s) => s.sportsName === a.name);
+                    const bSelected = finalSelectedSports.some((s) => s.sportsName === b.name);
+
+                    if (aSelected && !bSelected) return -1;
+                    if (!aSelected && bSelected) return 1;
+
+                    return a.name.localeCompare(b.name); // alphabetical sort
                   })
+
                   .map((sport) => {
                     const keyDetails = sport.defaultProperties.reduce(
                       (acc: any, dp) => {
@@ -1113,8 +1113,12 @@ function EditOverview() {
                 numberOfLines={15}
                 className="text-white text-xl flex-1 p-3"
                 style={{ textAlignVertical: "top" }}
+                maxLength={1500}
               />
             </View>
+            <TextScallingFalse className="text-[#A5A5A5] text-xs mt-2 mr-1 text-right">
+              {initialAbout.length}/1500
+            </TextScallingFalse>
           </View>
         </PageThemeView>
       </Modal>

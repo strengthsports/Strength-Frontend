@@ -454,7 +454,7 @@ const ProfileLayout = () => {
           />
         </View>
         <View
-          className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-yellow-300 relative"
+          className="w-full lg:w-[600px] mx-auto lg:max-h-[200px] bg-neutral-700 relative"
           style={{ alignItems: "flex-end", height: 137 * scaleFactor }}
         >
           <TouchableOpacity

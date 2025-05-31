@@ -48,19 +48,23 @@ const EditDescription = () => {
             Share details about your team's goals, history, achievements, or unique aspects.
           </TextScallingFalse>
           <TextInput
-            className="bg-black border border-gray-800 text-white text-regular rounded-lg p-4 h-80"
+            className="bg-black border border-gray-500 text-white text-regular rounded-xl p-4 h-80"
             value={newDescription}
             onChangeText={setNewDescription}
             multiline
             placeholder="Enter team description..."
             placeholderTextColor="#6b7280"
+            style={{ textAlignVertical: 'top'}}
+            maxLength={800}
           />
+          <TextScallingFalse style={{color:'grey', fontSize: 12, fontWeight: '400', padding: 7}}>
+            {newDescription.length}/800</TextScallingFalse>
         </View>
 
         {/* Footer with Save Button */}
         <SafeAreaView className="absolute bottom-0 left-0 right-0 p-6 bg-black">
           <TouchableOpacity
-            className="bg-green-600 py-3 rounded-lg"
+            className="py-3 rounded-lg" style={{backgroundColor:'#12956B'}}
             onPress={handleSave}
           >
             <TextScallingFalse className="text-white text-center text-lg font-semibold">

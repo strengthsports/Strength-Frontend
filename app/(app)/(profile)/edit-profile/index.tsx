@@ -1568,7 +1568,7 @@ const EditProfile = () => {
                   <TextScallingFalse className="text-gray-500 text-base mt-4">
                     {description}
                   </TextScallingFalse>
-                  {/* Date picker component */}
+                  {/* Date picker componen */}
                   {isDatePickerVisible && (
                     <View
                       style={{
@@ -1576,6 +1576,7 @@ const EditProfile = () => {
                         height: "100%",
                         paddingTop: 30,
                         alignItems: "center",
+                        zIndex: 100,
                       }}
                     >
                       <DateTimePicker
@@ -1583,6 +1584,7 @@ const EditProfile = () => {
                         mode="date"
                         display={Platform.OS === "ios" ? "spinner" : "default"}
                         maximumDate={maxDOB} // restrict to users at least 13
+                        themeVariant={Platform.OS === "ios" ? "dark" : undefined}
                         onChange={(event, selectedDate) => {
                           if (selectedDate) {
                             const formattedDate = selectedDate

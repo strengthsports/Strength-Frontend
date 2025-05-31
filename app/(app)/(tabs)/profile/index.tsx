@@ -27,6 +27,7 @@ import { Member } from "~/types/user";
 import ProfileFTU from "~/components/ui/FTU/profilePage/ProfileFTU";
 import { fetchUserPosts } from "~/reduxStore/slices/post/hooks";
 import { makeSelectUserPosts } from "~/reduxStore/slices/post/selectors";
+import { purple100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 // const EMPTY_ARRAY_GENERAL: any[] = [];
 const EMPTY_MEMBER_ARRAY: Member[] = [];
@@ -330,6 +331,7 @@ const Overview = () => {
               </TextScallingFalse>
 
               {/* About Content */}
+              <TouchableOpacity onPress={handleToggle} disabled={isExpanded} activeOpacity={0.9}>
               <TextScallingFalse
                 className="text-white font-light pt-4 leading-5"
                 style={{
@@ -346,6 +348,7 @@ const Overview = () => {
                   </TextScallingFalse>
                 )}
               </TextScallingFalse>
+              </TouchableOpacity>
 
               {/* edit button */}
               <TouchableOpacity

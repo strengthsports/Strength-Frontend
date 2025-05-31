@@ -173,8 +173,8 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
   };
 
   return (
-    <View>
-      <ScrollView
+  
+      <View
         style={{
           flex: 1,
           maxWidth: "100%",
@@ -222,8 +222,8 @@ const Squad: React.FC<SquadProps> = ({ teamDetails }) => {
           member={selectedMember}
           isTeam={true}
         />
-      </ScrollView>
-    </View>
+      </View>
+   
   );
 };
 

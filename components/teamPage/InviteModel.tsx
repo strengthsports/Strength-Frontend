@@ -20,6 +20,7 @@ const InviteModal: React.FC<InviteModalProps> = ({
 
   return (
     <Modalize
+    key={Math.random()}
       ref={modalRef}
       adjustToContentHeight
       modalStyle={styles.modal}

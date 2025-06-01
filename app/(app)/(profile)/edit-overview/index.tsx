@@ -1117,7 +1117,7 @@ function EditOverview() {
               />
             </View>
             <TextScallingFalse className="text-[#A5A5A5] text-xs mt-2 mr-1 text-right">
-              {initialAbout.length}/1500
+              {(initialAbout || '').length}/1500
             </TextScallingFalse>
           </View>
         </PageThemeView>

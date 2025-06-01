@@ -464,8 +464,8 @@ const styles = StyleSheet.create({
   OptionButtonView: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 19,
-    paddingHorizontal: 40,
+    gap: 21,
+    paddingHorizontal: 35,
   },
   AccountSettingsOptions: {
     color: "white",

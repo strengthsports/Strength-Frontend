@@ -88,7 +88,7 @@ const CustomDrawer2 = () => {
       className={"w-full h-full bg-[#101010]"}
       style={{ justifyContent: "space-between" }}
     >
-      <ScrollView className="flex-1 pt-12" style={{paddingTop: Platform.OS === 'ios' ? 65 : 40}}>
+      <ScrollView className="flex-1 pt-12" style={{paddingTop: Platform.OS === 'ios' ? 70 : 40}}>
         {/* Profile Section */}
         <TouchableOpacity
           onPress={() => {

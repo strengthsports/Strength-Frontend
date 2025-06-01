@@ -8,11 +8,12 @@ import { Image } from "react-native";
 import { useIsFocused } from '@react-navigation/native';
 import TextScallingFalse from "../CentralText";
 import SportsIndicator from "../SvgIcons/SideMenu/SportsIndicator";
-import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { fetchTeams, TeamsList } from "~/reduxStore/slices/team/teamSlice";
 import nopic from "@/assets/images/nopic.jpg";
+import { SearchBar } from "react-native-screens";
 
 interface Team {
   id: string;
@@ -84,11 +85,10 @@ const CustomDrawer2 = () => {
   };
   return (
     <SafeAreaView
-      className={`w-full h-full bg-[#101010] ${Platform.OS === "ios" ? "pt-10" : "pt-4"
-        }`}
+      className={"w-full h-full bg-[#101010]"}
       style={{ justifyContent: "space-between" }}
     >
-      <ScrollView className="flex-1 pt-12">
+      <ScrollView className="flex-1 pt-12" style={{paddingTop: Platform.OS === 'ios' ? 35 : 45}}>
         {/* Profile Section */}
         <TouchableOpacity
           onPress={() => {
@@ -99,7 +99,7 @@ const CustomDrawer2 = () => {
           style={{
             width: "85%",
             marginHorizontal: "auto",
-            borderBottomWidth: 1,
+            borderBottomWidth: 0.8,
             borderColor: "#404040",
           }}
         >
@@ -130,7 +130,7 @@ const CustomDrawer2 = () => {
               style={{ width: "90%", opacity: 0.5, alignSelf: "center" }}
             /> */}
         {/* Teams Section */}
-        <View style={{ paddingHorizontal: 24, paddingVertical: 8, gap: 8 }}>
+        <View style={{ paddingVertical: 8, borderBottomWidth: 0.8, borderBottomColor:'#404040', width: '85%', alignSelf:'center'}}>
           <TextScallingFalse
             className="text-white text-4xl mb-4"
             style={{ fontWeight: "500" }}
@@ -204,7 +204,7 @@ const CustomDrawer2 = () => {
             </TouchableOpacity>
           ))}
 
-          {teamList.length > 5 && (
+          {teamList.length > 4 && (
             <TouchableOpacity
               onPress={() => {
                 router.push(
@@ -222,48 +222,99 @@ const CustomDrawer2 = () => {
           )}
 
           {teamList.length === 0 && (
-            <View className="flex-row mb-2 mt-2">
+            <View className="flex-row mb-5 mt-1 gap-3">
               <TouchableOpacity
                 onPress={() => {
                   router.push("/(app)/(team)/teams");
                 }}
-                className="border border-[#12956B] px-3 py-[5px] gap-1 rounded-md flex-row items-center mr-4"
+                className="border px-2 py-[5px] gap-1 rounded-lg flex-row items-center"
+                style={{ borderColor: '#707070' }}
               >
-                <TextScallingFalse className="text-[#12956B] text-sm font-semibold">
+                <TextScallingFalse className="text-sm font-semibold text-white">
                   Create Team
                 </TextScallingFalse>
-                <AntDesign name="plus" size={10} color="#12956B" />
+                <AntDesign name="plus" size={10} color="#fff" />
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => {
                   router.push("/(app)/(team)/join-team");
                 }}
-                className="bg-[#303030] px-3 py-2 rounded-md"
+                className="bg-[#303030] px-3 py-2 rounded-lg" style={{borderWidth: 1, borderColor:'#505050'}}
               >
-                <TextScallingFalse className="text-white text-sm font-semibold">
+                <TextScallingFalse className="text-white text-sm font-bold">
                   Join Team
                 </TextScallingFalse>
               </TouchableOpacity>
             </View>
           )}
         </View>
+
+        {/* Side bar menu top options */}
+        <View style={styles.MenuOptionView}>
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => {
+              router.push("/(app)/(tabs)/community");
+            }}
+            activeOpacity={0.5}
+          >
+            <MaterialIcons name="people-alt" size={25} color="white" className="ml-1" />
+            <TextScallingFalse className="text-white text-5xl font-bold ml-5 mb-1">
+              Community
+            </TextScallingFalse>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center"
+            style={{ paddingLeft: 5 }}
+            onPress={() => {
+              router.push("/articlePage");
+            }}
+            activeOpacity={0.5}
+          >
+            <Ionicons name="newspaper-outline" size={25} color="white" />
+            <TextScallingFalse className="text-white text-5xl font-bold ml-5">
+              Articles
+            </TextScallingFalse>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center"
+            style={{ paddingLeft: 5 }}
+            onPress={() => {
+              router.push("/explore/matchCategory/TrendingMatch");
+            }}
+            activeOpacity={0.5}
+          >
+            <MaterialCommunityIcons name="scoreboard-outline" size={25} color="white" />
+            <TextScallingFalse className="text-white text-5xl font-bold ml-5">
+              Matches
+            </TextScallingFalse>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center"
+            style={{ paddingLeft: 5 }}
+            onPress={() => {
+              router.push("/(app)/searchPage");
+            }}
+            activeOpacity={0.5}
+          >
+            <Ionicons name="search" size={25} color="white" />
+            <TextScallingFalse className="text-white text-5xl font-bold ml-5">
+              Search
+            </TextScallingFalse>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-      {/* Settings and Logout */}
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        {/* <CustomDivider
-              color="#5C5C5C"
-              thickness={1}
-              style={{ width: "90%", opacity: 0.5, alignSelf: "center" }}
-            /> */}
+
+{/* Side bar menu bottom menu */}
         <View
           style={{
-            height: 160,
-            borderTopWidth: 1,
-            paddingVertical: 30,
+            borderTopWidth: 0.8,
+            paddingVertical: 40,
             borderTopColor: '#404040',
             width: "85%",
-            gap: 12
+            gap: 15,
+            alignSelf: 'center',
           }}
         >
           <TouchableOpacity
@@ -273,8 +324,8 @@ const CustomDrawer2 = () => {
             }}
             activeOpacity={0.5}
           >
-            <MaterialIcons name="feedback" size={15} color="white" className="ml-1" />
-            <TextScallingFalse className="text-white text-2xl ml-2 mb-1">
+            <MaterialIcons name="feedback" size={19} color="white" className="ml-1" />
+            <TextScallingFalse className="text-white text-3xl ml-5 mb-1">
               Feedback
             </TextScallingFalse>
           </TouchableOpacity>
@@ -286,17 +337,24 @@ const CustomDrawer2 = () => {
             }}
             activeOpacity={0.5}
           >
-            <Feather name="settings" size={20} color="white" />
-            <TextScallingFalse className="text-white text-4xl font-medium ml-2">
+            <Feather name="settings" size={19} color="white" />
+            <TextScallingFalse className="text-white text-3xl  ml-5">
               Settings
             </TextScallingFalse>
           </TouchableOpacity>
         </View>
-      </View>
     </SafeAreaView>
   );
 };
 
 export default CustomDrawer2;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  MenuOptionView: {
+    width: "100%",
+    gap: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    height: '77%',
+  }
+});

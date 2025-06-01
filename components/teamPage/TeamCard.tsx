@@ -88,7 +88,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
           <Image source={img} className="mr-3 ml-[-6px] h-[120px] fill-red-500" />
           <View className="flex flex-col pl-4">
             <Text className="text-white font-bold items-center text-5xl">
-              {(teamName).toUpperCase()}
+              {(teamName ?? 'TEAM NAME').toUpperCase()}
             </Text>
             
             {/* Join Team Button */}

@@ -3,6 +3,7 @@ import { View, Text, FlatList, Image, TextInput, ActivityIndicator, RefreshContr
 import { Avatar, Divider, IconButton } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
+import { Audio } from 'expo-av';
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import { AppDispatch, RootState } from "@/reduxStore";
@@ -64,6 +65,7 @@ const TeamForum: React.FC = () => {
   // State
   const [newMessage, setNewMessage] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [sendSound, setSendSound] = useState<Audio.Sound | null>(null);
 
   // Hooks
   const router = useRouter();
@@ -76,6 +78,56 @@ const TeamForum: React.FC = () => {
     (state: RootState) => state.teamForum
   );
   const { user } = useSelector((state: RootState) => state.profile);
+
+  // Load and setup audio
+useEffect(() => {
+    const setupAudio = async () => {
+      try {
+        // Set audio mode for playback
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+
+        // Load the send message sound from local assets
+        const { sound } = await Audio.Sound.createAsync(
+          require('./sendmsg.mp3'),
+          {
+            shouldPlay: false,
+            volume: 0.3,
+          }
+        );
+        setSendSound(sound);
+      } catch (error) {
+        console.log('Error setting up audio:', error);
+      }
+    };
+
+    setupAudio();
+
+    // Cleanup function
+    return () => {
+      if (sendSound) {
+        sendSound.unloadAsync();
+      }
+    };
+  }, []);
+
+  // Play send message sound
+  const playSendSound = useCallback(async () => {
+    try {
+      if (sendSound) {
+        // Reset position to beginning and play
+        await sendSound.setPositionAsync(0);
+        await sendSound.playAsync();
+      }
+    } catch (error) {
+      console.log('Error playing send sound:', error);
+    }
+  }, [sendSound]);
 
   // Fetch data on initial load
   useEffect(() => {
@@ -94,8 +146,6 @@ const TeamForum: React.FC = () => {
     const member = team.members?.find(m => m.user?._id === user._id);
     if (!member) return null;
 
-    
-
     // Return the position if it's one of our defined roles
     if (['Captain', 'ViceCaptain'].includes(member.position || '')) {
       return member.position as TeamRole;
@@ -104,24 +154,24 @@ const TeamForum: React.FC = () => {
     return 'member';
   }, [team, user]);
 
-const canSendMessages = useMemo(() => {
-  // Any team member can send messages
-  return userRole !== null; // If user has any role (is a team member), they can send
-}, [userRole]);
+  const canSendMessages = useMemo(() => {
+    // Any team member can send messages
+    return userRole !== null; // If user has any role (is a team member), they can send
+  }, [userRole]);
 
   // Create welcome message
- const welcomeMessage = useMemo<Message | null>(() => {
-  if (!team) return null;
+  const welcomeMessage = useMemo<Message | null>(() => {
+    if (!team) return null;
 
-  return {
-    _id: 'welcome-message',
-    userId: 'system',
-    userName: 'System',
-    text: `👋  Welcome to the ${team.name} forum! This is a space for team communication and updates. All team members can post messages here.`,
-    timestamp: team ? new Date(0).toISOString() : new Date().toISOString(),
-    isSystemMessage: true
-  };
-}, [team]);
+    return {
+      _id: 'welcome-message',
+      userId: 'system',
+      userName: 'System',
+      text: `👋  Welcome to the ${team.name} forum! This is a space for team communication and updates. All team members can post messages here.`,
+      timestamp: team ? new Date(0).toISOString() : new Date().toISOString(),
+      isSystemMessage: true
+    };
+  }, [team]);
 
   // Combined messages with welcome message
   const combinedMessages = useMemo(() => {
@@ -132,7 +182,6 @@ const canSendMessages = useMemo(() => {
     return allMessages.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
-    
   }, [messages, welcomeMessage]);
 
   // Load team messages
@@ -154,6 +203,7 @@ const canSendMessages = useMemo(() => {
     if (!canSendMessages || !newMessage.trim() || !teamId || !team || !user) return;
 
     try {
+       await playSendSound();
       await dispatch(
         sendMessage({
           text: newMessage.trim(),
@@ -161,11 +211,16 @@ const canSendMessages = useMemo(() => {
           teamName: team.name,
         })
       ).unwrap();
+      
       setNewMessage("");
+      
+      // Play send sound after successful message send
+     
+      
     } catch (error) {
       console.error("Failed to send message:", error);
     }
-  }, [canSendMessages, newMessage, teamId, team, user, dispatch]);
+  }, [canSendMessages, newMessage, teamId, team, user, dispatch, playSendSound]);
 
   // Format timestamp to time string
   const formatTime = useCallback((timestamp: string) => {
@@ -643,7 +698,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3a4a5a',
   },
   currentUserAvatar: {
-    backgroundColor: '#5865F2', // Discord blue
+    backgroundColor: '#5865F2', 
   },
   messageContentContainer: {
     opacity: 100,
@@ -670,7 +725,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   currentUserName: {
-    color: 'white', // Discord blue
+    color: 'white', 
   },
   messageTime: {
     color: '#72767d',
@@ -703,7 +758,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#202020', // Discord input background
+    backgroundColor: '#202020',
     borderRadius: 60,
     paddingHorizontal: 10,
      paddingVertical: 0,

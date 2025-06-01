@@ -17,7 +17,7 @@ import "../../global.css";
 import TextScallingFalse from "@/components/CentralText";
 import TextInputSection from "@/components/TextInputSection";
 import SignupButton from "@/components/SignupButton";
-import logo from "@/assets/images/logo2.png";
+import logo from "@/assets/images/strengthlogin.png";
 import banner from "@/assets/images/banner-gif.gif";
 import google from "@/assets/images/google.png";
 import PageThemeView from "@/components/PageThemeView";
@@ -111,11 +111,11 @@ const LoginScreen = () => {
               flexDirection: "row",
               marginTop: "5%",
               gap: 7,
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
-            <Image style={{ width: 42, height: 42 }} source={logo} />
-            <TextScallingFalse
+            <Image style={{ width: 142, height: 35}} source={logo} />
+            {/* <TextScallingFalse
               style={{
                 color: "white",
                 fontSize: 24,
@@ -123,11 +123,11 @@ const LoginScreen = () => {
               }}
             >
               Strength
-            </TextScallingFalse>
+            </TextScallingFalse> */}
           </View>
         </View>
 
-        <View style={{ width: "100%", aspectRatio: 16 / 10, marginTop: "3%" }}>
+        <View style={{ width: "100%", aspectRatio: 16 / 10, marginTop: "2%" }}>
           <Image source={banner} style={{ width: "100%", height: "100%" }} />
         </View>
 

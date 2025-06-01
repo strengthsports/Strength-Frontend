@@ -409,8 +409,8 @@ const handleImageSelect = async () => {
       // Hide loading indicator
       Toast.hide();
 
-      // Navigate to success page with ALL data as before
-      router.push({
+      // Navigate to success page with ALL data as
+      router.replace({
         pathname: "./team-creation-success",
         params: { 
           teamId: teamId,

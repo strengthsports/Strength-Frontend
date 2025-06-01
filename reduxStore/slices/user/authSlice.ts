@@ -60,7 +60,8 @@ export const loginUser = createAsyncThunk<
     const data = await response.json();
 
     if (!response.ok) {
-      return rejectWithValue(data.message || "Login failed. Please try again.");
+      console.log("data.message-", data.message)
+      return rejectWithValue(data.message);
     }
 
     // Convert tokens to strings and save in Secure Store

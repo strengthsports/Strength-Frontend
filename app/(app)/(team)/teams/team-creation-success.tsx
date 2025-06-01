@@ -57,7 +57,7 @@ const TeamCreatedPage: React.FC = () => {
       return;
     }
     
-    router.push({
+    router.replace({
       pathname: `/(team)/teams/${teamId}`,
       params: {
         teamId, // Pass the teamId as param

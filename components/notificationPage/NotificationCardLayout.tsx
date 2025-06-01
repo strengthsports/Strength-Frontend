@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import React, { useState, useCallback, useMemo } from "react";
 import nopic from "@/assets/images/nopic.jpg";
+import nothumbnail from "@/assets/images/nothumbnail.png";
 import { formatShortTimeAgo } from "~/utils/formatTime";
 import { RelativePathString, router, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -57,6 +58,16 @@ const NotificationCardLayout = React.memo(
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: any) => state.profile.user._id);
 
+    let targetImage: any;
+    let nonImagePost: boolean;
+    if (target.isVideo) {
+      targetImage = target.thumbnail?.url || null;
+    } else if (target.assets?.length > 0) {
+      targetImage = target.assets[0].url;
+    } else {
+      nonImagePost = true;
+    }
+
     // Memoized values
     const serializedUser = useMemo(
       () =>
@@ -75,8 +86,8 @@ const NotificationCardLayout = React.memo(
     const timeAgo = formatShortTimeAgo
       ? formatShortTimeAgo(date)
       : date
-        ? "10h"
-        : "";
+      ? "10h"
+      : "";
 
     // Handlers
     const handleProfilePress = useCallback(() => {
@@ -158,7 +169,7 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
@@ -171,7 +182,8 @@ const NotificationCardLayout = React.memo(
             {/* Post preview */}
             <PostPreview
               caption={target.caption}
-              image={target.assets?.length > 0 && target.assets[0].url}
+              nonImagePost={nonImagePost}
+              image={targetImage}
               comment={comment}
               handlePostPress={handlePostPress}
             />
@@ -183,7 +195,7 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
@@ -195,7 +207,8 @@ const NotificationCardLayout = React.memo(
             {/* Post preview */}
             <PostPreview
               caption={target.caption}
-              image={target.assets?.length > 0 && target.assets[0].url}
+              image={targetImage}
+              nonImagePost={nonImagePost}
               handlePostPress={handlePostPress}
             />
           </>
@@ -208,7 +221,7 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type="Reply"
               timeAgo={timeAgo}
@@ -221,7 +234,8 @@ const NotificationCardLayout = React.memo(
             {/* Post preview */}
             <PostPreview
               caption={target.caption}
-              image={target.assets?.length > 0 && target.assets[0].url}
+              image={targetImage}
+              nonImagePost={nonImagePost}
               comment={comment}
               handlePostPress={handlePostPress}
             />
@@ -233,7 +247,7 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
@@ -256,7 +270,7 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
@@ -264,7 +278,7 @@ const NotificationCardLayout = React.memo(
               customText={`promoted you as the `}
               teamName={target.name}
               handleMarkNotificationVisited={handleMarkNotificationVisited}
-            // role={role}
+              // role={role}
             />
           </>
         );
@@ -274,7 +288,7 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
@@ -282,7 +296,7 @@ const NotificationCardLayout = React.memo(
               customText={`is inviting you to join team`}
               teamName={target.name}
               handleMarkNotificationVisited={handleMarkNotificationVisited}
-            // role={role}
+              // role={role}
             />
             <TeamPreview
               image={target.logo && target.logo.url}
@@ -298,14 +312,14 @@ const NotificationCardLayout = React.memo(
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
               isNew={isNew}
               teamName={target.name}
               handleMarkNotificationVisited={handleMarkNotificationVisited}
-            // role={role}
+              // role={role}
             />
             <TeamPreview
               image={target.logo && target.logo.url}
@@ -317,34 +331,34 @@ const NotificationCardLayout = React.memo(
         );
       }
       // Add this case in the renderNotificationContent() function
-if (type === "TeamInvitationAccepted") {
-  return (
-    <>
-      <NotificationHeader
-        _id={_id}
-        sender={sender}
-        type={type}
-        timeAgo={timeAgo}
-        isNew={isNew}
-        customText={`has accepted your invitation to join team`}
-        teamName={target.name}
-        role={roleInTeam}
-        handleMarkNotificationVisited={handleMarkNotificationVisited}
-      />
-      <TeamPreview
-        image={target.logo?.url}
-        handleTeamPress={handleTeamPress}
-        isAcceptedRequest={true}
-      />
-    </>
-  );
-}
+      if (type === "TeamInvitationAccepted") {
+        return (
+          <>
+            <NotificationHeader
+              _id={_id}
+              sender={sender}
+              type={type}
+              timeAgo={timeAgo}
+              isNew={isNew}
+              customText={`has accepted your invitation to join team`}
+              teamName={target.name}
+              role={roleInTeam}
+              handleMarkNotificationVisited={handleMarkNotificationVisited}
+            />
+            <TeamPreview
+              image={target.logo?.url}
+              handleTeamPress={handleTeamPress}
+              isAcceptedRequest={true}
+            />
+          </>
+        );
+      }
 
       if (type === "Tag") {
         return (
           <>
             <NotificationHeader
-            _id={_id}
+              _id={_id}
               sender={sender}
               type={type}
               timeAgo={timeAgo}
@@ -356,7 +370,7 @@ if (type === "TeamInvitationAccepted") {
             {/* Post preview */}
             <PostPreview
               caption={target.caption}
-              image={target.assets?.length > 0 && target.assets[0].url}
+              image={targetImage}
               handlePostPress={handlePostPress}
             />
           </>
@@ -366,7 +380,7 @@ if (type === "TeamInvitationAccepted") {
       // Default rendering
       return (
         <NotificationHeader
-        _id={_id}
+          _id={_id}
           sender={sender}
           caption={target.caption}
           type={type}
@@ -396,7 +410,7 @@ if (type === "TeamInvitationAccepted") {
           </TouchableOpacity>
           <View
             className="flex-1 flex-col"
-          // style={{ backgroundColor: "yellow" }}
+            // style={{ backgroundColor: "yellow" }}
           >
             {renderNotificationContent()}
           </View>
@@ -423,14 +437,12 @@ const NotificationHeader = ({
   // Format count text
   const countText = count > 1 ? ` and ${count - 1} other` : "";
 
-      // Memoized values
-    const serializedUser = useMemo(
-      () =>
-        encodeURIComponent(
-          JSON.stringify({ id: sender._id, type: sender.type })
-        ),
-      [sender._id, sender.type]
-    );
+  // Memoized values
+  const serializedUser = useMemo(
+    () =>
+      encodeURIComponent(JSON.stringify({ id: sender._id, type: sender.type })),
+    [sender._id, sender.type]
+  );
 
   // Get notification text based on type or use custom text
   const actionText = customText || NOTIFICATION_TEXTS[type] || "";
@@ -449,8 +461,13 @@ const NotificationHeader = ({
   return (
     <View className="mt-1">
       <View className="flex-row justify-between">
-        <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.5}
-          className={`flex-row flex-wrap pr-6 ${actionText === 'started following you' ? 'mt-2' : 'mt-0'}`}>
+        <TouchableOpacity
+          onPress={handleProfilePress}
+          activeOpacity={0.5}
+          className={`flex-row flex-wrap pr-6 ${
+            actionText === "started following you" ? "mt-2" : "mt-0"
+          }`}
+        >
           <TextScallingFalse className="text-white text-xl px-1">
             <TextScallingFalse className="font-bold">
               {sender.firstName} {sender.lastName}
@@ -494,11 +511,13 @@ const NotificationHeader = ({
 // Post View
 const PostPreview = React.memo(
   ({
+    nonImagePost,
     image,
     caption,
     comment,
     handlePostPress,
   }: {
+    nonImagePost: boolean;
     image?: string;
     caption: string;
     comment?: string;
@@ -507,8 +526,9 @@ const PostPreview = React.memo(
     <TouchableOpacity
       onPress={handlePostPress}
       activeOpacity={0.7}
-      className={`mt-2 overflow-hidden ${comment ? "rounded-[10px] border border-b-0" : "rounded-xl"
-        }`}
+      className={`mt-2 overflow-hidden ${
+        comment ? "rounded-[10px] border border-b-0" : "rounded-xl"
+      }`}
       style={{ borderColor: comment ? "#262626" : "transparent", width: "90%" }}
     >
       {comment && (
@@ -522,12 +542,20 @@ const PostPreview = React.memo(
         className="flex-row items-center bg-[#262626]"
         style={{ paddingHorizontal: 9, paddingVertical: 7, columnGap: 16 }}
       >
-        {image && (
+        {image ? (
           <Image
             source={{ uri: image }}
             className="rounded-sm"
             style={{ width: comment ? 42 : 50, height: comment ? 42 : 50 }}
           />
+        ) : (
+          !nonImagePost && (
+            <Image
+              source={nothumbnail}
+              className="rounded-sm"
+              style={{ width: comment ? 42 : 50, height: comment ? 42 : 50 }}
+            />
+          )
         )}
         <View className="flex-1" style={{ padding: image ? 0 : 5 }}>
           <TextScallingFalse
@@ -550,7 +578,7 @@ const TeamPreview = React.memo(
     handleTeamPress,
     handleDecline,
     handleAccept,
-    isAcceptedRequest = false
+    isAcceptedRequest = false,
   }: {
     image?: string;
     handleTeamPress: () => void;
@@ -618,7 +646,10 @@ const TeamPreview = React.memo(
 
     // For pending invitations (with action buttons)
     return (
-      <View className={`mt-2 overflow-hidden rounded-xl`} style={{ width: "86%" }}>
+      <View
+        className={`mt-2 overflow-hidden rounded-xl`}
+        style={{ width: "86%" }}
+      >
         <View className="flex-row bg-[#262626] justify-between items-center">
           {image && (
             <TouchableOpacity

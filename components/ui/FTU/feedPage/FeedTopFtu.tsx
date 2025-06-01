@@ -31,7 +31,7 @@ const FeedTopFtu = () => {
             key: 'editProfile',
             visible: !profile?.hasVisitedEditProfile,
             image: updateProfile,
-            text: "Add some Professional details to your profile",
+            text: "Add some Professional details to your profile.",
             buttonText: "Update profile",
             onPress: () => {
                 console.log('Button pressed for');
@@ -43,7 +43,7 @@ const FeedTopFtu = () => {
             key: 'overview',
             visible: !profile?.hasVisitedEditOverview,
             image: addOverview,
-            text: "Add sports overview your passion, achievement & journey.",
+            text: "Add sports overview, your passion for the game.",
             buttonText: "Update Overview",
             onPress: () => {
                 dispatch(setFirstTimeUseFlag({ field: "hasVisitedEditOverview" }));
@@ -54,7 +54,7 @@ const FeedTopFtu = () => {
             key: 'community',
             visible: !profile?.hasVisitedCommunity,
             image: startFollow,
-            text: "Follow Like Minded Sports Enthusiasts",
+            text: "Follow Like Minded Sports Enthusiasts.",
             buttonText: "Start following",
             onPress: () => {
                 dispatch(setFirstTimeUseFlag({ field: "hasVisitedCommunity" }));
@@ -178,9 +178,10 @@ const FeedTopFtu = () => {
             >
                 {visibleFtuItems.map((item, index) => (
                     <TouchableOpacity onPress={item.onPress} activeOpacity={0.9} key={item.key} style={styles.container}>
-                        <Image source={item.image} style={styles.banner} />
                         <View style={styles.ContainerContent}>
+                            <View style={{ width:'85%'}}>
                             <TextScallingFalse style={styles.text}>{item.text}</TextScallingFalse>
+                            </View>
                             <TouchableOpacity
                                 activeOpacity={0.7}
                                 onPress={item.onPress}
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 5,
     },
     container: {
-        height: 221,
+        paddingVertical: 10,
         width: ITEM_WIDTH,
         borderWidth: 1,
         borderColor: '#3F3F3F',
@@ -244,21 +245,23 @@ const styles = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 10,
-        paddingVertical: 10
+        gap: 6,
+        paddingVertical: 10,
     },
     button: {
         backgroundColor: '#12956B',
         borderRadius: 21,
-        height: 31,
-        width: '50%',
+        width: '40%',
         justifyContent: 'center',
         alignItems: 'center'
     },
     text: {
         color: 'white',
-        fontSize: 12,
-        fontWeight: '300'
+        fontSize: 13,
+        fontWeight: '400',
+        paddingVertical: 5,
+        textAlign:'center',
+        lineHeight: 21,
     },
     buttonText: {
         fontSize: 13,

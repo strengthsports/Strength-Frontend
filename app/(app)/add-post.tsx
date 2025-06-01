@@ -430,7 +430,7 @@ export default function AddPostContainer() {
   const pickVideoWithRatio = useCallback(async (ratio: [number, number]) => {
     setSelectedAspectRatio(ratio);
     setTypeVideo(true);
-    
+
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
@@ -502,9 +502,8 @@ export default function AddPostContainer() {
         <View className="flex flex-row items-center justify-between p-4">
           <AddPostHeader onBackPress={handleAttemptGoBack} />
           <TouchableOpacity
-            className={`px-6 py-1 rounded-full ${
-              isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-            }`}
+            className={`px-6 py-1 rounded-full ${isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+              }`}
             onPress={handlePostSubmit}
             disabled={!isPostButtonEnabled}
           >
@@ -512,9 +511,8 @@ export default function AddPostContainer() {
               <ActivityIndicator color={"white"} />
             ) : (
               <TextScallingFalse
-                className={`${
-                  isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                } text-3xl font-semibold`}
+                className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"
+                  } text-3xl font-semibold`}
               >
                 Post
               </TextScallingFalse>
@@ -575,6 +573,14 @@ export default function AddPostContainer() {
         )}
 
         {/* Footer */}
+        <View>
+        {(postText.length >= 2990) && (
+          <View style={{width:'93%', justifyContent:'center', alignItems:'center', borderWidth: 1, borderColor:'#404040', paddingVertical: 4, borderRadius: 10, alignSelf:'center'}}>
+          <TextScallingFalse style={{ color: '#909090', fontSize: 13, fontWeight: '400'}}>
+            You are almost at the 3000 characters limit{postText.length}/3000
+          </TextScallingFalse>
+          </View>
+        )}
         <View className="flex flex-row justify-between items-center p-3">
           <TouchableOpacity
             activeOpacity={0.7}
@@ -610,8 +616,8 @@ export default function AddPostContainer() {
               <ClipsIcon
                 color={
                   showPollInput ||
-                  pickedImageUris.length > 0 ||
-                  (isTypeVideo && pickedVideoUri !== null)
+                    pickedImageUris.length > 0 ||
+                    (isTypeVideo && pickedVideoUri !== null)
                     ? "#737373"
                     : Colors.themeColor
                 }
@@ -685,14 +691,15 @@ export default function AddPostContainer() {
               <PollsIcon
                 color={
                   showPollInput ||
-                  pickedImageUris.length > 0 ||
-                  (isTypeVideo && pickedVideoUri !== null)
+                    pickedImageUris.length > 0 ||
+                    (isTypeVideo && pickedVideoUri !== null)
                     ? "#737373"
                     : Colors.themeColor
                 }
               />
             </TouchableOpacity>
           </View>
+        </View>
         </View>
       </View>
 

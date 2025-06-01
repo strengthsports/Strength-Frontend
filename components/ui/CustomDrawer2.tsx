@@ -258,13 +258,26 @@ const CustomDrawer2 = () => {
             /> */}
         <View
           style={{
-            height: 140,
+            height: 160,
             borderTopWidth: 1,
-            paddingVertical: 20,
+            paddingVertical: 30,
             borderTopColor: '#404040',
             width: "85%",
+            gap: 12
           }}
         >
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => {
+              router.push("/(app)/(settings)/FeedBack/feedback2");
+            }}
+            activeOpacity={0.5}
+          >
+            <MaterialIcons name="feedback" size={15} color="white" className="ml-1" />
+            <TextScallingFalse className="text-white text-2xl ml-2 mb-1">
+              Feedback
+            </TextScallingFalse>
+          </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center mb-4"
             style={{ paddingLeft: 5 }}
@@ -276,20 +289,6 @@ const CustomDrawer2 = () => {
             <Feather name="settings" size={20} color="white" />
             <TextScallingFalse className="text-white text-4xl font-medium ml-2">
               Settings
-            </TextScallingFalse>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="flex-row items-center"
-            style={{ paddingLeft: 5 }}
-            onPress={() => {
-              router.push("/(app)/(settings)/FeedBack/feedback2");
-            }}
-            activeOpacity={0.5}
-          >
-            <MaterialIcons name="feedback" size={15} color="white" className="ml-1" />
-            <TextScallingFalse className="text-neutral-500 text-2xl ml-2 mb-1">
-              Feedback
             </TextScallingFalse>
           </TouchableOpacity>
         </View>

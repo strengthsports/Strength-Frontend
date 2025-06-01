@@ -149,11 +149,10 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
     return (
       <View
         style={styles.container}
-        className={`${
-          mode === "create"
+        className={`${mode === "create"
             ? "w-[92%] mt-[-30px] ml-2 mr-1 pt-5 pb-8 rounded-2xl"
             : "w-[100%]"
-        }`}
+          }`}
       >
         {(mode === "create" || onClose) && (
           <View style={styles.header}>
@@ -224,8 +223,8 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                     style={[
                       styles.optionInputBase,
                       localUserVoted &&
-                        localSelectedOption === index &&
-                        styles.selectedOptionBorder,
+                      localSelectedOption === index &&
+                      styles.selectedOptionBorder,
                     ]}
                     disabled={localUserVoted}
                     onPress={() => handleVote(index)}
@@ -243,14 +242,14 @@ const PollsContainer: React.FC<PollsContainerProps> = memo(
                       start={{ x: 0, y: 0.5 }}
                       end={{ x: 1, y: 0.5 }}
                     >
+                      <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center', gap: 5}}>
                       <TextScallingFalse style={styles.optionText}>
                         {option}
-                        {localUserVoted && localSelectedOption === index && (
-                          <View style={{ paddingLeft: 5 }}>
-                            <PollsTickIcon />
-                          </View>
-                        )}
                       </TextScallingFalse>
+                      {localUserVoted && localSelectedOption === index && (
+                          <PollsTickIcon />
+                      )}
+                      </View>
                       {localUserVoted && (
                         <TextScallingFalse style={styles.percentageText}>
                           {optionPercentages[index]}%
@@ -304,7 +303,7 @@ const areEqual = (
     prevProps.mode === nextProps.mode &&
     JSON.stringify(prevProps.options) === JSON.stringify(nextProps.options) &&
     JSON.stringify(prevProps.voteCounts) ===
-      JSON.stringify(nextProps.voteCounts) &&
+    JSON.stringify(nextProps.voteCounts) &&
     prevProps.userVoted === nextProps.userVoted &&
     prevProps.selectedOption === nextProps.selectedOption &&
     prevProps.onClose === nextProps.onClose &&
@@ -364,7 +363,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   selectedOptionBorder: {
-    borderColor: "#5F5F5F",
+    borderColor: "#707070",
   },
   addButton: {
     padding: 12,

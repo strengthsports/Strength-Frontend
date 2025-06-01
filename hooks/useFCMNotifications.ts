@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Alert, Linking, Platform } from "react-native";
-import messaging, {
-  FirebaseMessagingTypes,
-} from "@react-native-firebase/messaging";
+import messaging from "@react-native-firebase/messaging";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAppDispatch } from "@/reduxStore/hooks";
 import { sendFcmToken } from "@/reduxStore/slices/user/authSlice";
@@ -23,25 +21,18 @@ export default function useFCMNotifications() {
 
     const requestNotificationPermission = async (): Promise<boolean> => {
       try {
-        const authStatus = await messaging().hasPermission();
-        const granted =
+        // Use Firebase's permission request for both platforms
+        const authStatus = await messaging().requestPermission();
+
+        const enabled =
           authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
           authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-        if (granted) return true;
-
-        // Request permission
-        const newStatus = await messaging().requestPermission();
-        const newGranted =
-          newStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-          newStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-        if (!newGranted) {
+        if (!enabled) {
           Alert.alert(
             "Notifications Disabled",
-            "To stay updated, please enable notifications in your device settings.",
+            "Please enable notifications in your device settings to stay updated.",
             [
-              { text: "Cancel", style: "cancel" },
               {
                 text: "Open Settings",
                 onPress: () => {
@@ -52,15 +43,38 @@ export default function useFCMNotifications() {
                   }
                 },
               },
-            ],
-            { cancelable: true }
+              { text: "Cancel", style: "cancel" },
+            ]
           );
         }
 
-        return newGranted;
+        return enabled;
       } catch (err) {
         console.error("Notification permission error", err);
         return false;
+      }
+    };
+
+    const getFCMToken = async (): Promise<string | undefined> => {
+      try {
+        // Critical for iOS - must register device first
+        if (Platform.OS === "ios") {
+          await messaging().registerDeviceForRemoteMessages();
+
+          // Check if we have APNs token (required for iOS)
+          const apnsToken = await messaging().getAPNSToken();
+          if (!apnsToken) {
+            console.warn("APNs token not available yet - retrying...");
+            return undefined;
+          }
+        }
+
+        const token = await messaging().getToken();
+        console.log("FCM Token:", token);
+        return token;
+      } catch (error) {
+        console.error("Failed to get FCM token:", error);
+        return undefined;
       }
     };
 
@@ -69,67 +83,82 @@ export default function useFCMNotifications() {
       if (!permissionGranted) return;
 
       try {
-        const token = await messaging().getToken();
-        const cachedToken = await AsyncStorage.getItem(FCM_TOKEN_KEY);
+        // Initial token fetch
+        let token = await getFCMToken();
 
-        if (token && token !== cachedToken) {
-          console.log("New FCM Token:", token);
-          await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
-          dispatch(sendFcmToken(token));
-        } else {
-          console.log("Using cached FCM token or no change.");
+        // Retry mechanism for iOS (APNs might take time to register)
+        if (!token && Platform.OS === "ios") {
+          const maxRetries = 5;
+          let retryCount = 0;
+
+          const retryInterval = setInterval(async () => {
+            retryCount++;
+            token = await getFCMToken();
+
+            if (token || retryCount >= maxRetries) {
+              clearInterval(retryInterval);
+              if (token) {
+                await handleNewToken(token);
+              } else {
+                console.error("Failed to get FCM token after retries");
+              }
+            }
+          }, 3000); // Retry every 3 seconds
+        } else if (token) {
+          await handleNewToken(token);
         }
 
-        const initialNotification = await messaging().getInitialNotification();
-        if (initialNotification) {
-          console.log(
-            "Notification caused app to open from quit state:",
-            initialNotification.notification
-          );
-        }
+        // Listen for foreground messages
+        unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
+          console.log("Foreground message:", remoteMessage);
+          // Handle your foreground messages here
+        });
 
+        // Listen for notification opened from background
         unsubscribeOnNotificationOpened = messaging().onNotificationOpenedApp(
           (remoteMessage) => {
-            console.log(
-              "Notification caused app to open from background state:",
-              remoteMessage.notification
-            );
+            console.log("Notification opened from background:", remoteMessage);
           }
         );
 
-        messaging().setBackgroundMessageHandler(
-          async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-            console.log("Message handled in the background!", remoteMessage);
-          }
-        );
+        // Check if app was opened from a notification
+        const initialNotification = await messaging().getInitialNotification();
+        if (initialNotification) {
+          console.log("App opened from notification:", initialNotification);
+        }
 
-        unsubscribeOnMessage = messaging().onMessage(
-          async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-            Alert.alert(
-              "New FCM message",
-              remoteMessage.notification?.body || JSON.stringify(remoteMessage)
-            );
-          }
-        );
-
+        // Token refresh listener
         unsubscribeOnTokenRefresh = messaging().onTokenRefresh(
           async (newToken) => {
-            console.log("FCM Token refreshed:", newToken);
-            await AsyncStorage.setItem(FCM_TOKEN_KEY, newToken);
-            dispatch(sendFcmToken(newToken));
+            console.log("FCM token refreshed:", newToken);
+            await handleNewToken(newToken);
           }
         );
+
+        // Background handler
+        messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+          console.log("Background message:", remoteMessage);
+        });
       } catch (error) {
         console.error("FCM setup error:", error);
+      }
+    };
+
+    const handleNewToken = async (token: string) => {
+      const cachedToken = await AsyncStorage.getItem(FCM_TOKEN_KEY);
+      if (token !== cachedToken) {
+        await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
+        dispatch(sendFcmToken(token));
+        console.log("New FCM token saved and sent to server");
       }
     };
 
     setupFCM();
 
     return () => {
-      if (unsubscribeOnMessage) unsubscribeOnMessage();
-      if (unsubscribeOnNotificationOpened) unsubscribeOnNotificationOpened();
-      if (unsubscribeOnTokenRefresh) unsubscribeOnTokenRefresh();
+      unsubscribeOnMessage?.();
+      unsubscribeOnNotificationOpened?.();
+      unsubscribeOnTokenRefresh?.();
     };
   }, [dispatch]);
 }

@@ -51,9 +51,10 @@ import {
   showInfo,
   showWarning,
 } from "~/utils/feedbackToast";
+import PageThemeView from "~/components/PageThemeView";
 
 const { height } = Dimensions.get("window");
-
+const HEADER_HEIGHT = 40;
 const TeamPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -118,12 +119,12 @@ const TeamPage: React.FC = () => {
   };
 
   // Memoized team data
-  const teamData = useMemo(
+ const teamData = useMemo(
     () => ({
       name: teamDetails?.name || "Loading...",
       sportName: teamDetails?.sport?.name || "Loading...",
-      logo: teamDetails?.logo?.url || "https://picsum.photos/200/200",
-      sportLogo: teamDetails?.sport?.logo || "https://picsum.photos/200/200",
+      logo: teamDetails?.logo?.url || "",
+      sportLogo: teamDetails?.sport?.logo || "0",
       membersCount: teamDetails?.members?.length || 0,
       isRequested: teamDetails?.isRequested || false,
     }),
@@ -264,7 +265,7 @@ const TeamPage: React.FC = () => {
       
       console.log("✅ Refresh completed successfully");
       // Show success toast only after successful refresh
-      showSuccess("Refreshed successfully");
+      // showSuccess("Refreshed");
       
     } catch (error) {
       console.error("❌ Failed to refresh data:", error);
@@ -353,6 +354,7 @@ const handleLeaveTeam = useCallback(async () => {
     },
     [router, teamId]
   );
+
 
   const isMember = useMemo(
     () =>
@@ -459,92 +461,75 @@ const menuItems = useMemo(() => {
   return baseMenuItems;
 }, [isAdmin, isMember, teamData.membersCount, teamId, router, handleLeaveTeam, dispatch]);
 
-  return (
-    <View style={styles.container}>
-      {/* Alert Modal */}
-      {alertVisible && (
-        <AlertModal
-          alertConfig={alertConfig}
-          isVisible={alertVisible}
-          onClose={hideAlert}
-        />
-      )}
+return (
+  <PageThemeView style={{ flex: 1, backgroundColor: "black" }}>
+    <Toast config={toastConfig} />
 
-      <CombinedDrawer menuItems={menuItems} isAdmin={isAdmin} isMember={isMember} teamId={teamId} memberCount={teamData.membersCount}>
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.squadContainer}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#fff"
-              colors={["#fff", "#ccc"]}
-              progressBackgroundColor="#1a1a1a"
-              progressViewOffset={0}
-              size="large"
-              // Instagram-style refresh control
-              titleColor="#fff"
-              // Add these for better UX
-              style={{ backgroundColor: 'transparent' }}
-              // Make it more responsive
-              threshold={50}
-            />
-          }
-        >
-          {/* Show loading indicator during initial load OR refresh */}
-          {(loading && !teamDetails) || refreshing ? (
-            <View style={styles.loaderContainer}>
-              <ActivityIndicator
-                size="large"
-                color="white"
-                style={styles.loader}
-              />
-              {refreshing && (
-                <TextScallingFalse style={styles.refreshText}>
-                  Refreshing...
-                </TextScallingFalse>
-              )}
-            </View>
-          ) : (
-            <>
-              <TeamCard
-                requestSent={teamData.isRequested}
-                teamName={teamData.name}
-                sportCategory={teamData.sportName}
-                captain={captain}
-                viceCapt={viceCapt}
-                location={location}
-                teamLogo={teamData.logo}
-                sportLogo={teamData.sportLogo}
-                showJoinButton={!isMember && !isAdmin}
-                onJoinPress={handleJoinTeam}
-                joining={joining}
-              />
-              <SubCategories teamDetails={teamDetails} />
-            </>
-          )}
-        </ScrollView>
-      </CombinedDrawer>
-      
-      <InviteModal
-        modalRef={modalRef}
-        roles={roles}
-        isAdmin={isAdmin}
-        onInvitePress={handleInvitePress}
+    <AlertModal
+      isVisible={alertVisible}
+      {...alertConfig}
+      onCancel={alertConfig.discardAction}
+      onConfirm={alertConfig.confirmAction}
+    />
+    
+    {/* Header with Sidebar */}
+    <CombinedDrawer
+      menuItems={menuItems} 
+      isAdmin={isAdmin} 
+      isMember={isMember} 
+      teamId={teamId} 
+      memberCount={teamData.membersCount}
+    />
+
+    {/* Main Content */}
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      ref={scrollViewRef}
+      contentContainerStyle={{ flexGrow: 1, paddingTop: HEADER_HEIGHT }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <TeamCard
+        requestSent={teamData.isRequested}
+        teamName={teamData.name}
+        sportCategory={teamData.sportName}
+        captain={captain}
+        viceCapt={viceCapt}
+        location={location}
+        teamLogo={teamData.logo}
+        sportLogo={teamData.sportLogo}
+        showJoinButton={!isMember && !isAdmin}
+        onJoinPress={handleJoinTeam}
+        joining={joining}
       />
 
-      {/* Toast Component */}
-      <Toast
-        config={toastConfig}
-        topOffset={50}
-        visibilityTime={2000}
-        autoHide={true}
+      <SubCategories teamDetails={teamDetails} />
+    </ScrollView>
+
+    <InviteModal
+      modalRef={modalRef}
+      roles={roles}
+      isAdmin={isAdmin}
+      onInvitePress={handleInvitePress}
+    />
+
+    {loading && (
+      <ActivityIndicator
+        size="large"
+        color="#000"
+        style={{
+          paddingTop: 20,
+          position: "absolute",
+          top: height * 0.4, // Screen height ka 40% - more flexible and lower position
+          alignSelf: "center",
+        }}
       />
-    </View>
-  );
+    )}
+
+  </PageThemeView>
+);
+
 };
 
 const styles = StyleSheet.create({

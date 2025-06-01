@@ -1072,7 +1072,7 @@ const handleTransferAdmin = useCallback(() => {
         {/* Position-specific buttons */}
         {isAdmin && renderPositionButtons}
 
-        {isAdmin && (
+        {isAdmin  && !isMemberAdmin && (
           <ActionButtonRole
             label={
               team?.admin[0]._id === member?._id
@@ -1317,8 +1317,8 @@ confirmTransferButtonText: {
     borderRadius: 15,
     padding: 10,
     maxHeight: "40%",
-    top: "50%",
-    zIndex: 5,
+    top: "53%",
+    zIndex: 50,
   },
   roleItem: {
     padding: 15,

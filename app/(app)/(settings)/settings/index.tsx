@@ -407,6 +407,14 @@ const index = () => {
           )}
         </PageThemeView>
       </Modal>
+      <View style={{
+         position: 'absolute',
+        bottom: 0, width: "100%", alignItems: 'center',
+        height: '9%',
+      }}>
+        <TextScallingFalse style={{ color: 'grey', fontSize: 13, fontWeight: '400' }}>
+          Version 1.0.1</TextScallingFalse>
+      </View>
     </PageThemeView>
   );
 };

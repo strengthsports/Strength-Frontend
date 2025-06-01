@@ -88,7 +88,7 @@ const CustomDrawer2 = () => {
       className={"w-full h-full bg-[#101010]"}
       style={{ justifyContent: "space-between" }}
     >
-      <ScrollView className="flex-1 pt-12" style={{paddingTop: Platform.OS === 'ios' ? 35 : 45}}>
+      <ScrollView className="flex-1 pt-12" style={{paddingTop: Platform.OS === 'ios' ? 55 : 55}}>
         {/* Profile Section */}
         <TouchableOpacity
           onPress={() => {
@@ -260,7 +260,7 @@ const CustomDrawer2 = () => {
             activeOpacity={0.5}
           >
             <MaterialIcons name="people-alt" size={25} color="white" className="ml-1" />
-            <TextScallingFalse className="text-white text-5xl font-bold ml-5 mb-1">
+            <TextScallingFalse className="text-white text-5xl font-semibold ml-5 mb-1">
               Community
             </TextScallingFalse>
           </TouchableOpacity>
@@ -273,7 +273,7 @@ const CustomDrawer2 = () => {
             activeOpacity={0.5}
           >
             <Ionicons name="newspaper-outline" size={25} color="white" />
-            <TextScallingFalse className="text-white text-5xl font-bold ml-5">
+            <TextScallingFalse className="text-white text-5xl font-semibold ml-5">
               Articles
             </TextScallingFalse>
           </TouchableOpacity>
@@ -286,7 +286,7 @@ const CustomDrawer2 = () => {
             activeOpacity={0.5}
           >
             <MaterialCommunityIcons name="scoreboard-outline" size={25} color="white" />
-            <TextScallingFalse className="text-white text-5xl font-bold ml-5">
+            <TextScallingFalse className="text-white text-5xl font-semibold ml-5">
               Matches
             </TextScallingFalse>
           </TouchableOpacity>
@@ -299,7 +299,7 @@ const CustomDrawer2 = () => {
             activeOpacity={0.5}
           >
             <Ionicons name="search" size={25} color="white" />
-            <TextScallingFalse className="text-white text-5xl font-bold ml-5">
+            <TextScallingFalse className="text-white text-5xl font-semibold ml-5">
               Search
             </TextScallingFalse>
           </TouchableOpacity>

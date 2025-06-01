@@ -21,15 +21,11 @@ interface MenuItem {
   label: string;
   onPress: () => void;
   color?: string;
-  isMember: boolean;
-  isAdmin: boolean;
   logo?: React.ComponentType<any>;
-  memberCount: number;
   id?: string;
 }
 
 interface DrawerProps {
-  children: React.ReactNode;
   menuItems: MenuItem[];
   teamId: string;
   isAdmin: boolean;
@@ -37,11 +33,10 @@ interface DrawerProps {
   memberCount: number;
 }
 
-const HEADER_HEIGHT = 40;
+const HEADER_HEIGHT = 30;
 const SIDEBAR_WIDTH = 200;
 
 const CombinedDrawer: React.FC<DrawerProps> = ({
-  children,
   menuItems,
   isAdmin,
   isMember,
@@ -99,9 +94,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
   };
 
   const closeSidebar = () => {
-    if (isSidebarOpen) {
-      toggleSidebar();
-    }
+    if (isSidebarOpen) toggleSidebar();
   };
 
   const barIconRotate = rotateAnim.interpolate({
@@ -115,17 +108,30 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
   };
 
   return (
-    <SafeAreaView className="flex-1" edges={["top"]}>
-      {/* Fixed Header */}
+    <>
+      {/* Header */}
       <View
-        className="flex-row justify-between items-center px-4 py-1 bg-black top-0 left-0 right-0 z-30"
-        style={{ height: HEADER_HEIGHT }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+          backgroundColor: "black",
+          height: HEADER_HEIGHT,
+        }}
       >
-        <TouchableOpacity onPress={handleBackFromTeamPage}>
+        <TouchableOpacity  heatSlop={{top:10,bottom:50,left:10,right:100}} onPress={handleBackFromTeamPage}>
           <BackIcon />
         </TouchableOpacity>
+
         {(isMember || isAdmin) && (
-          <View className="flex-row items-center gap-x-5">
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
             <TouchableOpacity
               onPress={() =>
                 router.push(
@@ -148,19 +154,10 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         )}
       </View>
 
-      {/* Main Content */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
-        scrollEnabled={!isSidebarOpen}
-      >
-        {children}
-      </ScrollView>
-
-      {/* Drawer System */}
+      {/* Sidebar Overlay and Menu */}
       {isSidebarOpen && (
         <>
-          {/* Overlay */}
+          {/* Black Overlay Background */}
           <Animated.View
             style={{
               position: "absolute",
@@ -170,7 +167,7 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
               bottom: 0,
               backgroundColor: "black",
               opacity: opacityAnim,
-              zIndex: 15,
+              zIndex: 95,
             }}
           >
             <TouchableWithoutFeedback onPress={closeSidebar}>
@@ -186,43 +183,100 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
               width: SIDEBAR_WIDTH,
               right: 0,
               bottom: 0,
-              backgroundColor: "#000",
-              zIndex: 20,
+              backgroundColor: "black",
+              zIndex: 100,
               transform: [{ translateX: slideAnim }],
               paddingTop: Platform.select({
-                ios: HEADER_HEIGHT+60,
-                android: HEADER_HEIGHT + (Platform.OS === 'android' ? 24 :0), // Adjust for Android status bar
+                ios: HEADER_HEIGHT + 30,
+                android: HEADER_HEIGHT + 24,
               }),
+              shadowColor: "#000",
+              shadowOffset: {
+                width: -2,
+                height: 0,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+              // borderLeftWidth: 1,
+              // borderLeftColor: "#333",
             }}
           >
-            <View className="flex-1">
-              {menuItems.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    item.onPress();
-                    closeSidebar();
-                  }}
-                  className="py-4 pl-5 border-b  border-[#252525]"
-                >
-                  <View className="flex flex-row justify-between mr-4">
-                    <Text style={{ color: item.color || "white", fontSize: 16 }}>
-                      {item.label}
-                    </Text>
-                    {item?.id === "members" && (isAdmin || isMember) && (
-                      <Text className="text-white">{`[${memberCount}]`}</Text>
-                    )}
-                    {item?.logo && (
-                      <item.logo width={32} height={32} fill="white" />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView 
+              contentContainerStyle={{ 
+                paddingBottom: 40,
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              {menuItems && menuItems.length > 0 ? (
+                menuItems.map((item, index) => (
+                  <TouchableOpacity
+                    key={`menu-item-${index}-${item.id || item.label}`}
+                    onPress={() => {
+                      console.log(`Menu pressed: ${item.label}`);
+                      item.onPress();
+                      closeSidebar();
+                    }}
+                    style={{
+                      paddingVertical: 16,
+                      paddingHorizontal: 20,
+                      borderBottomWidth: 1,
+                      borderColor: "#252525",
+                      minHeight: 50,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text 
+                        style={{ 
+                          color: item.color || "white", 
+                          fontSize: 16,
+                          fontWeight: "500",
+                        }}
+                      >
+                        {item.label}
+                      </Text>
+
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        {item?.id === "members" && (isAdmin || isMember) && (
+                          <Text style={{ 
+                            color: "white", 
+                            marginLeft: 8,
+                            fontSize: 14,
+                          }}>
+                            [{memberCount}]
+                          </Text>
+                        )}
+                        {item?.logo && typeof item.logo === "function" && (
+                          <View style={{ marginLeft: 8 }}>
+                            <item.logo width={20} height={20} fill="white" />
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={{ 
+                  padding: 20, 
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Text style={{ color: "white", fontSize: 16 }}>
+                    No menu items available
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
           </Animated.View>
         </>
       )}
-    </SafeAreaView>
+    </>
   );
 };
 

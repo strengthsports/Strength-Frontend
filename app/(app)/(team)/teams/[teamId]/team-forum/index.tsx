@@ -97,7 +97,7 @@ useEffect(() => {
           require('./sendmsg.mp3'),
           {
             shouldPlay: false,
-            volume: 0.3,
+            volume: 0.8,
           }
         );
         setSendSound(sound);

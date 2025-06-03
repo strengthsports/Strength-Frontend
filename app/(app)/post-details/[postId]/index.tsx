@@ -6,7 +6,6 @@ import React, {
   useState,
   useLayoutEffect,
 } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
 import { useNavigation, useRouter } from "expo-router";
 import PostContainer from "~/components/Cards/postContainer";
@@ -19,14 +18,9 @@ import {
   Animated,
   Platform,
   TextInput,
-  TouchableOpacity,
   Keyboard,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import {
-  useLazyFetchCommentsQuery,
-  useLazyFetchRepliesQuery,
-} from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Divider } from "react-native-elements";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { Comment, Post } from "~/types/post";
@@ -43,6 +37,7 @@ import {
 } from "~/reduxStore/slices/post/postActions";
 import { fetchPostById } from "~/api/post/fetchPostById";
 import ReplySection from "~/components/comment/ReplySection";
+import { fetchComments, fetchReplies } from "~/api/comment/fetchComments";
 
 export type ReplyPaginationState = {
   [commentId: string]: {
@@ -113,10 +108,6 @@ const PostDetailsPage = () => {
   } | null>(null);
   const [rootCommentId, setRootCommentId] = useState("");
 
-  // RTK Query hooks
-  const [fetchComments] = useLazyFetchCommentsQuery();
-  const [fetchReplies] = useLazyFetchRepliesQuery();
-
   // Fallback to db for post fetching
   useEffect(() => {
     const loadPost = async () => {
@@ -164,7 +155,7 @@ const PostDetailsPage = () => {
           postId,
           limit: 10,
           cursor: refresh ? null : cursor,
-        }).unwrap();
+        });
 
         if (response?.data) {
           const newComments = response.data.comments || [];
@@ -229,8 +220,8 @@ const PostDetailsPage = () => {
         const response = await fetchReplies({
           commentId,
           limit: 3,
-          cursor: currentState.cursor,
-        }).unwrap();
+          cursor: currentState.cursor as string,
+        });
 
         // console.log(response.data.replies);
 
@@ -364,17 +355,6 @@ const PostDetailsPage = () => {
               loading: false,
             };
 
-            // console.log("Target Id : ", targetId);
-            // console.log("Rootcomment Id : ", rootCommentId);
-            // console.log("State to be set : ", {
-            //   ...prev,
-            //   [rootCommentId]: {
-            //     ...current,
-            //     replies: [newComment, ...current.replies],
-            //     replyCount: current.replyCount,
-            //   },
-            // });
-
             return {
               ...prev,
               [rootCommentId]: {
@@ -399,7 +379,7 @@ const PostDetailsPage = () => {
 
   // Handle delete a comment
   const handleDeleteComment = useCallback(
-    (comment) => {
+    (comment: any) => {
       dispatch(deleteComment({ postId, commentId: comment._id }));
       setComments((prevComments) =>
         prevComments.filter((c) => c._id !== comment._id)
@@ -543,7 +523,7 @@ const PostDetailsPage = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-         <TopBar heading="" backHandler={() => router.back()} />
+        <TopBar heading="" backHandler={() => router.back()} />
         <FlatList
           ref={flatListRef}
           data={comments}

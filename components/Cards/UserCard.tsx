@@ -58,14 +58,18 @@ const UserCard = ({
 
   return (
     <>
-      <View className="flex-row mt-2 h-[60px]">
+      <View className="flex-row mt-2" style={{ height: 60 }}>
         <TouchableOpacity
           onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
           }
         >
           <Image
-            source={user.profilePic ? { uri: user.profilePic } : nopic}
+            source={
+              user.profilePic
+                ? { uri: user.profilePic, cache: "only-if-cached" }
+                : nopic
+            }
             style={{
               width: 44,
               height: 44,
@@ -77,10 +81,13 @@ const UserCard = ({
             resizeMode="cover"
           />
         </TouchableOpacity>
-        <TouchableOpacity  activeOpacity={0.7}
-         onPress={() =>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() =>
             router.push(`/(app)/(profile)/profile/${serializedUser}`)
-          } className="flex-1 -ml-1">
+          }
+          className="flex-1 -ml-1"
+        >
           <TextScallingFalse className="text-white font-semibold text-xl">
             {user.firstName} {user.lastName}
           </TextScallingFalse>

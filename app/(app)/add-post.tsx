@@ -21,7 +21,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "~/constants/Colors";
 import { Divider } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
-import { useAddPostMutation } from "~/reduxStore/api/feed/features/feedApi.addPost";
 import CustomImageSlider from "~/components/Cards/imageSlideContainer";
 import AlertModal from "~/components/modals/AlertModal";
 import PageThemeView from "~/components/PageThemeView";
@@ -153,7 +152,6 @@ export default function AddPostContainer() {
   const [isImageRatioModalVisible, setIsImageRatioModalVisible] =
     useState(false);
   const [pickedImageUris, setPickedImageUris] = useState<string[]>([]);
-  const [addPost, { isLoading }] = useAddPostMutation();
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<
     [number, number]
   >([3, 2]);
@@ -502,21 +500,19 @@ export default function AddPostContainer() {
         <View className="flex flex-row items-center justify-between p-4">
           <AddPostHeader onBackPress={handleAttemptGoBack} />
           <TouchableOpacity
-            className={`px-6 py-1 rounded-full ${isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
-              }`}
+            className={`px-6 py-1 rounded-full ${
+              isPostButtonEnabled ? "bg-theme" : "bg-neutral-800"
+            }`}
             onPress={handlePostSubmit}
             disabled={!isPostButtonEnabled}
           >
-            {isLoading ? (
-              <ActivityIndicator color={"white"} />
-            ) : (
-              <TextScallingFalse
-                className={`${isPostButtonEnabled ? "text-white" : "text-neutral-500"
-                  } text-3xl font-semibold`}
-              >
-                Post
-              </TextScallingFalse>
-            )}
+            <TextScallingFalse
+              className={`${
+                isPostButtonEnabled ? "text-white" : "text-neutral-500"
+              } text-3xl font-semibold`}
+            >
+              Post
+            </TextScallingFalse>
           </TouchableOpacity>
         </View>
 
@@ -574,132 +570,146 @@ export default function AddPostContainer() {
 
         {/* Footer */}
         <View>
-        {(postText.length >= 2990) && (
-          <View style={{width:'93%', justifyContent:'center', alignItems:'center', borderWidth: 1, borderColor:'#404040', paddingVertical: 4, borderRadius: 10, alignSelf:'center'}}>
-          <TextScallingFalse style={{ color: '#909090', fontSize: 13, fontWeight: '400'}}>
-            You are almost at the 3000 characters limit{postText.length}/3000
-          </TextScallingFalse>
-          </View>
-        )}
-        <View className="flex flex-row justify-between items-center p-3">
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setShowFeatureModal(true)}
-            className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-lg"
-          >
-            <MaterialCommunityIcons
-              name="earth"
-              size={20}
-              color={Colors.themeColor}
-            />
-            <TextScallingFalse className="text-theme text-3xl">
-              Public
-            </TextScallingFalse>
-            <MaterialCommunityIcons
-              name="menu-down"
-              size={24}
-              color={Colors.themeColor}
-            />
-          </TouchableOpacity>
-
-          <View className="flex flex-row justify-between items-center gap-2">
-            <TouchableOpacity
-              activeOpacity={0.5}
-              className="p-[5px] w-[35px]"
-              onPress={handleSelectVideo}
-              disabled={
-                showPollInput ||
-                pickedImageUris.length > 0 ||
-                (isTypeVideo && pickedVideoUri !== null)
-              }
+          {postText.length >= 2990 && (
+            <View
+              style={{
+                width: "93%",
+                justifyContent: "center",
+                alignItems: "center",
+                borderWidth: 1,
+                borderColor: "#404040",
+                paddingVertical: 4,
+                borderRadius: 10,
+                alignSelf: "center",
+              }}
             >
-              <ClipsIcon
-                color={
-                  showPollInput ||
-                    pickedImageUris.length > 0 ||
-                    (isTypeVideo && pickedVideoUri !== null)
-                    ? "#737373"
-                    : Colors.themeColor
-                }
+              <TextScallingFalse
+                style={{ color: "#909090", fontSize: 13, fontWeight: "400" }}
+              >
+                You are almost at the 3000 characters limit{postText.length}
+                /3000
+              </TextScallingFalse>
+            </View>
+          )}
+          <View className="flex flex-row justify-between items-center p-3">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setShowFeatureModal(true)}
+              className="flex flex-row gap-2 items-center pl-2 py-1 border border-theme rounded-lg"
+            >
+              <MaterialCommunityIcons
+                name="earth"
+                size={20}
+                color={Colors.themeColor}
+              />
+              <TextScallingFalse className="text-theme text-3xl">
+                Public
+              </TextScallingFalse>
+              <MaterialCommunityIcons
+                name="menu-down"
+                size={24}
+                color={Colors.themeColor}
               />
             </TouchableOpacity>
 
-            {/* Image button */}
-            <TouchableOpacity
-              onPress={handlePickImageOrAddMore}
-              disabled={
-                showPollInput || (isTypeVideo && pickedVideoUri !== null)
-              }
-              activeOpacity={0.7}
-            >
-              {pickedImageUris.length === 0 && (
-                <AddImageIcon
+            <View className="flex flex-row justify-between items-center gap-2">
+              <TouchableOpacity
+                activeOpacity={0.5}
+                className="p-[5px] w-[35px]"
+                onPress={handleSelectVideo}
+                disabled={
+                  showPollInput ||
+                  pickedImageUris.length > 0 ||
+                  (isTypeVideo && pickedVideoUri !== null)
+                }
+              >
+                <ClipsIcon
                   color={
-                    showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                    showPollInput ||
+                    pickedImageUris.length > 0 ||
+                    (isTypeVideo && pickedVideoUri !== null)
                       ? "#737373"
                       : Colors.themeColor
                   }
                 />
-              )}
-              {pickedImageUris.length > 0 && (
-                <AddImagePlusIcon color={Colors.themeColor} />
-              )}
-            </TouchableOpacity>
-
-            {/* Image Ratio Modal */}
-            <Modal
-              visible={isImageRatioModalVisible}
-              transparent
-              animationType="slide"
-              onRequestClose={closeRatioModal}
-            >
-              <TouchableOpacity
-                className="flex-1 justify-end bg-black/50"
-                activeOpacity={1}
-                onPress={closeRatioModal}
-              >
-                <ImageRatioModal pickImage={selectFirstImage} />
               </TouchableOpacity>
-            </Modal>
 
-            {/* New: Video Ratio Modal */}
-            <Modal
-              visible={isVideoRatioModalVisible}
-              transparent
-              animationType="slide"
-              onRequestClose={closeVideoRatioModal}
-            >
+              {/* Image button */}
               <TouchableOpacity
-                className="flex-1 justify-end bg-black/50"
-                activeOpacity={1}
-                onPress={closeVideoRatioModal}
+                onPress={handlePickImageOrAddMore}
+                disabled={
+                  showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                }
+                activeOpacity={0.7}
               >
-                <VideoRatioModal pickVideo={pickVideoWithRatio} />
+                {pickedImageUris.length === 0 && (
+                  <AddImageIcon
+                    color={
+                      showPollInput || (isTypeVideo && pickedVideoUri !== null)
+                        ? "#737373"
+                        : Colors.themeColor
+                    }
+                  />
+                )}
+                {pickedImageUris.length > 0 && (
+                  <AddImagePlusIcon color={Colors.themeColor} />
+                )}
               </TouchableOpacity>
-            </Modal>
 
-            <TouchableOpacity
-              onPress={handleOpenPoll}
-              className="p-[5px]"
-              activeOpacity={0.7}
-              disabled={
-                showPollInput ||
-                pickedImageUris.length > 0 ||
-                (isTypeVideo && pickedVideoUri !== null)
-              }
-            >
-              <PollsIcon
-                color={
+              {/* Image Ratio Modal */}
+              <Modal
+                visible={isImageRatioModalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={closeRatioModal}
+              >
+                <TouchableOpacity
+                  className="flex-1 justify-end bg-black/50"
+                  activeOpacity={1}
+                  onPress={closeRatioModal}
+                >
+                  <ImageRatioModal pickImage={selectFirstImage} />
+                </TouchableOpacity>
+              </Modal>
+
+              {/* New: Video Ratio Modal */}
+              <Modal
+                visible={isVideoRatioModalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={closeVideoRatioModal}
+              >
+                <TouchableOpacity
+                  className="flex-1 justify-end bg-black/50"
+                  activeOpacity={1}
+                  onPress={closeVideoRatioModal}
+                >
+                  <VideoRatioModal pickVideo={pickVideoWithRatio} />
+                </TouchableOpacity>
+              </Modal>
+
+              <TouchableOpacity
+                onPress={handleOpenPoll}
+                className="p-[5px]"
+                activeOpacity={0.7}
+                disabled={
                   showPollInput ||
+                  pickedImageUris.length > 0 ||
+                  (isTypeVideo && pickedVideoUri !== null)
+                }
+              >
+                <PollsIcon
+                  color={
+                    showPollInput ||
                     pickedImageUris.length > 0 ||
                     (isTypeVideo && pickedVideoUri !== null)
-                    ? "#737373"
-                    : Colors.themeColor
-                }
-              />
-            </TouchableOpacity>
+                      ? "#737373"
+                      : Colors.themeColor
+                  }
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
         </View>
       </View>
 

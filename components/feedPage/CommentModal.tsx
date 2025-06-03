@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
-  TouchableOpacity,
   Keyboard,
   FlatList,
   ActivityIndicator,
@@ -17,10 +16,6 @@ import { showFeedback } from "~/utils/feedbackToast";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
-import {
-  useLazyFetchCommentsQuery,
-  useLazyFetchRepliesQuery,
-} from "~/reduxStore/api/feed/features/feedApi.comment";
 import CommentNotFound from "../notfound/commentNotFound";
 import CommentInput from "../comment/CommentInput";
 import { TouchableWithoutFeedback } from "react-native";
@@ -30,6 +25,8 @@ import {
 } from "~/reduxStore/slices/post/postActions";
 import ReplySection from "../comment/ReplySection";
 import { ReplyPaginationState } from "~/app/(app)/post-details/[postId]";
+import { fetchComments, fetchReplies } from "~/api/comment/fetchComments";
+import { Comment } from "~/types/post";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const DRAG_THRESHOLD = 100;
@@ -47,7 +44,11 @@ const ModalHeader = memo(() => {
   );
 });
 
-const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
+const CommentModal = ({
+  targetId,
+  onClose,
+  autoFocusKeyboard = false,
+}: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.profile);
 
@@ -78,10 +79,6 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   const [isPosting, setIsPosting] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
   const [rootCommentId, setRootCommentId] = useState("");
-
-  // RTK Query hooks
-  const [fetchComments] = useLazyFetchCommentsQuery();
-  const [fetchReplies] = useLazyFetchRepliesQuery();
 
   // Add keyboard height state
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -192,7 +189,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
           postId: targetId,
           limit: 4,
           cursor: refresh ? null : cursor,
-        }).unwrap();
+        });
 
         if (response?.data) {
           const newComments = response.data.comments || [];
@@ -252,8 +249,8 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
         const response = await fetchReplies({
           commentId,
           limit: 2,
-          cursor: currentState.cursor,
-        }).unwrap();
+          cursor: currentState.cursor as string,
+        });
 
         if (response?.data) {
           const newReplies = response.data.replies || [];
@@ -497,7 +494,7 @@ const CommentModal = ({ targetId, onClose, autoFocusKeyboard = false }) => {
   );
 
   // Memoize keyExtractor to avoid re-renders
-  const keyExtractor = useCallback((item) => item._id, []);
+  const keyExtractor = useCallback((item: any) => item._id, []);
 
   // Memoize progress bar width animation
   const widthInterpolated = progress.interpolate({

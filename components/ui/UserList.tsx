@@ -1,10 +1,15 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
-import { View, FlatList, ActivityIndicator } from "react-native";
 import {
-  useLazyFetchFollowersQuery,
-  useLazyFetchFollowingsQuery,
-} from "~/reduxStore/api/profile/profileApi.follow";
-import { useLazyFetchLikersQuery } from "~/reduxStore/api/feed/features/feedApi.getLiker";
+  View,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import {
+  fetchLikers,
+  fetchFollowers,
+  fetchFollowings,
+} from "~/api/user/fetchUsers";
 import TextScallingFalse from "../CentralText";
 import UserCard from "../Cards/UserCard";
 import { useSelector } from "react-redux";
@@ -15,138 +20,168 @@ export type PageType = "Likers" | "Followers" | "Followings";
 interface UserListProps {
   targetId: string;
   type: PageType;
+  [key: string]: any;
 }
 
 const ITEM_HEIGHT = 60;
 
-const UserList = memo(({ targetId, type }: UserListProps) => {
-  const currentUserId = useSelector(
-    (state: RootState) => state.profile.user?._id
-  );
-  const [userData, setUserData] = useState<any[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [isPaginating, setIsPaginating] = useState(false);
+const UserList = memo(
+  ({ targetId, type, refreshing, onRefresh }: UserListProps) => {
+    const currentUserId = useSelector(
+      (state: RootState) => state.profile.user?._id
+    );
 
-  // Add this ref at the top of your component
-  const lastDataRef = useRef<any>();
+    const [userData, setUserData] = useState<any[]>([]);
+    const [cursor, setCursor] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [isPaginating, setIsPaginating] = useState(false);
+    const [localResult, setLocalResult] = useState({
+      data: null,
+      isLoading: false,
+      isFetching: false,
+    });
 
-  // Unified lazy hooks
-  const [fetchFollowers, followersResult] = useLazyFetchFollowersQuery();
-  const [fetchFollowings, followingsResult] = useLazyFetchFollowingsQuery();
-  const [fetchLikers, likersResult] = useLazyFetchLikersQuery();
+    const lastDataRef = useRef<any>();
 
-  const { fetchFn, result } = useMemo(() => {
-    switch (type) {
-      case "Followers":
-        return { fetchFn: fetchFollowers, result: followersResult };
-      case "Followings":
-        return { fetchFn: fetchFollowings, result: followingsResult };
-      case "Likers":
-        return { fetchFn: fetchLikers, result: likersResult };
-      default:
-        return { fetchFn: fetchFollowers, result: followersResult };
-    }
-  }, [
-    type,
-    fetchFollowers,
-    fetchFollowings,
-    fetchLikers,
-    followersResult,
-    followingsResult,
-    likersResult,
-  ]);
+    const fetchFn = useMemo(() => {
+      switch (type) {
+        case "Likers":
+          return fetchLikers;
+        case "Followers":
+          return fetchFollowers;
+        case "Followings":
+          return fetchFollowings;
+        default:
+          return fetchFollowers;
+      }
+    }, [type]);
 
-  const isInitialLoading = result.isLoading && userData.length === 0;
-  const isFetchingMore = result.isFetching && userData.length > 0;
+    const isInitialLoading = localResult.isLoading && userData.length === 0;
+    const isFetchingMore = localResult.isFetching && userData.length > 0;
 
-  useEffect(() => {
-    const loadInitial = async () => {
-      setUserData([]);
+    const fetchData = async (params: {
+      targetId: string;
+      cursor?: string;
+      targetUserId?: string;
+    }) => {
+      try {
+        setLocalResult({
+          data: null,
+          isLoading: !userData.length,
+          isFetching: !!userData.length,
+        });
+
+        const fullParams =
+          type === "Likers"
+            ? { targetId: params.targetId, limit: 15, cursor: params.cursor }
+            : {
+                targetUserId: params.targetUserId!,
+                limit: 15,
+                cursor: params.cursor,
+              };
+
+        const result = await fetchFn(fullParams);
+        setLocalResult({ data: result, isLoading: false, isFetching: false });
+      } catch (e) {
+        console.error("Fetch error", e);
+        setLocalResult((prev) => ({
+          ...prev,
+          isLoading: false,
+          isFetching: false,
+        }));
+      }
+    };
+
+    useEffect(() => {
+      // setUserData([]);
       setCursor(null);
       setHasMore(true);
 
       const baseParams =
         type === "Likers" ? { targetId } : { targetUserId: targetId };
 
-      await fetchFn(baseParams);
+      fetchData(baseParams);
+    }, [type, targetId]);
+
+    useEffect(() => {
+      if (!localResult.data) return;
+
+      if (
+        JSON.stringify(localResult.data) === JSON.stringify(lastDataRef.current)
+      )
+        return;
+
+      const newUsers = localResult.data.users || [];
+      const next = localResult.data.nextCursor ?? null;
+
+      setUserData((prev) => (isPaginating ? [...prev, ...newUsers] : newUsers));
+      setCursor(next);
+      setHasMore(Boolean(next));
+      setIsPaginating(false);
+      lastDataRef.current = localResult.data;
+    }, [localResult.data]);
+
+    const fetchMore = async () => {
+      if (!hasMore || isFetchingMore || isPaginating) return;
+
+      const moreParams =
+        type === "Likers"
+          ? { targetId, cursor }
+          : { targetUserId: targetId, cursor };
+
+      setIsPaginating(true);
+      await fetchData(moreParams);
     };
 
-    loadInitial();
-  }, [type, targetId]);
-
-  useEffect(() => {
-    if (!result.data) return;
-
-    // Skip if data hasn't changed
-    if (JSON.stringify(result.data) === JSON.stringify(lastDataRef.current))
-      return;
-
-    console.log("\n\nUsers : ", result.data);
-    const newUsers = result.data.users || [];
-    const next = result.data.nextCursor ?? null;
-
-    setUserData((prev) => (isPaginating ? [...prev, ...newUsers] : newUsers));
-    setCursor(next);
-    setHasMore(Boolean(next));
-    setIsPaginating(false);
-
-    // Store the last data for comparison
-    lastDataRef.current = result.data;
-  }, [result.data]);
-
-  const fetchMore = async () => {
-    if (!hasMore || isFetchingMore || isPaginating) return;
-
-    const moreParams =
-      type === "Likers"
-        ? { targetId, cursor }
-        : { targetUserId: targetId, cursor };
-
-    setIsPaginating(true);
-    await fetchFn(moreParams);
-  };
-
-  return (
-    <View
-      onStartShouldSetResponder={() => true}
-      className="flex-1 bg-black px-2"
-    >
-      {isInitialLoading ? (
-        <ActivityIndicator size="large" color="#12956B" />
-      ) : (
-        <FlatList
-          data={userData}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <UserCard user={item} isOwnProfile={currentUserId === item._id} />
-          )}
-          contentContainerStyle={{ flexGrow: 1, padding: 10 }}
-          getItemLayout={(_, index) => ({
-            length: ITEM_HEIGHT,
-            offset: ITEM_HEIGHT * index,
-            index,
-          })}
-          onEndReached={fetchMore}
-          onEndReachedThreshold={0.6}
-          initialNumToRender={6}
-          windowSize={5}
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={6}
-          ListFooterComponent={
-            isFetchingMore && hasMore ? (
-              <ActivityIndicator size="small" color="#12956B" />
-            ) : null
-          }
-          ListEmptyComponent={
-            <TextScallingFalse className="text-white text-center">
-              No {type} Found!
-            </TextScallingFalse>
-          }
-        />
-      )}
-    </View>
-  );
-});
+    return (
+      <View
+        // onStartShouldSetResponder={() => true}
+        className="flex-1 bg-black px-2"
+      >
+        {isInitialLoading ? (
+          <ActivityIndicator size="large" color="#12956B" />
+        ) : (
+          <FlatList
+            data={userData}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <UserCard user={item} isOwnProfile={currentUserId === item._id} />
+            )}
+            contentContainerStyle={{ flexGrow: 1, padding: 10 }}
+            getItemLayout={(_, index) => ({
+              length: ITEM_HEIGHT,
+              offset: ITEM_HEIGHT * index,
+              index,
+            })}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#12956B", "#6E7A81"]}
+                tintColor="#6E7A81"
+                progressBackgroundColor="#181A1B"
+              />
+            }
+            onEndReached={fetchMore}
+            onEndReachedThreshold={1}
+            initialNumToRender={10}
+            windowSize={10}
+            maxToRenderPerBatch={6}
+            ListFooterComponent={
+              isFetchingMore && hasMore ? (
+                <ActivityIndicator size="small" color="#12956B" />
+              ) : null
+            }
+            ListEmptyComponent={
+              <TextScallingFalse className="text-white text-center">
+                No {type} Found!
+              </TextScallingFalse>
+            }
+          />
+        )}
+      </View>
+    );
+  }
+);
 
 export default UserList;

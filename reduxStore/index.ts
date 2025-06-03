@@ -31,7 +31,6 @@ import postsReducer from "./slices/post/postsSlice";
 import viewsReducer from "./slices/post/viewsSlice";
 import userSuggestionsReducer from "./slices/team/userSuggestionSlice";
 import { profileApi } from "./api/profile/profileApi";
-import { feedApi } from "./api/feed/services/feedApi";
 import { sportsApi } from "./api/sportsApi";
 import { notificationApi } from "./api/notificationApi";
 import { communityApi } from "./api/community/communityApi";
@@ -86,7 +85,6 @@ const rootReducer = combineReducers({
   [cricketApi.reducerPath]: cricketApi.reducer,
   [footballApi.reducerPath]: footballApi.reducer,
   [basketballApi.reducerPath]: basketballApi.reducer,
-  [feedApi.reducerPath]: feedApi.reducer,
   [searchApi.reducerPath]: searchApi.reducer,
   [articleApi.reducerPath]: articleApi.reducer,
   [hashtagApi.reducerPath]: hashtagApi.reducer,
@@ -111,12 +109,10 @@ export const store = configureStore({
       cricketApi.middleware,
       footballApi.middleware,
       basketballApi.middleware,
-      // badmintonApi.middleware,
-      feedApi.middleware,
       searchApi.middleware,
       articleApi.middleware,
       hashtagApi.middleware,
-      feedbackApi.middleware,
+      feedbackApi.middleware
     ),
 });
 

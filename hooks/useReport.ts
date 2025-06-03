@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
-import { useReportPostMutation } from "~/reduxStore/api/feed/features/feedApi.reportPost";
+import { reportPost as handleReportPost } from "~/reduxStore/slices/post/postActions";
 import {
   useReportUserMutation,
   useUndoReportUserMutation,
@@ -15,7 +15,6 @@ export const useReport = () => {
   // Get the mutation functions from RTK Query
   const [reportUserMutation] = useReportUserMutation();
   const [undoReportUserMutation] = useUndoReportUserMutation();
-  const [reportPostMutation] = useReportPostMutation();
 
   // Function to report a user
   const reportUser = useCallback(
@@ -54,7 +53,7 @@ export const useReport = () => {
           })
         );
         // Call the mutation and wait for its result
-        await reportPostMutation(reportData).unwrap();
+        handleReportPost(reportData);
       } catch (error) {
         dispatch(
           updateAllFeedPostsReportStatus({

@@ -407,6 +407,14 @@ const index = () => {
           )}
         </PageThemeView>
       </Modal>
+      <View style={{
+         position: 'absolute',
+        bottom: 0, width: "100%", alignItems: 'center',
+        height: '9%',
+      }}>
+        <TextScallingFalse style={{ color: 'grey', fontSize: 13, fontWeight: '400' }}>
+          Version 1.0.1</TextScallingFalse>
+      </View>
     </PageThemeView>
   );
 };
@@ -456,8 +464,8 @@ const styles = StyleSheet.create({
   OptionButtonView: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 19,
-    paddingHorizontal: 40,
+    gap: 21,
+    paddingHorizontal: 35,
   },
   AccountSettingsOptions: {
     color: "white",

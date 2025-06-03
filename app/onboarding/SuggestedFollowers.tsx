@@ -112,10 +112,6 @@ const SuggestedSupportScreen: React.FC = () => {
         finalOnboardingData.append("favSports", sportId);
       });
 
-      //Log FormData values (for debugging)
-      finalOnboardingData.forEach((value, key) => {
-        console.log(`${key}: ${value}`);
-      });
 
       console.log("FormData object before dispatch:");
       for (let pair of (finalOnboardingData as any).entries()) {
@@ -128,8 +124,6 @@ const SuggestedSupportScreen: React.FC = () => {
       await dispatch(onboardingUser(finalOnboardingData)).unwrap();
 
       // console.log(response);
-      console.log("User before fetchMyProfile:", user);
-      console.log("User ID before fetch:", user?._id);
 
       dispatch(fetchMyProfile(user?._id));
       setFinalLoading(false);
@@ -164,6 +158,7 @@ const SuggestedSupportScreen: React.FC = () => {
     );
   };
 
+
   const handleSkip = async () => {
     setFinalLoading(true);
     const onboardingData = {
@@ -181,18 +176,11 @@ const SuggestedSupportScreen: React.FC = () => {
         finalOnboardingData.append("favSports", sportId);
       });
 
-      const response = await dispatch(onboardingUser(finalOnboardingData)).unwrap();
-      console.log("User after onboarding:", response.user);
-
-      if (!user || !user._id) {
-        console.warn("User not found in auth state.");
-        setFinalLoading(false);
-        return;
-      }
+      await dispatch(onboardingUser(finalOnboardingData)).unwrap();
       dispatch(fetchMyProfile(user?._id));
-      console.log("user._id-", user?._id)
 
       // console.log(response);
+      setFinalLoading(false);
       dispatch(setAuthState());
       // Alert the successful response
       Toast.show({
@@ -215,6 +203,7 @@ const SuggestedSupportScreen: React.FC = () => {
       }
     }
   };
+
 
   // 1. Define renderItem first
   const renderItem = useCallback(

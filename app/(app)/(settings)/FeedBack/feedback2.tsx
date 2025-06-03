@@ -5,7 +5,7 @@ import BackIcon from '~/components/SvgIcons/Common_Icons/BackIcon'
 import TextScallingFalse from '~/components/CentralText'
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
-import logo from "@/assets/images/Slogo.png";
+import logo from "@/assets/images/strengthfeedback.png";
 import { useDispatch, useSelector } from "react-redux";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -217,7 +217,7 @@ const feedback2 = () => {
                         <TextScallingFalse style={{
                             color: 'grey', fontSize: 14, fontWeight: '400'
                         }}>
-                            Counts: {feedbackCountData?.count ?? 0}
+                            Review: {feedbackCountData?.count ?? 0}
                         </TextScallingFalse>
                     </View>
                 </View>
@@ -263,10 +263,13 @@ const feedback2 = () => {
                                     style={StyleSheet.absoluteFill}
                                 />
                                 <View style={{ alignItems: 'center', paddingHorizontal: 30, paddingVertical: 40 }}>
-                                    <View style={{ flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center' }}>
+                                    <View style={{ flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center'}}>
+                                        <Image source={logo} style={{ width: 135, height: 30, }} />
+                                    </View>
+                                    {/* <View style={{ flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', backgroundColor:'purple'}}>
                                         <Image source={logo} style={{ width: 22, height: 22, }} />
                                         <TextScallingFalse style={{ color: 'white', fontSize: 25, fontWeight: '700' }}>Strength</TextScallingFalse>
-                                    </View>
+                                    </View> */}
                                     <TextScallingFalse style={{ color: 'white', fontSize: 20, fontWeight: '500', lineHeight: 27, width: '100%', paddingVertical: 30 }}>
                                         {!feedbackSteps[step]?.question ? 'Loading...' : feedbackSteps[step].question}
                                     </TextScallingFalse>

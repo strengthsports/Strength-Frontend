@@ -76,43 +76,46 @@ const TeamPage: React.FC = () => {
 
   // Alert modal state
   const [alertVisible, setAlertVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState({
-    title: "",
-    message: "",
-    confirmAction: () => {},
-    discardAction: () => {},
-    confirmMessage: "Confirm",
-    cancelMessage: "Cancel",
-  });
+const [alertConfig, setAlertConfig] = useState({
+  title: "",
+  message: "",
+  confirmAction: () => {},
+  discardAction: () => {},
+  confirmMessage: "Confirm",
+  cancelMessage: "Cancel",
+  isDestructive: false,
+  confirmButtonColor: undefined,
+  cancelButtonColor: undefined,
+  discardButtonColor: undefined
+});
 
   const modalRef = useRef<Modalize>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const showAlert = (
-    title: string,
-    message: string,
-    confirmAction: () => void,
-    confirmMessage = "Confirm",
-    isDestructive = false
-  ) => {
-    const config = {
-      title,
-      message,
-      confirmAction: () => {
-        setAlertVisible(false);
-        confirmAction();
-      },
-      discardAction: () => setAlertVisible(false),
-      confirmMessage,
-      cancelMessage: "Cancel",
-      discardButtonColor: isDestructive
-        ? { bg: "#D44044", text: "white" }
-        : undefined,
-    };
-
-    setAlertConfig(config);
-    setAlertVisible(true);
-  };
+const showAlert = (
+  title: string,
+  message: string,
+  confirmAction: () => void,
+  confirmMessage = "Confirm",
+  isDestructive = false
+) => {
+  setAlertConfig({
+    title,
+    message,
+    confirmAction: () => {
+      setAlertVisible(false);
+      confirmAction();
+    },
+    discardAction: () => setAlertVisible(false),
+    confirmMessage,
+    cancelMessage: "Cancel",
+    isDestructive,
+    confirmButtonColor: isDestructive ? { bg: "#D44044", text: "white" } : undefined,
+    cancelButtonColor: undefined,
+    discardButtonColor: undefined
+  });
+  setAlertVisible(true);
+};
 
   const hideAlert = () => {
     setAlertVisible(false);
@@ -277,6 +280,7 @@ const TeamPage: React.FC = () => {
     }
   }, [dispatch, teamId, user?._id]);
 
+
 const handleLeaveTeam = useCallback(async () => {
   if (!user?._id || !teamId) {
     showError("Missing user or team information");
@@ -320,6 +324,10 @@ const handleLeaveTeam = useCallback(async () => {
     true
   );
 }, [dispatch, teamId, user?._id, router, isAdmin, teamData.membersCount, teamDetails?.name]);
+
+
+
+
 
   const handleJoinTeam = useCallback(async () => {
     setJoining(true);
@@ -465,12 +473,10 @@ return (
   <PageThemeView style={{ flex: 1, backgroundColor: "black" }}>
     <Toast config={toastConfig} />
 
-    <AlertModal
-      isVisible={alertVisible}
-      {...alertConfig}
-      onCancel={alertConfig.discardAction}
-      onConfirm={alertConfig.confirmAction}
-    />
+  <AlertModal
+  isVisible={alertVisible}
+  alertConfig={alertConfig}  // Pass the config object directly
+/>
     
     {/* Header with Sidebar */}
     <CombinedDrawer

@@ -14,6 +14,8 @@ export interface User {
   profilePic: string | null;
   coverPic: string | null;
   headline: string;
+  followerCount: number | null,
+  followingCount: number | null,
   [key: string]: any;
 }
 

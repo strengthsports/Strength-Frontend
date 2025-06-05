@@ -142,7 +142,11 @@ const CurrentTeamsScreen = () => {
         <Image source={logo} style={styles.teamLogo} />
         <View style={styles.teamInfo}>
           <TextScallingFalse style={styles.teamName}>{name}</TextScallingFalse>
-          <TextScallingFalse style={styles.teamLocation}>
+          <TextScallingFalse
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={styles.teamLocation}
+          >
             {location}
           </TextScallingFalse>
           <View style={styles.roleContainer}>
@@ -178,7 +182,10 @@ const CurrentTeamsScreen = () => {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} className=" w-20 h-8 ">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className=" w-20 h-8 "
+            >
               <BackIcon />
             </TouchableOpacity>
             {/* <TouchableOpacity style={styles.doneButton}>
@@ -232,7 +239,13 @@ const CurrentTeamsScreen = () => {
                     <TeamItem
                       name={team.team.name}
                       logo={{ uri: team.team.logo.url }}
-                      location={team?.team?.address?.state +" "+ team?.team?.address?.country  || "Not Available"}
+                      location={
+                        team?.team?.address?.city +
+                          ", " +
+                          team?.team?.address?.state +
+                          ", " +
+                          team?.team?.address?.country || "Not Available"
+                      }
                       role={team.role.slice(0, -1) || "NA"}
                       isCaptain={team.position?.toLowerCase() === "captain"}
                       isVC={team.position?.toLowerCase() === "vicecaptain"}
@@ -363,6 +376,7 @@ const styles = StyleSheet.create({
   },
   teamInfo: {
     flex: 1,
+    flexShrink: 1,
   },
   teamName: {
     color: "white",
@@ -374,6 +388,7 @@ const styles = StyleSheet.create({
     color: "#A7A7A7",
     fontSize: 12,
     marginBottom: 5,
+    overflow: "hidden",
   },
   roleContainer: {
     flexDirection: "row",

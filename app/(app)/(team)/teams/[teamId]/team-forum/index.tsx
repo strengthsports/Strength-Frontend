@@ -1,20 +1,34 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { View, Text, FlatList, Image, TextInput, ActivityIndicator, RefreshControl, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TextInput,
+  ActivityIndicator,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { Avatar, Divider, IconButton } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { Audio } from 'expo-av';
+import { Audio } from "expo-av";
 import PageThemeView from "~/components/PageThemeView";
 import TextScallingFalse from "~/components/CentralText";
 import { AppDispatch, RootState } from "@/reduxStore";
 import { fetchTeamDetails } from "~/reduxStore/slices/team/teamSlice";
-import { fetchTeamMessages, sendMessage } from "~/reduxStore/slices/team/teamForumSlice";
+import {
+  fetchTeamMessages,
+  sendMessage,
+} from "~/reduxStore/slices/team/teamForumSlice";
 import { LinearGradient } from "expo-linear-gradient";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import MessageBoxTopCurve from "~/components/SvgIcons/teams/MessageBoxTopCurve";
+import Nopic from "~/assets/images/nopic.jpg";
 
 // Type definitions
-type TeamRole = 'Admin' | 'Captain' | 'ViceCaptain' | 'member';
+type TeamRole = "Admin" | "Captain" | "ViceCaptain" | "member";
 
 interface User {
   _id: string;
@@ -55,10 +69,10 @@ interface Message {
 }
 
 const ROLES_HIERARCHY = {
-  'Admin': 3,
-  'Captain': 2,
-  'ViceCaptain': 1,
-  'member': 0
+  Admin: 3,
+  Captain: 2,
+  ViceCaptain: 1,
+  member: 0,
 };
 
 const TeamForum: React.FC = () => {
@@ -66,6 +80,7 @@ const TeamForum: React.FC = () => {
   const [newMessage, setNewMessage] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [sendSound, setSendSound] = useState<Audio.Sound | null>(null);
+  const [sending, setSending] = useState(false);
 
   // Hooks
   const router = useRouter();
@@ -73,14 +88,18 @@ const TeamForum: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   // Redux selectors
-  const { team, loading: teamLoading } = useSelector((state: RootState) => state.team);
-  const { messages, loading: forumLoading, error: forumError } = useSelector(
-    (state: RootState) => state.teamForum
+  const { team, loading: teamLoading } = useSelector(
+    (state: RootState) => state.team
   );
+  const {
+    messages,
+    loading: forumLoading,
+    error: forumError,
+  } = useSelector((state: RootState) => state.teamForum);
   const { user } = useSelector((state: RootState) => state.profile);
 
   // Load and setup audio
-useEffect(() => {
+  useEffect(() => {
     const setupAudio = async () => {
       try {
         // Set audio mode for playback
@@ -94,15 +113,15 @@ useEffect(() => {
 
         // Load the send message sound from local assets
         const { sound } = await Audio.Sound.createAsync(
-          require('./sendmsg.mp3'),
+          require("./sendmsg.mp3"),
           {
             shouldPlay: false,
-            volume: 0.8,
+            volume: 1.0,
           }
         );
         setSendSound(sound);
       } catch (error) {
-        console.log('Error setting up audio:', error);
+        console.log("Error setting up audio:", error);
       }
     };
 
@@ -125,7 +144,7 @@ useEffect(() => {
         await sendSound.playAsync();
       }
     } catch (error) {
-      console.log('Error playing send sound:', error);
+      console.log("Error playing send sound:", error);
     }
   }, [sendSound]);
 
@@ -140,18 +159,18 @@ useEffect(() => {
   const userRole = useMemo<TeamRole | null>(() => {
     if (!team || !user) return null;
 
-    const isAdmin = team.admin?.some(admin => admin._id === user._id);
-    if (isAdmin) return 'Admin';
+    const isAdmin = team.admin?.some((admin) => admin._id === user._id);
+    if (isAdmin) return "Admin";
 
-    const member = team.members?.find(m => m.user?._id === user._id);
+    const member = team.members?.find((m) => m.user?._id === user._id);
     if (!member) return null;
 
     // Return the position if it's one of our defined roles
-    if (['Captain', 'ViceCaptain'].includes(member.position || '')) {
+    if (["Captain", "ViceCaptain"].includes(member.position || "")) {
       return member.position as TeamRole;
     }
 
-    return 'member';
+    return "member";
   }, [team, user]);
 
   const canSendMessages = useMemo(() => {
@@ -164,12 +183,12 @@ useEffect(() => {
     if (!team) return null;
 
     return {
-      _id: 'welcome-message',
-      userId: 'system',
-      userName: 'System',
+      _id: "welcome-message",
+      userId: "system",
+      userName: "System",
       text: `👋  Welcome to the ${team.name} forum! This is a space for team communication and updates. All team members can post messages here.`,
       timestamp: team ? new Date(0).toISOString() : new Date().toISOString(),
-      isSystemMessage: true
+      isSystemMessage: true,
     };
   }, [team]);
 
@@ -179,8 +198,9 @@ useEffect(() => {
     if (welcomeMessage) {
       allMessages.unshift(welcomeMessage);
     }
-    return allMessages.sort((a, b) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    return allMessages.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
   }, [messages, welcomeMessage]);
 
@@ -200,10 +220,12 @@ useEffect(() => {
 
   // Handle sending a new message
   const handleSendMessage = useCallback(async () => {
-    if (!canSendMessages || !newMessage.trim() || !teamId || !team || !user) return;
+    if (!canSendMessages || !newMessage.trim() || !teamId || !team || !user)
+      return;
 
     try {
-       await playSendSound();
+      setSending(true);
+      await playSendSound();
       await dispatch(
         sendMessage({
           text: newMessage.trim(),
@@ -211,23 +233,63 @@ useEffect(() => {
           teamName: team.name,
         })
       ).unwrap();
-      
+
       setNewMessage("");
-      
-      // Play send sound after successful message send
-     
-      
     } catch (error) {
       console.error("Failed to send message:", error);
+    } finally {
+      setSending(false);
     }
-  }, [canSendMessages, newMessage, teamId, team, user, dispatch, playSendSound]);
+  }, [
+    canSendMessages,
+    newMessage,
+    teamId,
+    team,
+    user,
+    dispatch,
+    playSendSound,
+  ]);
 
   // Format timestamp to time string
   const formatTime = useCallback((timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }, []);
 
+  const ProgressBar = ({ loading }: { loading: boolean }) => {
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+      if (!loading) {
+        setProgress(0);
+        return;
+      }
+
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 95) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 5;
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }, [loading]);
+
+    return (
+      <View style={styles.progressBarContainer}>
+        <View
+          style={[
+            styles.progressBar,
+            { width: `${progress}%` },
+            progress === 100 && styles.progressBarComplete,
+          ]}
+        />
+      </View>
+    );
+  };
   // Format timestamp to date string
   const formatDate = useCallback((timestamp: string) => {
     const date = new Date(timestamp);
@@ -240,29 +302,35 @@ useEffect(() => {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return "Yesterday";
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
   }, []);
 
   // Get role badge based on role
   const getRoleBadge = useCallback((role: TeamRole) => {
     switch (role) {
-      case 'Admin':
+      case "Admin":
         return (
           <View style={[styles.badgeContainer, styles.adminBadge]}>
-            <TextScallingFalse style={styles.badgeText}>Admin</TextScallingFalse>
+            <TextScallingFalse style={styles.badgeText}>
+              Admin
+            </TextScallingFalse>
           </View>
         );
-      case 'Captain':
+      case "Captain":
         return (
           <View style={[styles.badgeContainer, styles.captainBadge]}>
-            <TextScallingFalse style={styles.badgeText}>{"[C]"}</TextScallingFalse>
+            <TextScallingFalse style={styles.badgeText}>
+              {"[C]"}
+            </TextScallingFalse>
           </View>
         );
-      case 'ViceCaptain':
+      case "ViceCaptain":
         return (
           <View style={[styles.badgeContainer, styles.viceCaptainBadge]}>
-            <TextScallingFalse style={styles.badgeText}>{"[VC]"}</TextScallingFalse>
+            <TextScallingFalse style={styles.badgeText}>
+              {"[VC]"}
+            </TextScallingFalse>
           </View>
         );
       default:
@@ -274,9 +342,9 @@ useEffect(() => {
   const groupedMessages = useMemo(() => {
     const groups: { [key: string]: Message[] } = {};
 
-    combinedMessages.forEach(message => {
+    combinedMessages.forEach((message) => {
       const date = new Date(message.timestamp);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = date.toISOString().split("T")[0];
 
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -285,106 +353,113 @@ useEffect(() => {
       groups[dateKey].unshift(message);
     });
 
-    return Object.keys(groups).map(date => ({
+    return Object.keys(groups).map((date) => ({
       date,
-      messages: groups[date]
+      messages: groups[date],
     }));
   }, [combinedMessages]);
 
   // Render a message item in the list
-  const renderMessageItem = useCallback(({ item }: { item: Message }) => {
-    // For system messages
-    if (item.isSystemMessage) {
-      return (
-        <View style={styles.systemMessageContainer}>
-          <View style={styles.systemMessageWrapper}>
-            <TextScallingFalse style={styles.systemMessageText}>{item.text}</TextScallingFalse>
+  const renderMessageItem = useCallback(
+    ({ item }: { item: Message }) => {
+      // For system messages
+      if (item.isSystemMessage) {
+        return (
+          <View style={styles.systemMessageContainer}>
+            <View style={styles.systemMessageWrapper}>
+              <TextScallingFalse style={styles.systemMessageText}>
+                {item.text}
+              </TextScallingFalse>
+            </View>
           </View>
-        </View>
-      );
-    }
-
-    // Determine user role based on userId
-    const getUserRole = (): TeamRole | null => {
-      // Check if user is admin
-      if (team?.admin?.some(admin => admin._id === item.userId)) {
-        return 'Admin';
+        );
       }
 
-      // Check in team members
-      const member = team?.members?.find(m => m.user?._id === item.userId);
-      if (!member) return null;
+      // Determine user role based on userId
+      const getUserRole = (): TeamRole | null => {
+        // Check if user is admin
+        if (team?.admin?.some((admin) => admin._id === item.userId)) {
+          return "Admin";
+        }
 
-      // Return the position if it's one of our defined roles
-      if (['Captain', 'ViceCaptain'].includes(member.position || '')) {
-        return member.position as TeamRole;
-      }
+        // Check in team members
+        const member = team?.members?.find((m) => m.user?._id === item.userId);
+        if (!member) return null;
 
-      return 'member';
-    };
+        // Return the position if it's one of our defined roles
+        if (["Captain", "ViceCaptain"].includes(member.position || "")) {
+          return member.position as TeamRole;
+        }
 
-    const messageUserRole = getUserRole();
-    const roleBadge = messageUserRole ? getRoleBadge(messageUserRole) : null;
-    const isCurrentUser = item.userId === user?._id;
+        return "member";
+      };
 
-    return (
-      <View style={styles.messageContainer}>
-        <View style={styles.avatarContainer}>
-          {item.userProfilePic ? (
+      const messageUserRole = getUserRole();
+      const roleBadge = messageUserRole ? getRoleBadge(messageUserRole) : null;
+      const isCurrentUser = item.userId === user?._id;
+
+      return (
+        <View style={styles.messageContainer}>
+          <View style={styles.avatarContainer}>
             <Image
-              source={{ uri: item.userProfilePic }}
+              source={
+                item.userProfilePic ? { uri: item.userProfilePic } : Nopic
+              }
               style={styles.avatar}
               accessibilityIgnoresInvertColors
             />
-          ) : (
-            <Avatar.Text
-              size={40}
-              label={item.userName.split(' ').map(n => n[0]).join('')}
-              style={[styles.avatar, isCurrentUser ? styles.currentUserAvatar : null]}
-            />
-          )}
-        </View>
-  
-        <View style={styles.messageContentContainer}>
-        <View style={{position:'absolute', left: -9}}>
-        <MessageBoxTopCurve />
-        </View>
-          <View style={styles.messageHeader}>
-            <TextScallingFalse style={[
-              styles.senderName,
-              isCurrentUser ? styles.currentUserName : null
-            ]}>
-              {item.userName}
-            </TextScallingFalse>
-            {roleBadge}
-            <TextScallingFalse style={styles.messageTime}>
-              {formatTime(item.timestamp)}
-            </TextScallingFalse>
           </View>
 
-          <View style={[
-            styles.messageBubble,
-            isCurrentUser && styles.currentUserBubble
-          ]}>
-            <TextScallingFalse style={styles.messageText}>{item.text}</TextScallingFalse>
+          <View style={styles.messageContentContainer}>
+            <View style={{ position: "absolute", left: -9 }}>
+              <MessageBoxTopCurve />
+            </View>
+            <View style={styles.messageHeader}>
+              <TextScallingFalse
+                style={[
+                  styles.senderName,
+                  isCurrentUser ? styles.currentUserName : null,
+                ]}
+              >
+                {item.userName}
+              </TextScallingFalse>
+              {roleBadge}
+              <TextScallingFalse style={styles.messageTime}>
+                {formatTime(item.timestamp)}
+              </TextScallingFalse>
+            </View>
+
+            <View
+              style={[
+                styles.messageBubble,
+                isCurrentUser && styles.currentUserBubble,
+              ]}
+            >
+              <TextScallingFalse style={styles.messageText}>
+                {item.text}
+              </TextScallingFalse>
+            </View>
           </View>
         </View>
-      </View>
-    );
-  }, [team, user, formatTime, getRoleBadge]);
+      );
+    },
+    [team, user, formatTime, getRoleBadge]
+  );
 
   // Render day separators
   const renderDateHeader = useCallback(({ date }: { date: string }) => {
     const formattedDate = new Date(date).toLocaleDateString([], {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric'
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     });
 
     return (
       <View style={styles.dateHeaderContainer}>
         <View style={styles.dateHeaderLine} />
-        <TextScallingFalse style={styles.dateHeaderText}>{formattedDate}</TextScallingFalse>
+        <TextScallingFalse style={styles.dateHeaderText}>
+          {formattedDate}
+        </TextScallingFalse>
         <View style={styles.dateHeaderLine} />
       </View>
     );
@@ -402,14 +477,14 @@ useEffect(() => {
             refreshing={refreshing}
             onRefresh={loadMessages}
             colors={["#12956B"]}
-          tintColor="#12956B" 
-          progressBackgroundColor="gray" // White background
+            tintColor="#12956B"
+            progressBackgroundColor="gray" // White background
           />
         }
         renderItem={({ item }) => (
           <View>
             {renderDateHeader({ date: item.date })}
-            {item.messages.map(message => (
+            {item.messages.map((message) => (
               <View key={message._id}>
                 {renderMessageItem({ item: message })}
               </View>
@@ -420,14 +495,24 @@ useEffect(() => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <TextScallingFalse style={styles.emptyText}>
-              No messages yet. {canSendMessages ? "Start the conversation!" : "Only team leaders can post messages."}
+              No messages yet.{" "}
+              {canSendMessages
+                ? "Start the conversation!"
+                : "Only team leaders can post messages."}
             </TextScallingFalse>
           </View>
         }
         showsVerticalScrollIndicator={false}
       />
     );
-  }, [groupedMessages, refreshing, loadMessages, renderDateHeader, renderMessageItem, canSendMessages]);
+  }, [
+    groupedMessages,
+    refreshing,
+    loadMessages,
+    renderDateHeader,
+    renderMessageItem,
+    canSendMessages,
+  ]);
 
   // Show loading screen
   if (teamLoading) {
@@ -443,12 +528,19 @@ useEffect(() => {
   return (
     <PageThemeView>
       {/* Header Section */}
-      <View
 
-        style={styles.header}
-      >
-        <TouchableOpacity activeOpacity={0.7}
-          style={{ width: 30, height: 40, justifyContent: 'center', zIndex: 10 }} onPress={() => router.back()}>
+      <ProgressBar loading={forumLoading && !refreshing} />
+      <View style={styles.header}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={{
+            width: 30,
+            height: 40,
+            justifyContent: "center",
+            zIndex: 10,
+          }}
+          onPress={() => router.back()}
+        >
           <BackIcon />
         </TouchableOpacity>
         <View style={styles.headerContent}>
@@ -470,7 +562,7 @@ useEffect(() => {
               {team?.name || "Team Chat"}
             </TextScallingFalse>
             <TextScallingFalse style={styles.onlineStatus}>
-              {team?.members?.length || 0} members 
+              {team?.members?.length || 0} members
             </TextScallingFalse>
           </View>
         </View>
@@ -479,80 +571,117 @@ useEffect(() => {
 
       {/* background theme art */}
       <View style={{}}>
-        <View style={{
-          width: '100%', height: '100%', position: 'absolute',
-          zIndex: 0, justifyContent: 'center', alignItems: 'center', paddingTop: 440
-        }}>
-          <View style={{
-            width: 540, height: 540, borderWidth: 1, borderColor: '#505050',
-            justifyContent: 'center', alignItems: 'center', borderRadius: 125, transform: [{ rotate: '45deg' }]
-          }}>
-            <View style={{ width: 475, height: 475, backgroundColor: '#12956B', borderRadius: 120, justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: 390, height: 390, backgroundColor: 'black', borderRadius: 118 }} />
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            zIndex: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingTop: 440,
+          }}
+        >
+          <View
+            style={{
+              width: 540,
+              height: 540,
+              borderWidth: 1,
+              borderColor: "#505050",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 125,
+              transform: [{ rotate: "45deg" }],
+            }}
+          >
+            <View
+              style={{
+                width: 475,
+                height: 475,
+                backgroundColor: "#12956B",
+                borderRadius: 120,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  width: 390,
+                  height: 390,
+                  backgroundColor: "black",
+                  borderRadius: 118,
+                }}
+              />
             </View>
           </View>
-          <View style={{
-            width: '100%', height: 400,
-            backgroundColor: 'black', zIndex: 2, marginTop: '-70%'
-          }} />
-          <View style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: 540,
-            height: 540,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            zIndex: 2
-          }} />
+          <View
+            style={{
+              width: "100%",
+              height: 400,
+              backgroundColor: "black",
+              zIndex: 2,
+              marginTop: "-70%",
+            }}
+          />
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 540,
+              height: 540,
+              backgroundColor: "rgba(0, 0, 0, 0.8)",
+              zIndex: 2,
+            }}
+          />
         </View>
       </View>
 
       {/* Chat Messages */}
-      {forumLoading && !refreshing ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="white" />
-          <TextScallingFalse style={styles.loadingText}>Loading messages...</TextScallingFalse>
-        </View>
-      ) : forumError ? (
+      {forumError ? (
         <View style={styles.errorContainer}>
-          <TextScallingFalse style={styles.errorText}>Error loading messages</TextScallingFalse>
+          <TextScallingFalse style={styles.errorText}>
+            Error loading messages
+          </TextScallingFalse>
         </View>
       ) : (
         renderMessagesList()
       )}
 
       {/* Message Input Box - Only shown for authorized users */}
-      
-        <View style={styles.inputWrapper}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                placeholder="Message"
-                placeholderTextColor="#707070"
-                style={styles.input}
-                value={newMessage}
-                onChangeText={setNewMessage}
-                onSubmitEditing={handleSendMessage}
-                editable={!forumLoading}
-                multiline
-                accessibilityLabel="Message input"
-              />
-              {/* <IconButton
-                icon="plus-circle-outline"
-                color="#aaa"
-                size={22}
-                accessibilityLabel="Add attachment"
-              /> */}
-              <IconButton
-                icon="send"
-                color={newMessage.trim() ? "#5865F2" : "#666"}
-                size={22}
-                onPress={handleSendMessage}
-                disabled={!newMessage.trim() || forumLoading}
-                accessibilityLabel="Send message"
-              />
-            </View>
+
+      <View style={styles.inputWrapper}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Message"
+            placeholderTextColor="#707070"
+            style={styles.input}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            onSubmitEditing={handleSendMessage}
+            editable={!forumLoading && !sending}
+            multiline
+            accessibilityLabel="Message input"
+          />
+
+          {sending ? (
+            <ActivityIndicator
+              size="small"
+              color="#5865F2"
+              style={styles.sendButton}
+            />
+          ) : (
+            <IconButton
+              icon="send"
+              color={newMessage.trim() ? "#5865F2" : "#666"}
+              size={22}
+              onPress={handleSendMessage}
+              disabled={!newMessage.trim() || forumLoading}
+              accessibilityLabel="Send message"
+            />
+          )}
         </View>
-     
+      </View>
     </PageThemeView>
   );
 };
@@ -560,78 +689,101 @@ useEffect(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: "#121212",
   },
   nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
   },
   badgeContainer: {
     borderRadius: 4,
     paddingHorizontal: 10,
   },
   badgeText: {
-    color: 'green',
+    color: "green",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   adminBadge: {
-    // backgroundColor: '#12956B', 
+    // backgroundColor: '#12956B',
     color: "#12956B",
   },
   captainBadge: {
     // backgroundColor: '#5865F2',
   },
   viceCaptainBadge: {
-    // backgroundColor: '#3BA55C', 
+    // backgroundColor: '#3BA55C',
   },
+  progressBarContainer: {
+    height: 3,
+    width: "100%",
+    backgroundColor: "transparent",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 100,
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#12956B", // or any color you prefer
+  },
+  progressBarComplete: {
+    opacity: 0,
+    transition: "opacity 400ms ease-out",
+  },
+
+  sendButton: {
+    marginRight: 8,
+    padding: 8,
+  },
+
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
   },
   loadingText: {
-    color: 'white',
+    color: "white",
     marginTop: 10,
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
   },
   errorText: {
-    color: '#ED4245',
+    color: "#ED4245",
     fontSize: 16,
   },
   infoContainer: {
     paddingVertical: 25,
-    backgroundColor: '#151515',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection:'row',
+    backgroundColor: "#151515",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: 6,
   },
   infoText: {
-    color: '#808080',
+    color: "#808080",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 10,
     paddingHorizontal: 15,
-    backgroundColor: 'black',
+    backgroundColor: "black",
     gap: 10,
     zIndex: 10,
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 3,
     flex: 1,
     zIndex: 10,
@@ -643,62 +795,62 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   teamLogoPlaceholder: {
-    backgroundColor: '#5865F2',
+    backgroundColor: "#5865F2",
     marginRight: 10,
   },
   teamName: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     flexShrink: 1,
   },
   onlineStatus: {
-    color: '#b9bbbe',
+    color: "#b9bbbe",
     fontSize: 10,
     marginTop: 1,
   },
   divider: {
-    backgroundColor: '#252525',
+    backgroundColor: "#252525",
     height: 1,
     zIndex: 10,
   },
   systemMessageContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
   systemMessageWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    maxWidth: '80%',
+    maxWidth: "80%",
   },
   systemMessageText: {
-    color: '#b9bbbe',
+    color: "#b9bbbe",
     fontSize: 14,
     lineHeight: 18,
-    textAlign: 'center',
+    textAlign: "center",
   },
   messageContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginVertical: 4,
     paddingHorizontal: 16,
     paddingVertical: 6,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   avatarContainer: {
     marginRight: 8,
-    marginTop:5,
+    marginTop: 5,
   },
   avatar: {
     width: 32,
     height: 32,
     borderRadius: 20,
-    backgroundColor: '#3a4a5a',
+    backgroundColor: "#3a4a5a",
   },
   currentUserAvatar: {
-    backgroundColor: '#5865F2', 
+    backgroundColor: "#5865F2",
   },
   messageContentContainer: {
     opacity: 100,
@@ -710,25 +862,25 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     backgroundColor: "#202020",
     // flex: 1,
-    maxWidth: '80%',
-    alignItems: 'flex-start',
+    maxWidth: "80%",
+    alignItems: "flex-start",
     zIndex: 3,
   },
   messageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 4,
   },
   senderName: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   currentUserName: {
-    color: 'white', 
+    color: "white",
   },
   messageTime: {
-    color: '#72767d',
+    color: "#72767d",
     fontSize: 11,
     paddingHorizontal: 5,
   },
@@ -738,34 +890,34 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
   currentUserBubble: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   messageText: {
-    color: '#dcddde',
+    color: "#dcddde",
     fontSize: 15,
     lineHeight: 20,
     borderRadius: 60,
   },
-  inputWrapper:{
-    width:'100%', 
+  inputWrapper: {
+    width: "100%",
     height: 65,
     paddingHorizontal: 15,
-    justifyContent:'center',
+    justifyContent: "center",
     paddingVertical: 10,
     borderWidth: 0.7,
-    borderTopColor:'#252525',
+    borderTopColor: "#252525",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#202020',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#202020",
     borderRadius: 60,
     paddingHorizontal: 10,
-     paddingVertical: 0,
+    paddingVertical: 0,
   },
   input: {
     flex: 1,
-    color: 'white',
+    color: "white",
     maxHeight: 100,
     paddingVertical: 10,
     fontSize: 15,
@@ -773,14 +925,14 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
     height: 200,
   },
   emptyText: {
-    color: '#b9bbbe',
-    textAlign: 'center',
+    color: "#b9bbbe",
+    textAlign: "center",
     marginTop: 10,
     fontSize: 16,
   },
@@ -788,23 +940,23 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   dateHeaderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
   dateHeaderLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#151515',
+    backgroundColor: "#151515",
   },
   dateHeaderText: {
-    color: '#b9bbbe',
+    color: "#b9bbbe",
     fontSize: 13,
-    fontWeight: '400',
+    fontWeight: "400",
     marginHorizontal: 12,
-    textTransform: 'uppercase',
-  }
+    textTransform: "uppercase",
+  },
 });
 
 export default TeamForum;

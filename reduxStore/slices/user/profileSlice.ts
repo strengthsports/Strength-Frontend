@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getToken, getUserId } from "@/utils/secureStore";
 import { Member, ProfileState, TargetUser, User } from "@/types/user";
-import { loginUser, logoutUser } from "./authSlice";
+import { loginUser, logoutUser, loginWithGoogle } from "./authSlice";
 import { InviteMember, PicData } from "~/types/others";
 import { completeSignup } from "./signupSlice";
 import { onboardingUser, resetOnboardingData } from "./onboardingSlice";
@@ -539,7 +539,27 @@ const profileSlice = createSlice({
       state.isLoggedIn = false;
       state.user = null;
     });
-
+    builder.addCase(loginWithGoogle.pending, (state) => {
+      state.error = null;
+      state.msgBackend = null;
+    });
+    builder.addCase(loginWithGoogle.fulfilled, (state, action) => {
+      state.isLoggedIn = true;
+      state.user = action.payload.user;
+      state.hasVisitedEditProfile =
+        action.payload.user?.hasVisitedEditProfile || false;
+      state.hasVisitedCommunity =
+        action.payload.user?.hasVisitedCommunity || false;
+      state.hasVisitedEditOverview =
+        action.payload.user?.hasVisitedEditOverview || false;
+      state.msgBackend = action.payload.message;
+      state.error = null;
+    });
+    builder.addCase(loginWithGoogle.rejected, (state, action) => {
+      state.error = action.payload as string;
+      state.isLoggedIn = false;
+      state.user = null;
+    });
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;

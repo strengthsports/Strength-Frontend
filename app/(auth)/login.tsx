@@ -1,6 +1,6 @@
 // /screens/LoginScreen.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   ToastAndroid,
   Platform,
   Vibration,
+  Alert,
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -33,6 +34,14 @@ import { z } from "zod";
 import loginSchema from "@/schemas/loginSchema";
 import { Colors } from "~/constants/Colors";
 import messaging from "@react-native-firebase/messaging";
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { loginWithGoogle } from "~/reduxStore/slices/user/authSlice";
 
 const LoginScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -41,12 +50,77 @@ const LoginScreen = () => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false); // New state to track signing in status
 
   const router = useRouter();
   const isAndroid = Platform.OS === "android";
 
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => setShowPassword((prevState) => !prevState);
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+      iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+    });
+  }, []);
+  console.log(process.env.EXPO_PUBLIC_WEB_CLIENT_ID);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      if (isSigningIn) return;
+      setIsSigningIn(true);
+
+      await GoogleSignin.hasPlayServices();
+      await GoogleSignin.signOut();
+      const userInfo = (await GoogleSignin.signIn()) as any;
+      const { idToken, user } = userInfo.data;
+      const { email, name, photo } = user;
+      setLoading(true);
+
+      if (email && idToken) {
+        const user = {
+          email,
+          name,
+          photo,
+          idToken,
+        };
+
+        const response = await dispatch(loginWithGoogle(user)).unwrap();
+        console.log("Response from Google login:", response);
+        if (response?.newUser === false) {
+          // ✅ User exists — continue as usual
+          dispatch(initializeAuth());
+          feedback("Login successful!", "success");
+          router.replace("/(app)/(tabs)/home");
+        } else {
+          console.log("else hit");
+          // 🚀 User does not exist — redirect to signup screen with Google data
+          router.push("/Signup/signupEnterUsername3");
+        }
+      } else {
+        console.log(
+          "Sign in was canceled by the user or failed with an error."
+        );
+      }
+    } catch (error) {
+      // console.log("Google Sign-In error:", error);
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            Alert.alert("Sign in is already in progress.");
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert("Google Play Services are not available.");
+            break;
+          case statusCodes.SIGN_IN_CANCELLED:
+            Alert.alert("Sign in was canceled by the user.");
+        }
+      }
+    } finally {
+      setIsSigningIn(false); // Reset the signing state whether success or failure
+      setLoading(false); // Also reset loading state
+    }
+  };
 
   const feedback = (errorMsg: string, type: "error" | "success" = "error") => {
     const vibrationPattern = [0, 50, 80, 50];
@@ -111,10 +185,10 @@ const LoginScreen = () => {
               flexDirection: "row",
               marginTop: "5%",
               gap: 7,
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
-            <Image style={{ width: 142, height: 35}} source={logo} />
+            <Image style={{ width: 142, height: 35 }} source={logo} />
             {/* <TextScallingFalse
               style={{
                 color: "white",
@@ -244,9 +318,11 @@ const LoginScreen = () => {
               </TextScallingFalse>
             </TextScallingFalse>
           </TouchableOpacity>
-          {/* 
+
           <TouchableOpacity
             activeOpacity={0.5}
+            onPress={handleGoogleSignIn}
+            disabled={isSigningIn}
             style={{
               width: 335,
               height: 40,
@@ -267,7 +343,7 @@ const LoginScreen = () => {
               source={google}
               style={{ width: 12, height: 12, marginTop: 3.5 }}
             />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </PageThemeView>

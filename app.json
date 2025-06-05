@@ -31,7 +31,7 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location to enable location-based team discovery and notify you about nearby activity, even when the app is in the background.",
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["strength"] 
+            "CFBundleURLSchemes": ["strength"]
           }
         ]
       },
@@ -104,7 +104,13 @@
           "android_google_services_file": "./google-services.json"
         }
       ],
-      "@react-native-firebase/messaging"
+      "@react-native-firebase/messaging",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.1010906701693-tocjvodm104jcgmpiuuok5o8h8vk0ojc"
+        }
+      ]
     ],
 
     "experiments": {

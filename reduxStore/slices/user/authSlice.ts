@@ -18,6 +18,22 @@ type LoginPayload = {
   password: string;
 };
 
+type GoogleLoginResponse =
+  | {
+      newUser: boolean;
+      accessToken: string;
+      refreshToken: string;
+      user: User;
+      message: string;
+    }
+  | {
+      newUser: boolean;
+      email: string;
+      firstName: string;
+      lastName: string;
+      message: string;
+    };
+
 // Initial State
 const initialState: AuthState = {
   isLoggedIn: false,
@@ -62,7 +78,7 @@ export const loginUser = createAsyncThunk<
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("data.message-", data.message)
+      console.log("data.message-", data.message);
       return rejectWithValue(data.message);
     }
 
@@ -121,6 +137,60 @@ export const logoutUser = createAsyncThunk(
     }
   }
 );
+
+//google signin
+export const loginWithGoogle = createAsyncThunk<
+  GoogleLoginResponse,
+  { email: string; idToken: string; name?: string; photo?: string },
+  { rejectValue: string }
+>("auth/loginWithGoogle", async (googleData, { rejectWithValue }) => {
+  try {
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/googlesignin`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: googleData.idToken }),
+      }
+    );
+    // console.log("Response from Google Signin:", response);
+
+    const data = await response.json();
+    console.log(data);
+
+    if (!response.ok) {
+      return rejectWithValue(data.message || "Google login failed");
+    }
+
+    if (!data.data.newUser) {
+      // ✅ Store user credentials securely
+      // console.log(data);
+      await saveToken("accessToken", data.data.accessToken);
+      await saveRToken("refreshToken", data.data.refreshToken);
+      await saveUserId("user_id", data.data.user._id);
+      await setExpiry();
+
+      return {
+        newUser: false,
+        user: data.data.user,
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+        message: data.message,
+      };
+    } else {
+      // ✅ Handle new user case
+      return {
+        email: data.data.email,
+        firstName: data.data.firstName,
+        lastName: data.data.lastName,
+        newUser: data.data.newUser,
+        message: data.message,
+      };
+    }
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Google login failed");
+  }
+});
 
 // Refresh access token
 export const refreshAccessToken = createAsyncThunk<
@@ -228,6 +298,28 @@ const authSlice = createSlice({
       state.isLoggedIn = true;
       state.error = null;
       state.msgBackend = action.payload.message;
+    });
+
+    //Google Signin
+    builder.addCase(loginWithGoogle.fulfilled, (state, action) => {
+      if (action.payload.userExists) {
+        state.user = action.payload.user;
+        state.isLoggedIn = true;
+        state.error = null;
+        state.msgBackend = action.payload.message;
+      } else {
+        // New user — show a message or redirect to signup step (optional)
+        state.user = null;
+        state.isLoggedIn = false;
+        state.error = null;
+        state.msgBackend = action.payload.message;
+      }
+    });
+    builder.addCase(loginWithGoogle.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(loginWithGoogle.rejected, (state, action) => {
+      state.error = action.payload || "Google login failed";
     });
 
     //fcm token

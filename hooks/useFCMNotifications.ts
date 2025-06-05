@@ -4,6 +4,7 @@ import messaging from "@react-native-firebase/messaging";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAppDispatch } from "@/reduxStore/hooks";
 import { sendFcmToken } from "@/reduxStore/slices/user/authSlice";
+import { PermissionsAndroid } from "react-native";
 
 const FCM_TOKEN_KEY = "FCM_TOKEN_KEY";
 
@@ -19,9 +20,21 @@ export default function useFCMNotifications() {
     let unsubscribeOnNotificationOpened: (() => void) | null = null;
     let unsubscribeOnTokenRefresh: (() => void) | null = null;
 
+    const requestAndroidNotificationPermission = async () => {
+      if (Platform.OS === "android" && Platform.Version >= 33) {
+        const result = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        return result === PermissionsAndroid.RESULTS.GRANTED;
+      }
+      return true; // Automatically granted on Android < 13
+    };
+
     const requestNotificationPermission = async (): Promise<boolean> => {
       try {
         // Use Firebase's permission request for both platforms
+        const androidGranted = await requestAndroidNotificationPermission();
+
         const authStatus = await messaging().requestPermission();
 
         const enabled =
@@ -48,7 +61,7 @@ export default function useFCMNotifications() {
           );
         }
 
-        return enabled;
+        return enabled && androidGranted;
       } catch (err) {
         console.error("Notification permission error", err);
         return false;

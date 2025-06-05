@@ -252,7 +252,7 @@ const Home = () => {
 
   const isAndroid = Platform.OS === "android";
 
-  if (isRefreshing || (isLoading && !nextCursor)) {
+  if (isRefreshing || (isLoading && !nextCursor && nextCursor !== null)) {
     return (
       <PageThemeView>
         <CustomHomeHeader />

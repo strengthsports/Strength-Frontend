@@ -15,7 +15,7 @@ export default function AddPostHeader({
   const { user } = useSelector((state: any) => state?.profile);
 
   return (
-    <SafeAreaView className="flex flex-row items-center gap-4">
+    <View className="flex flex-row items-center gap-4">
       <TouchableOpacity onPress={onBackPress}>
         <MaterialCommunityIcons
           name="keyboard-backspace"
@@ -25,11 +25,17 @@ export default function AddPostHeader({
       </TouchableOpacity>
       <Image
         source={user?.profilePic ? { uri: user?.profilePic } : defaultPic}
-        style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: '#1C1C1C'}}
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: "#1C1C1C",
+        }}
       />
       <TextScallingFalse className="text-white text-3xl">
         {user?.firstName} {user?.lastName}
       </TextScallingFalse>
-    </SafeAreaView>
+    </View>
   );
 }

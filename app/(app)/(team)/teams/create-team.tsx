@@ -10,17 +10,19 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
-import { Modal,StyleSheet} from "react-native";
+import { Modal, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as ImagePicker from "expo-image-picker";
-import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
+import { launchImageLibraryAsync, MediaTypeOptions } from "expo-image-picker";
 import { NavigationProp } from "@react-navigation/native";
 import AddMembersModal from "@/components/teamPage/AddMembersModal";
 import { router, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/AntDesign";
 import EntypoIcon from "react-native-vector-icons/Entypo";
 import MemberCard from "@/components/teamPage/Member";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
 import { sendInvitations } from "~/reduxStore/slices/team/teamSlice";
 import LocationModal from "./LocationModal";
@@ -43,6 +45,7 @@ interface Member {
   lastName?: string;
   profilePic?: string;
   headline?: string;
+  username?: any;
   role?: string;
   status?: "pending" | "accepted" | "rejected";
 }
@@ -93,22 +96,28 @@ const CreateTeam: React.FC<CreateTeamProps> = ({ navigation }) => {
     logo: "12345",
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-const [formattedDate, setFormattedDate] = useState("");
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [formattedDate, setFormattedDate] = useState("");
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   // const [selectedDate, setSelectedDate] = useState("");
+
   const [locationModal, setLocationModal] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(
+    null
+  );
 
   const { sports, loading: sportsLoading } = useSelector(
     (state: RootState) => state.sports
   );
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state?.profile);
-  const { data: fetchedUsers, loading, error, pagination } = useSelector(
-    (state: RootState) => state.userSuggestions
-  );
+  const {
+    data: fetchedUsers,
+    loading,
+    error,
+    pagination,
+  } = useSelector((state: RootState) => state.userSuggestions);
   const teamLoading = useSelector((state: RootState) => state.team.loading);
   const [formData, setFormData] = useState<FormData>({
     logo: null,
@@ -171,21 +180,25 @@ const [formattedDate, setFormattedDate] = useState("");
       }));
     }
   }, [selectedLocation]);
-  
+
   const isFormComplete = () => {
     return (
       formData.name &&
       formData.sport &&
-      formData.sport !== "123" && 
+      formData.sport !== "123" &&
       formData.establishedOn &&
       formData.address.city &&
       formData.description
     );
   };
-  
+
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  const handleSelectGame = (game: { name: string; _id: string; logo: string }) => {
+  const handleSelectGame = (game: {
+    name: string;
+    _id: string;
+    logo: string;
+  }) => {
     setSelectedGame(game);
     setFormData((prev) => ({ ...prev, sport: game._id }));
     setIsDropdownOpen(false);
@@ -194,7 +207,7 @@ const [formattedDate, setFormattedDate] = useState("");
   // Modified handleSaveLocation to work with our enhanced location components
   const handleSaveLocation = (locationData: LocationData) => {
     setSelectedLocation(locationData);
-    
+
     // For backward compatibility, also update formData directly
     setFormData((prev) => ({
       ...prev,
@@ -212,36 +225,15 @@ const [formattedDate, setFormattedDate] = useState("");
 
   const onChange = (event: DateTimePickerEvent, selected?: Date) => {
     if (selected) {
-      const formattedDate = `${selected.getMonth() + 1}/${selected.getFullYear()}`;
+      const formattedDate = `${
+        selected.getMonth() + 1
+      }/${selected.getFullYear()}`;
       setSelectedDate(formattedDate);
       setDate(selected);
       setFormData((prev) => ({ ...prev, establishedOn: formattedDate }));
     }
     setTimeout(() => setShow(false), 2000);
   };
-
-  // const selectImage = async () => {
-  //   const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //   if (!permissionResult.granted) return;
-
-  //   const result = await ImagePicker.launchImageLibraryAsync({
-  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-  //     allowsEditing: true,
-  //     aspect: [1, 1],
-  //     quality: 0.5,
-  //   });
-
-  //   if (!result.canceled) {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       logo: {
-  //         uri: result.assets[0].uri,
-  //         name: "logo.jpg",
-  //         type: "image/jpeg",
-  //       },
-  //     }));
-  //   }
-  // };
 
   const removeMember = (memberId: string) => {
     setFormData((prev) => ({
@@ -250,51 +242,50 @@ const [formattedDate, setFormattedDate] = useState("");
     }));
   };
 
+  const selectImage = async () => {
+    try {
+      // // 1. Request permissions
+      // const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      // if (status !== 'granted') {
+      //   Alert.alert('Permission denied', 'We need access to your photos to select a team logo');
+      //   return;
+      // }
 
-const selectImage = async () => {
-  try {
-    // // 1. Request permissions
-    // const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    // if (status !== 'granted') {
-    //   Alert.alert('Permission denied', 'We need access to your photos to select a team logo');
-    //   return;
-    // }
+      // 2. Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        // Correct way to specify media types
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    // 2. Launch image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      // Correct way to specify media types
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    // 3. Handle the result
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const asset = result.assets[0];
-      return {
-        uri: asset.uri,
-        name: asset.fileName || `image-${Date.now()}.jpg`,
-        type: asset.mimeType || 'image/jpeg',
-      };
+      // 3. Handle the result
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        return {
+          uri: asset.uri,
+          name: asset.fileName || `image-${Date.now()}.jpg`,
+          type: asset.mimeType || "image/jpeg",
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Image picker error:", error);
+      Alert.alert("Error", "Failed to select image");
+      return null;
     }
-    return null;
-  } catch (error) {
-    console.error('Image picker error:', error);
-    Alert.alert('Error', 'Failed to select image');
-    return null;
-  }
-};
+  };
 
-const handleImageSelect = async () => {
-  const image = await selectImage();
-  if (image) {
-    setFormData(prev => ({
-      ...prev,
-      logo: image
-    }));
-  }
-};
+  const handleImageSelect = async () => {
+    const image = await selectImage();
+    if (image) {
+      setFormData((prev) => ({
+        ...prev,
+        logo: image,
+      }));
+    }
+  };
 
   const handleInviteMembers = async (selectedUsers: any[]) => {
     if (!user?.id || !formData.sport) {
@@ -314,6 +305,7 @@ const handleImageSelect = async () => {
         lastName: user.lastName,
         profilePic: user.profilePic,
         headline: user.headline,
+        username: user.username,
         status: "pending",
       }));
 
@@ -341,17 +333,19 @@ const handleImageSelect = async () => {
   const handleCreateTeam = async () => {
     // Validate required fields
     const validationErrors = [];
-    if (!formData.name) validationErrors.push('Team name is required');
-    if (!formData.sport || formData.sport === "123") validationErrors.push('Please select a sport');
-    if (!formData.establishedOn) validationErrors.push('Establishment date is required');
-    if (!formData.address.city) validationErrors.push('Location is required');
-    
+    if (!formData.name) validationErrors.push("Team name is required");
+    if (!formData.sport || formData.sport === "123")
+      validationErrors.push("Please select a sport");
+    if (!formData.establishedOn)
+      validationErrors.push("Establishment date is required");
+    if (!formData.address.city) validationErrors.push("Location is required");
+
     if (validationErrors.length > 0) {
       Toast.show({
-        type: 'error',
-        text1: 'Missing Information',
-        text2: validationErrors.join('\n'),
-        visibilityTime: 4000
+        type: "error",
+        text1: "Missing Information",
+        text2: validationErrors.join("\n"),
+        visibilityTime: 4000,
       });
       return;
     }
@@ -359,44 +353,43 @@ const handleImageSelect = async () => {
     try {
       // Show loading indicator
       Toast.show({
-        type: 'info',
-        text1: 'Creating Team...',
-        autoHide: false
+        type: "info",
+        text1: "Creating Team...",
+        autoHide: false,
       });
 
-      console.log("Result-->");
       // Create the team
       const result = await dispatch(createTeam(formData)).unwrap();
 
-      
-      
       if (!result.success || !result.data?._id) {
-        throw new Error('Team creation failed - no ID returned');
+        throw new Error("Team creation failed - no ID returned");
       }
 
       const teamId = result.data._id;
-      const len = result.data.sport.playerTypes.length-1;
+      const len = result.data.sport.playerTypes.length - 1;
       const UserRole = result.data.sport.playerTypes[len].name;
-      
+
       // Send invitations if there are members
       if (formData.members.length > 0) {
         try {
-          const memberIds = formData.members.map(m => m._id);
+          const memberIds = formData.members.map((m) => m._id);
           const invitationResult = await dispatch(
             sendInvitations({
               teamId,
               receiverIds: memberIds,
               role: UserRole,
-              createdBy: user?.id
+              createdBy: user?.id,
             })
           ).unwrap();
 
           // Handle partial failures
           if (invitationResult.failedInvitations?.length > 0) {
-            const successCount = formData.members.length - invitationResult.failedInvitations.length;
+            const successCount =
+              formData.members.length -
+              invitationResult.failedInvitations.length;
             Toast.show({
-              type: 'info',
-              text1: 'Partial Success',
+              type: "info",
+              text1: "Partial Success",
               text2: `Sent ${successCount} invites (${invitationResult.failedInvitations.length} failed)`,
             });
           }
@@ -412,31 +405,32 @@ const handleImageSelect = async () => {
       // Navigate to success page with ALL data as
       router.replace({
         pathname: "./team-creation-success",
-        params: { 
+        params: {
           teamId: teamId,
           teamName: formData.name,
           teamData: JSON.stringify({
             logo: formData.logo,
             name: formData.name,
-            sport: sports.find((s) => s._id === formData.sport)?.name || formData.sport,
+            sport:
+              sports.find((s) => s._id === formData.sport)?.name ||
+              formData.sport,
             establishedOn: formData.establishedOn,
             address: formData.address,
             gender: formData.gender,
             description: formData.description,
             members: formData.members,
-            id: teamId 
-          })
-        }
+            id: teamId,
+          }),
+        },
       });
-
     } catch (error) {
       console.error("Team creation error:", error);
       Toast.hide();
       Toast.show({
-        type: 'error',
-        text1: 'Creation Failed',
-        text2: error.message || 'Could not create team. Please try again.',
-        visibilityTime: 5000
+        type: "error",
+        text1: "Creation Failed",
+        text2: error.message || "Could not create team. Please try again.",
+        visibilityTime: 5000,
       });
     }
   };
@@ -450,8 +444,11 @@ const handleImageSelect = async () => {
         <View className="flex-1">
           {/* Header */}
           <View className="position-absolute px-4 py-1 right-0 z-10">
-            <TouchableOpacity onPress={() => router.back()} className="mb-4 mt-2">
-             <BackIcon/>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="mb-4 mt-2"
+            >
+              <BackIcon />
             </TouchableOpacity>
           </View>
 
@@ -464,42 +461,50 @@ const handleImageSelect = async () => {
                 Forge Unbreakable Bonds, Play Strong, and Conquer Together –
                 Create Your Team Now.
               </TextScallingFalse>
-{/* Logo Upload */}
-             {/* Logo Upload */}
-<View className="mb-6 h-48">
-  <TextScallingFalse className="text-white text-2xl mb-2">Logo*</TextScallingFalse>
-  <TouchableOpacity
-    onPress={handleImageSelect}
-    className="border border-[#515151] h-40 rounded-lg px-4 flex-row items-center"
-  >
-    {formData.logo ? (
-      <View className="flex-row items-center justify-center w-full">
-        <Image
-          source={{ uri: formData.logo.uri }}
-          className="w-32 h-32 rounded"
-        />
-      </View>
-    ) : (
-      <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
-        <Icon name="upload" size={30} color="gray" />
-        <TextScallingFalse className="text-gray-400 text-xl">Upload Logo</TextScallingFalse>
-      </View>
-    )}
-    {formData.logo && (
-      <TouchableOpacity
-        onPress={() => setFormData({ ...formData, logo: null })}
-        className="absolute right-2 top-2 bg-gray-800 rounded-full w-6 h-6 items-center justify-center"
-      >
-        <TextScallingFalse className="text-white text-sm">✕</TextScallingFalse>
-      </TouchableOpacity>
-    )}
-  </TouchableOpacity>
-</View>
+              {/* Logo Upload */}
+              {/* Logo Upload */}
+              <View className="mb-6 h-48">
+                <TextScallingFalse className="text-white text-2xl mb-2">
+                  Logo*
+                </TextScallingFalse>
+                <TouchableOpacity
+                  onPress={handleImageSelect}
+                  className="border border-[#515151] h-40 rounded-lg px-4 flex-row items-center"
+                >
+                  {formData.logo ? (
+                    <View className="flex-row items-center justify-center w-full">
+                      <Image
+                        source={{ uri: formData.logo.uri }}
+                        className="w-32 h-32 rounded"
+                      />
+                    </View>
+                  ) : (
+                    <View className="w-32 h-28 flex-row items-center justify-between mx-[30%]">
+                      <Icon name="upload" size={30} color="gray" />
+                      <TextScallingFalse className="text-gray-400 text-xl">
+                        Upload Logo
+                      </TextScallingFalse>
+                    </View>
+                  )}
+                  {formData.logo && (
+                    <TouchableOpacity
+                      onPress={() => setFormData({ ...formData, logo: null })}
+                      className="absolute right-2 top-2 bg-gray-800 rounded-full w-6 h-6 items-center justify-center"
+                    >
+                      <TextScallingFalse className="text-white text-sm">
+                        ✕
+                      </TextScallingFalse>
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
+              </View>
               {/* Form Fields */}
               <View className="space-y-6 pb-10">
                 {/* Name */}
                 <View className="mt-2">
-                  <TextScallingFalse className="text-white text-2xl mb-1">Name*</TextScallingFalse>
+                  <TextScallingFalse className="text-white text-2xl mb-1">
+                    Name*
+                  </TextScallingFalse>
                   <TextInput
                     value={formData.name}
                     onChangeText={(text) =>
@@ -513,7 +518,9 @@ const handleImageSelect = async () => {
 
                 {/* Sport */}
                 <View className="mt-4">
-                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">Sport*</TextScallingFalse>
+                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
+                    Sport*
+                  </TextScallingFalse>
                   <TouchableOpacity
                     onPress={toggleDropdown}
                     className="border border-[#515151] rounded-lg p-4 flex-row justify-between items-center"
@@ -555,7 +562,9 @@ const handleImageSelect = async () => {
                               source={{ uri: sport?.logo }}
                               className="w-8 h-8 mr-2 "
                             />
-                            <TextScallingFalse className="text-white ml-2">{sport.name}</TextScallingFalse>
+                            <TextScallingFalse className="text-white ml-2">
+                              {sport.name}
+                            </TextScallingFalse>
                           </View>
                         </TouchableOpacity>
                       ))}
@@ -577,10 +586,10 @@ const handleImageSelect = async () => {
                         formData.address.city ? "text-white" : "text-gray-400"
                       }`}
                     >
-                      {selectedLocation?.formattedAddress || 
-                       (formData.address.city ? 
-                        `${formData.address.city}, ${formData.address.state}, ${formData.address.country}` : 
-                        "Add location")}
+                      {selectedLocation?.formattedAddress ||
+                        (formData.address.city
+                          ? `${formData.address.city}, ${formData.address.state}, ${formData.address.country}`
+                          : "Add location")}
                     </TextScallingFalse>
                     <EntypoIcon name="location-pin" size={20} color="#b0b0b0" />
                   </TouchableOpacity>
@@ -593,104 +602,131 @@ const handleImageSelect = async () => {
                   onSave={handleSaveLocation}
                 />
 
-              {/* Established On Field */}
+                {/* Established On Field */}
                 <View className="mt-4">
-  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
-    Established On*
-  </TextScallingFalse>
-  <TouchableOpacity
-    className="border border-[#515151] rounded-lg flex-row items-center justify-between p-4"
-    onPress={() => setIsDatePickerVisible(true)}
-  >
-    <TextScallingFalse className={`${formattedDate ? "text-white" : "text-gray-400"}`}>
-      {formattedDate || "Select date"}
-    </TextScallingFalse>
-    <MaterialCommunityIcons name="calendar-month-outline" size={20} color="#b0b0b0" />
-  </TouchableOpacity>
+                  <TextScallingFalse className="text-white text-2xl mt-2 mb-1">
+                    Established On*
+                  </TextScallingFalse>
+                  <TouchableOpacity
+                    className="border border-[#515151] rounded-lg flex-row items-center justify-between p-4"
+                    onPress={() => setIsDatePickerVisible(true)}
+                  >
+                    <TextScallingFalse
+                      className={`${
+                        formattedDate ? "text-white" : "text-gray-400"
+                      }`}
+                    >
+                      {formattedDate || "Select date"}
+                    </TextScallingFalse>
+                    <MaterialCommunityIcons
+                      name="calendar-month-outline"
+                      size={20}
+                      color="#b0b0b0"
+                    />
+                  </TouchableOpacity>
 
-  {/* Platform-specific date picker */}
-  {Platform.OS === 'ios' ? (
-    <Modal
-      visible={isDatePickerVisible}
-      transparent
-      animationType="slide"
-      onRequestClose={() => setIsDatePickerVisible(false)}
-    >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={() => setIsDatePickerVisible(false)}
-      >
-        <View style={styles.datePickerContainer}>
-          <View style={styles.datePickerHeader}>
-            <TouchableOpacity onPress={() => setIsDatePickerVisible(false)}>
-              <TextScallingFalse style={styles.datePickerHeaderButton}>Cancel</TextScallingFalse>
-            </TouchableOpacity>
-            
-            <TextScallingFalse style={styles.datePickerHeaderTitle}>Established Date</TextScallingFalse>
-            
-            <TouchableOpacity onPress={() => {
-              const formatted = selectedDate.toLocaleDateString('en-US', {
-                month: 'long',
-                year: 'numeric'
-              });
-              setFormattedDate(formatted);
-              setFormData(prev => ({
-                ...prev,
-                establishedOn: selectedDate.toISOString()
-              }));
-              setIsDatePickerVisible(false);
-            }}>
-              <TextScallingFalse style={styles.datePickerHeaderButtonDone}>Done</TextScallingFalse>
-            </TouchableOpacity>
-          </View>
+                  {/* Platform-specific date picker */}
+                  {Platform.OS === "ios" ? (
+                    <Modal
+                      visible={isDatePickerVisible}
+                      transparent
+                      animationType="slide"
+                      onRequestClose={() => setIsDatePickerVisible(false)}
+                    >
+                      <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setIsDatePickerVisible(false)}
+                      >
+                        <View style={styles.datePickerContainer}>
+                          <View style={styles.datePickerHeader}>
+                            <TouchableOpacity
+                              onPress={() => setIsDatePickerVisible(false)}
+                            >
+                              <TextScallingFalse
+                                style={styles.datePickerHeaderButton}
+                              >
+                                Cancel
+                              </TextScallingFalse>
+                            </TouchableOpacity>
 
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display="spinner"
-            onChange={(event, date) => {
-              if (date) {
-                setSelectedDate(date);
-              }
-            }}
-            themeVariant="dark"
-            maximumDate={new Date()}
-            style={styles.iosDatePicker}
-          />
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  ) : (
-    isDatePickerVisible && (
-      <DateTimePicker
-        value={selectedDate}
-        mode="date"
-        display="default"
-        onChange={(event, date) => {
-          setIsDatePickerVisible(false);
-          if (date) {
-            setSelectedDate(date);
-            const formatted = date.toLocaleDateString('en-US', {
-              month: 'long',
-              year: 'numeric'
-            });
-            setFormattedDate(formatted);
-            setFormData(prev => ({
-              ...prev,
-              establishedOn: date.toISOString()
-            }));
-          }
-        }}
-        maximumDate={new Date()}
-      />
-    )
-  )}
+                            <TextScallingFalse
+                              style={styles.datePickerHeaderTitle}
+                            >
+                              Established Date
+                            </TextScallingFalse>
+
+                            <TouchableOpacity
+                              onPress={() => {
+                                const formatted =
+                                  selectedDate.toLocaleDateString("en-US", {
+                                    month: "long",
+                                    year: "numeric",
+                                  });
+                                setFormattedDate(formatted);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  establishedOn: selectedDate.toISOString(),
+                                }));
+                                setIsDatePickerVisible(false);
+                              }}
+                            >
+                              <TextScallingFalse
+                                style={styles.datePickerHeaderButtonDone}
+                              >
+                                Done
+                              </TextScallingFalse>
+                            </TouchableOpacity>
+                          </View>
+
+                          <DateTimePicker
+                            value={selectedDate}
+                            mode="date"
+                            display="spinner"
+                            onChange={(event, date) => {
+                              if (date) {
+                                setSelectedDate(date);
+                              }
+                            }}
+                            themeVariant="dark"
+                            maximumDate={new Date()}
+                            style={styles.iosDatePicker}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    </Modal>
+                  ) : (
+                    isDatePickerVisible && (
+                      <DateTimePicker
+                        value={selectedDate}
+                        mode="date"
+                        display="default"
+                        onChange={(event, date) => {
+                          setIsDatePickerVisible(false);
+                          if (date) {
+                            setSelectedDate(date);
+                            const formatted = date.toLocaleDateString("en-US", {
+                              month: "long",
+                              year: "numeric",
+                            });
+                            setFormattedDate(formatted);
+                            setFormData((prev) => ({
+                              ...prev,
+                              establishedOn: date.toISOString(),
+                            }));
+                          }
+                        }}
+                        maximumDate={new Date()}
+                      />
+                    )
+                  )}
                 </View>
 
                 {/* Gender Selection */}
                 <View className="mt-4">
-                  <TextScallingFalse style={{ color: "white", fontSize: 14, marginTop: 8 }}>
+                  <TextScallingFalse
+                    style={{ color: "white", fontSize: 14, marginTop: 8 }}
+                  >
                     Gender*
                   </TextScallingFalse>
                   <View className="flex-row mt-1">
@@ -700,7 +736,9 @@ const handleImageSelect = async () => {
                       }
                       className="flex-1 border rounded-lg flex-row items-center justify-center border-[#515151] p-4 mr-4"
                     >
-                      <TextScallingFalse className="text-white">Female</TextScallingFalse>
+                      <TextScallingFalse className="text-white">
+                        Female
+                      </TextScallingFalse>
                       <View
                         className={`w-4 h-4 rounded-full border-2 ml-6 ${
                           formData.gender === "female"
@@ -716,7 +754,9 @@ const handleImageSelect = async () => {
                       }
                       className="flex-1 border rounded-lg flex-row items-center justify-center border-[#515151] p-4"
                     >
-                      <TextScallingFalse className="text-white">Male</TextScallingFalse>
+                      <TextScallingFalse className="text-white">
+                        Male
+                      </TextScallingFalse>
                       <View
                         className={`w-4 h-4 rounded-full border-2 ml-6 ${
                           formData.gender === "male"
@@ -745,8 +785,16 @@ const handleImageSelect = async () => {
                     maxLength={800}
                     className="bg-transparent border border-[#515151] rounded-lg p-4 text-white"
                   />
-                  <TextScallingFalse style={{color:'grey', fontSize: 12, fontWeight:'400', padding: 5}}>
-                    {formData.description.length}/800</TextScallingFalse>
+                  <TextScallingFalse
+                    style={{
+                      color: "grey",
+                      fontSize: 12,
+                      fontWeight: "400",
+                      padding: 5,
+                    }}
+                  >
+                    {formData.description.length}/800
+                  </TextScallingFalse>
                 </View>
               </View>
 
@@ -756,22 +804,27 @@ const handleImageSelect = async () => {
                   <TextScallingFalse className="text-white text-2xl mt-4 mb-4">
                     Add members
                   </TextScallingFalse>
-      
+
                   {/* Existing Members */}
                   <View className="flex-row flex-wrap -mx-1">
-                    {Array.from(new Map(formData.members.map(member => [member._id, member])).values())
-                      .map((member) => (
-                        <MemberCard
-                          key={member._id}
-                          imageUrl={member.profilePic || ''}
-                          name={`${member.firstName} ${member.lastName || ''}`}
-                          description={member.headline || ''}
-                          isAdmin={true} 
-                          onRemove={() => removeMember(member._id)}
-                          onPress={() => {}}
-                        />
-                      ))}
-                    
+                    {Array.from(
+                      new Map(
+                        formData.members.map((member) => [member._id, member])
+                      ).values()
+                    ).map((member) => (
+                      <MemberCard
+                        key={member._id}
+                        imageUrl={member.profilePic || ""}
+                        name={`${member.firstName} ${member.lastName || ""}`}
+                        description={
+                          "@" + member.username + " | " + member.headline || ""
+                        }
+                        isAdmin={true}
+                        onRemove={() => removeMember(member._id)}
+                        onPress={() => {}}
+                      />
+                    ))}
+
                     {/* Add Member Button */}
                     <TouchableOpacity
                       onPress={() => setShowMembersModal(true)}
@@ -783,12 +836,16 @@ const handleImageSelect = async () => {
                       }}
                     >
                       <View className="border-2 border-[#515151] rounded-full w-10 h-10 items-center justify-center mb-2">
-                        <TextScallingFalse className="text-gray-400 text-2xl">+</TextScallingFalse>
+                        <TextScallingFalse className="text-gray-400 text-2xl">
+                          +
+                        </TextScallingFalse>
                       </View>
-                      <TextScallingFalse className="text-gray-400">Add Member</TextScallingFalse>
+                      <TextScallingFalse className="text-gray-400">
+                        Add Member
+                      </TextScallingFalse>
                     </TouchableOpacity>
                   </View>
-          
+
                   <AddMembersModal
                     visible={showMembersModal}
                     onClose={() => setShowMembersModal(false)}
@@ -812,9 +869,11 @@ const handleImageSelect = async () => {
                 className={`rounded-lg p-3 mx-6 my-2 bg-[#12956B]`}
                 onPress={handleCreateTeam}
               >
-                <TextScallingFalse className={`text-center text-3xl text-bold ${
-                  isFormComplete() ? "text-white" : "text-white"
-                }`}>
+                <TextScallingFalse
+                  className={`text-center text-3xl text-bold ${
+                    isFormComplete() ? "text-white" : "text-white"
+                  }`}
+                >
                   Create team
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -826,56 +885,55 @@ const handleImageSelect = async () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
   datePickerContainer: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: "#1E1E1E",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
   },
   datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 15,
   },
   datePickerHeaderButton: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
   datePickerHeaderButtonDone: {
-    color: '#12956B',
+    color: "#12956B",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   datePickerHeaderTitle: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   iosDatePicker: {
     height: 200,
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   logoWrapper: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#1E1E1E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+    backgroundColor: "#1E1E1E",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
     borderWidth: 1,
-    borderColor: '#515151',
+    borderColor: "#515151",
   },
   logo: {
     width: 120,
@@ -886,22 +944,22 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(30, 30, 30, 0.7)",
   },
   cameraIcon: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: '#12956B',
+    backgroundColor: "#12956B",
     width: 32,
     height: 32,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#1E1E1E',
+    borderColor: "#1E1E1E",
   },
 });
 

@@ -36,6 +36,7 @@ import AddMember from "~/components/SvgIcons/teams/AddMember";
 import RightArrow from "~/components/SvgIcons/teams/RightArrow";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import Calendar from "~/components/SvgIcons/teams/Calendar";
+import LocationModal from "../../LocationModal";
 
 const DEFAULT_PROFILE_PIC = "https://via.placeholder.com/50";
 
@@ -52,6 +53,14 @@ type TeamMember = {
   position?: string;
 };
 
+type LocationData = {
+  city: string;
+  state: string;
+  country: string;
+  coordinates: [number, number];
+  formattedAddress?: string;
+};
+
 type FormData = {
   name: string;
   sport: string;
@@ -59,6 +68,15 @@ type FormData = {
   established: string;
   description: string;
   logo: string;
+  address: {
+    city: string;
+    state: string;
+    country: string;
+    location: {
+      type: string;
+      coordinates: number[];
+    };
+  };
 };
 
 const Settings = () => {
@@ -78,13 +96,15 @@ const Settings = () => {
   const [showDownwardDrawer, setShowDownwardDrawer] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isEdited, setIsEdited] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [picModalVisible, setPicModalVisible] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  
   const [originalData, setOriginalData] = useState<FormData>({
     name: "",
     sport: "",
@@ -92,7 +112,17 @@ const Settings = () => {
     established: "",
     description: "",
     logo: "",
+    address: {
+      city: "",
+      state: "",
+      country: "",
+      location: {
+        type: "Point",
+        coordinates: [0, 0]
+      }
+    }
   });
+
   const [formData, setFormData] = useState<FormData>({
     name: "",
     sport: "",
@@ -100,6 +130,15 @@ const Settings = () => {
     established: "",
     description: "",
     logo: "",
+    address: {
+      city: "",
+      state: "",
+      country: "",
+      location: {
+        type: "Point",
+        coordinates: [0, 0]
+      }
+    }
   });
 
   const params = useLocalSearchParams();
@@ -142,33 +181,49 @@ const Settings = () => {
   useEffect(() => {
     if (!team) return;
     
-    const addressString = team.address 
-      ? `${team.address.city}${team.address.state ? `, ${team.address.state}` : ""}${team.address.country ? `, ${team.address.country}` : ""}`
-      : "";
-      
+    // Initialize location data from team.address
+    const locationData = team.address ? {
+      city: team.address.city || "",
+      state: team.address.state || "",
+      country: team.address.country || "",
+      coordinates: team.address.location?.coordinates || [0, 0],
+      formattedAddress: `${team.address.city}${team.address.state ? `, ${team.address.state}` : ""}${team.address.country ? `, ${team.address.country}` : ""}`
+    } : null;
+    
+    setSelectedLocation(locationData);
+    
     let establishedDate = "";
     let parsedDate = new Date();
     
     if (team.establishedOn) {
       parsedDate = new Date(team.establishedOn);
-      // Format as "Month Year" (e.g., "January 2023")
       establishedDate = parsedDate.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric'
       });
       setSelectedDate(parsedDate);
     }
+    
     const newFormData = {
       name: team.name || "",
       sport: team.sport?.name || "",
-      location: addressString,
+      location: locationData?.formattedAddress || "",
       established: establishedDate,
       description: team.description || "",
-      logo: team.logo?.url || "", 
+      logo: team.logo?.url || "",
+      address: {
+        city: team.address?.city || "",
+        state: team.address?.state || "",
+        country: team.address?.country || "",
+        location: {
+          type: "Point",
+          coordinates: team.address?.location?.coordinates || [0, 0]
+        }
+      }
     };
   
     setFormData(newFormData);
-    setOriginalData(newFormData); // Set initial original data
+    setOriginalData(newFormData);
     setMembers(team.members || []);
     setIsUserAdmin(team.admin?.some((admin: any) => admin._id === user?._id));
   }, [team, user]);
@@ -182,6 +237,30 @@ const Settings = () => {
       formData.logo !== originalData.logo
     );
   }, [formData, originalData]);
+
+  // Location handler
+  const handleSaveLocation = (locationData: LocationData) => {
+    setSelectedLocation(locationData);
+    const formattedAddress = `${locationData.city}${locationData.state ? `, ${locationData.state}` : ""}${locationData.country ? `, ${locationData.country}` : ""}`;
+    
+    setFormData(prev => ({
+      ...prev,
+      location: formattedAddress,
+      address: {
+        city: locationData.city,
+        state: locationData.state,
+        country: locationData.country,
+        location: {
+          type: "Point",
+          coordinates: locationData.coordinates
+        }
+      }
+    }));
+    
+    setShowLocationModal(false);
+    setIsEdited(true);
+  };
+
   // Handlers
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -189,7 +268,6 @@ const Settings = () => {
   };
 
   const pickImage = async () => {
-    console.log('yes pickImage function is called')
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -207,7 +285,6 @@ const Settings = () => {
     }
   };
   
-  // Fix: Date handler that works for both iOS and Android
   const handleDateChange = (event: any, date?: Date) => {
     if (Platform.OS === 'android') {
       setIsDatePickerVisible(false);
@@ -223,7 +300,6 @@ const Settings = () => {
     }
   };
 
-  // Fix: Handler for iOS date picker done button
   const handleDatePickerDone = () => {
     setIsDatePickerVisible(false);
     const formattedDate = selectedDate.toLocaleDateString('en-US', {
@@ -238,24 +314,19 @@ const Settings = () => {
     setIsSaving(true);
     
     try {
-      let city = "", state = "", country = "";
-      if (formData.location) {
-        const parts = formData.location.split(",").map(s => s.trim());
-        [city = "", state = "", country = ""] = parts.length >= 3 
-          ? parts 
-          : [...parts, ...Array(3 - parts.length).fill("")];
-      }
-  
       const payload = new FormData();
       if (formData.name) payload.append("name", formData.name);
       
       if (formData.description) payload.append("description", formData.description);
-      if (city) payload.append("address[city]", city);
-      if (state) payload.append("address[state]", state);
-      if (country) payload.append("address[country]", country);
+      if (formData.address.city) payload.append("address[city]", formData.address.city);
+      if (formData.address.state) payload.append("address[state]", formData.address.state);
+      if (formData.address.country) payload.append("address[country]", formData.address.country);
+      if (formData.address.location.coordinates) {
+        payload.append("address[location][coordinates][0]", String(formData.address.location.coordinates[0]));
+        payload.append("address[location][coordinates][1]", String(formData.address.location.coordinates[1]));
+      }
   
       if (formData.established) {
-        // Fix: Ensure date is properly formatted when saving
         payload.append("establishedOn", selectedDate.toISOString());
       }
   
@@ -273,7 +344,7 @@ const Settings = () => {
           } as any);
         }
       }
-  
+      console.log("team details going for edit :----->",JSON.stringify(payload,null,2));
       await dispatch(updateTeam({ teamId, formData: payload })).unwrap();
       router.back();
       await dispatch(fetchTeamDetails(teamId));
@@ -302,7 +373,7 @@ const Settings = () => {
         setTimeout(() => nameInputRef.current?.focus(), 100);
         break;
       case "location":
-        setShowLocationPicker(true);
+        setShowLocationModal(true);
         break;
       case "established":
         setIsDatePickerVisible(true);
@@ -318,49 +389,45 @@ const Settings = () => {
 
   const renderMember = ({ item: member }: { item: TeamMember }) => (
     <View style={styles.memberItem}>
-     
-     
-        <TouchableOpacity 
-          style={styles.memberAction}
-          onPress={() => {
-            if (isUserAdmin && team?._id && member?.user?._id) {
-              router.push({
-                pathname: `/(app)/(team)/teams/${team._id}/members/${member.user._id}`,
-                params: {
-                  memberId: member.user._id,
-                  member: JSON.stringify(member.user),
-                  role: JSON.stringify(member.role),
-                },
-              });
-            } else {
-              setSelectedMember(member);
-              setShowDownwardDrawer(true);
-            }
-          }}
-        >
-           <Avatar.Image
-        size={40}
-        source={{ uri: member?.user?.profilePic || DEFAULT_PROFILE_PIC }}
-        style={styles.memberAvatar}
-      />
-      <View style={styles.memberInfo}>
-        <TextScallingFalse style={styles.memberName}>
-          {member?.user?.firstName} {member?.user?.lastName}
-        </TextScallingFalse>
-        <TextScallingFalse style={styles.memberRole}>
-         @{member?.user?.username} | {member?.user?.headline || "No headline"}
-        </TextScallingFalse>
-      </View>
-          <TextScallingFalse style={styles.memberPositionText}>
-            {member.position }
+      <TouchableOpacity 
+        style={styles.memberAction}
+        onPress={() => {
+          if (isUserAdmin && team?._id && member?.user?._id) {
+            router.push({
+              pathname: `/(app)/(team)/teams/${team._id}/members/${member.user._id}`,
+              params: {
+                memberId: member.user._id,
+                member: JSON.stringify(member.user),
+                role: JSON.stringify(member.role),
+              },
+            });
+          } else {
+            setSelectedMember(member);
+            setShowDownwardDrawer(true);
+          }
+        }}
+      >
+        <Avatar.Image
+          size={40}
+          source={{ uri: member?.user?.profilePic || DEFAULT_PROFILE_PIC }}
+          style={styles.memberAvatar}
+        />
+        <View style={styles.memberInfo}>
+          <TextScallingFalse style={styles.memberName}>
+            {member?.user?.firstName} {member?.user?.lastName}
           </TextScallingFalse>
-         <RightArrow/>
-        </TouchableOpacity>
-    
+          <TextScallingFalse style={styles.memberRole}>
+            @{member?.user?.username} | {member?.user?.headline || "No headline"}
+          </TextScallingFalse>
+        </View>
+        <TextScallingFalse style={styles.memberPositionText}>
+          {member.position }
+        </TextScallingFalse>
+        <RightArrow/>
+      </TouchableOpacity>
     </View>
   );
 
-  // Fix: Improved iOS date picker modal
   const renderIOSDatePicker = () => (
     <Modal
       visible={isDatePickerVisible}
@@ -429,21 +496,21 @@ const Settings = () => {
             <TextScallingFalse style={styles.headerTitle}>Team Settings</TextScallingFalse>
             
             {isUserAdmin && (
-  isSaving ? (
-    <View style={styles.saveButton}>
-      <ActivityIndicator size="small" color="#12956B" />
-    </View>
-  ) : hasChanges() ? (
-    <TouchableOpacity
-      onPress={handleSave}
-      style={styles.saveButton}
-    >
-      <TextScallingFalse style={styles.saveText}>
-        Save
-      </TextScallingFalse>
-    </TouchableOpacity>
-  ) : null
-             )}
+              isSaving ? (
+                <View style={styles.saveButton}>
+                  <ActivityIndicator size="small" color="#12956B" />
+                </View>
+              ) : hasChanges() ? (
+                <TouchableOpacity
+                  onPress={handleSave}
+                  style={styles.saveButton}
+                >
+                  <TextScallingFalse style={styles.saveText}>
+                    Save
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              ) : null
+            )}
           </View>
           <Divider style={styles.divider} />
 
@@ -503,9 +570,6 @@ const Settings = () => {
                     <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                       {formData.name || "Add team name"}
                     </TextScallingFalse>
-                    {/* {isUserAdmin && (
-                      // <MaterialCommunityIcons name="pencil-outline" size={20} color="#999" />
-                    )} */}
                   </TouchableOpacity>
                 )}
               </View>
@@ -517,7 +581,7 @@ const Settings = () => {
                   <Image
                     source={{ uri: team?.sport.logo || "https://via.placeholder.com/150" }}
                     className="h-6 w-6 mr-2"
-                    />
+                  />
                   <TextScallingFalse style={styles.fieldText} numberOfLines={1}>
                     {formData.sport || "Not specified"}
                   </TextScallingFalse>
@@ -552,39 +616,23 @@ const Settings = () => {
                   </TextScallingFalse>
                   {isUserAdmin && (
                     <View className="mr-1">
-                   <Calendar/>
-                   </View>
+                      <Calendar/>
+                    </View>
                   )}
                 </TouchableOpacity>
               </View>
 
               {/* Description */}
-              <TouchableOpacity
-                  onPress={() => handleFieldPress("description")}
-                 
-                >
-              <View className=" justify-between border-b-[1px] border-[#202020] mb-7 pb-4">
-                <View  className="flex-row justify-between  border-[#626262]">
-                <TextScallingFalse className="text-white mt-3 " style={styles.fieldLabel}>Description</TextScallingFalse>
-                
-                   
-                
-                 
-               
-                </View>
-                <TextScallingFalse className="mt-3 text-white" numberOfLines={1}>
-                    {formData.description || "Add established date"}
+              <TouchableOpacity onPress={() => handleFieldPress("description")}>
+                <View className="justify-between border-b-[1px] border-[#202020] mb-7 pb-4">
+                  <View className="flex-row justify-between border-[#626262]">
+                    <TextScallingFalse className="text-white mt-3" style={styles.fieldLabel}>Description</TextScallingFalse>
+                  </View>
+                  <TextScallingFalse className="mt-3 text-white" numberOfLines={1}>
+                    {formData.description || "Add description"}
                   </TextScallingFalse>
-              </View>
-            
+                </View>
               </TouchableOpacity>
-
-
-
-
-
-
-
             </View>
 
             {/* Members Section */}
@@ -598,11 +646,10 @@ const Settings = () => {
                 style={styles.inviteButton}
               >
                 <View className="bg-[#363636] w-12 h-12 rounded-full flex items-center justify-center">
-                 <View className="w-6 h-6"> 
-                <AddMember />
-               </View>
-               </View>
-                
+                  <View className="w-6 h-6"> 
+                    <AddMember />
+                  </View>
+                </View>
                 <TextScallingFalse style={styles.inviteText}>Invite Members</TextScallingFalse>
               </TouchableOpacity>
             )}
@@ -628,52 +675,13 @@ const Settings = () => {
             </View>
           </ScrollView>
 
-          {/* Location Picker Modal */}
-          <Modal
-            visible={showLocationPicker}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setShowLocationPicker(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.locationModalContainer}>
-                <View style={styles.locationModalHeader}>
-                  <TouchableOpacity onPress={() => setShowLocationPicker(false)}>
-                    <Ionicons name="close-outline" size={24} color="#999" />
-                  </TouchableOpacity>
-                  <TextScallingFalse style={styles.locationModalTitle}>Select Location</TextScallingFalse>
-                  <View style={{ width: 24 }} />
-                </View>
-                
-                <GooglePlacesAutocomplete
-                  placeholder="Search for location"
-                  onPress={(data, details = null) => {
-                    if (details) {
-                      const city = details.address_components?.find(
-                        c => c.types.includes('locality')
-                      )?.long_name || '';
-                      
-                      const state = details.address_components?.find(
-                        c => c.types.includes('administrative_area_level_1')
-                      )?.long_name || '';
-                      
-                      const country = details.address_components?.find(
-                        c => c.types.includes('country')
-                      )?.long_name || '';
-                      
-                      handleChange("location", [city, state, country].filter(Boolean).join(', '));
-                      setShowLocationPicker(false);
-                    }
-                  }}
-                  query={{
-                    key: process.env.EXPO_PUBLIC_GOOGLE_API,
-                    language: 'en',
-                  }}
-                  styles={googlePlacesStyles}
-                />
-              </View>
-            </View>
-          </Modal>
+          {/* Location Modal */}
+          <LocationModal
+            visible={showLocationModal}
+            onClose={() => setShowLocationModal(false)}
+            onSave={handleSaveLocation}
+            initialLocation={selectedLocation}
+          />
 
           {/* Logo Picker Modal */}
           <Modal
@@ -736,6 +744,9 @@ const Settings = () => {
     </PageThemeView>
   );
 };
+
+// ... (keep all the styles and other code the same)
+
 
 // Google Places Autocomplete styles
 const googlePlacesStyles = {

@@ -126,7 +126,10 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
           height: HEADER_HEIGHT,
         }}
       >
-        <TouchableOpacity  heatSlop={{top:10,bottom:50,left:10,right:100}} onPress={handleBackFromTeamPage}>
+        <TouchableOpacity
+          heatSlop={{ top: 10, bottom: 50, left: 10, right: 100 }}
+          onPress={handleBackFromTeamPage}
+        >
           <BackIcon />
         </TouchableOpacity>
 
@@ -202,8 +205,8 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
               // borderLeftColor: "#333",
             }}
           >
-            <ScrollView 
-              contentContainerStyle={{ 
+            <ScrollView
+              contentContainerStyle={{
                 paddingBottom: 40,
               }}
               showsVerticalScrollIndicator={false}
@@ -232,9 +235,9 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                         alignItems: "center",
                       }}
                     >
-                      <Text 
-                        style={{ 
-                          color: item.color || "white", 
+                      <Text
+                        style={{
+                          color: item.color || "white",
                           fontSize: 16,
                           fontWeight: "500",
                         }}
@@ -242,13 +245,17 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                         {item.label}
                       </Text>
 
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
                         {item?.id === "members" && (isAdmin || isMember) && (
-                          <Text style={{ 
-                            color: "white", 
-                            marginLeft: 8,
-                            fontSize: 14,
-                          }}>
+                          <Text
+                            style={{
+                              color: "white",
+                              marginLeft: 8,
+                              fontSize: 14,
+                            }}
+                          >
                             [{memberCount}]
                           </Text>
                         )}
@@ -262,11 +269,13 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
                   </TouchableOpacity>
                 ))
               ) : (
-                <View style={{ 
-                  padding: 20, 
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}>
+                <View
+                  style={{
+                    padding: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <Text style={{ color: "white", fontSize: 16 }}>
                     No menu items available
                   </Text>

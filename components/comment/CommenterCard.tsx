@@ -160,7 +160,10 @@ export const CommenterCard = memo(
             }
             className="w-10/12"
           >
-            <TextScallingFalse className="font-bold text-white text-lg">
+            <TextScallingFalse
+              className="font-bold text-white"
+              style={{ fontSize: 12 }}
+            >
               {comment?.postedBy?.firstName} {comment?.postedBy?.lastName}
             </TextScallingFalse>
             <TextScallingFalse
@@ -179,7 +182,7 @@ export const CommenterCard = memo(
             }
           >
             {targetType === "Comment" && "@" + parent?.username + " "}
-            <TextScallingFalse className="text-xl font-normal text-white mt-4 mb-3">
+            <TextScallingFalse className="leading-4 font-normal text-white mt-4 mb-3">
               {renderCaptionWithTags(comment?.text, "#fff", 12)}
             </TextScallingFalse>
           </TextScallingFalse>

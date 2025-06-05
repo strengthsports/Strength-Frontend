@@ -8,6 +8,7 @@ import {
   upsertPosts,
 } from "./postsSlice";
 import { getToken } from "~/utils/secureStore";
+import { ReportPost } from "~/types/post";
 
 // 1️⃣ Toggle Like
 export const toggleLike = createAsyncThunk(
@@ -149,7 +150,11 @@ export const postComment = createAsyncThunk(
 export const deleteComment = createAsyncThunk(
   "posts/deleteComment",
   async (
-    { postId, commentId }: { postId: string; commentId?: string },
+    {
+      postId,
+      commentId,
+      commentsCount,
+    }: { postId: string; commentId?: string; commentsCount: number },
     { getState, dispatch, rejectWithValue }
   ) => {
     const state = getState() as RootState;
@@ -158,7 +163,7 @@ export const deleteComment = createAsyncThunk(
 
     const updatedPost = {
       ...post,
-      commentsCount: post.commentsCount - 1,
+      commentsCount: post.commentsCount - commentsCount - 1,
     };
     dispatch(updatePost({ id: postId, changes: updatedPost }));
 
@@ -235,6 +240,82 @@ export const voteInPoll = createAsyncThunk(
       dispatch(updatePost({ id: targetId, changes: post }));
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to vote in the poll"
+      );
+    }
+  }
+);
+
+// 6 Report Post
+export const reportPost = createAsyncThunk(
+  "posts/reportPost",
+  async (body: ReportPost, { getState, dispatch, rejectWithValue }) => {
+    const state = getState() as RootState;
+    const post = selectPostById(state, body.targetId);
+    if (!post) throw new Error("Post not found");
+
+    dispatch(removePost(body.targetId));
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/report`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to report post");
+      }
+
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      dispatch(upsertPosts([post]));
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to report post"
+      );
+    }
+  }
+);
+
+// 7 Undo Report Post
+export const undoReportPost = createAsyncThunk(
+  "posts/undoReportPost",
+  async (body: Partial<ReportPost>, { rejectWithValue }) => {
+    try {
+      const token = await getToken("accessToken");
+      if (!token) throw new Error("Token not found");
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/post/report`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to undo report");
+      }
+
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to undo report"
       );
     }
   }

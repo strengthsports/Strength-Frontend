@@ -26,6 +26,7 @@ const HashtagNotFound = ({ text }: { text: string }) => {
         <TouchableOpacity
           className="mt-4 rounded-full border border-[#808080] px-5 py-2"
           activeOpacity={0.7}
+          onPress={() => router.push("/add-post")}
         >
           <TextScallingFalse className="text-[#eaeaea]">
             Add Post

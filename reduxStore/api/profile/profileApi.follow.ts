@@ -1,10 +1,5 @@
 import { profileApi } from "./profileApi";
-import { FollowUser, TargetUser } from "~/types/user";
-
-interface PaginatedRequest extends Partial<TargetUser> {
-  limit?: number;
-  cursor?: string;
-}
+import { FollowUser } from "~/types/user";
 
 export const followApi = profileApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -66,36 +61,7 @@ export const followApi = profileApi.injectEndpoints({
         { type: "UserProfile", id: followingId },
       ],
     }),
-    fetchFollowers: builder.query<any, PaginatedRequest>({
-      query: ({ limit, cursor, targetUserId }) => ({
-        url: `/findFollowers/${targetUserId}`,
-        params: { limit, ...(cursor && { cursor }) },
-      }),
-      transformResponse: (response: { data: any }) => ({
-        users: response.data.followers,
-        nextCursor: response.data.nextCursor,
-      }),
-      keepUnusedDataFor: 5,
-      providesTags: [{ type: "Followers", id: "LIST" }],
-    }),
-    fetchFollowings: builder.query<any, PaginatedRequest>({
-      query: ({ limit, cursor, targetUserId }) => ({
-        url: `/findFollowings/${targetUserId}`,
-        params: { limit, ...(cursor && { cursor }) },
-      }),
-      transformResponse: (response: { data: any }) => ({
-        users: response.data.followings,
-        nextCursor: response.data.nextCursor,
-      }),
-      keepUnusedDataFor: 5,
-      providesTags: [{ type: "Followings", id: "LIST" }],
-    }),
   }),
 });
 
-export const {
-  useFollowUserMutation,
-  useUnFollowUserMutation,
-  useLazyFetchFollowersQuery,
-  useLazyFetchFollowingsQuery,
-} = followApi;
+export const { useFollowUserMutation, useUnFollowUserMutation } = followApi;

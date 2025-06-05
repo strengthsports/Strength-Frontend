@@ -14,6 +14,7 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { TouchableOpacity } from "react-native";
@@ -72,8 +73,28 @@ const Post = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
-  const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
+  const [isQuickCommentModalVisible, setIsQuickCommentModalVisible] =
     useState(false);
+
+  const modalContainerRef = useRef(null);
+
+  const handleOpenQuickCommentModal = () => {
+    // Force layout reset before opening modal
+    if (modalContainerRef.current) {
+      modalContainerRef.current.setNativeProps({
+        style: { transform: [{ translateX: 0 }, { translateY: 0 }] },
+      });
+    }
+
+    // Small delay to ensure layout is settled
+    setTimeout(() => {
+      setIsQuickCommentModalVisible(true);
+    }, 16); // One frame delay
+  };
+
+  const handleCloseQuickCommentModal = () => {
+    setIsQuickCommentModalVisible(false);
+  };
 
   // Get the openBottomSheet function from context
   const { openBottomSheet } = useBottomSheet();
@@ -504,7 +525,7 @@ const Post = () => {
             isPostContainer={false}
             onPressLike={handleLike}
             isFeedPage={false}
-            onPressComment={() => setIsCommentCountModalVisible(true)}
+            onPressComment={handleOpenQuickCommentModal}
           />
         </View>
 
@@ -539,21 +560,38 @@ const Post = () => {
           </ScrollView>
         </LinearGradient>
       </View>
-      <Modal
-        visible={isCommentCountModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsCommentCountModalVisible(false)}
+      <View
+        ref={modalContainerRef}
         style={{
-          flex: 1,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: isQuickCommentModalVisible ? "auto" : "none",
+          zIndex: 9999,
         }}
       >
-        <CommentModal
-          targetId={post._id}
-          autoFocusKeyboard={true}
-          onClose={() => setIsCommentCountModalVisible(false)}
-        />
-      </Modal>
+        <Modal
+          visible={isQuickCommentModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={handleCloseQuickCommentModal}
+          style={{
+            flex: 1,
+            margin: 0,
+            padding: 0,
+          }}
+          hardwareAccelerated={true}
+          presentationStyle="overFullScreen"
+        >
+          <CommentModal
+            targetId={post._id}
+            autoFocusKeyboard={true}
+            onClose={handleCloseQuickCommentModal}
+          />
+        </Modal>
+      </View>
     </PageThemeView>
   );
 };

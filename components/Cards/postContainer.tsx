@@ -97,7 +97,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
 
-    const [isCommentCountModalVisible, setIsCommentCountModalVisible] =
+    const [isQuickCommentModalVisible, setIsQuickCommentModalVisible] =
       useState(false);
 
     const { followUser, unFollowUser } = useFollow();
@@ -154,6 +154,26 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           draggableDirection: "down",
         });
       }
+    };
+
+    const modalContainerRef = useRef(null);
+
+    const handleOpenQuickCommentModal = () => {
+      // Force layout reset before opening modal
+      if (modalContainerRef.current) {
+        modalContainerRef.current.setNativeProps({
+          style: { transform: [{ translateX: 0 }, { translateY: 0 }] },
+        });
+      }
+
+      // Small delay to ensure layout is settled
+      setTimeout(() => {
+        setIsQuickCommentModalVisible(true);
+      }, 16); // One frame delay
+    };
+
+    const handleCloseQuickCommentModal = () => {
+      setIsQuickCommentModalVisible(false);
     };
 
     // Ref for the like animation
@@ -341,8 +361,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           </TextScallingFalse>
         );
       }
-
-      console.log(elements);
       return elements;
     };
 
@@ -359,241 +377,264 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     );
 
     return (
-      <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
-        <View className="flex">
-          {/* Profile Section */}
-          <View className="relative ml-[4%] flex flex-row gap-2 z-20 pb-0">
-            {/* Profile Picture */}
-            <TouchableOpacity
-              activeOpacity={0.5}
-              className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
-              onPress={() => goToUser(serializedUser, user?._id)}
-              style={shadowStyle}
-            >
-              <Image
-                source={
-                  item.postedBy.profilePic
-                    ? {
-                        uri: item.postedBy.profilePic,
-                      }
-                    : nopic
-                }
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: 100,
-                  borderWidth: 1,
-                  borderColor: "#1a1a1a",
-                }}
-              />
-            </TouchableOpacity>
-
-            {/* Name, Headline, post date */}
-            <Pressable
-              onPress={() => goToUser(serializedUser, user?._id)}
-              className="w-64 flex flex-col gap-y-4 justify-between"
-            >
-              <UserInfo
-                fullName={
-                  item.postedBy.firstName +
-                  " " +
-                  (item.postedBy.lastName !== undefined
-                    ? item.postedBy.lastName
-                    : "")
-                }
-                headline={item.postedBy.headline}
-                username={item.postedBy.username}
-                size="small"
-                numberOfLines={2}
-                leftAlign={true}
-              />
-              <View className="flex flex-row items-center">
-                <TextScallingFalse className="text-sm text-neutral-400">
-                  {" "}
-                  {formatTimeAgo(item.createdAt)} &bull;{" "}
-                </TextScallingFalse>
-                <MaterialIcons
-                  name="public"
-                  size={10}
-                  style={{ marginTop: 2 }}
-                  color="gray"
-                />
-              </View>
-            </Pressable>
-
-            {/* Follow button */}
-            {user?._id !== item.postedBy?._id && !item.isFollowing && (
+      <>
+        <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
+          <View className="flex">
+            {/* Profile Section */}
+            <View className="relative ml-[4%] flex flex-row gap-2 z-20 pb-0">
+              {/* Profile Picture */}
               <TouchableOpacity
-                className="absolute top-[2px] right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
-                onPress={handleFollow}
-                activeOpacity={0.6}
-              >
-                <TextScallingFalse className="text-white text-sm">
-                  + Follow
-                </TextScallingFalse>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Caption Section */}
-          <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
-            <TouchableOpacity
-              onPress={() => {
-                handleOpenBottomSheet({ type: "settings" });
-              }}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
-              className="absolute right-8 p-2 pt-2 z-30"
-            >
-              <MaterialIcons name="more-horiz" size={22} color="white" />
-            </TouchableOpacity>
-
-            <Pressable
-              disabled={isPostDetailsPage}
-              onPress={() => router.push(`/post-details/${item._id}`)}
-              className="pl-7 pr-10 pt-12 pb-2"
-            >
-              <TextScallingFalse className="text-2xl flex-wrap flex-row">
-                {memoizedCaption}
-              </TextScallingFalse>
-            </Pressable>
-
-            {!isVideo && item.isPoll && (
-              <PollsContainer
-                options={item.poll.options}
-                mode="view"
-                voteCounts={item.poll.voteCounts}
-                userVoted={item.isVoted}
-                selectedOption={Number(item.votedOption)}
-                onVote={handleVote}
-              />
-            )}
-          </View>
-
-          {/* Assets section */}
-          {item.isVideo ? (
-            <View
-              style={{
-                aspectRatio: item.aspectRatio
-                  ? item.aspectRatio[0] / item.aspectRatio[1]
-                  : 3 / 2,
-                width: containerWidth,
-              }}
-              className="overflow-hidden bg-transparent"
-            >
-              <TouchableWithDoublePress
-                className="flex-1 relative overflow-hidden ml-2 border-[#222222]"
-                style={{
-                  borderTopLeftRadius: 16,
-                  borderBottomLeftRadius: 16,
-                  borderTopWidth: 1,
-                  borderBottomWidth: 1,
-                  borderLeftWidth: 1,
-                }}
-                activeOpacity={0.7}
-                onSinglePress={() => {
-                  if (item) {
-                    router.push({
-                      pathname: `/post-view/${item._id}` as RelativePathString,
-                    });
-                  }
-                }}
-                onDoublePress={handleDoubleTap}
+                activeOpacity={0.5}
+                className="w-[12%] h-[12%] min-w-[48] max-w-[64px] mt-[0px] aspect-square rounded-full bg-slate-700"
+                onPress={() => goToUser(serializedUser, user?._id)}
+                style={shadowStyle}
               >
                 <Image
                   source={
-                    item.thumbnail ? { uri: item.thumbnail.url } : nothumbnail
+                    item.postedBy.profilePic
+                      ? {
+                          uri: item.postedBy.profilePic,
+                        }
+                      : nopic
                   }
-                  resizeMode="cover"
-                  fadeDuration={0}
                   style={{
                     width: "100%",
                     height: "100%",
-                    position: "absolute",
-                    inset: 0,
+                    borderRadius: 100,
+                    borderWidth: 1,
+                    borderColor: "#1a1a1a",
+                  }}
+                />
+              </TouchableOpacity>
+
+              {/* Name, Headline, post date */}
+              <Pressable
+                onPress={() => goToUser(serializedUser, user?._id)}
+                className="w-64 flex flex-col gap-y-4 justify-between"
+              >
+                <UserInfo
+                  fullName={
+                    item.postedBy.firstName +
+                    " " +
+                    (item.postedBy.lastName !== undefined
+                      ? item.postedBy.lastName
+                      : "")
+                  }
+                  headline={item.postedBy.headline}
+                  username={item.postedBy.username}
+                  size="small"
+                  numberOfLines={2}
+                  leftAlign={true}
+                />
+                <View className="flex flex-row items-center">
+                  <TextScallingFalse className="text-sm text-neutral-400">
+                    {" "}
+                    {formatTimeAgo(item.createdAt)} &bull;{" "}
+                  </TextScallingFalse>
+                  <MaterialIcons
+                    name="public"
+                    size={10}
+                    style={{ marginTop: 2 }}
+                    color="gray"
+                  />
+                </View>
+              </Pressable>
+
+              {/* Follow button */}
+              {user?._id !== item.postedBy?._id && !item.isFollowing && (
+                <TouchableOpacity
+                  className="absolute top-[2px] right-3 bg-black border border-[#808080] rounded-2xl px-2.5 py-1"
+                  onPress={handleFollow}
+                  activeOpacity={0.6}
+                >
+                  <TextScallingFalse className="text-white text-sm">
+                    + Follow
+                  </TextScallingFalse>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Caption Section */}
+            <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
+              <TouchableOpacity
+                onPress={() => {
+                  handleOpenBottomSheet({ type: "settings" });
+                }}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
+                className="absolute right-8 p-2 pt-2 z-30"
+              >
+                <MaterialIcons name="more-horiz" size={22} color="white" />
+              </TouchableOpacity>
+
+              <Pressable
+                disabled={isPostDetailsPage}
+                onPress={() => router.push(`/post-details/${item._id}`)}
+                className="pl-7 pr-10 pt-12 pb-2"
+              >
+                <TextScallingFalse className="text-2xl flex-wrap flex-row">
+                  {memoizedCaption}
+                </TextScallingFalse>
+              </Pressable>
+
+              {!isVideo && item.isPoll && (
+                <PollsContainer
+                  options={item.poll.options}
+                  mode="view"
+                  voteCounts={item.poll.voteCounts}
+                  userVoted={item.isVoted}
+                  selectedOption={Number(item.votedOption)}
+                  onVote={handleVote}
+                />
+              )}
+            </View>
+
+            {/* Assets section */}
+            {item.isVideo ? (
+              <View
+                style={{
+                  aspectRatio: item.aspectRatio
+                    ? item.aspectRatio[0] / item.aspectRatio[1]
+                    : 3 / 2,
+                  width: containerWidth,
+                }}
+                className="overflow-hidden bg-transparent"
+              >
+                <TouchableWithDoublePress
+                  className="flex-1 relative overflow-hidden ml-2 border-[#222222]"
+                  style={{
                     borderTopLeftRadius: 16,
                     borderBottomLeftRadius: 16,
-                    borderColor: "#2F2F2F",
+                    borderTopWidth: 1,
+                    borderBottomWidth: 1,
+                    borderLeftWidth: 1,
                   }}
-                />
-                <View style={styles.videoOverlay} />
-                <View
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    zIndex: 2,
-                    transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
+                  activeOpacity={0.7}
+                  onSinglePress={() => {
+                    if (item) {
+                      router.push({
+                        pathname:
+                          `/post-view/${item._id}` as RelativePathString,
+                      });
+                    }
                   }}
+                  onDoublePress={handleDoubleTap}
                 >
-                  <ClipsIconRP />
-                </View>
-              </TouchableWithDoublePress>
-            </View>
-          ) : (
-            item.assets &&
-            item.assets.length > 0 &&
-            (() => {
-              const imageUrls = item.assets.map((asset) => asset.url);
-              return (
-                <CustomImageSlider
-                  onRemoveImage={() => {}}
-                  aspectRatio={item.aspectRatio || [3, 2]}
-                  images={imageUrls}
-                  isFeedPage={true}
-                  post={item}
-                  setIndex={handleSetActiveIndex}
-                  onDoubleTap={handleDoubleTap}
-                  isMyActivity={false}
-                />
-              );
-            })()
-          )}
+                  <Image
+                    source={
+                      item.thumbnail ? { uri: item.thumbnail.url } : nothumbnail
+                    }
+                    resizeMode="cover"
+                    fadeDuration={0}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      position: "absolute",
+                      inset: 0,
+                      borderTopLeftRadius: 16,
+                      borderBottomLeftRadius: 16,
+                      borderColor: "#2F2F2F",
+                    }}
+                  />
+                  <View style={styles.videoOverlay} />
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      zIndex: 2,
+                      transform: [
+                        { translateX: "-50%" },
+                        { translateY: "-50%" },
+                      ],
+                    }}
+                  >
+                    <ClipsIconRP />
+                  </View>
+                </TouchableWithDoublePress>
+              </View>
+            ) : (
+              item.assets &&
+              item.assets.length > 0 &&
+              (() => {
+                const imageUrls = item.assets.map((asset) => asset.url);
+                return (
+                  <CustomImageSlider
+                    onRemoveImage={() => {}}
+                    aspectRatio={item.aspectRatio || [3, 2]}
+                    images={imageUrls}
+                    isFeedPage={true}
+                    post={item}
+                    setIndex={handleSetActiveIndex}
+                    onDoubleTap={handleDoubleTap}
+                    isMyActivity={false}
+                  />
+                );
+              })()
+            )}
 
-          {/* Like Animation */}
-          <Animated.View
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: [
-                { translateX: -25 },
-                { translateY: -25 },
-                { scale: scaleAnim },
-              ],
-              opacity: scaleAnim,
-            }}
-          >
-            <AntDesign name="like1" size={50} color="#fbbf24" />
-          </Animated.View>
+            {/* Like Animation */}
+            <Animated.View
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: [
+                  { translateX: -25 },
+                  { translateY: -25 },
+                  { scale: scaleAnim },
+                ],
+                opacity: scaleAnim,
+              }}
+            >
+              <AntDesign name="like1" size={50} color="#fbbf24" />
+            </Animated.View>
 
-          {/* Interaction Bar */}
-          <InteractionBar
-            post={item}
-            onPressLike={handleLike}
-            onPressComment={() => setIsCommentCountModalVisible(true)}
-            activeSlideIndex={activeIndex}
-            isPostContainer={true}
-            isFeedPage={isFeedPage}
-            isPostDetailsPage={isPostDetailsPage}
-          />
+            {/* Interaction Bar */}
+            <InteractionBar
+              post={item}
+              onPressLike={handleLike}
+              onPressComment={handleOpenQuickCommentModal}
+              activeSlideIndex={activeIndex}
+              isPostContainer={true}
+              isFeedPage={isFeedPage}
+              isPostDetailsPage={isPostDetailsPage}
+            />
+          </View>
         </View>
-        <Modal
-          visible={isCommentCountModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setIsCommentCountModalVisible(false)}
+        <View
+          ref={modalContainerRef}
           style={{
-            flex: 1,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: isQuickCommentModalVisible ? "auto" : "none",
+            zIndex: 9999,
           }}
         >
-          <CommentModal
-            targetId={item._id}
-            autoFocusKeyboard={true}
-            onClose={() => setIsCommentCountModalVisible(false)}
-          />
-        </Modal>
-      </View>
+          <Modal
+            visible={isQuickCommentModalVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={handleCloseQuickCommentModal}
+            style={{
+              flex: 1,
+              margin: 0,
+              padding: 0,
+            }}
+            hardwareAccelerated={true}
+            presentationStyle="overFullScreen"
+          >
+            <CommentModal
+              targetId={item._id}
+              autoFocusKeyboard={true}
+              onClose={handleCloseQuickCommentModal}
+            />
+          </Modal>
+        </View>
+      </>
     );
   }
 );

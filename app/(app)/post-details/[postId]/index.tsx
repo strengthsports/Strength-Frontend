@@ -6,7 +6,6 @@ import React, {
   useState,
   useLayoutEffect,
 } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "~/components/TopBar";
 import { useNavigation, useRouter } from "expo-router";
 import PostContainer from "~/components/Cards/postContainer";
@@ -19,14 +18,9 @@ import {
   Animated,
   Platform,
   TextInput,
-  TouchableOpacity,
   Keyboard,
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
-import {
-  useLazyFetchCommentsQuery,
-  useLazyFetchRepliesQuery,
-} from "~/reduxStore/api/feed/features/feedApi.comment";
 import { Divider } from "react-native-elements";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { Comment, Post } from "~/types/post";
@@ -43,6 +37,7 @@ import {
 } from "~/reduxStore/slices/post/postActions";
 import { fetchPostById } from "~/api/post/fetchPostById";
 import ReplySection from "~/components/comment/ReplySection";
+import { fetchComments, fetchReplies } from "~/api/comment/fetchComments";
 
 export type ReplyPaginationState = {
   [commentId: string]: {
@@ -87,7 +82,7 @@ const PostDetailsPage = () => {
   const navigation = useNavigation();
   const params = useLocalSearchParams();
   const postId = params?.postId as string;
-  const { user } = useSelector((state: RootState) => state.profile);
+  const { user } = useSelector((state: RootState) => state?.profile);
   let post = useSelector((state: RootState) => selectPostById(state, postId));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,10 +107,6 @@ const PostDetailsPage = () => {
     name: string;
   } | null>(null);
   const [rootCommentId, setRootCommentId] = useState("");
-
-  // RTK Query hooks
-  const [fetchComments] = useLazyFetchCommentsQuery();
-  const [fetchReplies] = useLazyFetchRepliesQuery();
 
   // Fallback to db for post fetching
   useEffect(() => {
@@ -164,7 +155,7 @@ const PostDetailsPage = () => {
           postId,
           limit: 10,
           cursor: refresh ? null : cursor,
-        }).unwrap();
+        });
 
         if (response?.data) {
           const newComments = response.data.comments || [];
@@ -229,10 +220,8 @@ const PostDetailsPage = () => {
         const response = await fetchReplies({
           commentId,
           limit: 3,
-          cursor: currentState.cursor,
-        }).unwrap();
-
-        // console.log(response.data.replies);
+          cursor: currentState.cursor as string,
+        });
 
         if (response?.data) {
           const newReplies = response.data.replies || [];
@@ -241,7 +230,7 @@ const PostDetailsPage = () => {
           setReplyStates((prev) => ({
             ...prev,
             [commentId]: {
-              replies: updatedReplies,
+              replies: updatedReplies || [],
               cursor: response.data.endCursor,
               hasNextPage: response.data.hasNextPage,
               loading: false,
@@ -267,28 +256,22 @@ const PostDetailsPage = () => {
     const initializeReplyStates = async () => {
       for (const comment of comments) {
         // Only initialize for comments with replies that haven't been initialized yet
-        if (
-          comment.commentsCount > 0 &&
-          (!replyStates[comment._id] ||
-            replyStates[comment._id].replies.length === 0)
-        ) {
-          // Initialize the reply state if it doesn't exist
-          if (!replyStates[comment._id]) {
-            setReplyStates((prev) => ({
-              ...prev,
-              [comment._id]: {
-                replies: [],
-                cursor: null,
-                hasNextPage: true,
-                loading: false,
-                replyCount: comment.commentsCount,
-              },
-            }));
-          }
-
-          // Load initial replies for this comment
-          await loadMoreReplies(comment._id);
+        // Initialize the reply state if it doesn't exist
+        if (!replyStates[comment._id]) {
+          setReplyStates((prev) => ({
+            ...prev,
+            [comment._id]: {
+              replies: [],
+              cursor: null,
+              hasNextPage: true,
+              loading: false,
+              replyCount: comment.commentsCount,
+            },
+          }));
         }
+
+        // Load initial replies for this comment
+        await loadMoreReplies(comment._id);
       }
     };
 
@@ -355,6 +338,8 @@ const PostDetailsPage = () => {
         if (isReply) {
           // console.log("\n\nIs reply : ", isReply);
           // console.log("\nNew Comment : ", newComment);
+          // console.log("\nRoot comment id : ", rootCommentId);
+          // console.log("\nReply state : ", replyStates);
           // Add the new reply to its parent comment's replies
           setReplyStates((prev) => {
             const current = prev[rootCommentId] ?? {
@@ -364,30 +349,28 @@ const PostDetailsPage = () => {
               loading: false,
             };
 
-            // console.log("Target Id : ", targetId);
-            // console.log("Rootcomment Id : ", rootCommentId);
-            // console.log("State to be set : ", {
-            //   ...prev,
-            //   [rootCommentId]: {
-            //     ...current,
-            //     replies: [newComment, ...current.replies],
-            //     replyCount: current.replyCount,
-            //   },
-            // });
-
             return {
               ...prev,
               [rootCommentId]: {
                 ...current,
                 replies: [newComment, ...current.replies],
-                replyCount: current.replyCount + 1,
+                replyCount: [newComment, ...current.replies].length,
               },
             };
           });
-          incrementReplyCount(rootCommentId as string);
+          // incrementReplyCount(rootCommentId as string);
         } else {
           // Add the new comment to the top of the comments list
           setComments((prev) => [newComment, ...prev]);
+          setReplyStates((prev) => {
+            return {
+              ...prev,
+              [newComment._id]: {
+                replies: [],
+                replyCount: 0,
+              },
+            };
+          });
         }
       }
     } catch (error) {
@@ -399,8 +382,14 @@ const PostDetailsPage = () => {
 
   // Handle delete a comment
   const handleDeleteComment = useCallback(
-    (comment) => {
-      dispatch(deleteComment({ postId, commentId: comment._id }));
+    (comment: any) => {
+      dispatch(
+        deleteComment({
+          postId,
+          commentId: comment._id,
+          commentsCount: comment.commentsCount,
+        })
+      );
       setComments((prevComments) =>
         prevComments.filter((c) => c._id !== comment._id)
       );
@@ -408,24 +397,6 @@ const PostDetailsPage = () => {
     },
     [postId, dispatch]
   );
-
-  const incrementReplyCount = (commentId: string) =>
-    setReplyStates((prev) => ({
-      ...prev,
-      [commentId]: {
-        ...prev[commentId],
-        replyCount: (prev[commentId]?.replyCount || 0) + 1,
-      },
-    }));
-
-  const decrementReplyCount = (commentId: string) =>
-    setReplyStates((prev) => ({
-      ...prev,
-      [commentId]: {
-        ...prev[commentId],
-        replyCount: Math.max(0, (prev[commentId]?.replyCount || 0) - 1),
-      },
-    }));
 
   // Animate the progress bar while posting
   useEffect(() => {
@@ -449,7 +420,7 @@ const PostDetailsPage = () => {
         cursor: baseState.cursor ?? null,
         hasNextPage: baseState.hasNextPage ?? item.commentsCount > 2,
         loading: baseState.loading ?? false,
-        replyCount: item.commentsCount, // Explicitly use item.commentsCount here
+        replyCount: item.commentsCount,
       };
 
       return (
@@ -464,7 +435,7 @@ const PostDetailsPage = () => {
             onDelete={handleDeleteComment}
           />
 
-          {(item.commentsCount > 0 || replyState.replyCount > 0) && (
+          {replyState.replies.length > 0 && (
             <ReplySection
               commentId={item._id}
               replies={replyState.replies}
@@ -520,7 +491,9 @@ const PostDetailsPage = () => {
   if (error) {
     return (
       <PageThemeView>
-        <TextScallingFalse className="text-white">{error}</TextScallingFalse>
+        <TextScallingFalse className="text-white">
+          Something went wrong. Try Again
+        </TextScallingFalse>
       </PageThemeView>
     );
   }
@@ -543,7 +516,7 @@ const PostDetailsPage = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-         <TopBar heading="" backHandler={() => router.back()} />
+        <TopBar heading="" backHandler={() => router.back()} />
         <FlatList
           ref={flatListRef}
           data={comments}

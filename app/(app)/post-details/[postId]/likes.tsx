@@ -65,23 +65,13 @@ const Likes = memo(() => {
     <PageThemeView>
       <TopBar heading="Likes" backHandler={() => router.push("..")} />
 
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#12956B", "#6E7A81"]}
-            tintColor="#6E7A81"
-            progressBackgroundColor="#181A1B"
-          />
-        }
-      >
-        <UserList
-          key={refreshTrigger.current}
-          targetId={targetData.id}
-          type="Likers"
-        />
-      </ScrollView>
+      <UserList
+        key={refreshTrigger.current}
+        targetId={targetData.id}
+        type="Likers"
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
     </PageThemeView>
   );
 });

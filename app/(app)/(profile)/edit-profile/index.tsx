@@ -715,7 +715,7 @@ const EditProfile = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: aspect,
-        quality: 0.8,
+        quality: 0.5,
       });
 
       if (!result.canceled && result.assets[0]) {

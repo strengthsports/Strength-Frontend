@@ -16,6 +16,7 @@ import {
   Animated,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
@@ -38,6 +39,7 @@ import { fetchFeedPosts } from "~/reduxStore/slices/post/hooks";
 import { resetFeed } from "~/reduxStore/slices/post/postsSlice";
 import SuggestedArticlesCard from "~/components/Cards/SuggestedArticlesCard";
 import { useGetSportArticleQuery } from "~/reduxStore/api/explore/article/sportArticleApi";
+import { router } from "expo-router";
 
 const INTERLEAVE_INTERVAL = 6;
 
@@ -52,15 +54,21 @@ const ListFooterComponent = memo(
     } else if (!hasMore) {
       return (
         <View style={styles.footerMessage}>
-          <TextScallingFalse style={styles.footerLargeText}>
-            Level Unlocked:
+          <TextScallingFalse className="text-white text-6xl font-semibold">
+            You're all caught up. What a pro!
           </TextScallingFalse>
-          <TextScallingFalse style={styles.footerLargeText2}>
-            Ultimate Scroller!
+          <TextScallingFalse className="text-[#eaeaea]">
+            New actions on the way.
           </TextScallingFalse>
-          <TextScallingFalse style={styles.footerSmallText}>
-            Crafted with &#10084; in Kolkata, IN
-          </TextScallingFalse>
+          <TouchableOpacity
+            className="rounded-3xl border border-white px-6 py-1.5 mt-4"
+            activeOpacity={0.6}
+            onPress={() => router.push("/explore/allCategory")}
+          >
+            <TextScallingFalse className="text-white">
+              Explore More
+            </TextScallingFalse>
+          </TouchableOpacity>
         </View>
       );
     } else {
@@ -131,12 +139,14 @@ const Home = () => {
 
   // Fetch feed posts on initial page mount
   useEffect(() => {
+    setIsLoading(true);
     dispatch(fetchFeedPosts({ limit: 10 }));
   }, [dispatch]);
 
   // Handle load more feed posts
   const handleLoadMore = async () => {
-    if (!nextCursor || isLoading) return;
+    setIsLoading(false);
+    if (!nextCursor) return;
     setIsLoadingMore(true);
     await loadPosts(nextCursor);
     setIsLoadingMore(false);
@@ -327,9 +337,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   footerMessage: {
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
+    width: "100%",
+    marginHorizontal: "auto",
     marginTop: 10,
     height: 240,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    rowGap: 14,
   },
   footerLargeText: {
     fontSize: 30,

@@ -38,6 +38,12 @@ import ChangePasswordForm from "./ChangePasswordForm";
 import CloseAccountView from "./CloseAccountView";
 import BackIcon from "~/components/SvgIcons/Common_Icons/BackIcon";
 import AgreementsModalView from "./AgreementsModalView";
+import AccountSettings from "~/components/SvgIcons/Settings/AccountSettings";
+import BlockedUsers from "~/components/SvgIcons/Settings/BlockedUsers";
+import CustomerSupport from "~/components/SvgIcons/Settings/CustomerSupport";
+import FeedbackSettings from "~/components/SvgIcons/Settings/FeedbackSettings";
+import ShareStrength from "~/components/SvgIcons/Settings/ShareStrength";
+import LoggoutSettings from "~/components/SvgIcons/Settings/LoggoutSettings";
 
 const index = () => {
   const router = useRouter();
@@ -214,11 +220,7 @@ const index = () => {
           onPress={openModal}
           activeOpacity={0.7}
         >
-          <MaterialCommunityIcons
-            name="account-cog-outline"
-            size={31}
-            color="white"
-          />
+          <AccountSettings />
           <TextScallingFalse style={styles.OptionText}>
             Account Settings
           </TextScallingFalse>
@@ -229,13 +231,15 @@ const index = () => {
           style={styles.OptionButtonView}
           onPress={() => router.push("/(app)/(settings)/blocked-users")}
         >
-          <MaterialIcons name="block" size={31} color="white" />
+          <BlockedUsers />
           <TextScallingFalse style={styles.OptionText}>
             Blocked Users
           </TextScallingFalse>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} style={styles.OptionButtonView}>
-          <MaterialIcons name="help-outline" size={31} color="white" />
+        <TouchableOpacity onPress={() => Linking.openURL("https://www.yourstrength.in/contactus")}
+         activeOpacity={0.7} style={styles.OptionButtonView}>
+          {/* <MaterialIcons name="help-outline" size={31} color="white" /> */}
+          <CustomerSupport />
           <TextScallingFalse style={styles.OptionText}>
             Customer Support
           </TextScallingFalse>
@@ -247,7 +251,7 @@ const index = () => {
           }}
           activeOpacity={0.5}
         >
-          <Ionicons name="megaphone-outline" size={31} color="white" />
+          <FeedbackSettings />
           <TextScallingFalse style={styles.OptionText}>
             Feedback
           </TextScallingFalse>
@@ -257,7 +261,8 @@ const index = () => {
           onPress={handleAppShare}
           activeOpacity={0.5}
         >
-          <Feather name="share-2" size={29} color="white" />
+          {/* <Feather name="share-2" size={29} color="white" /> */}
+          <ShareStrength />
           <TextScallingFalse style={styles.OptionText}>
             Share Strength
           </TextScallingFalse>
@@ -268,7 +273,8 @@ const index = () => {
           style={styles.OptionButtonView}
           onPress={handleLogout}
         >
-          <Ionicons name="exit-outline" size={31} color="white" />
+          {/* <Ionicons name="exit-outline" size={31} color="white" /> */}
+          <LoggoutSettings />
           <TextScallingFalse style={styles.OptionText}>
             Log Out
           </TextScallingFalse>
@@ -413,7 +419,7 @@ const index = () => {
         height: '9%',
       }}>
         <TextScallingFalse style={{ color: 'grey', fontSize: 13, fontWeight: '400' }}>
-          Version 1.0.1</TextScallingFalse>
+          Version 1.0.4</TextScallingFalse>
       </View>
     </PageThemeView>
   );
@@ -464,8 +470,8 @@ const styles = StyleSheet.create({
   OptionButtonView: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 19,
-    paddingHorizontal: 40,
+    gap: 21,
+    paddingHorizontal: 35,
   },
   AccountSettingsOptions: {
     color: "white",

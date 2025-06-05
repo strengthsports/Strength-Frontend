@@ -44,7 +44,7 @@ const ReplySection = memo(
           />
         ))}
 
-        {hasNextPage && (
+        {hasNextPage && !loading && (
           <TouchableOpacity
             className="px-20 py-2"
             onPress={() => loadMoreReplies(commentId)}

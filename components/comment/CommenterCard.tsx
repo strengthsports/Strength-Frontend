@@ -7,7 +7,7 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Comment } from "~/types/post";
 import nopic from "@/assets/images/nopic.jpg";
 import { formatShortTimeAgo } from "~/utils/formatTime";
-import { toggleLikeComment } from "~/api/like/toggleLikeComment";
+import { toggleLikeComment } from "~/api/comment/like/toggleLikeComment";
 import ModalLayout1 from "../modals/layout/ModalLayout1";
 import renderCaptionWithTags from "~/utils/renderCaptionWithTags";
 

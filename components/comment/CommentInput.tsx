@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   TextInput,
@@ -36,7 +36,7 @@ const CommentInput = ({
   );
 
   return (
-    <View className="bg-black p-2" style={{ gap: 10, }}>
+    <View className="bg-black p-2" style={{ gap: 10 }}>
       <View className={`w-full flex bg-[#181818] rounded-3xl`}>
         {replyingTo && (
           <View className="border border-[#181818] bg-black flex-row justify-between items-center px-4 py-2 rounded-t-3xl">
@@ -55,8 +55,9 @@ const CommentInput = ({
           </View>
         )}
         <View
-          className={`flex-row px-3 py-1.5 ${inputHeight <= 40 ? "items-center" : "items-end"
-            }`}
+          className={`flex-row px-3 py-1.5 ${
+            inputHeight <= 40 ? "items-center" : "items-end"
+          }`}
         >
           <Image
             source={user?.profilePic ? { uri: user.profilePic } : nopic}
@@ -96,7 +97,7 @@ const CommentInput = ({
             maxLength={1040}
           />
           <TouchableOpacity
-            onPress={handlePostComment}
+            onPressIn={handlePostComment}
             disabled={isPosting || !commentText?.trim()}
             className="p-1"
           >
@@ -113,10 +114,22 @@ const CommentInput = ({
         </View>
       </View>
       {commentText.length === 1040 ? (
-        <TextScallingFalse style={{ color: 'grey', fontSize: 12, fontWeight: '400', borderColor: '#404040', 
-        borderWidth: 1, width: '95%', alignSelf: 'center', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5}}>
-        {commentText.length}/1040   maximum characters limit reached !
-      </TextScallingFalse>
+        <TextScallingFalse
+          style={{
+            color: "grey",
+            fontSize: 12,
+            fontWeight: "400",
+            borderColor: "#404040",
+            borderWidth: 1,
+            width: "95%",
+            alignSelf: "center",
+            borderRadius: 20,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+          }}
+        >
+          {commentText.length}/1040 maximum characters limit reached !
+        </TextScallingFalse>
       ) : null}
     </View>
   );

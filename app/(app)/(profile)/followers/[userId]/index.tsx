@@ -47,24 +47,13 @@ const FollowerFollowing = memo(() => {
   return (
     <PageThemeView>
       <TopBar heading={type} backHandler={() => router.push("..")} />
-
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#12956B", "#6E7A81"]}
-            tintColor="#6E7A81"
-            progressBackgroundColor="#181A1B"
-          />
-        }
-      >
-        <UserList
-          key={refreshTrigger.current}
-          targetId={targetData.userId}
-          type={type as PageType}
-        />
-      </ScrollView>
+      <UserList
+        key={refreshTrigger.current}
+        targetId={targetData.userId}
+        type={type as PageType}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
     </PageThemeView>
   );
 });

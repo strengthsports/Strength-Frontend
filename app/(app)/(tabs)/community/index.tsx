@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import {
   View,
-  Text,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
@@ -33,12 +32,7 @@ import { debounce } from "~/utils/debounce";
 import { SuggestionUser } from "~/types/user";
 import { SuggestTeam } from "~/types/team";
 import PageThemeView from "~/components/PageThemeView";
-import BackIcon2 from "~/components/SvgIcons/Common_Icons/BackIcon2";
-import RightArrow from "~/components/SvgIcons/teams/RightArrow";
 import SeeMore from "~/components/SvgIcons/Common_Icons/SeeMore";
-import UserCardSkeleton from "~/components/skeletonLoaders/onboarding/SuggestedUserCardLoader";
-import SearchSkeletonLoader from "~/components/skeletonLoaders/SearchSkeletonLoader";
-import SingleLineTextSkeleton from "~/components/skeletonLoaders/SingleLineTextSkeleton";
 
 const DEBOUNCE_DELAY = 1000;
 
@@ -84,7 +78,7 @@ const Community = () => {
     error: teamsError,
   } = useGetTeamsToSupportQuery({ limit: 2, start: 0 });
 
-  console.log("Popular Teams : ", popularTeams);
+  // console.log("Popular Teams : ", popularTeams);
 
   const debouncedRefetch = useRef(
     debounce(async () => {
@@ -171,7 +165,7 @@ const Community = () => {
       };
     }) => {
       const isLoading = item.type === "User" && item.data.length === 0;
-      
+
       const filteredData = item.data.filter(
         (user) => !removedUserIds.has(user._id)
       );
@@ -184,7 +178,7 @@ const Community = () => {
           <TextScallingFalse className="text-white text-3xl font-medium ml-2 mb-2 capitalize">
             {item.title}
           </TextScallingFalse>
-            <FlatList
+          <FlatList
             data={filteredData}
             keyExtractor={(user) => user._id}
             renderItem={({ item }) =>
@@ -221,7 +215,14 @@ const Community = () => {
             }
             ListFooterComponent={
               <TouchableOpacity
-                className="mt-7 self-center" style={{justifyContent:'center', alignItems:'center', height: 30, flexDirection:'row', gap: 10}}
+                className="mt-7 self-center"
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 30,
+                  flexDirection: "row",
+                  gap: 10,
+                }}
                 activeOpacity={0.5}
                 onPress={() =>
                   router.push(
@@ -232,8 +233,8 @@ const Community = () => {
                 <TextScallingFalse className="text-white text-2xl font-normal">
                   See more
                 </TextScallingFalse>
-                <View style={{marginTop: 2}}>
-                <SeeMore />
+                <View style={{ marginTop: 2 }}>
+                  <SeeMore />
                 </View>
               </TouchableOpacity>
             }
@@ -285,9 +286,16 @@ const Community = () => {
 
       <View className="px-4 pb-20">
         {allLoading ? (
-          <View style={{width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}}>
-            <View style={{ transform: [{ scale: 1.5 }]} }>
-           <ActivityIndicator size="small" color="#12956B"/>
+          <View
+            style={{
+              width: "100%",
+              height: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <View style={{ transform: [{ scale: 1.5 }] }}>
+              <ActivityIndicator size="small" color="#12956B" />
             </View>
           </View>
         ) : (
@@ -296,7 +304,6 @@ const Community = () => {
             keyExtractor={(section) => section.title}
             renderItem={renderSection}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 65 }}
             ListEmptyComponent={
               <View className="flex-1 justify-center items-center">
                 <TextScallingFalse className="text-[#808080]">

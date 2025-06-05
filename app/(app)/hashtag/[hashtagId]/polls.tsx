@@ -15,7 +15,9 @@ const LatestScreen = ({ hashtag }: { hashtag: string }) => {
   }, []);
 
   return showPosts ? (
-    <HashtagPosts type="polls" hashtag={hashtag} />
+    <View style={{ flex: 1, justifyContent: "center" }}>
+      <HashtagPosts type="polls" hashtag={hashtag} />
+    </View>
   ) : (
     <View className="flex-1 justify-center items-center">
       <ActivityIndicator size="large" color={Colors.themeColor} />

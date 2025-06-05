@@ -82,7 +82,7 @@ const PostDetailsPage = () => {
   const navigation = useNavigation();
   const params = useLocalSearchParams();
   const postId = params?.postId as string;
-  const { user } = useSelector((state: RootState) => state.profile);
+  const { user } = useSelector((state: RootState) => state?.profile);
   let post = useSelector((state: RootState) => selectPostById(state, postId));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -223,8 +223,6 @@ const PostDetailsPage = () => {
           cursor: currentState.cursor as string,
         });
 
-        // console.log(response.data.replies);
-
         if (response?.data) {
           const newReplies = response.data.replies || [];
           const updatedReplies = [...currentState.replies, ...newReplies];
@@ -232,7 +230,7 @@ const PostDetailsPage = () => {
           setReplyStates((prev) => ({
             ...prev,
             [commentId]: {
-              replies: updatedReplies,
+              replies: updatedReplies || [],
               cursor: response.data.endCursor,
               hasNextPage: response.data.hasNextPage,
               loading: false,
@@ -258,28 +256,22 @@ const PostDetailsPage = () => {
     const initializeReplyStates = async () => {
       for (const comment of comments) {
         // Only initialize for comments with replies that haven't been initialized yet
-        if (
-          comment.commentsCount > 0 &&
-          (!replyStates[comment._id] ||
-            replyStates[comment._id].replies.length === 0)
-        ) {
-          // Initialize the reply state if it doesn't exist
-          if (!replyStates[comment._id]) {
-            setReplyStates((prev) => ({
-              ...prev,
-              [comment._id]: {
-                replies: [],
-                cursor: null,
-                hasNextPage: true,
-                loading: false,
-                replyCount: comment.commentsCount,
-              },
-            }));
-          }
-
-          // Load initial replies for this comment
-          await loadMoreReplies(comment._id);
+        // Initialize the reply state if it doesn't exist
+        if (!replyStates[comment._id]) {
+          setReplyStates((prev) => ({
+            ...prev,
+            [comment._id]: {
+              replies: [],
+              cursor: null,
+              hasNextPage: true,
+              loading: false,
+              replyCount: comment.commentsCount,
+            },
+          }));
         }
+
+        // Load initial replies for this comment
+        await loadMoreReplies(comment._id);
       }
     };
 
@@ -346,6 +338,8 @@ const PostDetailsPage = () => {
         if (isReply) {
           // console.log("\n\nIs reply : ", isReply);
           // console.log("\nNew Comment : ", newComment);
+          // console.log("\nRoot comment id : ", rootCommentId);
+          // console.log("\nReply state : ", replyStates);
           // Add the new reply to its parent comment's replies
           setReplyStates((prev) => {
             const current = prev[rootCommentId] ?? {
@@ -360,14 +354,23 @@ const PostDetailsPage = () => {
               [rootCommentId]: {
                 ...current,
                 replies: [newComment, ...current.replies],
-                replyCount: current.replyCount + 1,
+                replyCount: [newComment, ...current.replies].length,
               },
             };
           });
-          incrementReplyCount(rootCommentId as string);
+          // incrementReplyCount(rootCommentId as string);
         } else {
           // Add the new comment to the top of the comments list
           setComments((prev) => [newComment, ...prev]);
+          setReplyStates((prev) => {
+            return {
+              ...prev,
+              [newComment._id]: {
+                replies: [],
+                replyCount: 0,
+              },
+            };
+          });
         }
       }
     } catch (error) {
@@ -380,7 +383,13 @@ const PostDetailsPage = () => {
   // Handle delete a comment
   const handleDeleteComment = useCallback(
     (comment: any) => {
-      dispatch(deleteComment({ postId, commentId: comment._id }));
+      dispatch(
+        deleteComment({
+          postId,
+          commentId: comment._id,
+          commentsCount: comment.commentsCount,
+        })
+      );
       setComments((prevComments) =>
         prevComments.filter((c) => c._id !== comment._id)
       );
@@ -388,24 +397,6 @@ const PostDetailsPage = () => {
     },
     [postId, dispatch]
   );
-
-  const incrementReplyCount = (commentId: string) =>
-    setReplyStates((prev) => ({
-      ...prev,
-      [commentId]: {
-        ...prev[commentId],
-        replyCount: (prev[commentId]?.replyCount || 0) + 1,
-      },
-    }));
-
-  const decrementReplyCount = (commentId: string) =>
-    setReplyStates((prev) => ({
-      ...prev,
-      [commentId]: {
-        ...prev[commentId],
-        replyCount: Math.max(0, (prev[commentId]?.replyCount || 0) - 1),
-      },
-    }));
 
   // Animate the progress bar while posting
   useEffect(() => {
@@ -429,7 +420,7 @@ const PostDetailsPage = () => {
         cursor: baseState.cursor ?? null,
         hasNextPage: baseState.hasNextPage ?? item.commentsCount > 2,
         loading: baseState.loading ?? false,
-        replyCount: item.commentsCount, // Explicitly use item.commentsCount here
+        replyCount: item.commentsCount,
       };
 
       return (
@@ -444,7 +435,7 @@ const PostDetailsPage = () => {
             onDelete={handleDeleteComment}
           />
 
-          {(item.commentsCount > 0 || replyState.replyCount > 0) && (
+          {replyState.replies.length > 0 && (
             <ReplySection
               commentId={item._id}
               replies={replyState.replies}
@@ -500,7 +491,9 @@ const PostDetailsPage = () => {
   if (error) {
     return (
       <PageThemeView>
-        <TextScallingFalse className="text-white">{error}</TextScallingFalse>
+        <TextScallingFalse className="text-white">
+          Something went wrong. Try Again
+        </TextScallingFalse>
       </PageThemeView>
     );
   }

@@ -259,7 +259,7 @@ const CommentModal = ({
           setReplyStates((prev) => ({
             ...prev,
             [commentId]: {
-              replies: updatedReplies,
+              replies: updatedReplies || [],
               cursor: response.data.endCursor,
               hasNextPage: response.data.hasNextPage,
               loading: false,
@@ -289,28 +289,22 @@ const CommentModal = ({
     const initializeReplyStates = async () => {
       for (const comment of comments) {
         // Only initialize for comments with replies that haven't been initialized yet
-        if (
-          comment.commentsCount > 0 &&
-          (!replyStates[comment._id] ||
-            replyStates[comment._id].replies.length === 0)
-        ) {
-          // Initialize the reply state if it doesn't exist
-          if (!replyStates[comment._id]) {
-            setReplyStates((prev) => ({
-              ...prev,
-              [comment._id]: {
-                replies: [],
-                cursor: null,
-                hasNextPage: true,
-                loading: false,
-                replyCount: comment.commentsCount,
-              },
-            }));
-          }
-
-          // Load initial replies for this comment
-          await loadMoreReplies(comment._id);
+        // Initialize the reply state if it doesn't exist
+        if (!replyStates[comment._id]) {
+          setReplyStates((prev) => ({
+            ...prev,
+            [comment._id]: {
+              replies: [],
+              cursor: null,
+              hasNextPage: true,
+              loading: false,
+              replyCount: comment.commentsCount,
+            },
+          }));
         }
+
+        // Load initial replies for this comment
+        await loadMoreReplies(comment._id);
       }
     };
 
@@ -396,10 +390,19 @@ const CommentModal = ({
               },
             };
           });
-          incrementReplyCount(rootCommentId as string);
+          // incrementReplyCount(rootCommentId as string);
         } else {
           // Add the new comment to the top of the comments list
           setComments((prev) => [newComment, ...prev]);
+          setReplyStates((prev) => {
+            return {
+              ...prev,
+              [newComment._id]: {
+                replies: [],
+                replyCount: 0,
+              },
+            };
+          });
         }
       }
     } catch (error) {
@@ -420,24 +423,6 @@ const CommentModal = ({
     },
     [targetId, dispatch]
   );
-
-  const incrementReplyCount = (commentId: string) =>
-    setReplyStates((prev) => ({
-      ...prev,
-      [commentId]: {
-        ...prev[commentId],
-        replyCount: (prev[commentId]?.replyCount || 0) + 1,
-      },
-    }));
-
-  const decrementReplyCount = (commentId: string) =>
-    setReplyStates((prev) => ({
-      ...prev,
-      [commentId]: {
-        ...prev[commentId],
-        replyCount: Math.max(0, (prev[commentId]?.replyCount || 0) - 1),
-      },
-    }));
 
   // Animate the progress bar while posting
   useEffect(() => {
@@ -461,7 +446,7 @@ const CommentModal = ({
         cursor: baseState.cursor ?? null,
         hasNextPage: baseState.hasNextPage ?? item.commentsCount > 2,
         loading: baseState.loading ?? false,
-        replyCount: item.commentsCount, // Explicitly use item.commentsCount here
+        replyCount: item.commentsCount,
       };
 
       return (
@@ -476,7 +461,7 @@ const CommentModal = ({
             onDelete={handleDeleteComment}
           />
 
-          {(item.commentsCount > 0 || replyState.replyCount > 0) && (
+          {replyState.replies.length > 0 && (
             <ReplySection
               commentId={item._id}
               replies={replyState.replies}
@@ -535,10 +520,9 @@ const CommentModal = ({
           opacity: modalOpacity,
         }}
       >
-        <TouchableWithoutFeedback onPress={() => {}}>
+        <TouchableWithoutFeedback onPress={() => {}} accessible={false}>
           <Animated.View
             style={{
-              // flex: 1,
               height: MODAL_HEIGHT,
               width: "104%",
               alignSelf: "center",
@@ -546,13 +530,13 @@ const CommentModal = ({
               backgroundColor: "black",
               borderTopLeftRadius: 40,
               borderTopRightRadius: 40,
-              // marginTop: 50,
               transform: [{ translateY: translateY }],
               borderTopWidth: 0.7,
               borderLeftWidth: 0.7,
               borderRightWidth: 0.7,
               borderColor: "#656565",
             }}
+            pointerEvents="box-none"
           >
             <View {...panResponder.panHandlers}>
               <DragIndicator />
@@ -568,7 +552,7 @@ const CommentModal = ({
                 ref={flatListRef}
                 data={comments}
                 keyExtractor={keyExtractor}
-                keyboardShouldPersistTaps="handled"
+                // keyboardShouldPersistTaps="handled"
                 renderItem={renderItem}
                 ListEmptyComponent={ListEmptyComponent}
                 contentContainerStyle={{
@@ -592,14 +576,16 @@ const CommentModal = ({
 
               {/* Sticky comment input bar */}
               <View
-                className="bg-black"
                 style={{
                   position: "absolute",
                   bottom: keyboardHeight,
                   left: 0,
                   right: 0,
                   backgroundColor: "black",
+                  zIndex: 9999,
+                  elevation: 10,
                 }}
+                pointerEvents="auto"
               >
                 {isPosting && (
                   <Animated.View

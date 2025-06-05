@@ -150,7 +150,11 @@ export const postComment = createAsyncThunk(
 export const deleteComment = createAsyncThunk(
   "posts/deleteComment",
   async (
-    { postId, commentId }: { postId: string; commentId?: string },
+    {
+      postId,
+      commentId,
+      commentsCount,
+    }: { postId: string; commentId?: string; commentsCount: number },
     { getState, dispatch, rejectWithValue }
   ) => {
     const state = getState() as RootState;
@@ -159,7 +163,7 @@ export const deleteComment = createAsyncThunk(
 
     const updatedPost = {
       ...post,
-      commentsCount: post.commentsCount - 1,
+      commentsCount: post.commentsCount - commentsCount - 1,
     };
     dispatch(updatePost({ id: postId, changes: updatedPost }));
 

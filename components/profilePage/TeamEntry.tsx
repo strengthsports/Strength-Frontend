@@ -46,7 +46,7 @@ const TeamEntry = ({ team }: any) => {
 
       {/* Team Details */}
       <View className="flex flex-col ml-5 items-start gap-2 justify-between py-3">
-        <View className="flex flex-col">
+        <View className="flex flex-col" style={{ maxWidth: 250 }}>
           <TextScallingFalse
             style={{
               color: textColor,
@@ -58,14 +58,21 @@ const TeamEntry = ({ team }: any) => {
             {/* Kolkata Knight Riders */}
           </TextScallingFalse>
           <TextScallingFalse
+            numberOfLines={1}
+            ellipsizeMode="tail"
             style={{
               color: secondaryTextColor,
+              marginTop: 2,
               fontSize: 12,
-              fontWeight: "400", // Regular
+              fontWeight: "400",
+              overflow: "hidden",
             }}
           >
-            {team.team.address.state || "Location Not Available"} {team.team.address.country}
-            
+            {team.team.address.city}
+            {", "}
+            {team.team.address.state}
+            {", "}
+            {team.team.address.country}
             {/* Kolkata, West Bengal, India */}
           </TextScallingFalse>
         </View>

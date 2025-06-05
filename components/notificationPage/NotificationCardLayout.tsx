@@ -38,7 +38,7 @@ const NOTIFICATION_TEXTS: Record<NotificationType, string> = {
   TeamPromotion: "promoted you as the",
   JoinTeamRequest: "has requested to join team - ",
   Report: "You are reported",
-  Tag: "tagged you",
+  Tag: "mentioned you",
   TeamInvitationAccepted: "has accepted your invitation to join team - ",
 };
 
@@ -372,6 +372,7 @@ const NotificationCardLayout = React.memo(
               caption={target.caption}
               image={targetImage}
               handlePostPress={handlePostPress}
+              nonImagePost={nonImagePost}
             />
           </>
         );

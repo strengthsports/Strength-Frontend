@@ -24,23 +24,19 @@ const goToUser = (serializedUser: any, userId: string, currUserId: string) => {
 export default function renderCaptionWithTags(
   caption: string,
   color: string,
-  fontSize: number
+  fontSize: number,
+  maxChar: number = Infinity
 ) {
   if (!caption) return null;
 
   const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
   const elements = [];
-  let remainingChars = 94;
+  let remainingChars = maxChar;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
-    // if (!part || remainingChars <= 0) continue;
 
     if (part.startsWith("#")) {
-      // if (part.length > remainingChars) {
-      //   showSeeMore = true;
-      //   return;
-      // }
       const tag = part.slice(1);
       elements.push(
         <TextScallingFalse
@@ -53,12 +49,6 @@ export default function renderCaptionWithTags(
         </TextScallingFalse>
       );
     } else if (part.startsWith("@")) {
-      const uname = part.slice(1);
-      // const user = taggedUsers.find((u) => u.username === uname);
-      // if (!user || part.length > remainingChars) {
-      //   showSeeMore = true;
-      //   return;
-      // }
       elements.push(
         <TextScallingFalse
           key={i}

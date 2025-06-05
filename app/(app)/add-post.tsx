@@ -493,11 +493,16 @@ export default function AddPostContainer() {
     setAlertModalOpen(false);
   };
 
+  const isAndroid = Platform.OS === "android";
+
   return (
     <PageThemeView>
       <View className="h-full">
         {/* Header */}
-        <View className="flex flex-row items-center justify-between p-4">
+        <View
+          className="flex flex-row items-center justify-between p-4"
+          // style={{ maxHeight: 100 }}
+        >
           <AddPostHeader onBackPress={handleAttemptGoBack} />
           <TouchableOpacity
             className={`px-6 py-1 rounded-full ${
@@ -569,7 +574,7 @@ export default function AddPostContainer() {
         )}
 
         {/* Footer */}
-        <View>
+        <View style={{ paddingBottom: !isAndroid ? 10 : 0 }}>
           {postText.length >= 2990 && (
             <View
               style={{

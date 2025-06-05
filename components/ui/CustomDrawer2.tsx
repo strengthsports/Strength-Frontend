@@ -14,6 +14,12 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { fetchTeams, TeamsList } from "~/reduxStore/slices/team/teamSlice";
 import nopic from "@/assets/images/nopic.jpg";
 import { SearchBar } from "react-native-screens";
+import CommunitySidebar from "../SvgIcons/SideMenu/CommunitySidebar";
+import SearchSidebar from "../SvgIcons/SideMenu/SearchSidebar";
+import MatchSidebar from "../SvgIcons/SideMenu/MatchSidebar";
+import ArticlesSidebar from "../SvgIcons/SideMenu/ArticlesSidebar";
+import FeedbackSidebar from "../SvgIcons/SideMenu/FeedbackSidebar";
+import SettingsSidebar from "../SvgIcons/SideMenu/SettingsSidebar";
 
 interface Team {
   id: string;
@@ -259,46 +265,44 @@ const CustomDrawer2 = () => {
             }}
             activeOpacity={0.5}
           >
-            <MaterialIcons name="people-alt" size={25} color="white" className="ml-1" />
+            <CommunitySidebar />
             <TextScallingFalse className="text-white text-5xl font-semibold ml-5 mb-1">
               Community
             </TextScallingFalse>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center"
-            style={{ paddingLeft: 5 }}
             onPress={() => {
               router.push("/articlePage");
             }}
             activeOpacity={0.5}
           >
-            <Ionicons name="newspaper-outline" size={25} color="white" />
+            <ArticlesSidebar />
             <TextScallingFalse className="text-white text-5xl font-semibold ml-5">
               Articles
             </TextScallingFalse>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center"
-            style={{ paddingLeft: 5 }}
             onPress={() => {
               router.push("/explore/matchCategory/TrendingMatch");
             }}
             activeOpacity={0.5}
           >
-            <MaterialCommunityIcons name="scoreboard-outline" size={25} color="white" />
+            <MatchSidebar />
             <TextScallingFalse className="text-white text-5xl font-semibold ml-5">
               Matches
             </TextScallingFalse>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center"
-            style={{ paddingLeft: 5 }}
             onPress={() => {
               router.push("/(app)/searchPage");
             }}
             activeOpacity={0.5}
           >
-            <Ionicons name="search" size={25} color="white" />
+            {/* <Ionicons name="search" size={25} color="white" /> */}
+            <SearchSidebar />
             <TextScallingFalse className="text-white text-5xl font-semibold ml-5">
               Search
             </TextScallingFalse>
@@ -315,6 +319,7 @@ const CustomDrawer2 = () => {
             width: "85%",
             gap: 15,
             alignSelf: 'center',
+            paddingHorizontal: 4,
           }}
         >
           <TouchableOpacity
@@ -324,21 +329,22 @@ const CustomDrawer2 = () => {
             }}
             activeOpacity={0.5}
           >
-            <MaterialIcons name="feedback" size={19} color="white" className="ml-1" />
-            <TextScallingFalse className="text-white text-3xl ml-5 mb-1">
+            {/* <MaterialIcons name="feedback" size={19} color="white" className="ml-1" /> */}
+            <FeedbackSidebar />
+            <TextScallingFalse className="text-white text-3xl ml-3">
               Feedback
             </TextScallingFalse>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center mb-4"
-            style={{ paddingLeft: 5 }}
             onPress={() => {
               router.push("/(app)/(settings)/settings");
             }}
             activeOpacity={0.5}
           >
-            <Feather name="settings" size={19} color="white" />
-            <TextScallingFalse className="text-white text-3xl  ml-5">
+            {/* <Feather name="settings" size={19} color="white" /> */}
+            <SettingsSidebar />
+            <TextScallingFalse className="text-white text-3xl ml-3">
               Settings
             </TextScallingFalse>
           </TouchableOpacity>
@@ -353,7 +359,7 @@ const styles = StyleSheet.create({
   MenuOptionView: {
     width: "100%",
     gap: 18,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 24,
     height: '77%',
   }

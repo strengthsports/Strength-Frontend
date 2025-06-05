@@ -430,6 +430,8 @@ const ProfileLayout = () => {
     }
   };
 
+  console.log('user?.followingCount-', user?.followingCount)
+
   return (
     <PageThemeView>
       <ScrollView

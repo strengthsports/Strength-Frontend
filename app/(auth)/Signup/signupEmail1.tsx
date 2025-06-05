@@ -49,7 +49,7 @@ const SignupEmail1 = () => {
 
   // Calculate max date (13 years ago from today)
   const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() - 13);
+  maxDate.setFullYear(maxDate.getFullYear() - 0);
 
   // Use current date as initial if empty, otherwise use the selected date
   const getInitialDateValue = () => {

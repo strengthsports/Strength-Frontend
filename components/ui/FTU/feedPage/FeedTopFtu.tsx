@@ -16,7 +16,7 @@ import { AppDispatch, RootState } from "~/reduxStore";
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const FeedTopFtu = () => {
+const FeedTopFtu = React.memo(() => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const user = useSelector((state: RootState) => state.profile.user);
@@ -214,7 +214,7 @@ const FeedTopFtu = () => {
 
         </View>
     )
-}
+});
 
 export default FeedTopFtu
 const ITEM_WIDTH = (374 / 410) * SCREEN_WIDTH;

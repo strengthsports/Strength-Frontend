@@ -57,7 +57,7 @@ const ListFooterComponent = memo(
           <TextScallingFalse className="text-white text-[18px] font-semibold">
             You're all caught up. What a pro!
           </TextScallingFalse>
-          <TextScallingFalse className="text-[#EFEFEF] font-regular font-[14px]" style={{fontWeight:'400', fontSize: 14}}>
+          <TextScallingFalse className="text-[#EFEFEF] font-regular font-[14px]" style={{ fontWeight: '400', fontSize: 14 }}>
             New actions on the way.
           </TextScallingFalse>
           <TouchableOpacity
@@ -65,7 +65,7 @@ const ListFooterComponent = memo(
             activeOpacity={0.6}
             onPress={() => router.push("/explore/allCategory")}
           >
-            <TextScallingFalse className="text-white" style={{fontSize: 14, fontWeight:'600'}}>
+            <TextScallingFalse className="text-white" style={{ fontSize: 14, fontWeight: '600' }}>
               Explore More
             </TextScallingFalse>
           </TouchableOpacity>
@@ -265,6 +265,16 @@ const Home = () => {
     );
   }
 
+  const showFtu = !(
+    profile?.hasVisitedEditProfile &&
+    profile?.hasVisitedEditOverview &&
+    profile?.hasVisitedCommunity
+  );
+
+  const MemoizedFeedTopFtu = useMemo(() => {
+    return showFtu ? <FeedTopFtu /> : null;
+  }, [showFtu]);
+
   return (
     <PageThemeView>
       <CustomHomeHeader />
@@ -293,13 +303,7 @@ const Home = () => {
           }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={2}
-          ListHeaderComponent={
-            !(
-              profile?.hasVisitedEditProfile &&
-              profile?.hasVisitedEditOverview &&
-              profile?.hasVisitedCommunity
-            ) && <FeedTopFtu />
-          }
+         ListHeaderComponent={MemoizedFeedTopFtu}
           ListFooterComponent={
             <ListFooterComponent isLoading={isLoadingMore} hasMore={hasMore} />
           }

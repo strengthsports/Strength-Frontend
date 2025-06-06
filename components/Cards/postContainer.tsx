@@ -44,6 +44,7 @@ import { Linking } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useIsFocused } from "@react-navigation/native";
 import { useFocusEffect } from "expo-router";
+import { useEvent } from "expo";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -109,35 +110,79 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const [containerWidth, setContainerWidth] = useState(
       Dimensions.get("window").width
     );
-    const [isMuted, setIsMuted] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
 
+    // Video source
     const videoSource = item.isVideo ? item.assets[0].url : null;
+    const [isMuted, setIsMuted] = useState(false);
 
+    // Initializing the player
     const player = useVideoPlayer(videoSource, (player) => {
       player.loop = true;
     });
 
+    // Safety check
+    const isPlayerValid = () => {
+      try {
+        return player && typeof player.play === "function" && !!player.status;
+      } catch (e) {
+        console.log("Invalid player:", e);
+        return false;
+      }
+    };
+
+    // Player status
+    const { isPlaying } = useEvent(player, "playingChange", {
+      isPlaying: player.playing,
+    });
+
     useEffect(() => {
+      if (!player || !isPlayerValid()) return;
+
       if (isVisible) {
-        player.play();
-        setIsPlaying(true);
+        try {
+          player.play();
+        } catch (err) {
+          console.warn("Play failed:", err);
+        }
       } else {
-        player.pause();
-        setIsPlaying(false);
+        try {
+          player.pause();
+        } catch (err) {
+          console.warn("Pause failed:", err);
+        }
       }
     }, [isVisible]);
 
     useFocusEffect(
       useCallback(() => {
-        // Screen is focused
+        if (!player || !isPlayerValid()) return;
 
         return () => {
-          // Screen is unfocused (navigated away)
-          player?.pause(); // or .stop()
+          try {
+            player.pause();
+          } catch (err) {
+            console.warn("Pause on unfocus failed:", err);
+          }
         };
-      }, [])
+      }, [player])
     );
+
+    // Handle toggle mute the audio
+    const toggleMute = () => {
+      setIsMuted(!isMuted);
+      player.muted = !isMuted;
+    };
+
+    // Pause on unmount
+    useEffect(() => {
+      return () => {
+        try {
+          player?.pause();
+        } catch (err) {
+          console.warn("Pause on unmount failed:", err);
+        }
+      };
+    }, []);
 
     useEffect(() => {
       const updateLayout = () => {
@@ -152,11 +197,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         dimensionsHandler?.remove();
       };
     }, []);
-
-    const toggleMute = () => {
-      setIsMuted(!isMuted);
-      player.muted = !isMuted;
-    };
 
     // Get the openBottomSheet function from context
     const { openBottomSheet } = useBottomSheet();

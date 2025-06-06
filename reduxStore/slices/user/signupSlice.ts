@@ -198,6 +198,9 @@ const signupSlice = createSlice({
       state.userId = null;
       state.email = null;
     },
+    setEmail: (state, action) => {
+      state.email = action.payload;
+    },
   },
   extraReducers: (builder) => {
     // Signup Thunk
@@ -261,5 +264,5 @@ const signupSlice = createSlice({
   },
 });
 
-export const { resetSignupState } = signupSlice.actions;
+export const { resetSignupState, setEmail } = signupSlice.actions;
 export default signupSlice.reducer;

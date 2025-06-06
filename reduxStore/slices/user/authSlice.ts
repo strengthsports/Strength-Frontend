@@ -127,6 +127,7 @@ export const logoutUser = createAsyncThunk(
       removeToken("accessToken");
       removeRToken("refreshToken");
       removeUserId("user_id");
+
       console.log("From Redux - Logged out successfully!");
 
       return;
@@ -145,6 +146,9 @@ export const loginWithGoogle = createAsyncThunk<
   { rejectValue: string }
 >("auth/loginWithGoogle", async (googleData, { rejectWithValue }) => {
   try {
+    console.log("came here");
+    console.log("url is", `${process.env.EXPO_PUBLIC_BASE_URL}`);
+
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/googlesignin`,
       {
@@ -153,8 +157,9 @@ export const loginWithGoogle = createAsyncThunk<
         body: JSON.stringify({ idToken: googleData.idToken }),
       }
     );
+    console.log(response);
     // console.log("Response from Google Signin:", response);
-
+    console.log("Google Data:", response);
     const data = await response.json();
     console.log(data);
 

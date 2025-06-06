@@ -42,6 +42,7 @@ import {
   statusCodes,
 } from "@react-native-google-signin/google-signin";
 import { loginWithGoogle } from "~/reduxStore/slices/user/authSlice";
+import { setEmail } from "~/reduxStore/slices/user/signupSlice";
 
 const LoginScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -72,9 +73,18 @@ const LoginScreen = () => {
 
       await GoogleSignin.hasPlayServices();
       await GoogleSignin.signOut();
+      console.log("Google Sign-In configured");
       const userInfo = (await GoogleSignin.signIn()) as any;
       const { idToken, user } = userInfo.data;
+
+      // console.log("Google Sign-In user info:", userInfo);
       const { email, name, photo } = user;
+      console.log("Google Sign-In user details:", {
+        email,
+        name,
+        photo,
+        idToken,
+      });
       setLoading(true);
 
       if (email && idToken) {
@@ -86,6 +96,7 @@ const LoginScreen = () => {
         };
 
         const response = await dispatch(loginWithGoogle(user)).unwrap();
+
         console.log("Response from Google login:", response);
         if (response?.newUser === false) {
           // ✅ User exists — continue as usual
@@ -94,6 +105,7 @@ const LoginScreen = () => {
           router.replace("/(app)/(tabs)/home");
         } else {
           console.log("else hit");
+          dispatch(setEmail(response?.email));
           // 🚀 User does not exist — redirect to signup screen with Google data
           router.push("/Signup/signupEnterUsername3");
         }
@@ -115,6 +127,12 @@ const LoginScreen = () => {
           case statusCodes.SIGN_IN_CANCELLED:
             Alert.alert("Sign in was canceled by the user.");
         }
+      } else {
+        console.error("Google Sign-In error:", error);
+        feedback(
+          "An error occurred during Google Sign-In. Please try again.",
+          "error"
+        );
       }
     } finally {
       setIsSigningIn(false); // Reset the signing state whether success or failure
@@ -159,11 +177,12 @@ const LoginScreen = () => {
 
       router.replace("/(app)/(tabs)/home");
     } catch (err: any) {
+      console.error("Login error:", err);
       if (err instanceof z.ZodError) {
         const validationError = err.errors[0]?.message || "Invalid input.";
         feedback(validationError);
       } else {
-        feedback(err?.message || "Login failed. Please try again.");
+        feedback(err || "Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false); // Stop loading

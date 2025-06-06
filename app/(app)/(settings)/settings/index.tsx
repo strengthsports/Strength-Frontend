@@ -7,7 +7,7 @@ import {
   Modal,
   Linking,
   BackHandler,
-  Share
+  Share,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import PageThemeView from "~/components/PageThemeView";
@@ -18,7 +18,7 @@ import {
   Ionicons,
   Octicons,
   Entypo,
-  Feather
+  Feather,
 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import TextScallingFalse from "~/components/CentralText";
@@ -44,6 +44,7 @@ import CustomerSupport from "~/components/SvgIcons/Settings/CustomerSupport";
 import FeedbackSettings from "~/components/SvgIcons/Settings/FeedbackSettings";
 import ShareStrength from "~/components/SvgIcons/Settings/ShareStrength";
 import LoggoutSettings from "~/components/SvgIcons/Settings/LoggoutSettings";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const index = () => {
   const router = useRouter();
@@ -65,33 +66,38 @@ const index = () => {
 
   const handleLogout = async () => {
     const isAndroid = Platform.OS == "android";
+    const token = await AsyncStorage.getItem("FCM_TOKEN_KEY");
+    console.log("FCM Token:", token);
     try {
       const response = await dispatch(logoutUser()).unwrap();
+      if (token) {
+        await AsyncStorage.removeItem("FCM_TOKEN_KEY");
+      }
+
       // Dispatch resetUserData to clear user-related data from Redux store
       dispatch(resetUserData());
       !isAndroid && router.replace("/login");
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-          type: "error",
-          text1: "Logged out successfully",
-          visibilityTime: 1500,
-          autoHide: true,
-        });
+            type: "error",
+            text1: "Logged out successfully",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
       dispatch(resetFeed());
     } catch (err) {
       console.error("Logout failed:", err);
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)
         : Toast.show({
-          type: "error",
-          text1: "Logged out successfully",
-          visibilityTime: 1500,
-          autoHide: true,
-        });
+            type: "error",
+            text1: "Logged out successfully",
+            visibilityTime: 1500,
+            autoHide: true,
+          });
     }
   };
-
 
   const handleAppShare = async () => {
     try {
@@ -102,18 +108,17 @@ const index = () => {
 
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
-          console.log('Shared with activity type:', result.activityType);
+          console.log("Shared with activity type:", result.activityType);
         } else {
-          console.log('App shared successfully');
+          console.log("App shared successfully");
         }
       } else if (result.action === Share.dismissedAction) {
-        console.log('Share dismissed');
+        console.log("Share dismissed");
       }
     } catch (error) {
-      console.error('Error sharing the app:', error.message);
+      console.error("Error sharing the app:", error.message);
     }
   };
-
 
   // Check if modal close request has came
   useEffect(() => {
@@ -236,8 +241,13 @@ const index = () => {
             Blocked Users
           </TextScallingFalse>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => Linking.openURL("https://www.yourstrength.in/contactus")}
-         activeOpacity={0.7} style={styles.OptionButtonView}>
+        <TouchableOpacity
+          onPress={() =>
+            Linking.openURL("https://www.yourstrength.in/contactus")
+          }
+          activeOpacity={0.7}
+          style={styles.OptionButtonView}
+        >
           {/* <MaterialIcons name="help-outline" size={31} color="white" /> */}
           <CustomerSupport />
           <TextScallingFalse style={styles.OptionText}>
@@ -245,7 +255,8 @@ const index = () => {
           </TextScallingFalse>
         </TouchableOpacity>
         {/* Feedback */}
-        <TouchableOpacity style={styles.OptionButtonView}
+        <TouchableOpacity
+          style={styles.OptionButtonView}
           onPress={() => {
             router.push("/(app)/(settings)/FeedBack/feedback2");
           }}
@@ -257,7 +268,8 @@ const index = () => {
           </TextScallingFalse>
         </TouchableOpacity>
         {/* Share app  */}
-        <TouchableOpacity style={styles.OptionButtonView}
+        <TouchableOpacity
+          style={styles.OptionButtonView}
           onPress={handleAppShare}
           activeOpacity={0.5}
         >
@@ -413,13 +425,20 @@ const index = () => {
           )}
         </PageThemeView>
       </Modal>
-      <View style={{
-         position: 'absolute',
-        bottom: 0, width: "100%", alignItems: 'center',
-        height: '9%',
-      }}>
-        <TextScallingFalse style={{ color: 'grey', fontSize: 13, fontWeight: '400' }}>
-          Version 1.0.4</TextScallingFalse>
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+          alignItems: "center",
+          height: "9%",
+        }}
+      >
+        <TextScallingFalse
+          style={{ color: "grey", fontSize: 13, fontWeight: "400" }}
+        >
+          Version 1.0.4
+        </TextScallingFalse>
       </View>
     </PageThemeView>
   );

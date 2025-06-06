@@ -6,6 +6,7 @@ import PostButton from "../PostButton";
 import { useRouter } from "expo-router";
 import { useDrawer } from "~/context/DrawerContext";
 import { useBottomSheet } from "~/context/BottomSheetContext";
+import MessageIcon from "../SvgIcons/TopBar/MessageIcon";
 
 const Header = ({
   username,
@@ -76,11 +77,7 @@ const Header = ({
         <View className="flex-row gap-x-3">
           <PostButton onPress={handlePostContainerOpen} />
           <TouchableOpacity activeOpacity={0.5} onPress={() => openBottomSheet(messagingBottomSheetConfig)}>
-            <MaterialCommunityIcons
-              name="message-reply-text-outline"
-              size={27}
-              color="white"
-            />
+            <MessageIcon />
           </TouchableOpacity>
         </View>
       )}

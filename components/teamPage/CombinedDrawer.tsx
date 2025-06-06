@@ -16,6 +16,8 @@ import BackIcon from "../SvgIcons/Common_Icons/BackIcon";
 import { resetTeamState } from "~/reduxStore/slices/team/teamSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
+import MessageIcon from "../SvgIcons/TopBar/MessageIcon";
+import TeamMessageIcon from "../SvgIcons/teams/TeamMessageIcon";
 
 interface MenuItem {
   label: string;
@@ -134,19 +136,20 @@ const CombinedDrawer: React.FC<DrawerProps> = ({
         </TouchableOpacity>
 
         {(isMember || isAdmin) && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-            <TouchableOpacity
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 15, }}>
+            <TouchableOpacity className="mt-1"
               onPress={() =>
                 router.push(
                   `/(app)/(team)/teams/${teamId}/team-forum` as RelativePathString
                 )
               }
             >
-              <MaterialCommunityIcons
+              {/* <MaterialCommunityIcons
                 name="message-reply-text-outline"
                 size={24}
                 color="white"
-              />
+              /> */}
+              <TeamMessageIcon />
             </TouchableOpacity>
             <TouchableOpacity onPress={toggleSidebar}>
               <Animated.View style={{ transform: [{ rotate: barIconRotate }] }}>

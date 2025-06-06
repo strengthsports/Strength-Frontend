@@ -9,6 +9,7 @@ export const teamLogos: Record<string, any> = {
   RR: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215914069-rajasthanroyals.png",
   RCB: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215961123-royalchallengersbengaluru.png",
   SRH: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215998933-sunrisershyderabad.png",
+  WI: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1749208926827-illustration-of-west-indies-flag-design-vector.jpg",
 };
 
 export const seriesLogos: Record<string, any> = {

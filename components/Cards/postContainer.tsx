@@ -41,6 +41,7 @@ import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 import { useShare } from "~/hooks/useShare";
 import { Linking } from "react-native";
+import PublicEarth from "../SvgIcons/postContainer/PublicEarth";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useIsFocused } from "@react-navigation/native";
 import { useFocusEffect } from "expo-router";
@@ -516,12 +517,13 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                     {" "}
                     {formatTimeAgo(item.createdAt)} &bull;{" "}
                   </TextScallingFalse>
-                  <MaterialIcons
+                  {/* <MaterialIcons
                     name="public"
                     size={10}
                     style={{ marginTop: 2 }}
                     color="gray"
-                  />
+                  /> */}
+                  <PublicEarth />
                 </View>
               </Pressable>
 

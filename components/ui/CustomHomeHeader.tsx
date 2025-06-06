@@ -11,6 +11,7 @@ import { useBottomSheet } from "~/context/BottomSheetContext";
 import TextScallingFalse from "../CentralText";
 import { useNavigation } from "@react-navigation/native";
 import type { DrawerNavigationProp } from "@react-navigation/drawer";
+import MessageIcon from "../SvgIcons/TopBar/MessageIcon";
 
 const HEADER_HEIGHT = 60;
 
@@ -98,11 +99,12 @@ const CustomHomeHeader = () => {
         <TouchableOpacity
           onPress={() => openBottomSheet(messagingBottomSheetConfig)}
         >
-          <MaterialCommunityIcons
+          {/* <MaterialCommunityIcons
             name="message-reply-text-outline"
             size={27.5}
             color="white"
-          />
+          /> */}
+          <MessageIcon />
         </TouchableOpacity>
       </View>
     </>

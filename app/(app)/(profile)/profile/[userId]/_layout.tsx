@@ -65,6 +65,12 @@ import TickIcon from "~/components/SvgIcons/Common_Icons/TickIcon";
 import { RefreshControl } from "react-native";
 import { getCountryFlag } from "~/utils/getCountryFlag";
 import { Linking } from "react-native";
+import BlockedUsers from "~/components/SvgIcons/Settings/BlockedUsers";
+import BlockedIcon from "~/components/SvgIcons/profilePage/BlockIcon";
+import ReportIcon from "~/components/SvgIcons/postContainer/ReportIcon";
+import UnfollowIcon from "~/components/SvgIcons/postContainer/UnfollowIcon";
+import FollowButton from "~/components/FollowButton";
+import FollowIcon from "~/components/SvgIcons/postContainer/FollowIcon";
 
 // Define the context type
 interface ProfileContextType {
@@ -1236,13 +1242,14 @@ const ProfileLayout = () => {
                 onPress={handleBlock}
                 className="items-center flex-row gap-x-3"
               >
-                <MaterialIcons
+                {/* <MaterialIcons
                   name="block"
                   size={22}
                   color="white"
                   className="basis-[6%]"
-                />
-                <TextScallingFalse className=" flex-1 text-white ml-4 text-4xl font-medium">
+                /> */}
+                <BlockedIcon />
+                <TextScallingFalse className=" flex-1 text-white ml-2 text-4xl font-medium">
                   Block this profile
                 </TextScallingFalse>
               </TouchableOpacity>
@@ -1252,16 +1259,17 @@ const ProfileLayout = () => {
                 onPress={handleReport}
                 disabled={isReported}
               >
-                <MaterialIcons
+                {/* <MaterialIcons
                   name="report-problem"
                   size={22}
                   color={isReported ? "#808080" : "white"}
                   className="basis-[6%]"
-                />
+                /> */}
+                <ReportIcon />
                 <TextScallingFalse
                   className={`${
                     isReported ? "text-[#808080]" : "text-white"
-                  } ml-4 text-4xl font-medium flex-1`}
+                  } ml-2 text-4xl font-medium flex-1`}
                 >
                   {isReported ? "Reported this profile" : "Report this profile"}
                 </TextScallingFalse>
@@ -1272,13 +1280,14 @@ const ProfileLayout = () => {
                   className="flex-row items-center gap-x-3"
                   onPress={handleUnfollow}
                 >
-                  <Entypo
+                  {/* <Entypo
                     name="cross"
                     size={22}
                     color="white"
                     className="basis-[6%]"
-                  />
-                  <TextScallingFalse className="text-white ml-4 text-4xl font-medium flex-1">
+                  /> */}
+                  <UnfollowIcon />
+                  <TextScallingFalse className="text-white ml-2 text-4xl font-medium flex-1">
                     Unfollow {profileData?.firstName}
                   </TextScallingFalse>
                 </TouchableOpacity>
@@ -1287,13 +1296,14 @@ const ProfileLayout = () => {
                   className="flex-row items-center gap-x-3"
                   onPress={handleFollow}
                 >
-                  <FontAwesome6
+                  {/* <FontAwesome6
                     name="plus"
                     size={22}
                     color="white"
                     className="basis-[6%]"
-                  />
-                  <TextScallingFalse className="text-white ml-4 text-4xl font-medium flex-1">
+                  /> */}
+                  <FollowIcon />
+                  <TextScallingFalse className="text-white ml-2 text-4xl font-medium flex-1">
                     Follow {profileData?.firstName}
                   </TextScallingFalse>
                 </TouchableOpacity>

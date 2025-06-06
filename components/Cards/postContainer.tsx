@@ -32,16 +32,15 @@ import { useFollow } from "~/hooks/useFollow";
 import { showFeedback } from "~/utils/feedbackToast";
 import { useBottomSheet } from "~/context/BottomSheetContext";
 import CommentModal from "../feedPage/CommentModal";
-import { Modal } from "react-native";
 import PollsContainer from "./PollsContainer";
 import { Platform } from "react-native";
 import TouchableWithDoublePress from "../ui/TouchableWithDoublePress";
-import * as VideoThumbnails from "expo-video-thumbnails";
 import UserInfo from "../ui/atom/UserInfo";
 import { RelativePathString } from "expo-router";
 import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 import { useShare } from "~/hooks/useShare";
+import { Linking } from "react-native";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -79,15 +78,7 @@ interface PostContainerProps {
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
   (
-    {
-      item,
-      highlightedHashtag,
-      isFeedPage,
-      handleBottomSheet,
-      isVideo,
-      isVisible,
-      isPostDetailsPage,
-    },
+    { item, highlightedHashtag, isFeedPage, isVideo, isPostDetailsPage },
     ref
   ) => {
     const router = useRouter();
@@ -96,9 +87,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const serializedUser = encodeURIComponent(
       JSON.stringify({ id: item.postedBy?._id, type: item.postedBy?.type })
     );
-
-    const [isQuickCommentModalVisible, setIsQuickCommentModalVisible] =
-      useState(false);
 
     const { followUser, unFollowUser } = useFollow();
     // Share post
@@ -153,27 +141,24 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
           maxHeight: item.postedBy._id === user?._id ? "20%" : "25%",
           draggableDirection: "down",
         });
-      }
-    };
-
-    const modalContainerRef = useRef(null);
-
-    const handleOpenQuickCommentModal = () => {
-      // Force layout reset before opening modal
-      if (modalContainerRef.current) {
-        modalContainerRef.current.setNativeProps({
-          style: { transform: [{ translateX: 0 }, { translateY: 0 }] },
+      } else if (type === "comment") {
+        openBottomSheet({
+          isVisible: true,
+          content: (
+            <CommentModal targetId={item._id} autoFocusKeyboard={true} />
+          ),
+          height: "80%",
+          bgcolor: "#000000", // Ensure bgcolor is always defined
+          border: true,
+          maxHeight: "80%",
+          draggableDirection: "down",
+          heading: "Comments",
         });
       }
-
-      // Small delay to ensure layout is settled
-      setTimeout(() => {
-        setIsQuickCommentModalVisible(true);
-      }, 16); // One frame delay
     };
 
-    const handleCloseQuickCommentModal = () => {
-      setIsQuickCommentModalVisible(false);
+    const handleOpenQuickCommentModal = () => {
+      handleOpenBottomSheet({ type: "comment" });
     };
 
     // Ref for the like animation
@@ -279,7 +264,9 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     ) => {
       if (!caption) return null;
 
-      const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+      const parts = caption.split(
+        /(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+|https?:\/\/[^\s]+|www\.[^\s]+)/g
+      );
       const elements = [];
       let remainingChars = isExpanded ? Infinity : 94;
       let showSeeMore = false;
@@ -330,6 +317,20 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
             </TextScallingFalse>
           );
           remainingChars -= part.length;
+        } else if (part.startsWith("http") || part.startsWith("www.")) {
+          elements.push(
+            <TextScallingFalse
+              key={i}
+              onPress={() =>
+                Linking.openURL(
+                  part.startsWith("http") ? part : `https://${part}`
+                )
+              }
+              className="text-2xl text-[#12956B] active:bg-gray-900/50"
+            >
+              {part}
+            </TextScallingFalse>
+          );
         } else {
           const allowed = Math.min(remainingChars, part.length);
           const visibleText = part.slice(0, allowed);
@@ -454,7 +455,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               )}
             </View>
 
-            {/* Caption Section */}
+            {/* Caption Section, Poll, Three dot */}
             <View className="relative left-[5%] bottom-0 w-[100%] min-h-16 h-auto mt-[-25] rounded-tl-[40px] rounded-tr-[35px] pb-2 bg-neutral-900">
               <TouchableOpacity
                 onPress={() => {
@@ -601,38 +602,6 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
               isPostDetailsPage={isPostDetailsPage}
             />
           </View>
-        </View>
-        <View
-          ref={modalContainerRef}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            pointerEvents: isQuickCommentModalVisible ? "auto" : "none",
-            zIndex: 9999,
-          }}
-        >
-          <Modal
-            visible={isQuickCommentModalVisible}
-            transparent
-            animationType="slide"
-            onRequestClose={handleCloseQuickCommentModal}
-            style={{
-              flex: 1,
-              margin: 0,
-              padding: 0,
-            }}
-            hardwareAccelerated={true}
-            presentationStyle="overFullScreen"
-          >
-            <CommentModal
-              targetId={item._id}
-              autoFocusKeyboard={true}
-              onClose={handleCloseQuickCommentModal}
-            />
-          </Modal>
         </View>
       </>
     );

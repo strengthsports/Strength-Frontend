@@ -7,6 +7,8 @@ import TextScallingFalse from "../CentralText";
 import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
 import { useShare } from "~/hooks/useShare";
 import { Post } from "~/types/post";
+import CommentIcon from "../SvgIcons/postContainer/CommentIcon";
+import ShareIcon from "../SvgIcons/postContainer/ShareIcon";
 
 const interactionBtn = `flex flex-row justify-between items-center gap-2 bg-black px-4 py-[6px] rounded-3xl`;
 const shadowStyle = Platform.select({
@@ -195,12 +197,12 @@ const InteractionBar = ({
             <AntDesign
               name={isLiked ? "like1" : "like2"}
               size={16}
-              color={isLiked ? "#FABE25" : "#D2D2D2"}
+              color={isLiked ? "#FABE25" : "#fff"}
             />
             <TextScallingFalse
               className="text-base"
               style={{
-                color: isLiked ? "#fbbf24" : "#E3E3E3",
+                color: isLiked ? "#fbbf24" : "#fff",
               }}
             >
               {isLiked ? "Liked" : "Like"}
@@ -214,10 +216,10 @@ const InteractionBar = ({
             onPress={onPressComment}
           >
             <View className={interactionBtn} style={shadowStyle}>
-              <Feather name="message-square" size={16} color="#D2D2D2" />
+              <CommentIcon />
               <TextScallingFalse
                 className="text-base"
-                style={{ color: "#E3E3E3" }}
+                style={{ color: "#fff" }}
               >
                 Comment
               </TextScallingFalse>
@@ -229,10 +231,10 @@ const InteractionBar = ({
             disabled
           >
             <View className={interactionBtn} style={shadowStyle}>
-              <Feather name="message-square" size={16} color="#D2D2D2" />
+              <CommentIcon />
               <TextScallingFalse
                 className="text-base"
-                style={{ color: "#E3E3E3" }}
+                style={{ color: "#fff" }}
               >
                 Comment
               </TextScallingFalse>
@@ -246,10 +248,10 @@ const InteractionBar = ({
           >
             <TouchableOpacity className="flex flex-row items-center gap-2 relative">
               <View className={interactionBtn} style={shadowStyle}>
-                <Feather name="message-square" size={16} color="#D2D2D2" />
+                 <CommentIcon />
                 <TextScallingFalse
                   className="text-base"
-                  style={{ color: "#E3E3E3" }}
+                  style={{ color: "#fff" }}
                 >
                   Comment
                 </TextScallingFalse>
@@ -266,10 +268,11 @@ const InteractionBar = ({
         >
           {/* The main button */}
           <View className={interactionBtn} style={shadowStyle}>
-            <FontAwesome5 name="location-arrow" size={16} color="#D2D2D2" />
+            {/* <FontAwesome5 name="location-arrow" size={16} color="#D2D2D2" /> */}
+            <ShareIcon />
             <TextScallingFalse
               className="text-base"
-              style={{ color: "#E3E3E3" }}
+              style={{ color: "#fff" }}
             >
               Share
             </TextScallingFalse>

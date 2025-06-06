@@ -19,6 +19,10 @@ import PageThemeView from "../PageThemeView";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "~/reduxStore";
 import { deletePost } from "~/reduxStore/slices/post/postActions";
+import ShareIconBottomMenu from "../SvgIcons/postContainer/ShareIconBottomMenu";
+import FollowIcon from "../SvgIcons/postContainer/FollowIcon";
+import UnfollowIcon from "../SvgIcons/postContainer/UnfollowIcon";
+import ReportIcon from "../SvgIcons/postContainer/ReportIcon";
 
 const modalText = "text-white ml-4 text-4xl font-[500px]";
 const modalOption = "flex-row items-center py-3 px-2 active:bg-neutral-900";
@@ -99,7 +103,8 @@ const MoreModal = memo(
           onPress={handleShare}
           activeOpacity={0.5}
         >
-          <FontAwesome name="share" size={20} color="white" />
+          {/* <FontAwesome name="share" size={20} color="white" /> */}
+          <ShareIconBottomMenu />
           <TextScallingFalse className={modalText}>Share</TextScallingFalse>
         </TouchableOpacity>
         {!isOwnPost && (
@@ -109,11 +114,12 @@ const MoreModal = memo(
               onPress={() => isReported || setReportModalOpen(true)}
               disabled={isReported}
             >
-              <MaterialIcons
+              {/* <MaterialIcons
                 name="report-problem"
                 size={22}
                 color={isReported ? "#808080" : "white"}
-              />
+              /> */}
+              <ReportIcon />
               <TextScallingFalse
                 className={`${
                   isReported ? "text-[#808080]" : "text-white"
@@ -126,7 +132,9 @@ const MoreModal = memo(
               className={modalOption}
               onPress={followingStatus ? handleUnfollow : handleFollow}
             >
-              <FontAwesome name="user-plus" size={19} color="white" />
+              {/* <FontAwesome name="user-plus" size={19} color="white" /> */}
+              {followingStatus ? <UnfollowIcon /> : <FollowIcon />}
+              {/* <FollowIcon /> */}
               <TextScallingFalse className={modalText}>
                 {followingStatus
                   ? `Unfollow ${firstName}`

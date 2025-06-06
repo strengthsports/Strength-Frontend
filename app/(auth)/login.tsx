@@ -150,11 +150,11 @@ const LoginScreen = () => {
     isAndroid
       ? ToastAndroid.show(errorMsg, ToastAndroid.SHORT)
       : Toast.show({
-          type,
-          text1: errorMsg,
-          visibilityTime: 3000,
-          autoHide: true,
-        });
+        type,
+        text1: errorMsg,
+        visibilityTime: 3000,
+        autoHide: true,
+      });
   };
 
   const handleLogin = async () => {
@@ -202,7 +202,7 @@ const LoginScreen = () => {
           <View
             style={{
               flexDirection: "row",
-              marginTop: "5%",
+              marginTop: Platform.OS === 'ios' ? '' : "2%",
               gap: 7,
               alignItems: "center",
             }}
@@ -225,17 +225,18 @@ const LoginScreen = () => {
         </View>
 
         <View style={{ width: "100%", alignItems: "center" }}>
+          <View style={{ width:'86%'}}>
           <TextScallingFalse
             style={{
               color: "white",
-              fontSize: 35,
+              fontSize: 32,
               fontWeight: "500",
-              paddingHorizontal: 10,
               paddingVertical: 18,
             }}
           >
             Step Into the World of Sports
           </TextScallingFalse>
+          </View>
           <View>
             <TextScallingFalse
               style={{ color: "white", fontSize: 13, fontWeight: "400" }}
@@ -318,9 +319,11 @@ const LoginScreen = () => {
             style={{
               width: 335,
               height: 42,
+              borderWidth: 1,
+              borderColor:'#EAEAEA',
               justifyContent: "center",
               alignItems: "center",
-              marginTop: 10,
+              marginTop: 14,
               borderRadius: 40,
             }}
           >
@@ -332,7 +335,7 @@ const LoginScreen = () => {
                 Strength
               </TextScallingFalse>
               ?{" "}
-              <TextScallingFalse className="text-theme">
+              <TextScallingFalse className="text-white">
                 Join now
               </TextScallingFalse>
             </TextScallingFalse>
@@ -353,15 +356,15 @@ const LoginScreen = () => {
               flexDirection: "row",
             }}
           >
-            <TextScallingFalse
-              style={{ color: "white", fontSize: 14.5, fontWeight: "500" }}
-            >
-              or continue with
-            </TextScallingFalse>
             <Image
               source={google}
-              style={{ width: 12, height: 12, marginTop: 3.5 }}
+              style={{ width: 15, height: 15, marginTop: 3.5 }}
             />
+            <TextScallingFalse
+              style={{ color: "white", fontSize: 16, fontWeight: "500" }}
+            >
+              continue with Google
+            </TextScallingFalse>
           </TouchableOpacity>
         </View>
       </ScrollView>

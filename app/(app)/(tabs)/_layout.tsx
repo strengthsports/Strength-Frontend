@@ -91,6 +91,7 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Redirect } from "expo-router";
 import eventBus from "~/utils/eventBus";
 import { GestureResponderEvent } from "react-native";
+import TextScallingFalse from "~/components/CentralText";
 
 const tabs = [
   {
@@ -178,7 +179,7 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "#12956B",
-          tabBarInactiveTintColor: "#CECECE",
+          tabBarInactiveTintColor: "#E7E7E7",
           headerShown: false,
           tabBarStyle: Platform.select({
             ios: {
@@ -239,27 +240,27 @@ export default function TabLayout() {
                   >
                     {/* Wrap icon and text in relative view */}
                     <View style={{ position: "relative" }}>
-                      <Icon color={isSelected ? "#12956B" : "#CECECE"} />
+                      <Icon color={isSelected ? "#12956B" : "#E7E7E7"} />
 
                       {/* Notification badge */}
                       {isNotificationTab && notificationCount > 0 && (
                         <View style={styles.notificationDot}>
-                          <Text style={styles.notificationText}>
+                          <TextScallingFalse style={styles.notificationText}>
                             {notificationCount > 9 ? "9+" : notificationCount}
-                          </Text>
+                          </TextScallingFalse>
                         </View>
                       )}
                     </View>
-                    <Text
+                    <TextScallingFalse
                       style={{
                         fontSize: 9,
-                        fontWeight: "500",
-                        color: isSelected ? "#12956B" : "#CECECE",
+                        fontWeight: isSelected ? "600" : "500",
+                        color: isSelected ? "#12956B" : "#E7E7E7",
                         marginTop: 2,
                       }}
                     >
                       {title}
-                    </Text>
+                    </TextScallingFalse>
                   </TouchableOpacity>
                 );
               },
@@ -275,17 +276,17 @@ const styles = StyleSheet.create({
   notificationDot: {
     position: "absolute",
     top: -6, // Adjust position
-    right: -8,
-    minWidth: 16, // Dynamic width
-    height: 16, // Larger circle
+    right: -10,
+    minWidth: 18, // Dynamic width
+    height: 18, // Larger circle
     borderRadius: 100,
-    backgroundColor: "#12956B",
+    backgroundColor: "#e80505",
     alignItems: "center",
     justifyContent: "center",
   },
   notificationText: {
     color: "white",
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
   },
 });

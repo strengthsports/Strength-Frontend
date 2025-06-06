@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#000",
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    // paddingHorizontal: 12,
     zIndex: 1000,
   },
   messageContainer: {
@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 6,
+    paddingHorizontal: 12,
   },
   messageText: {
     color: "#9c9c9c",

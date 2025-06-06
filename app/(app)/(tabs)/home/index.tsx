@@ -100,7 +100,7 @@ const Home = () => {
   const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
 
   const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 100,
+    itemVisiblePercentThreshold: 80,
   });
 
   const onViewableItemsChanged = useRef(

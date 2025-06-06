@@ -41,6 +41,9 @@ import ClipsIconRP from "../SvgIcons/profilePage/ClipsIconRP";
 import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 import { useShare } from "~/hooks/useShare";
 import { Linking } from "react-native";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useIsFocused } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -78,7 +81,14 @@ interface PostContainerProps {
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
   (
-    { item, highlightedHashtag, isFeedPage, isVideo, isPostDetailsPage },
+    {
+      item,
+      highlightedHashtag,
+      isFeedPage,
+      isVideo,
+      isPostDetailsPage,
+      isVisible,
+    },
     ref
   ) => {
     const router = useRouter();
@@ -99,6 +109,35 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const [containerWidth, setContainerWidth] = useState(
       Dimensions.get("window").width
     );
+    const [isMuted, setIsMuted] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const videoSource = item.isVideo ? item.assets[0].url : null;
+
+    const player = useVideoPlayer(videoSource, (player) => {
+      player.loop = true;
+    });
+
+    useEffect(() => {
+      if (isVisible) {
+        player.play();
+        setIsPlaying(true);
+      } else {
+        player.pause();
+        setIsPlaying(false);
+      }
+    }, [isVisible]);
+
+    useFocusEffect(
+      useCallback(() => {
+        // Screen is focused
+
+        return () => {
+          // Screen is unfocused (navigated away)
+          player?.pause(); // or .stop()
+        };
+      }, [])
+    );
 
     useEffect(() => {
       const updateLayout = () => {
@@ -113,6 +152,11 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
         dimensionsHandler?.remove();
       };
     }, []);
+
+    const toggleMute = () => {
+      setIsMuted(!isMuted);
+      player.muted = !isMuted;
+    };
 
     // Get the openBottomSheet function from context
     const { openBottomSheet } = useBottomSheet();
@@ -521,37 +565,61 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   }}
                   onDoublePress={handleDoubleTap}
                 >
-                  <Image
-                    source={
-                      item.thumbnail ? { uri: item.thumbnail.url } : nothumbnail
-                    }
-                    resizeMode="cover"
-                    fadeDuration={0}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      position: "absolute",
-                      inset: 0,
-                      borderTopLeftRadius: 16,
-                      borderBottomLeftRadius: 16,
-                      borderColor: "#2F2F2F",
-                    }}
-                  />
-                  <View style={styles.videoOverlay} />
                   <View
                     style={{
                       position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      zIndex: 2,
-                      transform: [
-                        { translateX: "-50%" },
-                        { translateY: "-50%" },
-                      ],
+                      inset: 0,
+                      pointerEvents: "none",
                     }}
                   >
-                    <ClipsIconRP />
+                    <VideoView
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderTopLeftRadius: 16,
+                        borderBottomLeftRadius: 16,
+                        borderColor: "#2F2F2F",
+                      }}
+                      contentFit="cover"
+                      player={player}
+                      nativeControls={false}
+                    />
                   </View>
+
+                  {!isPlaying && (
+                    <>
+                      <View style={styles.videoOverlay} />
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          zIndex: 2,
+                          transform: [
+                            { translateX: "-50%" },
+                            { translateY: "-50%" },
+                          ],
+                        }}
+                      >
+                        <ClipsIconRP />
+                      </View>
+                    </>
+                  )}
+                  {isPlaying && (
+                    <View style={styles.topRightControls}>
+                      <TouchableOpacity
+                        onPress={toggleMute}
+                        style={styles.controlButton}
+                      >
+                        <MaterialIcons
+                          name={isMuted ? "volume-off" : "volume-up"}
+                          size={16}
+                          color="#fff"
+                          className="bg-black/20 p-1 rounded-md"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </TouchableWithDoublePress>
               </View>
             ) : (
@@ -615,5 +683,16 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     zIndex: 1,
+  },
+  topRightControls: {
+    position: "absolute",
+    right: 8,
+    bottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  controlButton: {
+    padding: 8,
+    marginLeft: 8,
   },
 });

@@ -51,6 +51,9 @@ import { calculateAge } from "~/utils/calculateAge";
 import ModalLayout1 from "~/components/modals/layout/ModalLayout1";
 import { getCountryFlag } from "~/utils/getCountryFlag";
 import { useShare } from "~/hooks/useShare";
+import ShareProfile from "~/components/SvgIcons/profilePage/ShareProfile";
+import ProfileSettings from "~/components/SvgIcons/profilePage/ProfileSettings";
+import ManageTeams from "~/components/SvgIcons/profilePage/ManageTeams";
 
 const countryAbbreviations: { [key: string]: string } = {
   "United Arab Emirates": "UAE",
@@ -267,7 +270,7 @@ const ProfileOptionsBottomSheet = ({
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="settings" size={24} color="white" />
+        <ProfileSettings />
         <TextScallingFalse style={styles.bottomSheetText}>
           Settings
         </TextScallingFalse>
@@ -280,7 +283,7 @@ const ProfileOptionsBottomSheet = ({
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
       >
-        <MaterialCommunityIcons name="share" size={24} color="white" />
+        <ShareProfile />
         <TextScallingFalse style={styles.bottomSheetText}>
           Share Profile
         </TextScallingFalse>
@@ -294,7 +297,7 @@ const ProfileOptionsBottomSheet = ({
         style={styles.bottomSheetOption}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="group" size={24} color="white" />
+        <ManageTeams />
         <TextScallingFalse style={styles.bottomSheetText}>
           Manage Teams
         </TextScallingFalse>

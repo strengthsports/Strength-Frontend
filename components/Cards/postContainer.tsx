@@ -42,6 +42,10 @@ import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 import { useShare } from "~/hooks/useShare";
 import { Linking } from "react-native";
 import PublicEarth from "../SvgIcons/postContainer/PublicEarth";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useIsFocused } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
+import { useEvent } from "expo";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -79,7 +83,14 @@ interface PostContainerProps {
 
 const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
   (
-    { item, highlightedHashtag, isFeedPage, isVideo, isPostDetailsPage },
+    {
+      item,
+      highlightedHashtag,
+      isFeedPage,
+      isVideo,
+      isPostDetailsPage,
+      isVisible,
+    },
     ref
   ) => {
     const router = useRouter();
@@ -100,6 +111,79 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const [containerWidth, setContainerWidth] = useState(
       Dimensions.get("window").width
     );
+
+    // Video source
+    const videoSource = item.isVideo ? item.assets[0].url : null;
+    const [isMuted, setIsMuted] = useState(false);
+
+    // Initializing the player
+    const player = useVideoPlayer(videoSource, (player) => {
+      player.loop = true;
+    });
+
+    // Safety check
+    const isPlayerValid = () => {
+      try {
+        return player && typeof player.play === "function" && !!player.status;
+      } catch (e) {
+        console.log("Invalid player:", e);
+        return false;
+      }
+    };
+
+    // Player status
+    const { isPlaying } = useEvent(player, "playingChange", {
+      isPlaying: player.playing,
+    });
+
+    useEffect(() => {
+      if (!player || !isPlayerValid()) return;
+
+      if (isVisible) {
+        try {
+          player.play();
+        } catch (err) {
+          console.warn("Play failed:", err);
+        }
+      } else {
+        try {
+          player.pause();
+        } catch (err) {
+          console.warn("Pause failed:", err);
+        }
+      }
+    }, [isVisible]);
+
+    useFocusEffect(
+      useCallback(() => {
+        if (!player || !isPlayerValid()) return;
+
+        return () => {
+          try {
+            player.pause();
+          } catch (err) {
+            console.warn("Pause on unfocus failed:", err);
+          }
+        };
+      }, [player])
+    );
+
+    // Handle toggle mute the audio
+    const toggleMute = () => {
+      setIsMuted(!isMuted);
+      player.muted = !isMuted;
+    };
+
+    // Pause on unmount
+    useEffect(() => {
+      return () => {
+        try {
+          player?.pause();
+        } catch (err) {
+          console.warn("Pause on unmount failed:", err);
+        }
+      };
+    }, []);
 
     useEffect(() => {
       const updateLayout = () => {
@@ -523,37 +607,61 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   }}
                   onDoublePress={handleDoubleTap}
                 >
-                  <Image
-                    source={
-                      item.thumbnail ? { uri: item.thumbnail.url } : nothumbnail
-                    }
-                    resizeMode="cover"
-                    fadeDuration={0}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      position: "absolute",
-                      inset: 0,
-                      borderTopLeftRadius: 16,
-                      borderBottomLeftRadius: 16,
-                      borderColor: "#2F2F2F",
-                    }}
-                  />
-                  <View style={styles.videoOverlay} />
                   <View
                     style={{
                       position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      zIndex: 2,
-                      transform: [
-                        { translateX: "-50%" },
-                        { translateY: "-50%" },
-                      ],
+                      inset: 0,
+                      pointerEvents: "none",
                     }}
                   >
-                    <ClipsIconRP />
+                    <VideoView
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderTopLeftRadius: 16,
+                        borderBottomLeftRadius: 16,
+                        borderColor: "#2F2F2F",
+                      }}
+                      contentFit="cover"
+                      player={player}
+                      nativeControls={false}
+                    />
                   </View>
+
+                  {!isPlaying && (
+                    <>
+                      <View style={styles.videoOverlay} />
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          zIndex: 2,
+                          transform: [
+                            { translateX: "-50%" },
+                            { translateY: "-50%" },
+                          ],
+                        }}
+                      >
+                        <ClipsIconRP />
+                      </View>
+                    </>
+                  )}
+                  {isPlaying && (
+                    <View style={styles.topRightControls}>
+                      <TouchableOpacity
+                        onPress={toggleMute}
+                        style={styles.controlButton}
+                      >
+                        <MaterialIcons
+                          name={isMuted ? "volume-off" : "volume-up"}
+                          size={16}
+                          color="#fff"
+                          className="bg-black/20 p-1 rounded-md"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </TouchableWithDoublePress>
               </View>
             ) : (
@@ -617,5 +725,16 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     zIndex: 1,
+  },
+  topRightControls: {
+    position: "absolute",
+    right: 8,
+    bottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  controlButton: {
+    padding: 8,
+    marginLeft: 8,
   },
 });

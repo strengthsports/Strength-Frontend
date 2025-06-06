@@ -22,6 +22,8 @@ const getCountryCode = (countryName: string) => {
     PHILIPPINES: "PH",
     "NEW ZEALAND A": "NZ",
     "BANGLADESH A": "BD",
+    "INDIA A": "IN",
+    "England Lions": "GB",
   };
 
   return specialCases[cleanName] || countries.getAlpha2Code(cleanName, "en");

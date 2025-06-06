@@ -10,6 +10,7 @@ import {
   BackHandler,
 } from "react-native";
 import { useBottomSheet } from "@/context/BottomSheetContext";
+import TextScallingFalse from "../CentralText";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -21,14 +22,14 @@ const AppBottomSheet = () => {
     height,
     bgcolor,
     border,
-    draggableDirection = "down",
     maxHeight = "90%",
+    heading,
   } = bottomSheetState;
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const [isMounted, setIsMounted] = useState(false);
 
-  // Height calculations
+  // Calculate explicit pixel values
   const sheetHeight =
     typeof height === "string"
       ? (SCREEN_HEIGHT * parseFloat(height.replace("%", ""))) / 100
@@ -40,14 +41,14 @@ const AppBottomSheet = () => {
       : maxHeight;
 
   const minTranslateY = SCREEN_HEIGHT - sheetHeight;
-  const maxTranslateY = SCREEN_HEIGHT - maxHeightValue;
+  // We won't ever use maxTranslateY because we disallow upward drag.
 
   // Handle hardware back button
   useEffect(() => {
     const handleBackButton = () => {
       if (isVisible) {
         closeBottomSheet();
-        return true; // Prevent default back action
+        return true;
       }
       return false;
     };
@@ -63,37 +64,41 @@ const AppBottomSheet = () => {
     };
   }, [isVisible]);
 
-  // Animation handling
+  // Open / Close animations (no spring, just timing)
   useEffect(() => {
     if (isVisible) {
       setIsMounted(true);
-      Animated.spring(translateY, {
+      Animated.timing(translateY, {
         toValue: minTranslateY,
+        duration: 200,
         useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(translateY, {
         toValue: SCREEN_HEIGHT,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }).start(() => setIsMounted(false));
     }
   }, [isVisible, sheetHeight]);
 
-  // Pan responder configuration
+  // PanResponder: only allow dragging DOWN to close; no upward movement
+  let dragStartY = 0;
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => Keyboard.dismiss(),
+      onPanResponderGrant: () => {
+        Keyboard.dismiss();
+        dragStartY = translateY.__getValue(); // lock current position
+      },
       onPanResponderMove: (_, gestureState) => {
-        let newY = SCREEN_HEIGHT - sheetHeight + gestureState.dy;
+        const dy = gestureState.dy;
 
-        if (draggableDirection === "both") {
-          newY = Math.min(Math.max(newY, maxTranslateY), minTranslateY);
-        } else {
-          newY = Math.max(minTranslateY, newY);
-        }
+        // Prevent dragging upward
+        if (dy < 0) return;
 
+        const newY = dragStartY + dy;
         translateY.setValue(newY);
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -102,27 +107,17 @@ const AppBottomSheet = () => {
         const dragThreshold = SCREEN_HEIGHT * 0.1;
 
         const shouldClose =
-          (gestureState.vy > velocityThreshold ||
-            gestureState.dy > dragThreshold) &&
-          currentY >= minTranslateY;
+          gestureState.vy > velocityThreshold ||
+          gestureState.dy > dragThreshold;
 
         if (shouldClose) {
           closeBottomSheet();
         } else {
-          let targetY = minTranslateY;
-
-          if (draggableDirection === "both") {
-            const midPoint = (maxTranslateY + minTranslateY) / 2;
-            targetY = currentY < midPoint ? maxTranslateY : minTranslateY;
-          }
-
-          // Prevent animation if already at target
-          if (currentY !== targetY) {
-            Animated.spring(translateY, {
-              toValue: targetY,
-              useNativeDriver: true,
-            }).start();
-          }
+          Animated.timing(translateY, {
+            toValue: dragStartY,
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
         }
       },
     })
@@ -139,7 +134,7 @@ const AppBottomSheet = () => {
         onPress={closeBottomSheet}
       />
 
-      {/* Sheet content */}
+      {/* Bottom‐sheet container */}
       <Animated.View
         style={[
           styles.container,
@@ -147,8 +142,8 @@ const AppBottomSheet = () => {
             transform: [{ translateY }],
             height: sheetHeight,
             backgroundColor: bgcolor || "#fff",
-            borderTopLeftRadius: border || 20,
-            borderTopRightRadius: border || 20,
+            borderTopLeftRadius: border ? 30 : 20,
+            borderTopRightRadius: border ? 30 : 20,
           },
         ]}
         {...panResponder.panHandlers}
@@ -156,8 +151,13 @@ const AppBottomSheet = () => {
         <View style={styles.dragHandle}>
           <View style={styles.handle} />
         </View>
+        {heading && (
+          <TextScallingFalse className="text-white text-4xl font-semibold text-center">
+            {heading}
+          </TextScallingFalse>
+        )}
         <View
-          onStartShouldSetResponder={() => true} // Allow content to handle touches
+          onStartShouldSetResponder={() => true}
           onTouchEnd={(e) => e.stopPropagation()}
           style={styles.content}
         >
@@ -168,7 +168,6 @@ const AppBottomSheet = () => {
   );
 };
 
-// Styles remain unchanged from original
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,

@@ -3,7 +3,6 @@ import {
   ScrollView,
   NativeSyntheticEvent,
   TextLayoutEventData,
-  Pressable,
   Platform,
   UIManager,
   LayoutAnimation,
@@ -14,15 +13,10 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { TouchableOpacity } from "react-native";
-import {
-  RelativePathString,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import TextScallingFalse from "~/components/CentralText";
 import Swiper from "react-native-swiper";
@@ -30,7 +24,6 @@ import { swiperConfig } from "~/utils/swiperConfig";
 import nopic from "@/assets/images/nopic.jpg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDispatch, useSelector } from "react-redux";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import InteractionBar from "~/components/PostContainer/InteractionBar";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -40,7 +33,6 @@ import VideoPlayer from "~/components/PostContainer/VideoPlayer";
 import { useNavigation } from "@react-navigation/native";
 import { addPost, selectPostById } from "~/reduxStore/slices/post/postsSlice";
 import { toggleLike } from "~/reduxStore/slices/post/postActions";
-import { Modal } from "react-native";
 import CommentModal from "~/components/feedPage/CommentModal";
 import { fetchPostById } from "~/api/post/fetchPostById";
 import { ActivityIndicator } from "react-native";
@@ -52,6 +44,7 @@ import { useFollow } from "~/hooks/useFollow";
 import { useShare } from "~/hooks/useShare";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
+import { Linking } from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -73,28 +66,6 @@ const Post = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSeeMore, setShowSeeMore] = useState(false);
   const [isHeaderFooterVisible, setHeaderFooterVisible] = useState(true);
-  const [isQuickCommentModalVisible, setIsQuickCommentModalVisible] =
-    useState(false);
-
-  const modalContainerRef = useRef(null);
-
-  const handleOpenQuickCommentModal = () => {
-    // Force layout reset before opening modal
-    if (modalContainerRef.current) {
-      modalContainerRef.current.setNativeProps({
-        style: { transform: [{ translateX: 0 }, { translateY: 0 }] },
-      });
-    }
-
-    // Small delay to ensure layout is settled
-    setTimeout(() => {
-      setIsQuickCommentModalVisible(true);
-    }, 16); // One frame delay
-  };
-
-  const handleCloseQuickCommentModal = () => {
-    setIsQuickCommentModalVisible(false);
-  };
 
   // Get the openBottomSheet function from context
   const { openBottomSheet } = useBottomSheet();
@@ -102,6 +73,44 @@ const Post = () => {
   const { followUser, unFollowUser } = useFollow();
   // Share post
   const { sharePost } = useShare();
+
+  // Define the menu items for this specific post
+  const handleOpenBottomSheet = ({ type }: { type: string }) => {
+    // Open the bottom sheet with these items
+    if (type === "settings") {
+      openBottomSheet({
+        isVisible: true,
+        content: (
+          <MoreModal
+            firstName={post.postedBy.firstName}
+            followingStatus={post.isFollowing}
+            isOwnPost={post.postedBy._id === userId}
+            postId={post._id}
+            isReported={post.isReported}
+            handleFollow={handleFollow}
+            handleUnfollow={handleUnfollow}
+            handleShare={handleShare}
+          />
+        ),
+        height: post.postedBy._id === userId ? "20%" : "25%",
+        bgcolor: "#151515", // Ensure bgcolor is always defined
+        border: false,
+        maxHeight: post.postedBy._id === userId ? "20%" : "25%",
+        draggableDirection: "down",
+      });
+    } else if (type === "comment") {
+      openBottomSheet({
+        isVisible: true,
+        content: <CommentModal targetId={post._id} autoFocusKeyboard={true} />,
+        height: "80%",
+        bgcolor: "#000000", // Ensure bgcolor is always defined
+        border: true,
+        maxHeight: "80%",
+        draggableDirection: "down",
+        heading: "Comments",
+      });
+    }
+  };
 
   // Fallback to db for post fetching
   useEffect(() => {
@@ -149,6 +158,10 @@ const Post = () => {
     }
   }, []);
 
+  const handleOpenQuickCommentModal = () => {
+    handleOpenBottomSheet({ type: "comment" });
+  };
+
   const goToHashtag = useCallback(
     (tag: string) => {
       // string version is faster than object
@@ -172,7 +185,9 @@ const Post = () => {
     isExpanded: boolean,
     onPressSeeMore: () => void
   ) => {
-    const parts = caption.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
+    const parts = caption.split(
+      /(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+|https?:\/\/[^\s]+|www\.[^\s]+)/g
+    );
     const elements = [];
     let remainingChars = isExpanded ? Infinity : 94;
     let showSeeMore = false;
@@ -221,6 +236,20 @@ const Post = () => {
           </TextScallingFalse>
         );
         remainingChars -= part.length;
+      } else if (part.startsWith("http") || part.startsWith("www.")) {
+        elements.push(
+          <TextScallingFalse
+            key={i}
+            onPress={() =>
+              Linking.openURL(
+                part.startsWith("http") ? part : `https://${part}`
+              )
+            }
+            className="text-2xl text-[#12956B] active:bg-gray-900/50"
+          >
+            {part}
+          </TextScallingFalse>
+        );
       } else {
         const allowed = Math.min(remainingChars, part.length);
         const visibleText = part.slice(0, allowed);
@@ -330,33 +359,6 @@ const Post = () => {
     });
   };
 
-  // Define the menu items for this specific post
-  const handleOpenBottomSheet = ({ type }: { type: string }) => {
-    // Open the bottom sheet with these items
-    if (type === "settings") {
-      openBottomSheet({
-        isVisible: true,
-        content: (
-          <MoreModal
-            firstName={post.postedBy.firstName}
-            followingStatus={post.isFollowing}
-            isOwnPost={post.postedBy._id === userId}
-            postId={post._id}
-            isReported={post.isReported}
-            handleFollow={handleFollow}
-            handleUnfollow={handleUnfollow}
-            handleShare={handleShare}
-          />
-        ),
-        height: post.postedBy._id === userId ? "20%" : "25%",
-        bgcolor: "#151515", // Ensure bgcolor is always defined
-        border: false,
-        maxHeight: post.postedBy._id === userId ? "20%" : "25%",
-        draggableDirection: "down",
-      });
-    }
-  };
-
   // Calculate the image height based on aspect ratio or use default
   const getImageHeight = () => {
     if (post?.aspectRatio) {
@@ -399,9 +401,6 @@ const Post = () => {
           flex: 1,
           flexDirection: "column",
         }}
-        // onPress={() =>
-        //   isExpanded ? setIsExpanded(false) : toggleHeaderFooterVisibility()
-        // }
       >
         {/* Header */}
         <View
@@ -559,38 +558,6 @@ const Post = () => {
             </TextScallingFalse>
           </ScrollView>
         </LinearGradient>
-      </View>
-      <View
-        ref={modalContainerRef}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          pointerEvents: isQuickCommentModalVisible ? "auto" : "none",
-          zIndex: 9999,
-        }}
-      >
-        <Modal
-          visible={isQuickCommentModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={handleCloseQuickCommentModal}
-          style={{
-            flex: 1,
-            margin: 0,
-            padding: 0,
-          }}
-          hardwareAccelerated={true}
-          presentationStyle="overFullScreen"
-        >
-          <CommentModal
-            targetId={post._id}
-            autoFocusKeyboard={true}
-            onClose={handleCloseQuickCommentModal}
-          />
-        </Modal>
       </View>
     </PageThemeView>
   );

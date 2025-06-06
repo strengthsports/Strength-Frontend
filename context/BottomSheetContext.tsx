@@ -9,6 +9,7 @@ type BottomState = {
   border?: boolean;
   draggableDirection?: string;
   maxHeight: string | number;
+  heading?: string;
 };
 
 // Define the initial bottom sheet state
@@ -20,6 +21,7 @@ const initialState: BottomState = {
   border: false,
   draggableDirection: "down",
   maxHeight: "30%",
+  heading: "",
 };
 
 // Context type
@@ -48,6 +50,7 @@ export const BottomSheetProvider = ({ children }: { children: any }) => {
       border: config.border || false,
       draggableDirection: config.draggableDirection,
       maxHeight: config.maxHeight,
+      heading: config.heading,
     });
   };
 

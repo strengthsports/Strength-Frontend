@@ -217,13 +217,13 @@ const NotificationCardLayout = React.memo(
         );
       }
 
-      if (type === "Comment" && target.type === "Comment") {
+      if (type === "Reply") {
         return (
           <>
             <NotificationHeader
               _id={_id}
               sender={sender}
-              type="Reply"
+              type={type}
               timeAgo={timeAgo}
               count={count}
               isNew={isNew}

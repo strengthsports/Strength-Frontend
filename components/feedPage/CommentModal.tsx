@@ -31,19 +31,6 @@ import { Comment } from "~/types/post";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const DRAG_THRESHOLD = 100;
 
-// Modal header component
-const ModalHeader = memo(() => {
-  return (
-    <View className="w-full flex-row items-center justify-between py-2 px-4 bg-black">
-      <View className="flex-1">
-        <TextScallingFalse className="text-white text-4xl font-semibold text-center">
-          Comments
-        </TextScallingFalse>
-      </View>
-    </View>
-  );
-});
-
 const CommentModal = ({
   targetId,
   onClose,
@@ -512,106 +499,66 @@ const CommentModal = ({
   );
 
   return (
-    <TouchableWithoutFeedback onPress={onClose}>
-      <Animated.View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          opacity: modalOpacity,
+    <>
+      <FlatList
+        ref={flatListRef}
+        data={comments}
+        keyExtractor={keyExtractor}
+        keyboardShouldPersistTaps="handled"
+        renderItem={renderItem}
+        ListEmptyComponent={ListEmptyComponent}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 80,
+          paddingHorizontal: 8,
         }}
+        onEndReached={() => {
+          if (!loadingComments && hasMoreComments) {
+            loadComments();
+          }
+        }}
+        onEndReachedThreshold={0.3}
+        onRefresh={handleRefresh}
+        refreshing={loadingComments && cursor === null}
+        removeClippedSubviews={Platform.OS === "android"}
+        initialNumToRender={5}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+      />
+
+      <View
+        style={{
+          position: "absolute",
+          bottom: keyboardHeight,
+          left: 0,
+          right: 0,
+          backgroundColor: "black",
+          zIndex: 9999,
+          elevation: 10,
+        }}
+        pointerEvents="auto"
       >
-        <TouchableWithoutFeedback onPress={() => {}} accessible={false}>
+        {isPosting && (
           <Animated.View
             style={{
-              height: MODAL_HEIGHT,
-              width: "104%",
-              alignSelf: "center",
-              paddingHorizontal: 10,
-              backgroundColor: "black",
-              borderTopLeftRadius: 40,
-              borderTopRightRadius: 40,
-              transform: [{ translateY: translateY }],
-              borderTopWidth: 0.7,
-              borderLeftWidth: 0.7,
-              borderRightWidth: 0.7,
-              borderColor: "#656565",
+              height: 4,
+              width: widthInterpolated,
+              backgroundColor: "#12956B",
             }}
-            pointerEvents="box-none"
-          >
-            <View {...panResponder.panHandlers}>
-              <DragIndicator />
-              <ModalHeader />
-            </View>
-
-            <KeyboardAvoidingView
-              className="flex-1"
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-            >
-              <FlatList
-                ref={flatListRef}
-                data={comments}
-                keyExtractor={keyExtractor}
-                // keyboardShouldPersistTaps="handled"
-                renderItem={renderItem}
-                ListEmptyComponent={ListEmptyComponent}
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 80,
-                  paddingHorizontal: 8,
-                }}
-                onEndReached={() => {
-                  if (!loadingComments && hasMoreComments) {
-                    loadComments();
-                  }
-                }}
-                onEndReachedThreshold={0.3}
-                onRefresh={handleRefresh}
-                refreshing={loadingComments && cursor === null}
-                removeClippedSubviews={Platform.OS === "android"}
-                initialNumToRender={5}
-                maxToRenderPerBatch={10}
-                windowSize={10}
-              />
-
-              {/* Sticky comment input bar */}
-              <View
-                style={{
-                  position: "absolute",
-                  bottom: keyboardHeight,
-                  left: 0,
-                  right: 0,
-                  backgroundColor: "black",
-                  zIndex: 9999,
-                  elevation: 10,
-                }}
-                pointerEvents="auto"
-              >
-                {isPosting && (
-                  <Animated.View
-                    style={{
-                      height: 4,
-                      width: widthInterpolated,
-                      backgroundColor: "#12956B",
-                    }}
-                  />
-                )}
-                <CommentInput
-                  handlePostComment={handlePostComment}
-                  isPosting={isPosting}
-                  replyingTo={replyingTo}
-                  setReplyingTo={setReplyingTo}
-                  user={user}
-                  textInputRef={textInputRef}
-                  commentText={commentText}
-                  setCommentText={setCommentText}
-                />
-              </View>
-            </KeyboardAvoidingView>
-          </Animated.View>
-        </TouchableWithoutFeedback>
-      </Animated.View>
-    </TouchableWithoutFeedback>
+          />
+        )}
+        <CommentInput
+          handlePostComment={handlePostComment}
+          isPosting={isPosting}
+          replyingTo={replyingTo}
+          setReplyingTo={setReplyingTo}
+          user={user}
+          textInputRef={textInputRef}
+          commentText={commentText}
+          setCommentText={setCommentText}
+        />
+      </View>
+    </>
   );
 };
 

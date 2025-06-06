@@ -18,9 +18,9 @@ const CustomHomeHeader = () => {
   const { user } = useSelector((state: any) => state?.profile);
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const possibleMessages = [
-    "What's going on...",
-    "What's on your mind...",
-    "Share your sports moment...",
+    "Curious for sports ask Stamin...",
+    "Ask your health destiny...",
+    "Master your fitness journey...",
   ];
 
   const [message, setMessage] = React.useState(possibleMessages[0]); // Set default message

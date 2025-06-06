@@ -45,6 +45,15 @@ export default function AppLayout() {
             },
           }}
         />
+        <Stack.Screen
+          name="Stamin/index"
+          options={{
+            animation: "none",
+            contentStyle: {
+              backgroundColor: "black",
+            },
+          }}
+        />
       </Stack>
       <AppBottomSheet />
     </BottomSheetProvider>

@@ -1,15 +1,34 @@
 import { Feather } from "@expo/vector-icons";
-import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef } from 'react';
+import { View, TouchableOpacity, Animated, Easing } from "react-native";
+import { Image } from "expo-image";
 import TextScallingFalse from "../CentralText";
 import { Link, useRouter } from "expo-router";
+import stamin from "@/assets/images/Stamin4.gif"
 
 const AnimatedAddPostBar = ({
-  suggestionText = "What's on your mind...",
+  suggestionText = "Curious about sports ask Stamin...",
 }: {
   suggestionText: string;
 }) => {
   const router = useRouter();
+
+  const rotateValue = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(rotateValue, {
+        toValue: 1,
+        duration: 6000, // 60 seconds for a full rotation
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [rotateValue]);
+
+  const rotate = rotateValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={{ alignItems: "center" }}>
@@ -18,7 +37,8 @@ const AnimatedAddPostBar = ({
           width: "95%",
         }}
       >
-        <Link
+        <Link href={"/(app)/Stamin" as any} asChild>
+        <TouchableOpacity
           style={{
             position: "relative",
             flexDirection: "row",
@@ -28,12 +48,9 @@ const AnimatedAddPostBar = ({
             borderRadius: 12,
             height: 37,
             justifyContent: "space-between",
-            paddingHorizontal: 6,
-          }}
-          href="/add-post"
-          asChild
-        >
-          <TouchableOpacity>
+            paddingHorizontal: 5,
+          }} activeOpacity={0.7}
+          >
             <TextScallingFalse
               style={{
                 color: "grey",
@@ -47,19 +64,25 @@ const AnimatedAddPostBar = ({
             </TextScallingFalse>
             <View
               style={{
-                width: 25,
-                height: 25,
+                width: 27,
+                height: 27,
                 justifyContent: "center",
                 alignItems: "center",
-                borderWidth: 2,
                 borderColor: "grey",
-                borderRadius: 7,
+                borderRadius: 8,
               }}
             >
-              <Feather name="plus" size={15} color="grey" />
+              {/* <Feather name="plus" size={15} color="grey" /> */}
+              <Image
+                source={stamin}
+                style={{
+                  width: 25,
+                  height: 25,
+                }}
+              />
             </View>
           </TouchableOpacity>
-        </Link>
+          </Link>
       </View>
     </View>
   );

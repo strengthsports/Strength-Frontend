@@ -65,7 +65,7 @@
 //   );
 // }
 
-import { Tabs } from "expo-router";
+import { router, Tabs, useRouter, useSegments, Link } from "expo-router";
 import React, { useEffect } from "react";
 import {
   Platform,
@@ -91,6 +91,11 @@ import { AppDispatch, RootState } from "~/reduxStore";
 import { Redirect } from "expo-router";
 import eventBus from "~/utils/eventBus";
 import { GestureResponderEvent } from "react-native";
+import TextScallingFalse from "~/components/CentralText";
+import { useBottomSheet } from "~/context/BottomSheetContext";
+import { useNavigation } from "@react-navigation/native";
+import type { DrawerNavigationProp } from "@react-navigation/drawer";
+import { Ionicons } from "@expo/vector-icons";
 
 const tabs = [
   {
@@ -132,8 +137,17 @@ export default function TabLayout() {
   const { notificationCount } = useSelector(
     (state: RootState) => state.notification
   );
+  const { openBottomSheet } = useBottomSheet(); // get function from context
 
   console.log("Notification data : ", data);
+  const segments = useSegments();
+  const isHomeTab = segments[segments.length - 1] === "home";
+  const navigation = useNavigation<DrawerNavigationProp<any>>();
+
+  // const { handleOpenDrawer } = useDrawer();
+  const handleOpenDrawer = () => {
+    navigation.openDrawer();
+  };
 
   useEffect(() => {
     console.log("Socket function mounted");
@@ -244,13 +258,13 @@ export default function TabLayout() {
                       {/* Notification badge */}
                       {isNotificationTab && notificationCount > 0 && (
                         <View style={styles.notificationDot}>
-                          <Text style={styles.notificationText}>
+                          <TextScallingFalse style={styles.notificationText}>
                             {notificationCount > 9 ? "9+" : notificationCount}
-                          </Text>
+                          </TextScallingFalse>
                         </View>
                       )}
                     </View>
-                    <Text
+                    <TextScallingFalse
                       style={{
                         fontSize: 9,
                         fontWeight: "500",
@@ -259,7 +273,7 @@ export default function TabLayout() {
                       }}
                     >
                       {title}
-                    </Text>
+                    </TextScallingFalse>
                   </TouchableOpacity>
                 );
               },
@@ -267,6 +281,16 @@ export default function TabLayout() {
           />
         ))}
       </Tabs>
+
+      {/* Floating Upload Button: Only on Home */}
+      {isHomeTab && (
+        <TouchableOpacity style={styles.uploadButton}>
+          <Link href="/add-post" asChild>
+            <Ionicons name="add" size={28} color="white" />
+          </Link>
+        </TouchableOpacity>
+      )}
+
     </View>
   );
 }
@@ -287,5 +311,22 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 10,
     fontWeight: "bold",
+  },
+  uploadButton: {
+    position: "absolute",
+    right: 15,
+    bottom: Platform.OS === 'ios' ? 90 : 70, // adjust based on tab height
+    alignSelf: "flex-end",
+    backgroundColor: "#12956B",
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 10,
   },
 });

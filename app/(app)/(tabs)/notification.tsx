@@ -18,7 +18,6 @@ import NotificationCardLayout from "~/components/notificationPage/NotificationCa
 import moment from "moment";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "~/constants/Colors";
-import debounce from "lodash.debounce";
 import { Notification, NotificationType } from "~/types/others";
 import {
   useGetNotificationsQuery,
@@ -29,8 +28,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import NotificationNotFound from "~/components/notfound/notificationNotFound";
 import TextScallingFalse from "~/components/CentralText";
 import TooltipBox, { TooltipOption } from "~/components/ui/atom/TooltipBox";
-
-const NOTIFICATION_ITEM_HEIGHT = 64;
 
 // Tab configuration
 const tabs = [
@@ -55,6 +52,7 @@ const getTypesForTab = (tab: any) => {
         "Follow",
         "Like",
         "Comment",
+        "Reply",
         "Report",
         "PageInvitation",
         "JoinPageRequest",
@@ -208,8 +206,8 @@ const NotificationPage = () => {
   );
 
   // ──── Render each notification card ─────────────────────────────────────
-  const renderItem = useCallback(
-    ({ item }: { item: Notification }) => (
+  const renderItem = useCallback(({ item }: { item: Notification }) => {
+    return (
       <NotificationCardLayout
         _id={item._id}
         date={item.createdAt}
@@ -220,9 +218,8 @@ const NotificationPage = () => {
         comment={item.comment}
         handleMarkNotificationVisited={handleMarkNotificationVisited}
       />
-    ),
-    []
-  );
+    );
+  }, []);
 
   const renderFooter = () => {
     if (!loadingMore) return null;

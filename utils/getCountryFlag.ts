@@ -23,7 +23,7 @@ const getCountryCode = (countryName: string) => {
     "NEW ZEALAND A": "NZ",
     "BANGLADESH A": "BD",
     "INDIA A": "IN",
-    "ENGLAND A": "GB",
+    "England Lions": "GB",
   };
 
   return specialCases[cleanName] || countries.getAlpha2Code(cleanName, "en");

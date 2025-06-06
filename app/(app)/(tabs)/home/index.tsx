@@ -54,18 +54,18 @@ const ListFooterComponent = memo(
     } else if (!hasMore) {
       return (
         <View style={styles.footerMessage}>
-          <TextScallingFalse className="text-white text-6xl font-semibold">
+          <TextScallingFalse className="text-white text-[18px] font-semibold">
             You're all caught up. What a pro!
           </TextScallingFalse>
-          <TextScallingFalse className="text-[#eaeaea]">
+          <TextScallingFalse className="text-[#EFEFEF] font-regular font-[14px]" style={{fontWeight:'400', fontSize: 14}}>
             New actions on the way.
           </TextScallingFalse>
           <TouchableOpacity
-            className="rounded-3xl border border-white px-6 py-1.5 mt-4"
+            className="rounded-3xl border border-[#848484] px-10 py-2 mt-4"
             activeOpacity={0.6}
             onPress={() => router.push("/explore/allCategory")}
           >
-            <TextScallingFalse className="text-white">
+            <TextScallingFalse className="text-white" style={{fontSize: 14, fontWeight:'600'}}>
               Explore More
             </TextScallingFalse>
           </TouchableOpacity>
@@ -340,13 +340,13 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 20,
     width: "100%",
     marginHorizontal: "auto",
-    marginTop: 10,
-    height: 240,
+    marginTop: 5,
+    height: 195,
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    rowGap: 14,
+    rowGap: 16,
   },
   footerLargeText: {
     fontSize: 30,

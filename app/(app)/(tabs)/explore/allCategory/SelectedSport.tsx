@@ -254,27 +254,33 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       content: renderBasketballMatches(),
     });
 
-  sections.push({ type: "dontMiss", content: renderDontMiss() });
+  // sections.push({ type: "dontMiss", content: renderDontMiss() });
 
   if (sportsName === "Cricket") {
-    sections.push({
-      type: "CricketNextBySeriesMatches",
-      content: renderCricketNextBySeriesMatches(),
-    });
+    if (nextCricketMatches?.length > 0)
+      sections.push({ type: "dontMiss", content: renderDontMiss() });
+
     sections.push({
       type: "CricketNextMatches",
       content: renderCricketNextMatches(),
     });
-  } else if (sportsName === "Football")
+  } else if (sportsName === "Football") {
+    if (nextFootballMatches?.length > 0)
+      sections.push({ type: "dontMiss", content: renderDontMiss() });
+
     sections.push({
       type: "FootballNextMatches",
       content: renderFootballNextMatches(),
     });
-  else if (sportsName === "Basketball")
+  } else if (sportsName === "Basketball") {
+    if (nextBasketballMatches?.length > 0)
+      sections.push({ type: "dontMiss", content: renderDontMiss() });
+
     sections.push({
       type: "BasketballNextMatches",
       content: renderBasketballNextMatches(),
     });
+  }
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -282,14 +288,14 @@ const SelectedSport: React.FC<SelectedSportProps> = ({ sportsName }) => {
       await Promise.all([
         refetchLiveCricket(),
         refetchNextCricket(),
-        refetchNextBySeriesCricket(),
-        refetchRecentCricket(),
+        // refetchNextBySeriesCricket(),
+        // refetchRecentCricket(),
         refetchLiveFootball(),
         refetchNextFootball(),
-        refetchRecentFootball(),
+        // refetchRecentFootball(),
         refetchLiveBasketball(),
         refetchNextBasketball(),
-        refetchRecentBasketball(),
+        // refetchRecentBasketball(),
         refetchSportArticles(),
       ]);
     } catch (error) {

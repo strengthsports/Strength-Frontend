@@ -333,6 +333,11 @@ const TrendingAll = () => {
     );
   };
 
+  const shouldShowDontMiss =
+    topThreeCricketNextMatches?.length > 0 ||
+    topThreeFootballNextMatches?.length > 0 ||
+    topThreeBasketballNextMatches?.length > 0;
+
   const sections = [
     { type: "swiper", content: renderSwiper() },
     { type: "divider", content: <View className="h-[1px] bg-[#1c1c1c]" /> },
@@ -340,12 +345,14 @@ const TrendingAll = () => {
     { type: "discoverPeople", content: <DiscoverPeopleList /> },
     { type: "matches", content: renderMatches() },
     { type: "trendingLiveMatches", content: renderTrendingLiveMatches() },
-    { type: "dontMiss", content: renderDontMiss() },
-    // { type: "cricketNextMatches", content: renderCricketNextMatches() },
-    {
-      type: "cricketNextBySeriesMatches",
-      content: renderCricketNextBySeriesMatches(),
-    },
+    ...(shouldShowDontMiss
+      ? [{ type: "dontMiss", content: renderDontMiss() }]
+      : []),
+    // {
+    //   type: "cricketNextBySeriesMatches",
+    //   content: renderCricketNextBySeriesMatches(),
+    // },
+    { type: "cricketNextMatches", content: renderCricketNextMatches() },
     { type: "footballNextMatches", content: renderFootballNextMatches() },
     { type: "basketballNextMatches", content: renderBasketballNextMatches() },
   ];

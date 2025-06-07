@@ -227,7 +227,7 @@ const CustomDrawer2 = () => {
             </TouchableOpacity>
           )}
 
-          {teamList.length === 0 && (
+          {teamList.length < 4 && (
             <View className="flex-row mb-5 mt-1 gap-3">
               <TouchableOpacity
                 onPress={() => {

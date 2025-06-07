@@ -1054,7 +1054,7 @@ const EditProfile = () => {
 
   const today = new Date();
   const maxDOB = new Date();
-  maxDOB.setFullYear(today.getFullYear() - 13); // must be born before today minus 13 years
+  maxDOB.setFullYear(today.getFullYear() - 4); // must be born before today minus 13 years
 
   const handleBackPress = () => {
     if (!Array.from(finalUploadData.entries()).length) {
@@ -1593,10 +1593,10 @@ const EditProfile = () => {
                       }}
                     >
                       <DateTimePicker
-                        value={inputValue ? new Date(inputValue) : maxDOB}
+                        value={inputValue ? new Date(inputValue) : (user?.type === "User" ? maxDOB : new Date())}
                         mode="date"
                         display={Platform.OS === "ios" ? "spinner" : "default"}
-                        maximumDate={maxDOB} // restrict to users at least 13
+                        maximumDate={user?.type === "User" ? maxDOB : new Date()} // restrict to users at least 13
                         themeVariant={
                           Platform.OS === "ios" ? "dark" : undefined
                         }

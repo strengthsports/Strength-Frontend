@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   FlatList,
@@ -28,6 +28,7 @@ const HashtagPosts = ({
   type: "top" | "latest" | "polls" | "media" | "people";
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const flatListRef = useRef<FlatList>(null);
 
   const selectHashtagPosts = useCallback(
     makeSelectHashtagPosts(hashtag, type),
@@ -43,6 +44,21 @@ const HashtagPosts = ({
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 80,
+  });
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: Array<any> }) => {
+      const visibleIds = viewableItems
+        .filter((vi) => vi.item && vi.item._id)
+        .map((vi) => vi.item._id);
+      console.log("\n\nVisible IDS :", visibleIds);
+      setVisiblePostIds(visibleIds);
+    }
+  ).current;
 
   const loadPosts = async (cursor?: string | null) => {
     await dispatch(fetchHashtagPosts({ hashtag, type, limit: 10, cursor }));
@@ -69,7 +85,11 @@ const HashtagPosts = ({
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View style={{ width: screenWidth }}>
-        <PostContainer item={item as any} highlightedHashtag={`#${hashtag}`} />
+        <PostContainer
+          item={item as any}
+          highlightedHashtag={`#${hashtag}`}
+          isVisible={visiblePostIds.includes(item._id)}
+        />
         <Divider
           style={{ marginHorizontal: "auto", width: "100%" }}
           width={0.4}
@@ -77,7 +97,7 @@ const HashtagPosts = ({
         />
       </View>
     ),
-    [hashtag]
+    [hashtag, visiblePostIds]
   );
 
   if (initialLoading) {
@@ -94,8 +114,12 @@ const HashtagPosts = ({
 
   return (
     <FlatList
+      ref={flatListRef}
       data={posts}
       keyExtractor={(item) => item.id}
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={viewabilityConfig.current}
+      scrollEventThrottle={16}
       renderItem={renderItem}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.5}
@@ -111,7 +135,7 @@ const HashtagPosts = ({
           <ActivityIndicator size="small" color={Colors.themeColor} />
         ) : null
       }
-       showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
     />
   );
 };

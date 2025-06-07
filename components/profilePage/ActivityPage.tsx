@@ -131,11 +131,7 @@ const ActivityPage = ({ userId, type }: ActivityPageProps) => {
   const renderItem = useCallback(
     ({ item }: { item: Post }) => (
       <View className="w-screen">
-        <PostContainer
-          isVisible={true}
-          item={item}
-          isMyActivity={isCurrentUser}
-        />
+        <PostContainer item={item} isMyActivity={isCurrentUser} />
         <Divider style={{ width: "100%" }} width={0.4} color="#282828" />
       </View>
     ),
@@ -217,6 +213,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical:'30%'
+    paddingVertical: "30%",
   },
 });

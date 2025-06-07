@@ -339,7 +339,7 @@ const NotificationPage = () => {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        page !== 1 && (
+        !isLoading && (
           <View className="flex-1 justify-center items-center">
             <NotificationNotFound type={activeTab} />
           </View>

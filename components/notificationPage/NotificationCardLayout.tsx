@@ -563,7 +563,7 @@ const PostPreview = React.memo(
             style={{ color: "#AEAEAE", fontSize: 12, lineHeight: 17 }}
             numberOfLines={2}
           >
-            {renderCaptionWithTags(caption, "#AEAEAE", 12)}
+            {renderCaptionWithTags(caption, "#AEAEAE", 12, Infinity, false)}
           </TextScallingFalse>
         </View>
       </View>

@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   countryFlag: { borderRadius: 2 },
   logoContainer: {
-    width: 28,
+    width: 22,
     height: 21,
     borderRadius: 2,
   },

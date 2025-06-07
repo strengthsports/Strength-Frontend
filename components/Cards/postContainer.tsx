@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import TextScallingFalse from "~/components/CentralText";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import MoreModal from "../feedPage/MoreModal";
 import { AppDispatch, RootState } from "~/reduxStore";
@@ -42,6 +42,9 @@ import { toggleLike, voteInPoll } from "~/reduxStore/slices/post/postActions";
 import { useShare } from "~/hooks/useShare";
 import { Linking } from "react-native";
 import PublicEarth from "../SvgIcons/postContainer/PublicEarth";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useEvent } from "expo";
+import { ActivityIndicator } from "react-native";
 
 const shadowStyle = Platform.select({
   ios: {
@@ -107,6 +110,104 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
     const [containerWidth, setContainerWidth] = useState(
       Dimensions.get("window").width
     );
+
+    // Video source
+    const videoSource = item.isVideo ? item.assets[0].url : null;
+    const [isMuted, setIsMuted] = useState(false);
+    const [isVideoLoading, setIsVideoLoading] = useState(false);
+
+    // Initializing the player
+    const player = useVideoPlayer(videoSource, (player) => {
+      player.loop = true;
+    });
+
+    // Safety check
+    const isPlayerValid = () => {
+      try {
+        return player && typeof player.play === "function" && !!player.status;
+      } catch (e) {
+        console.log("Invalid player:", e);
+        return false;
+      }
+    };
+
+    // Player status
+    const { isPlaying } = useEvent(player, "playingChange", {
+      isPlaying: player.playing,
+    });
+
+    useEffect(() => {
+      if (!player || !isPlayerValid()) return;
+
+      if (isVisible) {
+        try {
+          player.play();
+        } catch (err) {
+          console.warn("Play failed:", err);
+        }
+      } else {
+        try {
+          player.pause();
+        } catch (err) {
+          console.warn("Pause failed:", err);
+        }
+      }
+    }, [isVisible]);
+
+    // Loading video
+    useEffect(() => {
+      if (!isPlayerValid()) return;
+
+      const handleStatusChange = (status: any) => {
+        console.log("Stataus : ", status);
+        if (status.status === "readyToPlay") {
+          setIsVideoLoading(false);
+        } else if (status.status === "loading") {
+          setIsVideoLoading(true);
+        } else if (status.status === "error") {
+          setIsVideoLoading(true);
+        }
+      };
+
+      player.addListener("statusChange", handleStatusChange);
+
+      return () => {
+        if (isPlayerValid()) {
+          player.removeListener("statusChange", handleStatusChange);
+        }
+      };
+    }, [player]);
+
+    useFocusEffect(
+      useCallback(() => {
+        if (!player || !isPlayerValid()) return;
+
+        return () => {
+          try {
+            player.pause();
+          } catch (err) {
+            console.warn("Pause on unfocus failed:", err);
+          }
+        };
+      }, [player])
+    );
+
+    // Handle toggle mute the audio
+    const toggleMute = () => {
+      setIsMuted(!isMuted);
+      player.muted = !isMuted;
+    };
+
+    // Pause on unmount
+    useEffect(() => {
+      return () => {
+        try {
+          player?.pause();
+        } catch (err) {
+          console.warn("Pause on unmount failed:", err);
+        }
+      };
+    }, []);
 
     useEffect(() => {
       const updateLayout = () => {
@@ -385,6 +486,11 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       [item, item.caption, item.taggedUsers, isExpanded]
     );
 
+    // Calculate imageUrls outside of the return statement
+    const imageUrls = useMemo(() => {
+      return item.assets?.map((asset) => asset.url) || [];
+    }, [item.assets]);
+
     return (
       <>
         <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
@@ -530,58 +636,80 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   }}
                   onDoublePress={handleDoubleTap}
                 >
-                  <Image
-                    source={
-                      item.thumbnail ? { uri: item.thumbnail.url } : nothumbnail
-                    }
-                    resizeMode="cover"
-                    fadeDuration={0}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      position: "absolute",
-                      inset: 0,
-                      borderTopLeftRadius: 16,
-                      borderBottomLeftRadius: 16,
-                      borderColor: "#2F2F2F",
-                    }}
-                  />
-                  <View style={styles.videoOverlay} />
                   <View
                     style={{
                       position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      zIndex: 2,
-                      transform: [
-                        { translateX: "-50%" },
-                        { translateY: "-50%" },
-                      ],
+                      inset: 0,
+                      pointerEvents: "none",
                     }}
                   >
-                    <ClipsIconRP />
+                    <VideoView
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderTopLeftRadius: 16,
+                        borderBottomLeftRadius: 16,
+                        borderColor: "#2F2F2F",
+                      }}
+                      contentFit="cover"
+                      player={player}
+                      nativeControls={false}
+                    />
                   </View>
+
+                  {!isPlaying && (
+                    <>
+                      <View style={styles.videoOverlay} />
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          zIndex: 2,
+                          transform: [
+                            { translateX: "-50%" },
+                            { translateY: "-50%" },
+                          ],
+                        }}
+                      >
+                        {isVideoLoading ? (
+                          <ActivityIndicator size="large" color="#cecece" />
+                        ) : (
+                          <ClipsIconRP />
+                        )}
+                      </View>
+                    </>
+                  )}
+                  {isPlaying && (
+                    <View style={styles.topRightControls}>
+                      <TouchableOpacity
+                        onPress={toggleMute}
+                        style={styles.controlButton}
+                        hitSlop={{ top: 30, right: 20, bottom: 20, left: 40 }}
+                      >
+                        <MaterialIcons
+                          name={isMuted ? "volume-off" : "volume-up"}
+                          size={16}
+                          color="#fff"
+                          className="bg-black/20 p-1 rounded-md"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </TouchableWithDoublePress>
               </View>
-            ) : (
-              item.assets &&
-              item.assets.length > 0 &&
-              (() => {
-                const imageUrls = item.assets.map((asset) => asset.url);
-                return (
-                  <CustomImageSlider
-                    onRemoveImage={() => {}}
-                    aspectRatio={item.aspectRatio || [3, 2]}
-                    images={imageUrls}
-                    isFeedPage={true}
-                    post={item}
-                    setIndex={handleSetActiveIndex}
-                    onDoubleTap={handleDoubleTap}
-                    isMyActivity={false}
-                  />
-                );
-              })()
-            )}
+            ) : imageUrls.length > 0 ? (
+              <CustomImageSlider
+                onRemoveImage={() => {}}
+                aspectRatio={item.aspectRatio || [3, 2]}
+                images={imageUrls}
+                isFeedPage={true}
+                post={item}
+                setIndex={handleSetActiveIndex}
+                onDoubleTap={handleDoubleTap}
+                isMyActivity={false}
+              />
+            ) : null}
 
             {/* Like Animation */}
             <Animated.View

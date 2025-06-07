@@ -44,6 +44,7 @@ import CustomerSupport from "~/components/SvgIcons/Settings/CustomerSupport";
 import FeedbackSettings from "~/components/SvgIcons/Settings/FeedbackSettings";
 import ShareStrength from "~/components/SvgIcons/Settings/ShareStrength";
 import LoggoutSettings from "~/components/SvgIcons/Settings/LoggoutSettings";
+import { notificationApi } from "~/reduxStore/api/notificationApi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const index = () => {
@@ -76,6 +77,8 @@ const index = () => {
 
       // Dispatch resetUserData to clear user-related data from Redux store
       dispatch(resetUserData());
+      // Clear notifications from RTK Query cache
+      dispatch(notificationApi.util.invalidateTags(["Notifications"]));
       !isAndroid && router.replace("/login");
       isAndroid
         ? ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT)

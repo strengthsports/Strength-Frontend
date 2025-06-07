@@ -53,9 +53,6 @@ interface GroupedMatchProps {
   matches: MatchCardProps[];
 }
 
-const iplImg =
-  "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747497481948-ipl-logo.jpg";
-
 const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
   const initialSeriesName =
@@ -154,12 +151,16 @@ const CricketNextBySeriesMatchCard = ({ matches }: GroupedMatchProps) => {
           className="flex-row items-center gap-2"
           onPress={toggleNumberOfLines}
         >
-          <View className="py-1">
-            <Image
-              source={{ uri: seriesLogo }}
-              className="w-[24px] h-[16px] rounded-[2px] self-center"
-            />
-          </View>
+          {seriesLogo ? (
+            <View className="py-1">
+              <Image
+                source={{ uri: seriesLogo }}
+                className="w-[24px] h-[16px] rounded-[2px] self-center"
+              />
+            </View>
+          ) : (
+            <></>
+          )}
           <TextScallingFalse
             className="text-white text-3xl w-[88%] "
             numberOfLines={numberOfLinesTitle}

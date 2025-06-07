@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Keyboard,
@@ -6,19 +6,14 @@ import {
   ActivityIndicator,
   Animated,
   Platform,
-  KeyboardAvoidingView,
-  Dimensions,
-  PanResponder,
 } from "react-native";
 import { Colors } from "~/constants/Colors";
-import TextScallingFalse from "~/components/CentralText";
 import { showFeedback } from "~/utils/feedbackToast";
 import { CommenterCard } from "~/components/comment/CommenterCard";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import CommentNotFound from "../notfound/commentNotFound";
 import CommentInput from "../comment/CommentInput";
-import { TouchableWithoutFeedback } from "react-native";
 import {
   deleteComment,
   postComment,
@@ -28,9 +23,6 @@ import { ReplyPaginationState } from "~/app/(app)/post-details/[postId]";
 import { fetchComments, fetchReplies } from "~/api/comment/fetchComments";
 import { Comment } from "~/types/post";
 
-const SCREEN_HEIGHT = Dimensions.get("window").height;
-const DRAG_THRESHOLD = 100;
-
 const CommentModal = ({
   targetId,
   onClose,
@@ -38,16 +30,7 @@ const CommentModal = ({
 }: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.profile);
-
-  // Calculate modal height (65% of screen)
-  const MODAL_HEIGHT = SCREEN_HEIGHT * 0.8;
-
-  // Initial position should be at the bottom (screen height - modal height)
-  const initialPosition = SCREEN_HEIGHT - MODAL_HEIGHT;
-
-  // Update translateY initialization to start from initialPosition
-  const translateY = useRef(new Animated.Value(initialPosition)).current;
-  const modalOpacity = useRef(new Animated.Value(1)).current;
+  const didLoadOnce = useRef(false);
 
   // Comment state management
   const [comments, setComments] = useState([]);
@@ -69,64 +52,6 @@ const CommentModal = ({
 
   // Add keyboard height state
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  // Setup pan gesture responder
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 5;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          const newTranslateY =
-            keyboardHeight > 0
-              ? SCREEN_HEIGHT - keyboardHeight + gestureState.dy
-              : initialPosition + gestureState.dy;
-
-          translateY.setValue(newTranslateY);
-          const newOpacity = Math.max(
-            0,
-            1 - gestureState.dy / (SCREEN_HEIGHT / 2)
-          );
-          modalOpacity.setValue(newOpacity);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > DRAG_THRESHOLD) {
-          // Swipe down - close the modal
-          Animated.parallel([
-            Animated.timing(translateY, {
-              toValue: SCREEN_HEIGHT,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-            Animated.timing(modalOpacity, {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-          ]).start(() => {
-            onClose();
-          });
-        } else {
-          // Return to original position
-          Animated.parallel([
-            Animated.spring(translateY, {
-              toValue: initialPosition,
-              friction: 8,
-              useNativeDriver: true,
-            }),
-            Animated.timing(modalOpacity, {
-              toValue: 1,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        }
-      },
-    })
-  ).current;
 
   // Focus input on mount if autoFocusKeyboard is true
   useEffect(() => {
@@ -162,48 +87,50 @@ const CommentModal = ({
 
   // Load comments on mount
   useEffect(() => {
-    loadComments(true);
+    console.log("useEffect running");
+    if (!didLoadOnce.current) {
+      didLoadOnce.current = true;
+      loadComments();
+    }
   }, []);
 
   // Initial comments load
-  const loadComments = useCallback(
-    async (refresh = false) => {
-      if ((loadingComments || !hasMoreComments) && !refresh) return;
+  const loadComments = async (refresh = false) => {
+    console.log("Load comments called");
+    if ((loadingComments || !hasMoreComments) && !refresh) return;
 
-      setLoadingComments(true);
-      try {
-        const response = await fetchComments({
-          postId: targetId,
-          limit: 4,
-          cursor: refresh ? null : cursor,
-        });
+    setLoadingComments(true);
+    try {
+      const response = await fetchComments({
+        postId: targetId,
+        limit: 4,
+        cursor: refresh ? null : cursor,
+      });
 
-        if (response?.data) {
-          const newComments = response.data.comments || [];
+      if (response?.data) {
+        const newComments = response.data.comments || [];
 
-          if (refresh) {
-            setComments(newComments);
-          } else {
-            setComments((prev) => [...prev, ...newComments]);
-          }
-
-          if (newComments.length > 0) {
-            const lastComment = newComments[newComments.length - 1];
-            setCursor(lastComment.createdAt);
-          }
-
-          setHasMoreComments(response.data.hasNextPage || false);
+        if (refresh) {
+          setComments(newComments);
         } else {
-          setHasMoreComments(false);
+          setComments((prev) => [...prev, ...newComments]);
         }
-      } catch (error) {
-        console.error("Failed to fetch comments:", error);
-      } finally {
-        setLoadingComments(false);
+
+        if (newComments.length > 0) {
+          const lastComment = newComments[newComments.length - 1];
+          setCursor(lastComment.createdAt);
+        }
+
+        setHasMoreComments(response.data.hasNextPage || false);
+      } else {
+        setHasMoreComments(false);
       }
-    },
-    [fetchComments, targetId, cursor, loadingComments, hasMoreComments]
-  );
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
 
   // Handle refreshing comments
   const handleRefresh = useCallback(() => {
@@ -491,13 +418,6 @@ const CommentModal = ({
     );
   }, [loadingComments]);
 
-  // Drag indicator at the top for visual cue
-  const DragIndicator = () => (
-    <View className="w-full items-center pt-5 pb-3">
-      <View className="w-14 h-1.5 bg-neutral-700 rounded-full" />
-    </View>
-  );
-
   return (
     <>
       <FlatList
@@ -513,7 +433,7 @@ const CommentModal = ({
           paddingHorizontal: 8,
         }}
         onEndReached={() => {
-          if (!loadingComments && hasMoreComments) {
+          if (!loadingComments && hasMoreComments && comments.length > 0) {
             loadComments();
           }
         }}

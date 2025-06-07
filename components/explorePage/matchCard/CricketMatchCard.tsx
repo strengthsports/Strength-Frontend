@@ -113,10 +113,9 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
 
   const isMatchComplete = match.matchInfo?.state === "Complete";
   const [numberOfLinesTitle, setNumberOfLinesTitle] = useState(1);
-  const toggleNumberOfLines = () => {
+  const toggleNumberOfLinesTitle = () => {
     setNumberOfLinesTitle((prev) => (prev === 1 ? 2 : 1));
   };
-
   const determineScore = ({
     teamRun,
     teamWicket,
@@ -158,7 +157,7 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
       <View className="px-4 pt-3 pb-1">
         <TouchableOpacity
           className="flex-row items-center w-[220px] gap-2"
-          onPress={toggleNumberOfLines}
+          onPress={toggleNumberOfLinesTitle}
         >
           {/* {match?.tournamentImg && (
             <View className="p-1 rounded-md">
@@ -314,7 +313,11 @@ const CricketMatchCard = ({ match, isLive, onCardPress }: MatchCardProps) => {
         {/* Match Status */}
         <View className="px-5 pt-2">
           {match.matchInfo?.status && (
-            <TextScallingFalse className="text-[#C2C2C2] text-[10px]">
+            <TextScallingFalse
+              className="text-[#C2C2C2] text-[10px]"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {filterResultData({
                 result: match.matchInfo?.status,
                 teamA: match.matchInfo.team1.teamName,

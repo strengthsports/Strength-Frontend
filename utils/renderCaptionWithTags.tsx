@@ -25,7 +25,8 @@ export default function renderCaptionWithTags(
   caption: string,
   color: string,
   fontSize: number,
-  maxChar: number = Infinity
+  maxChar: number = Infinity,
+  clickEnabled: boolean = true
 ) {
   if (!caption) return null;
 
@@ -41,9 +42,9 @@ export default function renderCaptionWithTags(
       elements.push(
         <TextScallingFalse
           key={i}
-          className={`active:bg-gray-600`}
+          className={`${clickEnabled && "active:bg-gray-600"}`}
           style={{ color: "#12956B", fontSize: fontSize }}
-          onPress={() => goToHashtag(tag)}
+          onPress={() => clickEnabled && goToHashtag(tag)}
         >
           {part}
         </TextScallingFalse>
@@ -52,7 +53,7 @@ export default function renderCaptionWithTags(
       elements.push(
         <TextScallingFalse
           key={i}
-          className="active:bg-gray-600"
+          className={`${clickEnabled && "active:bg-gray-600"}`}
           style={{ color: "#12956B", fontSize: fontSize }}
         >
           {part}

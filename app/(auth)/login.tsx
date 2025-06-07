@@ -258,6 +258,7 @@ const LoginScreen = () => {
               gap: 10,
               flexDirection: "row",
             }}
+            onPress={()=> router.replace('/(auth)/option2')}
           >
             <Image
               source={google}

@@ -12,6 +12,8 @@ interface OnboardingState {
   } | null;
   headline: string;
   username: string;
+  gender: string | null; // ← Optional gender
+  dateOfBirth: string | null; // ← Optional DOB
   address: object | null;
   isLoading: boolean;
   isError: string | null;
@@ -25,6 +27,8 @@ const initialState: OnboardingState = {
   profilePic: null,
   headline: "",
   username: "",
+  gender: null,
+  dateOfBirth: null,
   address: null,
   isLoading: false,
   isError: null,
@@ -197,6 +201,12 @@ const onboardingSlice = createSlice({
     clearUsername(state) {
       state.username = "";
     },
+    setGender(state, action) {
+      state.gender = action.payload;
+    },
+    setDateOfBirth(state, action) {
+      state.dateOfBirth = action.payload;
+    },
     setAddress(state, action) {
       state.address = action.payload;
     },
@@ -250,6 +260,8 @@ export const {
   clearHeadline,
   setAddress,
   setUsername,
+  setGender,
+  setDateOfBirth,
   clearAddress,
   clearUsername,
   resetOnboardingData,

@@ -34,6 +34,8 @@ const signupSetPassword5 = () => {
   const isAndroid = Platform.OS === "android";
 
   const { loading, email } = useSelector((state: RootState) => state.signup);
+  const gender = useSelector((state: RootState) => state.onboarding.gender);
+  const dateOfBirth = useSelector((state: RootState) => state.onboarding.dateOfBirth);
 
   const { username, address } = useSelector(
     (state: RootState) => state.onboarding
@@ -53,11 +55,11 @@ const signupSetPassword5 = () => {
       isAndroid
         ? ToastAndroid.show(message, ToastAndroid.SHORT)
         : Toast.show({
-            type,
-            text1: message,
-            visibilityTime: 3000,
-            autoHide: true,
-          });
+          type,
+          text1: message,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
     } else {
       Toast.show({
         type,
@@ -67,6 +69,8 @@ const signupSetPassword5 = () => {
       });
     }
   };
+  console.log('gender-', gender)
+  console.log('dateOfBirth-', dateOfBirth)
 
   const handleNext = async () => {
     if (!password || !confirmPassword) {
@@ -87,6 +91,8 @@ const signupSetPassword5 = () => {
       username: username || "",
       password: password || null,
       address: address || {},
+      ...(dateOfBirth && { dateOfBirth }),
+      ...(gender && { gender }),
     };
     console.log("final payload data", completeSignupPayload);
     try {

@@ -112,6 +112,7 @@ const Home = () => {
       const visibleIds = viewableItems
         .filter((vi) => vi.item.data && vi.item.data._id)
         .map((vi) => vi.item.data._id);
+      console.log("\n\nVisible IDS :", visibleIds);
       setVisiblePostIds(visibleIds);
     }
   ).current;

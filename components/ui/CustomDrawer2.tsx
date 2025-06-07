@@ -5,10 +5,16 @@ import { ScrollView } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "react-native";
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from "@react-navigation/native";
 import TextScallingFalse from "../CentralText";
 import SportsIndicator from "../SvgIcons/SideMenu/SportsIndicator";
-import { AntDesign, Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  MaterialIcons,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "~/reduxStore";
 import { fetchTeams, TeamsList } from "~/reduxStore/slices/team/teamSlice";
@@ -20,8 +26,10 @@ import MatchSidebar from "../SvgIcons/SideMenu/MatchSidebar";
 import ArticlesSidebar from "../SvgIcons/SideMenu/ArticlesSidebar";
 import FeedbackSidebar from "../SvgIcons/SideMenu/FeedbackSidebar";
 import SettingsSidebar from "../SvgIcons/SideMenu/SettingsSidebar";
+import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
 
 interface Team {
+  sportname: string;
   id: string;
   name: string;
   url: string;
@@ -36,14 +44,16 @@ const CustomDrawer2 = () => {
   const isNavigatingRef = useRef(false);
 
   const [showAllTeams, setShowAllTeams] = useState(false);
-
   const user = useSelector((state: RootState) => state.profile.user);
-  const teams = useSelector((state: RootState) => state.team.teams);
-  const [teamList, setTeamList] = useState<TeamsList[]>([]);
-  const processTeams = () => {
+
+  // Get teams directly from user profile
+  const getTeams = () => {
+    if (!user) return [];
+
     const uniqueTeams = new Map<string, Team>();
 
-    [...(teams?.createdTeams || []), ...(teams?.joinedTeams || [])].forEach(
+    // Combine createdTeams and joinedTeams from user profile
+    [...(user.createdTeams || []), ...(user.joinedTeams || [])].forEach(
       (teamEntry) => {
         if (teamEntry.team && !uniqueTeams.has(teamEntry.team._id)) {
           uniqueTeams.set(teamEntry.team._id, {
@@ -57,49 +67,56 @@ const CustomDrawer2 = () => {
       }
     );
 
-    setTeamList(Array.from(uniqueTeams.values()));
+    return Array.from(uniqueTeams.values());
   };
 
-  useEffect(() => {
-    dispatch(fetchTeams());
-  }, []);
+  // Get visible teams directly without state
+  const visibleTeams = showAllTeams ? getTeams() : getTeams().slice(0, 5);
 
+  // Refresh user profile when drawer is focused
   useEffect(() => {
-    if (isFocused) {
-
-      console.log('Drawer screen is focused, refreshing data...');
-      dispatch(fetchTeams());
+    if (isFocused && user?._id) {
+      console.log("Refreshing user profile...");
+      dispatch(
+        fetchMyProfile({
+          targetUserId: user._id,
+          targetUserType: "User",
+        })
+      );
     }
-  }, [isFocused]);
+  }, [isFocused, user?._id]);
 
-  useEffect(() => {
-    processTeams();
-  }, [teams]);
-
-  const visibleTeams = showAllTeams ? teamList : teamList.slice(0, 5);
   const handleTeamPress = (teamId) => {
     if (isNavigatingRef.current) return;
-
     isNavigatingRef.current = true;
-
     router.push(`../(team)/teams/${teamId}`);
-
-    // allow navigation again after 1 second
     setTimeout(() => {
       isNavigatingRef.current = false;
     }, 1000);
+  };
+
+  const getSportsNames = () => {
+    if (!user?.selectedSports || user.selectedSports.length === 0) {
+      return "No sports selected";
+    }
+
+    return user.selectedSports
+      .map((sportItem) => sportItem.sport?.name)
+      .filter(Boolean) // Remove any undefined/null values
+      .join(", "); // Join with commas
   };
   return (
     <SafeAreaView
       className={"w-full h-full bg-[#101010]"}
       style={{ justifyContent: "space-between" }}
     >
-      <ScrollView className="flex-1 pt-12" style={{paddingTop: Platform.OS === 'ios' ? 65 : 40}}>
-        {/* Profile Section */}
+      <ScrollView
+        className="flex-1 pt-12"
+        style={{ paddingTop: Platform.OS === "ios" ? 65 : 40 }}
+      >
+        {/* Profile Section (unchanged) */}
         <TouchableOpacity
-          onPress={() => {
-            router.push("/(app)/(tabs)/profile");
-          }}
+          onPress={() => router.push("/(app)/(tabs)/profile")}
           activeOpacity={0.7}
           className="flex-row items-center pb-8 mb-6"
           style={{
@@ -130,13 +147,16 @@ const CustomDrawer2 = () => {
           </View>
         </TouchableOpacity>
 
-        {/* <CustomDivider
-              color="#5C5C5C"
-              thickness={1}
-              style={{ width: "90%", opacity: 0.5, alignSelf: "center" }}
-            /> */}
         {/* Teams Section */}
-        <View style={{ paddingVertical: 8, borderBottomWidth: 0.8, borderBottomColor:'#404040', width: '85%', alignSelf:'center'}}>
+        <View
+          style={{
+            paddingVertical: 8,
+            borderBottomWidth: 0.8,
+            borderBottomColor: "#404040",
+            width: "85%",
+            alignSelf: "center",
+          }}
+        >
           <TextScallingFalse
             className="text-white text-4xl mb-4"
             style={{ fontWeight: "500" }}
@@ -173,7 +193,7 @@ const CustomDrawer2 = () => {
                   <TextScallingFalse
                     numberOfLines={1}
                     ellipsizeMode="tail"
-                    className="text-white text-xl font-medium"
+                    className="text-white text-[14px] font-medium"
                     style={{ fontWeight: "500" }}
                   >
                     {team.name}
@@ -210,7 +230,7 @@ const CustomDrawer2 = () => {
             </TouchableOpacity>
           ))}
 
-          {teamList.length > 4 && (
+          {getTeams().length > 4 && (
             <TouchableOpacity
               onPress={() => {
                 router.push(
@@ -227,14 +247,12 @@ const CustomDrawer2 = () => {
             </TouchableOpacity>
           )}
 
-          {teamList.length === 0 && (
+          {getTeams().length === 0 && (
             <View className="flex-row mb-5 mt-1 gap-3">
               <TouchableOpacity
-                onPress={() => {
-                  router.push("/(app)/(team)/teams");
-                }}
+                onPress={() => router.push("/(app)/(team)/teams")}
                 className="border px-2 py-[5px] gap-1 rounded-lg flex-row items-center"
-                style={{ borderColor: '#707070' }}
+                style={{ borderColor: "#707070" }}
               >
                 <TextScallingFalse className="text-sm font-semibold text-white">
                   Create Team
@@ -243,10 +261,9 @@ const CustomDrawer2 = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  router.push("/(app)/(team)/join-team");
-                }}
-                className="bg-[#303030] px-3 py-2 rounded-lg" style={{borderWidth: 1, borderColor:'#505050'}}
+                onPress={() => router.push("/(app)/(team)/join-team")}
+                className="bg-[#303030] px-3 py-2 rounded-lg"
+                style={{ borderWidth: 1, borderColor: "#505050" }}
               >
                 <TextScallingFalse className="text-white text-sm font-bold">
                   Join Team
@@ -310,45 +327,45 @@ const CustomDrawer2 = () => {
         </View>
       </ScrollView>
 
-{/* Side bar menu bottom menu */}
-        <View
-          style={{
-            borderTopWidth: 0.8,
-            paddingVertical: 40,
-            borderTopColor: '#404040',
-            width: "85%",
-            gap: 15,
-            alignSelf: 'center',
-            paddingHorizontal: 4,
+      {/* Side bar menu bottom menu */}
+      <View
+        style={{
+          borderTopWidth: 0.8,
+          paddingVertical: 40,
+          borderTopColor: "#404040",
+          width: "85%",
+          gap: 15,
+          alignSelf: "center",
+          paddingHorizontal: 4,
+        }}
+      >
+        <TouchableOpacity
+          className="flex-row items-center"
+          onPress={() => {
+            router.push("/(app)/(settings)/FeedBack/feedback2");
           }}
+          activeOpacity={0.5}
         >
-          <TouchableOpacity
-            className="flex-row items-center"
-            onPress={() => {
-              router.push("/(app)/(settings)/FeedBack/feedback2");
-            }}
-            activeOpacity={0.5}
-          >
-            {/* <MaterialIcons name="feedback" size={19} color="white" className="ml-1" /> */}
-            <FeedbackSidebar />
-            <TextScallingFalse className="text-white text-3xl ml-3">
-              Feedback
-            </TextScallingFalse>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-row items-center mb-4"
-            onPress={() => {
-              router.push("/(app)/(settings)/settings");
-            }}
-            activeOpacity={0.5}
-          >
-            {/* <Feather name="settings" size={19} color="white" /> */}
-            <SettingsSidebar />
-            <TextScallingFalse className="text-white text-3xl ml-3">
-              Settings
-            </TextScallingFalse>
-          </TouchableOpacity>
-        </View>
+          {/* <MaterialIcons name="feedback" size={19} color="white" className="ml-1" /> */}
+          <FeedbackSidebar />
+          <TextScallingFalse className="text-white text-3xl ml-3">
+            Feedback
+          </TextScallingFalse>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="flex-row items-center mb-4"
+          onPress={() => {
+            router.push("/(app)/(settings)/settings");
+          }}
+          activeOpacity={0.5}
+        >
+          {/* <Feather name="settings" size={19} color="white" /> */}
+          <SettingsSidebar />
+          <TextScallingFalse className="text-white text-3xl ml-3">
+            Settings
+          </TextScallingFalse>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -361,6 +378,6 @@ const styles = StyleSheet.create({
     gap: 18,
     paddingHorizontal: 24,
     paddingVertical: 24,
-    height: '77%',
-  }
+    height: "77%",
+  },
 });

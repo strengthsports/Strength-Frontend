@@ -519,6 +519,13 @@ const profileSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+
+
+   
+
+   
+
+
     // Login
     builder.addCase(loginUser.pending, (state) => {
       state.error = null;
@@ -628,15 +635,24 @@ const profileSlice = createSlice({
 
     // Fetch my profile
     builder.addCase(fetchMyProfile.fulfilled, (state, action) => {
+       state.status = 'succeeded';
+        state.user = action.payload; // Make sure this is updating
       state.loading = false;
       state.error = null;
       state.user = action.payload;
-      // console.log("Fetch profile", state.user)
+      // console.log("Fetch profile",state.user);
+      
     });
     builder.addCase(fetchMyProfile.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });
+       builder.addCase(fetchMyProfile.pending, (state) => {
+        state.status = 'loading';
+      });
+    
+    
+    
 
     // Edit sports overview
     builder.addCase(editUserSportsOverview.pending, (state) => {

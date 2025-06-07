@@ -129,10 +129,6 @@ const LoginScreen = () => {
         }
       } else {
         console.error("Google Sign-In error:", error);
-        feedback(
-          "An error occurred during Google Sign-In. Please try again.",
-          "error"
-        );
       }
     } finally {
       setIsSigningIn(false); // Reset the signing state whether success or failure
@@ -150,11 +146,11 @@ const LoginScreen = () => {
     isAndroid
       ? ToastAndroid.show(errorMsg, ToastAndroid.SHORT)
       : Toast.show({
-        type,
-        text1: errorMsg,
-        visibilityTime: 3000,
-        autoHide: true,
-      });
+          type,
+          text1: errorMsg,
+          visibilityTime: 3000,
+          autoHide: true,
+        });
   };
 
   const handleLogin = async () => {
@@ -202,7 +198,7 @@ const LoginScreen = () => {
           <View
             style={{
               flexDirection: "row",
-              marginTop: Platform.OS === 'ios' ? '' : "2%",
+              marginTop: Platform.OS === "ios" ? "" : "2%",
               gap: 7,
               alignItems: "center",
             }}
@@ -225,17 +221,17 @@ const LoginScreen = () => {
         </View>
 
         <View style={{ width: "100%", alignItems: "center" }}>
-          <View style={{ width:'86%'}}>
-          <TextScallingFalse
-            style={{
-              color: "white",
-              fontSize: 32,
-              fontWeight: "500",
-              paddingVertical: 18,
-            }}
-          >
-            Step Into the World of Sports
-          </TextScallingFalse>
+          <View style={{ width: "86%" }}>
+            <TextScallingFalse
+              style={{
+                color: "white",
+                fontSize: 32,
+                fontWeight: "500",
+                paddingVertical: 18,
+              }}
+            >
+              Step Into the World of Sports
+            </TextScallingFalse>
           </View>
           <View>
             <TextScallingFalse
@@ -297,7 +293,7 @@ const LoginScreen = () => {
         </View>
 
         <View style={{ marginTop: 27, width: "100%", alignItems: "center" }}>
-          {loading ? (
+          {loading || isSigningIn ? (
             <ActivityIndicator
               size={"small"}
               style={{ paddingVertical: 11.3 }}
@@ -320,7 +316,7 @@ const LoginScreen = () => {
               width: 335,
               height: 42,
               borderWidth: 1,
-              borderColor:'#EAEAEA',
+              borderColor: "#EAEAEA",
               justifyContent: "center",
               alignItems: "center",
               marginTop: 14,
@@ -354,6 +350,7 @@ const LoginScreen = () => {
               borderRadius: 40,
               gap: 10,
               flexDirection: "row",
+              opacity: isSigningIn ? 0.5 : 1,
             }}
           >
             <Image

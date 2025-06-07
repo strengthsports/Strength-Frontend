@@ -50,8 +50,8 @@
         "backgroundColor": "#000000"
       },
       "notification": {
-        "icon": "./assets/images/New folder/notification-logo.png",
-        "color": "#FF0000"
+        "icon": "./assets/images/New folder/notification_icon.png",
+        "color": "#000000"
       },
       "intentFilters": [
         {

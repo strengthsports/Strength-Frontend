@@ -54,190 +54,7 @@ import { useShare } from "~/hooks/useShare";
 import ShareProfile from "~/components/SvgIcons/profilePage/ShareProfile";
 import ProfileSettings from "~/components/SvgIcons/profilePage/ProfileSettings";
 import ManageTeams from "~/components/SvgIcons/profilePage/ManageTeams";
-
-const countryAbbreviations: { [key: string]: string } = {
-  "United Arab Emirates": "UAE",
-  "United States of America": "USA",
-  "United States": "USA",
-  "United Kingdom": "UK",
-  "Antigua and Barbuda": "ATG",
-  "Bosnia and Herzegovina": "BIH",
-  "British Virgin Islands": "VGB",
-  "Cayman Islands": "CYM",
-  "Central African Republic": "CAF",
-  "Cook Islands": "COK",
-  "Costa Rica": "CRI",
-  "Czech Republic": "CZE",
-  "Dominican Republic": "DOM",
-  "El Salvador": "SLV",
-  "Equatorial Guinea": "GNQ",
-  "Falkland Islands": "FLK",
-  "Faroe Islands": "FRO",
-  "French Polynesia": "PYF",
-  "Marshall Islands": "MHL",
-  "New Caledonia": "NCL",
-  "New Zealand": "NZL",
-  "North Macedonia": "MKD",
-  "Papua New Guinea": "PNG",
-  "Puerto Rico": "PRI",
-  "Saint Kitts and Nevis": "KNA",
-  "Saint Lucia": "LCA",
-  "Saint Vincent and the Grenadines": "VCT",
-  "San Marino": "SMR",
-  "Sao Tome and Principe": "STP",
-  "Saudi Arabia": "SAU",
-  "Sierra Leone": "SLE",
-  "Solomon Islands": "SLB",
-  "South Africa": "ZAF",
-  "South Korea": "KOR",
-  "Sri Lanka": "LKA",
-  "Trinidad and Tobago": "TTO",
-  "Turks and Caicos Islands": "TCA",
-  "Vatican City": "VAT",
-  "Democratic Republic of the Congo": "COD",
-  "Republic of the Congo": "COG",
-  "United States Minor Outlying Islands": "UMI",
-  "Northern Mariana Islands": "MNP",
-  "Saint Helena, Ascension and Tristan da Cunha": "SHN",
-  "Svalbard and Jan Mayen": "SJM",
-  "Timor-Leste": "TLS",
-  "Virgin Islands, British": "VGB",
-  "Virgin Islands, U.S.": "VIR",
-  "Wallis and Futuna": "WLF",
-  "Western Sahara": "ESH",
-  "Bouvet Island": "BVT",
-  "Heard Island and McDonald Islands": "HMD",
-  "British Indian Ocean Territory": "IOT",
-  "Federated States of Micronesia": "FSM",
-  "Saint Pierre and Miquelon": "SPM",
-  "American Samoa": "ASM",
-  "French Southern Territories": "ATF",
-  "Isle of Man": "IMN",
-  "Norfolk Island": "NFK",
-  "Pitcairn Islands": "PCN",
-  "South Georgia and the South Sandwich Islands": "SGS",
-  "Lao People's Democratic Republic": "LAO",
-  "Democratic People's Republic of Korea": "PRK",
-  "Republic of Korea": "KOR",
-  "Russian Federation": "RUS",
-  "Syrian Arab Republic": "SYR",
-  "United Republic of Tanzania": "TZA",
-  "Bolivarian Republic of Venezuela": "VEN",
-  Australia: "AUS",
-  Afghanistan: "AFG",
-  Argentina: "ARG",
-  Bangladesh: "BGD",
-  Cambodia: "KHM",
-  Colombia: "COL",
-  Ethiopia: "ETH",
-  Indonesia: "IDN",
-  Madagascar: "MDG",
-  Mozambique: "MOZ",
-  Philippines: "PHL",
-  Switzerland: "CHE",
-  Luxembourg: "LUX",
-  Mauritania: "MRT",
-  Mauritius: "MUS",
-  Nicaragua: "NIC",
-  Paraguay: "PRY",
-  Singapore: "SGP",
-  Slovakia: "SVK",
-  Slovenia: "SVN",
-  Tajikistan: "TJK",
-  Turkmenistan: "TKM",
-  Uzbekistan: "UZB",
-  Uruguay: "URY",
-  Netherlands: "NLD",
-  "Aland Islands": "ALA",
-  Albania: "ALB",
-  Algeria: "DZA",
-  Andorra: "AND",
-  Anguilla: "AIA",
-  Armenia: "ARM",
-  Austria: "AUT",
-  Azerbaijan: "AZE",
-  Bahamas: "BHS",
-  Bahrain: "BHR",
-  Barbados: "BRB",
-  Belarus: "BLR",
-  Belgium: "BEL",
-  Bermuda: "BMU",
-  Bolivia: "BOL",
-  Botswana: "BWA",
-  "Brunei Darussalam": "BRN",
-  Bulgaria: "BGR",
-  "Burkina Faso": "BFA",
-  Burundi: "BDI",
-  "Cabo Verde": "CPV",
-  Cameroon: "CMR",
-  "Christmas Island": "CXR",
-  "Cocos (Keeling) Islands": "CCK",
-  Comoros: "COM",
-  Croatia: "HRV",
-  Curacao: "CUW",
-  Czechia: "CZE",
-  Denmark: "DNK",
-  Djibouti: "DJI",
-  Ecuador: "ECU",
-  Eritrea: "ERI",
-  Estonia: "EST",
-  Eswatini: "SWZ",
-  Finland: "FIN",
-  Georgia: "GEO",
-  Germany: "DEU",
-  Gibraltar: "GIB",
-  Greenland: "GRL",
-  Grenada: "GRD",
-  Guadeloupe: "GLP",
-  Guatemala: "GTM",
-  Guernsey: "GGY",
-  "Guinea-Bissau": "GNB",
-  Honduras: "HND",
-  "Hong Kong": "HKG",
-  Hungary: "HUN",
-  Iceland: "ISL",
-  Ireland: "IRL",
-  Jamaica: "JAM",
-  Kazakhstan: "KAZ",
-  Kiribati: "KIR",
-  Kyrgyzstan: "KGZ",
-  Lebanon: "LBN",
-  Lesotho: "LSO",
-  Liberia: "LBR",
-  Liechtenstein: "LIE",
-  Lithuania: "LTU",
-  Malaysia: "MYS",
-  Maldives: "MDV",
-  Martinique: "MTQ",
-  Mayotte: "MYT",
-  Moldova: "MDA",
-  Mongolia: "MNG",
-  Montenegro: "MNE",
-  Montserrat: "MSR",
-  Morocco: "MAR",
-  Myanmar: "MMR",
-  Namibia: "NAM",
-  Nigeria: "NGA",
-  Pakistan: "PAK",
-  "Palestine, State of": "PSE",
-  Portugal: "PRT",
-  Reunion: "REU",
-  Romania: "ROU",
-  Senegal: "SEN",
-  Seychelles: "SYC",
-  "Sint Maarten (Dutch part)": "SXM",
-  Somalia: "SOM",
-  "South Sudan": "SSD",
-  Suriname: "SUR",
-  Thailand: "THA",
-  Tokelau: "TKL",
-  Tunisia: "TUN",
-  Türkiye: "TUR",
-  Ukraine: "UKR",
-  Vanuatu: "VUT",
-  Vietnam: "VNM",
-  Zimbabwe: "ZWE",
-};
+import { countryAbbreviations } from "~/utils/countryShort";
 
 const getShortCountryName = (countryName: string, maxLength: number = 6) => {
   if (!countryName) {
@@ -433,7 +250,7 @@ const ProfileLayout = () => {
     }
   };
 
-  console.log('user?.followingCount-', user?.followingCount)
+  console.log("user?.followingCount-", user?.followingCount);
 
   return (
     <PageThemeView>
@@ -600,7 +417,7 @@ const ProfileLayout = () => {
               </TextScallingFalse>
             </View>
 
-            <View style={{ paddingTop: 5 }}>
+            <View style={{}}>
               {/* age, height, weight, teams for user profile */}
               {user?.type === "User" && (
                 <View style={{ position: "relative", left: -5 }}>
@@ -618,11 +435,44 @@ const ProfileLayout = () => {
                       />
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
-                        Age: {calculateAge(user?.dateOfBirth)}{" "}
-                        <TextScallingFalse style={{ color: "grey" }}>
+                        Age: {calculateAge(user?.dateOfBirth)}
+                      </TextScallingFalse>
+                      {user?.dateOfBirth ? (
+                        <TextScallingFalse
+                          style={{
+                            color: "grey",
+                            fontSize: responsiveFontSize(1.4),
+                          }}
+                        >
+                          {" "}
                           ({dateFormatter(user?.dateOfBirth, "text")})
                         </TextScallingFalse>
-                      </TextScallingFalse>
+                      ) : (
+                        <TouchableOpacity
+                          style={{ flexDirection: "row", gap: 2 }}
+                          activeOpacity={0.7}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/(app)/(profile)/edit-profile",
+                              params: { openModal: "dateOfBirth" },
+                            })
+                          }
+                        >
+                          <TextScallingFalse
+                            style={{
+                              color: "#808080",
+                              fontSize: responsiveFontSize(1.4),
+                            }}
+                          >
+                            Add
+                          </TextScallingFalse>
+                          <MaterialCommunityIcons
+                            name="plus-circle"
+                            color="#505050"
+                            style={{ marginTop: 1.5 }}
+                          />
+                        </TouchableOpacity>
+                      )}
                     </View>
 
                     <View style={{ flexDirection: "row" }}>
@@ -634,12 +484,37 @@ const ProfileLayout = () => {
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
                         Height:{" "}
-                        {user?.height || (
-                          <TextScallingFalse style={{ color: "grey" }}>
-                            undefined
-                          </TextScallingFalse>
-                        )}
                       </TextScallingFalse>
+                      {user?.height ? (
+                        <TextScallingFalse style={styles.ProfileKeyPoints}>
+                          {user?.height}
+                        </TextScallingFalse>
+                      ) : (
+                        <TouchableOpacity
+                          style={{ flexDirection: "row", gap: 2 }}
+                          activeOpacity={0.7}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/(app)/(profile)/edit-profile",
+                              params: { openModal: "height" },
+                            })
+                          }
+                        >
+                          <TextScallingFalse
+                            style={{
+                              color: "#808080",
+                              fontSize: responsiveFontSize(1.4),
+                            }}
+                          >
+                            Add
+                          </TextScallingFalse>
+                          <MaterialCommunityIcons
+                            name="plus-circle"
+                            color="#505050"
+                            style={{ marginTop: 1.5 }}
+                          />
+                        </TouchableOpacity>
+                      )}
                     </View>
 
                     <View style={{ flexDirection: "row" }}>
@@ -651,62 +526,84 @@ const ProfileLayout = () => {
                       <TextScallingFalse style={styles.ProfileKeyPoints}>
                         {" "}
                         Weight:{" "}
-                        {user?.weight || (
-                          <TextScallingFalse style={{ color: "grey" }}>
-                            undefined
-                          </TextScallingFalse>
-                        )}
                       </TextScallingFalse>
-                    </View>
-                  </View>
-
-                  <View style={{ paddingTop: "3%" }}>
-                    <View style={{ flexDirection: "row" }}>
-                      <Entypo
-                        name="dot-single"
-                        size={responsiveDotSize}
-                        color="white"
-                      />
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() =>
-                          router.push(
-                            "/(app)/(profile)/edit-overview/(modal)/current-team"
-                          )
-                        }
-                      >
+                      {user?.weight ? (
                         <TextScallingFalse style={styles.ProfileKeyPoints}>
-                          {" "}
-                          {(() => {
-                            const allTeams = [
-                              ...(user.createdTeams || []).map(
-                                (t: any) => t.team?.name
-                              ),
-                              ...(user.joinedTeams || []).map(
-                                (t: any) => t.team?.name
-                              ),
-                            ].filter(Boolean);
-
-                            const teamCount = allTeams.length;
-
-                            if (teamCount === 0) return "Teams: No teams";
-
-                            return (
-                              <>
-                                <TextScallingFalse style={{ color: "white" }}>
-                                  {`${teamCount === 1 ? "Team" : "Teams"}: `}
-                                  {allTeams[0]}
-                                </TextScallingFalse>
-                                <TextScallingFalse style={{ color: "grey" }}>
-                                  {teamCount > 1 ? ` +${teamCount - 1}` : ""}
-                                </TextScallingFalse>
-                              </>
-                            );
-                          })()}
+                          {user?.weight}
                         </TextScallingFalse>
-                      </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={{ flexDirection: "row", gap: 2 }}
+                          activeOpacity={0.7}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/(app)/(profile)/edit-profile",
+                              params: { openModal: "weight" },
+                            })
+                          }
+                        >
+                          <TextScallingFalse
+                            style={{
+                              color: "#808080",
+                              fontSize: responsiveFontSize(1.4),
+                            }}
+                          >
+                            Add
+                          </TextScallingFalse>
+                          <MaterialCommunityIcons
+                            name="plus-circle"
+                            color="#505050"
+                            style={{ marginTop: 1.5 }}
+                          />
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
+
+                  {(() => {
+                    const allTeams = [
+                      ...(user.createdTeams || []).map(
+                        (t: any) => t.team?.name
+                      ),
+                      ...(user.joinedTeams || []).map((t: any) => t.team?.name),
+                    ].filter(Boolean);
+
+                    const teamCount = allTeams.length;
+
+                    if (teamCount === 0) {
+                      return null;
+                    }
+
+                    return (
+                      <View style={{ paddingTop: "3%" }}>
+                        <View style={{ flexDirection: "row" }}>
+                          <Entypo
+                            name="dot-single"
+                            size={responsiveDotSize}
+                            color="white"
+                          />
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() =>
+                              router.push(
+                                "/(app)/(profile)/edit-overview/(modal)/current-team"
+                              )
+                            }
+                          >
+                            <TextScallingFalse style={styles.ProfileKeyPoints}>
+                              <TextScallingFalse style={{ color: "white" }}>
+                                {` ${teamCount === 1 ? "Team" : "Teams"}: `}
+                                {allTeams[0]}
+                              </TextScallingFalse>
+                              <TextScallingFalse style={{ color: "grey" }}>
+                                {teamCount > 1 ? ` +${teamCount - 1}` : ""}
+                              </TextScallingFalse>
+                            </TextScallingFalse>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })()}
                 </View>
               )}
 

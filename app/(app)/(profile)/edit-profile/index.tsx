@@ -136,6 +136,9 @@ const EditProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: any) => state?.profile);
   const router = useRouter();
+  const { openModal: openModalParam } = useLocalSearchParams<{
+    openModal?: PicType;
+  }>();
   const pathname = usePathname();
   const isAndroid = Platform.OS === "android";
   const { value } = useLocalSearchParams();
@@ -279,6 +282,16 @@ const EditProfile = () => {
       showToast("Error fetching place details");
     }
   };
+
+  useEffect(() => {
+    if (openModalParam) {
+      const timer = setTimeout(() => {
+        openModal(openModalParam);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [openModalParam]);
 
   // Modal toggle functions
   const closeModal = () => setModalVisible(false);
@@ -1584,7 +1597,9 @@ const EditProfile = () => {
                         mode="date"
                         display={Platform.OS === "ios" ? "spinner" : "default"}
                         maximumDate={maxDOB} // restrict to users at least 13
-                        themeVariant={Platform.OS === "ios" ? "dark" : undefined}
+                        themeVariant={
+                          Platform.OS === "ios" ? "dark" : undefined
+                        }
                         onChange={(event, selectedDate) => {
                           if (selectedDate) {
                             const formattedDate = selectedDate

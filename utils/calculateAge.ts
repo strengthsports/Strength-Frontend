@@ -1,10 +1,10 @@
 export const calculateAge = (dateOfBirth: string | Date): string | number => {
-  if (!dateOfBirth) return "--";
+  if (!dateOfBirth) return "";
   
   const birthDate = new Date(dateOfBirth);
   const today = new Date();
   
-  if (isNaN(birthDate.getTime())) return "--";
+  if (isNaN(birthDate.getTime())) return "";
 
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();

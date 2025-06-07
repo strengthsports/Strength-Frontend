@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from "react-redux";
 import TextScallingFalse from "~/components/CentralText";
 import { router, Href } from "expo-router";
 import { AppDispatch, RootState } from "~/reduxStore";
-import * as VideoThumbnails from "expo-video-thumbnails";
 import ClipsIconMedia from "~/components/SvgIcons/profilePage/ClipsIconMedia";
 import { BlurView } from "expo-blur";
 import MultipleImageIcon from "~/components/SvgIcons/profilePage/MultipleImageIcon";
@@ -25,12 +24,14 @@ import {
   fetchHashtagPosts,
   fetchUserPosts,
 } from "~/reduxStore/slices/post/hooks";
+import nothumbnail from "@/assets/images/DefaultImage.png";
 
+// Updated MediaItem interface
 interface MediaItem {
   imageUrl: string;
+  thumbnailUrl?: string;
   postId: string;
   isVideoAsset: boolean;
-  thumbnailUrl?: string;
   hasMultipleAssets: boolean;
 }
 
@@ -47,8 +48,6 @@ const iconSizeInsideCircle = 18;
 
 const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const [processedImageData, setProcessedImageData] = useState<MediaItem[]>([]);
-  const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -61,8 +60,8 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     [userId]
   );
 
-  const hashtagposts = useSelector(selectHashtagPosts);
-  const userposts = useSelector(selectUserPosts);
+  const hashtagPosts = useSelector(selectHashtagPosts);
+  const userPosts = useSelector(selectUserPosts);
 
   const nextHashtagCursor = useSelector(
     (state: RootState) =>
@@ -75,25 +74,12 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
 
   const loadPosts = useCallback(
     async (cursor?: string | null) => {
+      const config = { type: "media", limit: 21, cursor: cursor || undefined };
       try {
         if (pageType === "Hashtag" && hashtag) {
-          await dispatch(
-            fetchHashtagPosts({
-              hashtag,
-              type: "media",
-              limit: 10,
-              cursor,
-            })
-          );
+          await dispatch(fetchHashtagPosts({ ...config, hashtag }));
         } else if (pageType === "Activity" && userId) {
-          await dispatch(
-            fetchUserPosts({
-              userId,
-              type: "media",
-              limit: 10,
-              cursor,
-            })
-          );
+          await dispatch(fetchUserPosts({ ...config, userId }));
         }
       } catch (error) {
         console.error("Failed to load posts:", error);
@@ -104,238 +90,105 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
 
   useEffect(() => {
     setIsInitialLoad(true);
-    setProcessedImageData([]);
+    // No need to clear local data, Redux handles the state
     loadPosts().finally(() => setIsInitialLoad(false));
   }, [loadPosts]);
 
   const handleLoadMore = async () => {
-    let cursor: string | null = null;
-    if (pageType === "Activity") {
-      cursor = nextUserCursor;
-    } else if (pageType === "Hashtag") {
-      cursor = nextHashtagCursor;
-    }
-
+    const cursor = pageType === "Activity" ? nextUserCursor : nextHashtagCursor;
     if (!cursor || isLoadingMore) return;
 
     setIsLoadingMore(true);
     try {
       await loadPosts(cursor);
-    } catch (error) {
-      console.error("Failed to load more posts:", error);
     } finally {
       setIsLoadingMore(false);
     }
   };
 
-  const initialImageData = useMemo(() => {
-    const posts = pageType === "Activity" ? userposts : hashtagposts;
+  const processedImageData = useMemo((): MediaItem[] => {
+    const posts = pageType === "Activity" ? userPosts : hashtagPosts;
 
     return posts.flatMap((post): MediaItem[] => {
       if (!post?._id || !post.assets?.length) return [];
 
-      return post.assets
-        .filter((asset) => asset?.url)
-        .slice(0, post.isVideo ? undefined : 1)
-        .map(
-          (asset): MediaItem => ({
-            imageUrl: asset.url,
-            postId: post._id!,
-            isVideoAsset: post.isVideo,
-            hasMultipleAssets: post.assets.filter((a) => a?.url).length > 1,
-          })
-        )
-        .filter((item) => !!item.postId && !!item.imageUrl);
+      // Assuming the first asset is the one to display in the grid
+      const primaryAsset = post.assets[0];
+      if (!primaryAsset?.url) return [];
+
+      return [
+        {
+          postId: post._id,
+          imageUrl: primaryAsset.url,
+          thumbnailUrl: post.isVideo ? post.thumbnail?.url : undefined,
+          isVideoAsset: post.isVideo,
+          hasMultipleAssets: post.assets.filter((a: any) => a?.url).length > 1,
+        },
+      ];
     });
-  }, [userposts, hashtagposts, pageType]);
+  }, [userPosts, hashtagPosts, pageType]);
 
-  useEffect(() => {
-    if (isInitialLoad) {
-      return;
-    }
-    if (initialImageData.length === 0 && processedImageData.length === 0) {
-      setProcessedImageData([]);
-      return;
-    }
+  const renderGridItem = useCallback(({ item }: { item: MediaItem }) => {
+    if (!item?.postId) return null;
 
-    const videosToProcess = initialImageData.filter(
-      (item) => item.isVideoAsset && !item.thumbnailUrl
+    // For videos, use the thumbnail URL. For images, use the image URL.
+    const displayUri = item.isVideoAsset ? item.thumbnailUrl : item.imageUrl;
+
+    const handlePress = () => {
+      router.push({
+        pathname: "/post-details/[postId]",
+        params: { postId: item.postId },
+      } as Href);
+    };
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={styles.itemContainer}
+        onPress={handlePress}
+      >
+        <Image
+          source={displayUri ? { uri: displayUri } : nothumbnail}
+          resizeMode="cover"
+          style={styles.image}
+          onError={(e) =>
+            console.warn(
+              "Failed to load image:",
+              displayUri,
+              e.nativeEvent.error
+            )
+          }
+        />
+
+        {item.isVideoAsset && (
+          <BlurView
+            intensity={30}
+            tint="dark"
+            style={styles.videoIconContainer}
+          >
+            <ClipsIconMedia size={iconSizeInsideCircle} />
+          </BlurView>
+        )}
+
+        {item.hasMultipleAssets && !item.isVideoAsset && (
+          <BlurView
+            intensity={30}
+            tint="dark"
+            style={styles.multipleIconContainer}
+          >
+            <MultipleImageIcon size={16} />
+          </BlurView>
+        )}
+      </TouchableOpacity>
     );
-
-    if (videosToProcess.length > 0) {
-      setThumbnailsLoading(true);
-
-      const generateAndMergeThumbnails = async () => {
-        try {
-          const thumbnailGenerationPromises = videosToProcess.map(
-            async (item) => {
-              if (item.isVideoAsset && item.imageUrl) {
-                try {
-                  const { uri } = await VideoThumbnails.getThumbnailAsync(
-                    item.imageUrl,
-                    { time: 1000, quality: 0.5 }
-                  );
-                  return {
-                    postId: item.postId,
-                    imageUrl: item.imageUrl,
-                    thumbnailUrl: uri,
-                  };
-                } catch (error) {
-                  console.warn(
-                    "Failed to generate thumbnail for:",
-                    item.imageUrl,
-                    error
-                  );
-                  return {
-                    postId: item.postId,
-                    imageUrl: item.imageUrl,
-                    thumbnailUrl: null,
-                  };
-                }
-              }
-              return null;
-            }
-          );
-
-          const thumbnailResults = (
-            await Promise.all(thumbnailGenerationPromises)
-          ).filter(
-            (
-              r
-            ): r is {
-              postId: string;
-              imageUrl: string;
-              thumbnailUrl: string | null;
-            } => r !== null
-          );
-
-          const thumbnailMap = new Map<string, string | null>();
-          thumbnailResults.forEach((result) => {
-            thumbnailMap.set(
-              `${result.postId}-${result.imageUrl}`,
-              result.thumbnailUrl
-            );
-          });
-
-          setProcessedImageData(() => {
-            return initialImageData.map((item) => {
-              const key = `${item.postId}-${item.imageUrl}`;
-              if (thumbnailMap.has(key)) {
-                return {
-                  ...item,
-                  thumbnailUrl: thumbnailMap.get(key) || undefined,
-                };
-              }
-              return item;
-            });
-          });
-        } catch (error) {
-          console.error("Error in thumbnail generation process:", error);
-          setProcessedImageData(initialImageData);
-        } finally {
-          setThumbnailsLoading(false);
-        }
-      };
-
-      generateAndMergeThumbnails();
-    } else {
-      setProcessedImageData(initialImageData);
-      if (thumbnailsLoading) {
-        setThumbnailsLoading(false);
-      }
-    }
-  }, [initialImageData, isInitialLoad]);
-
-  const renderGridItem = useCallback(
-    ({ item }: { item: MediaItem }) => {
-      if (!item?.postId) return null;
-
-      const displayUri = item.isVideoAsset
-        ? item.thumbnailUrl || item.imageUrl
-        : item.imageUrl;
-
-      const sourceUri = typeof displayUri === "string" ? displayUri : null;
-
-      const handlePress = () => {
-        if (item.postId) {
-          router.push({
-            pathname: "/post-details/[postId]",
-            params: { postId: item.postId },
-          } as Href<"pathname">);
-        } else {
-          console.warn(
-            "Could not navigate: postId is missing for media item",
-            item.imageUrl
-          );
-        }
-      };
-
-      const currentIconSize = iconSizeInsideCircle;
-
-      return (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={styles.itemContainer}
-          onPress={handlePress}
-        >
-          {item.isVideoAsset && !item.thumbnailUrl && thumbnailsLoading && (
-            <View style={[styles.image, styles.placeholder]}>
-              <ActivityIndicator size="small" color="#ccc" />
-            </View>
-          )}
-          {sourceUri &&
-            (!item.isVideoAsset || item.thumbnailUrl || !thumbnailsLoading) && (
-              <Image
-                source={{ uri: sourceUri }}
-                resizeMode="cover"
-                style={styles.image}
-                onError={(e) =>
-                  console.warn(
-                    "Failed to load image:",
-                    sourceUri,
-                    e.nativeEvent.error
-                  )
-                }
-              />
-            )}
-          {(!sourceUri ||
-            (item.isVideoAsset && !item.thumbnailUrl && !thumbnailsLoading)) &&
-            !(item.isVideoAsset && !item.thumbnailUrl && thumbnailsLoading) && (
-              <View style={[styles.image, styles.placeholder]}></View>
-            )}
-
-          {item.isVideoAsset && (
-            <BlurView
-              intensity={30}
-              tint="dark"
-              style={styles.videoIconContainer}
-            >
-              <ClipsIconMedia size={currentIconSize} />
-            </BlurView>
-          )}
-
-          {item.hasMultipleAssets && !item.isVideoAsset && (
-            <BlurView
-              intensity={30}
-              tint="dark"
-              style={styles.multipleIconContainer}
-            >
-              <MultipleImageIcon size={16} />
-            </BlurView>
-          )}
-        </TouchableOpacity>
-      );
-    },
-    [thumbnailsLoading]
-  );
+  }, []);
 
   const keyExtractor = useCallback(
-    (item: MediaItem, index: number) =>
-      `${item.postId}-${item.imageUrl}-${index}`,
+    (item: MediaItem) => `${item.postId}-${item.imageUrl}`,
     []
   );
 
-  if (isInitialLoad && processedImageData.length === 0) {
+  if (isInitialLoad) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={Colors.themeColor} />
@@ -343,7 +196,7 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
     );
   }
 
-  if (!isInitialLoad && processedImageData.length === 0 && !isLoadingMore) {
+  if (processedImageData.length === 0 && !isLoadingMore) {
     const message =
       pageType === "Hashtag" && hashtag
         ? `No media found for #${hashtag}`
@@ -366,10 +219,6 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
         renderItem={renderGridItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
-        contentContainerStyle={[
-          styles.listContentContainer,
-          processedImageData.length === 0 && styles.emptyListContainer,
-        ]}
         ListFooterComponent={
           isLoadingMore ? (
             <View style={styles.footerLoader}>
@@ -378,9 +227,8 @@ const MediaPage = ({ userId, hashtag, pageType }: MediaPageProps) => {
           ) : null
         }
         windowSize={11}
-        initialNumToRender={15}
+        initialNumToRender={21}
         maxToRenderPerBatch={10}
-        updateCellsBatchingPeriod={50}
         removeClippedSubviews={true}
       />
     </View>
@@ -396,7 +244,7 @@ const itemSize = availableWidth / numColumns;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.black,
+    backgroundColor: "#000",
   },
   centerContent: {
     flex: 1,
@@ -406,11 +254,6 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyListContainer: {
-    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -425,8 +268,6 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     backgroundColor: "#282828",
-    justifyContent: "center",
-    alignItems: "center",
   },
   itemContainer: {
     width: itemSize,
@@ -459,9 +300,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
-  },
-  listContentContainer: {
-    padding: itemMargin,
   },
   footerLoader: {
     paddingVertical: 20,

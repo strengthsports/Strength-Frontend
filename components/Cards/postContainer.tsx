@@ -385,6 +385,11 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
       [item, item.caption, item.taggedUsers, isExpanded]
     );
 
+    // Calculate imageUrls outside of the return statement
+    const imageUrls = useMemo(() => {
+      return item.assets?.map((asset) => asset.url) || [];
+    }, [item.assets]);
+
     return (
       <>
         <View className="relative w-full max-w-xl self-center min-h-48 h-auto my-6">
@@ -563,25 +568,18 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                   </View>
                 </TouchableWithDoublePress>
               </View>
-            ) : (
-              item.assets &&
-              item.assets.length > 0 &&
-              (() => {
-                const imageUrls = item.assets.map((asset) => asset.url);
-                return (
-                  <CustomImageSlider
-                    onRemoveImage={() => {}}
-                    aspectRatio={item.aspectRatio || [3, 2]}
-                    images={imageUrls}
-                    isFeedPage={true}
-                    post={item}
-                    setIndex={handleSetActiveIndex}
-                    onDoubleTap={handleDoubleTap}
-                    isMyActivity={false}
-                  />
-                );
-              })()
-            )}
+            ) : imageUrls.length > 0 ? (
+              <CustomImageSlider
+                onRemoveImage={() => {}}
+                aspectRatio={item.aspectRatio || [3, 2]}
+                images={imageUrls}
+                isFeedPage={true}
+                post={item}
+                setIndex={handleSetActiveIndex}
+                onDoubleTap={handleDoubleTap}
+                isMyActivity={false}
+              />
+            ) : null}
 
             {/* Like Animation */}
             <Animated.View

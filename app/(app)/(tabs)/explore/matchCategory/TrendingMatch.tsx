@@ -6,10 +6,12 @@ import {
   useGetCricketLiveMatchesQuery,
   useGetCricketNextMatchesQuery,
   useGetCricketNextMatchesBySeriesQuery,
+  useGetCricketRecentMatchesQuery,
 } from "~/reduxStore/api/explore/cricketApi";
 import {
   useGetFootballLiveMatchesQuery,
   useGetFootballNextMatchesQuery,
+  useGetFootballRecentMatchesQuery,
 } from "~/reduxStore/api/explore/footballApi";
 import {
   useGetBasketballLiveMatchesQuery,
@@ -78,6 +80,14 @@ const TrendingMatch = () => {
     cricketNextBySeriesData || {};
 
   const {
+    data: cricketRecentTrendingData,
+    isFetching: isCricketRecentTrendingFetching,
+    refetch: refetchRecentTrendingCricket,
+  } = useGetCricketRecentMatchesQuery({});
+  const { recentTrendingMatches: recentTrendingCricketMatches = [] } =
+    cricketRecentTrendingData || {};
+
+  const {
     data: footballLiveData,
     isFetching: isFootballLiveFetching,
     refetch: refetchLiveFootball,
@@ -90,6 +100,14 @@ const TrendingMatch = () => {
     refetch: refetchNextFootball,
   } = useGetFootballNextMatchesQuery({});
   const { nextMatches: nextFootballMatches = [] } = footballNextData || {};
+
+  const {
+    data: footballRecentTrendingData,
+    isFetching: isFootballRecentTrendingFetching,
+    refetch: refetchRecentTrendingFootball,
+  } = useGetFootballRecentMatchesQuery({});
+  const { recentTrendingMatches: recentTrendingFootballMatches = [] } =
+    footballRecentTrendingData || {};
 
   const {
     data: basketballLiveData,
@@ -111,26 +129,31 @@ const TrendingMatch = () => {
   const singleLiveBasketballMatch = liveBasketballMatches?.slice(0, 2);
 
   const renderTrendingLiveMatches = () => {
-    const isLoading = isCricketLiveFetching || isFootballLiveFetching;
+    const isLoading =
+      isCricketLiveFetching ||
+      isFootballLiveFetching ||
+      isBasketballLiveFetching;
 
     if (isLoading) {
       return (
-        <View style={{ width:'100%', height: 230, justifyContent:'center', alignItems:'center'}}>
-            <ActivityIndicator color="#12956B" size={'small'}/>
+        <View className="mt-5">
+          <ActivityIndicator color={"white"} size={"small"} />
         </View>
       );
     }
     return (
-      <View style={{ width:'100%', height: 230, justifyContent:'center', alignItems:'center'}}>
       <TrendingLiveMatch
         liveCricketMatches={singleLiveCricketMatch}
         liveFootballMatches={singleLiveFootballMatch}
         liveBasketballMatches={singleLiveBasketballMatch}
+        recentCricketMatches={recentTrendingCricketMatches}
+        recentFootballMatches={recentTrendingFootballMatches}
         isCricketFetching={isCricketLiveFetching}
         isFootballFetching={isFootballLiveFetching}
         isBasketballFetching={isBasketballLiveFetching}
+        isCricketRecentFetching={isCricketRecentTrendingFetching}
+        isFootballRecentFetching={isFootballRecentTrendingFetching}
       />
-      </View>
     );
   };
 
@@ -201,15 +224,22 @@ const TrendingMatch = () => {
     );
   };
 
+  const shouldShowDontMiss =
+    topThreeCricketNextMatches?.length > 0 ||
+    topThreeFootballNextMatches?.length > 0 ||
+    topThreeBasketballNextMatches?.length > 0;
+
   const sections = [
     { type: "matches", content: renderMatches() },
     { type: "trendingLiveMatches", content: renderTrendingLiveMatches() },
-    { type: "dontMiss", content: renderDontMiss() },
-    // { type: "cricketNextMatches", content: renderCricketNextMatches() },
-    {
-      type: "cricketNextBySeriesMatches",
-      content: renderCricketNextBySeriesMatches(),
-    },
+    ...(shouldShowDontMiss
+      ? [{ type: "dontMiss", content: renderDontMiss() }]
+      : []),
+    // {
+    //   type: "cricketNextBySeriesMatches",
+    //   content: renderCricketNextBySeriesMatches(),
+    // },
+    { type: "cricketNextMatches", content: renderCricketNextMatches() },
     { type: "footballNextMatches", content: renderFootballNextMatches() },
     { type: "basketballNextMatches", content: renderBasketballNextMatches() },
   ];

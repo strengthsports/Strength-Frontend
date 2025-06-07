@@ -109,12 +109,16 @@ const CricketNextMatchCard = ({
           className="flex-row items-center gap-2"
           onPress={toggleNumberOfLines}
         >
-          <View className="py-1">
-            <Image
-              source={{ uri: seriesLogo }}
-              className="w-[24px] h-[16px] rounded-[2px]"
-            />
-          </View>
+          {seriesLogo ? (
+            <View className="py-1">
+              <Image
+                source={{ uri: seriesLogo }}
+                className="w-[24px] h-[16px] rounded-[2px]"
+              />
+            </View>
+          ) : (
+            <></>
+          )}
           <TextScallingFalse
             className="text-white text-3xl w-[88%]"
             numberOfLines={numberOfLinesTitle}
@@ -148,13 +152,19 @@ const CricketNextMatchCard = ({
               <View className="flex-column gap-y-3">
                 {/* Team 1 */}
                 <NameFlagSubCard
-                  flag={getCountryFlag(match.matchInfo.team1.teamName) || ""}
+                  flag={
+                    getCountryFlag(match.matchInfo.team1.teamName) ||
+                    match.matchInfo.team1.teamSName
+                  }
                   teamName={match.matchInfo.team1.teamSName}
                 />
 
                 {/* Team 2 */}
                 <NameFlagSubCard
-                  flag={getCountryFlag(match.matchInfo.team2.teamName) || ""}
+                  flag={
+                    getCountryFlag(match.matchInfo.team2.teamName) ||
+                    match.matchInfo.team2.teamSName
+                  }
                   teamName={match.matchInfo.team2.teamSName}
                 />
               </View>

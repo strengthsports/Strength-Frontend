@@ -588,7 +588,7 @@ const PostContainer = forwardRef<PostContainerHandles, PostContainerProps>(
                 onPress={() => router.push(`/post-details/${item._id}`)}
                 className="pl-7 pr-10 pt-12 pb-2"
               >
-                <TextScallingFalse className="text-2xl flex-wrap flex-row">
+                <TextScallingFalse className="text-2xl flex-wrap flex-row color-white">
                   {memoizedCaption}
                 </TextScallingFalse>
               </Pressable>

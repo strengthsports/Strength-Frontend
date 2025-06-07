@@ -3,7 +3,8 @@ import React, { useMemo } from "react";
 import { Image } from "expo-image";
 import AnimatedAddPostBar from "../feedPage/AnimatedAddPostBar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMyProfile } from "~/reduxStore/slices/user/profileSlice";
 import defaultPic from "../../assets/images/nopic.jpg";
 import { useDrawer } from "~/context/DrawerContext";
 import AddPostContainer from "../modals/AddPostContainer";
@@ -16,8 +17,10 @@ import MessageIcon from "../SvgIcons/TopBar/MessageIcon";
 const HEADER_HEIGHT = 60;
 
 const CustomHomeHeader = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state: any) => state?.profile);
   const navigation = useNavigation<DrawerNavigationProp<any>>();
+  const { handleOpenDrawer: openCustomDrawer } = useDrawer();
   const possibleMessages = [
     "What's going on...",
     "What's on your mind...",
@@ -39,15 +42,40 @@ const CustomHomeHeader = () => {
 
   // const { handleOpenDrawer } = useDrawer();
   const handleOpenDrawer = () => {
-    navigation.openDrawer();
+    // Refresh profile data
+    if (user?._id) {
+      console.log("Refreshing profile data ........");
+      dispatch(
+        fetchMyProfile({
+          targetUserId: user._id,
+          targetUserType: "User",
+        })
+      ).then(() => {
+        console.log("Refreshed......");
+        // Open drawer after profile is updated
+        navigation.openDrawer();
+        // console.log("Drawer opend---------");
+        openCustomDrawer(); // If you need both
+        console.log("Drawer opend---------");
+      });
+    } else {
+      navigation.openDrawer();
+      openCustomDrawer();
+    }
   };
+  console.log(
+    "User profile on Header bar ------------>",
+    JSON.stringify(user.createdTeams, null, 2),
+    "UPDATED TEAMS LIST ----->"
+  );
+
   const heightValue = Platform.OS === "ios" ? "28%" : "25%";
 
   // Define the content separately
   const messagingBottomSheetConfig = {
     isVisible: true,
     content: (
-      <View style={{ paddingVertical: 15, paddingHorizontal: 20,}}>
+      <View style={{ paddingVertical: 15, paddingHorizontal: 20 }}>
         <TextScallingFalse
           style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
         >

@@ -380,7 +380,11 @@ export default function AddPostContainer() {
 
   const addMoreImages = useCallback(async () => {
     if (pickedImageUris.length === 0) {
-      setIsImageRatioModalVisible(true);
+      if (Platform.OS === "ios") {
+        selectFirstImage([1, 1]);
+      } else {
+        setIsImageRatioModalVisible(true);
+      }
       return;
     }
     try {
@@ -399,7 +403,7 @@ export default function AddPostContainer() {
       console.error("Error picking image:", error);
       alert("Failed to pick image. Please try again.");
     }
-  }, [pickedImageUris.length, selectedAspectRatio]);
+  }, [pickedImageUris.length, selectedAspectRatio, selectFirstImage]);
 
   const removeImage = useCallback((index: number) => {
     setPickedImageUris((prevUris) => prevUris.filter((_, i) => i !== index));
@@ -407,11 +411,15 @@ export default function AddPostContainer() {
 
   const handlePickImageOrAddMore = useCallback(() => {
     if (pickedImageUris.length === 0) {
-      setIsImageRatioModalVisible(true);
+      if (Platform.OS === "ios") {
+        selectFirstImage([1, 1]);
+      } else {
+        setIsImageRatioModalVisible(true);
+      }
     } else {
       addMoreImages();
     }
-  }, [addMoreImages, pickedImageUris.length]);
+  }, [addMoreImages, pickedImageUris.length, selectFirstImage]);
 
   const closeRatioModal = useCallback(() => {
     setIsImageRatioModalVisible(false);

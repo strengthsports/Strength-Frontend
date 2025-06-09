@@ -11,6 +11,7 @@ export const teamLogos: Record<string, any> = {
   SRH: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1747215998933-sunrisershyderabad.png",
   WI: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1749208926827-illustration-of-west-indies-flag-design-vector.jpg",
   WIW: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1749208926827-illustration-of-west-indies-flag-design-vector.jpg",
+  WIA: "https://d3njrvw7yrn7ph.cloudfront.net/uploads/1749208926827-illustration-of-west-indies-flag-design-vector.jpg",
 };
 
 export const seriesLogos: Record<string, any> = {

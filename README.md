@@ -1,123 +1,240 @@
-# Project Environment Setup
+<p align="center">
+  <img src="assets/images/StrengthBanner.png" width="100%" style="margin-right: 12px;" />
+</p>
 
-This project uses environment variables to manage sensitive data and configuration settings. We use two important files for this purpose: `.env`.
+# Strength
 
-## `.env` File
+## Professional Social Media Platform for Sports
 
-The `.env` file is used to store environment variables like API keys, base URLs, and other configuration settings. These variables are injected into the application at runtime. Note - EXPO_PUBLIC_ prefix is necessary for env naming.
+**Strength** is a professional sports-focused social media platform designed to connect athletes, clubs, teams, and sports enthusiasts in a single digital ecosystem.
 
-### Example `.env` file:
-```plaintext
-EXPO_PUBLIC_BASE_URL=https://api.example.com
-```
+The platform addresses real challenges in the sports community by enabling structured sports profiles, team collaboration, performance visibility, and meaningful engagement. Strength empowers users to showcase their sporting identity, connect with like-minded athletes, follow teams, participate in discussions, and stay updated with live sports content — all in one place.
 
-## `.expo-env.d.ts` File
-```
-declare module '@env' {
-  export const BASE_URL: string | number | bool |;  //etc
-  // Add other environment variables here as needed
-}
-```
+Unlike generic social platforms, Strength is built **specifically for sports**, emphasizing athlete identity, role-based sports data, team culture, and performance-centric interaction.
 
-### Project structure
+---
 
-```shell
-.
-Frontend
-├── .idea/
-├── app/
-│   ├── (app)/
-│   │   ├── (main)/
-│   │   │   └── home.jsx                # Main authenticated screen
-│   ├── (tabs)/
-│   │   ├── _layout.js                 # Layout for bottom tab navigation
-│   │   ├── explore.js                 # Explore tab screen
-│   │   ├── index.js                   # Default tab (home or dashboard)
-│   │   └── _layout.js                 # Tab navigation layout
-│   ├── (auth)/
-│   │   ├── login.tsx                  # Login screen
-│   │   ├── register.tsx               # Registration screen
-│   ├── _layout.js                     # layout
-│   ├── +not-found.tsx                 # 404 page for auth stack
-│   └── index.tsx                      # Entry Point || Default route in auth stack
-├── assets                   # Assets folder for images, fonts, etc.
-├── components               # Reusable UI components
-│   ├── Button.tsx           # Example button component
-│   ├── Header.tsx           # Example header component
-│
-├── constants                # Constants and configuration files
-│   ├── colors.ts            # Color palette
-│   ├── endpoints.ts         # API endpoints
-│
-├── context/                           # Contexts
-│   └── AuthContext.js                 # Authentication context
-│
-├── hooks                    # Custom hooks
-│   ├── useAuth.ts           # Hook for authentication state
-│   ├── useFetch.ts          # Hook for fetching data
-│
-├── redux                    # Redux for state management
-│   ├── authSlice.ts         # Authentication slice
-│   ├── store.ts             # Redux store setup
-│
-├── scripts                  # Utility scripts
-│   ├── clean-cache.sh       # Example script for cleaning cache
-│
-├── .expo                    # Expo-specific metadata (auto-generated)
-├── .idea                    # IDE-specific metadata
-├── .gitignore               # Git ignore file
-├── app.json                 # App configuration
-├── expo-env.d.ts            # TypeScript environment configuration for Expo
-├── package-lock.json        # Lock file for npm dependencies
-├── package.json             # Dependency management
-├── README.md                # Project documentation
-├── tsconfig.json            # TypeScript configuration
+## 📸 Screenshots / Demo
 
-```
+<p align="center">
+  <img src="assets/images/ScreenShots/LoginPage.jpeg" width="240" style="margin-right: 12px;" />
+  <img src="assets/images/ScreenShots/ProfilePage.png" width="240" style="margin-right: 12px;" />
+  <img src="assets/images/ScreenShots/FeedPage.png" width="240" />
+</p>
 
-## Get started
+**Authentication & Profile Creation**  
+Strength provides a secure signup and login experience, followed by structured profile creation. Users build a professional sports profile including personal details, favorite sports, sport-specific roles, physical attributes, and profile media. This information becomes the foundation of their sports identity across the platform.
 
-1. Install dependencies
+<br />
+<br />
 
-   ```bash
-   npm install
-   ```
+<p align="center">
+  <img src="assets/images//ScreenShots/ExplorePage.png" width="240" style="margin-right: 12px;" />
+  <img src="assets/images//ScreenShots/TeamPage.png" width="240" style="margin-right: 12px;" />
+  <img src="assets/images/ScreenShots/LiveScorePage.png" width="240" />
+</p>
 
-2. Start the app
+**Posts & Community Interaction**  
+Users can create rich posts including images, videos, polls, and multi-media content. The feed supports likes, comments, replies, sharing, and reporting, enabling real community-driven sports interaction.
 
-   ```bash
-    npx expo start
-   ```
+<p align="center">
+  <img src="assets/images/StrengthMeni.png" width="80%" />
+</p>
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## ✨ Features
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 🔐 Authentication & Account Management
+- Secure user signup and login  
+- Account settings & profile management  
+- User-initiated account deletion  
+- Session-based authentication flow  
 
-## Get a fresh project
+### 👤 Professional Sports Profile
+- Profile picture and cover image  
+- Favorite sports selection  
+- Sport-specific role details (examples):
+  - **Cricket**: Batsman, Bowler, Left/Right Hand  
+  - **Football**: Midfielder, Goalkeeper, Defender  
+- Physical attributes:
+  - Height (cm / m / ft)  
+  - Weight (kg / lbs)  
+  - Age  
+- Sports identity prominently displayed on profile  
 
-When you're ready, run:
+### ⚙️ Profile & Privacy Settings
+- Edit profile information  
+- Update sports preferences  
+- Control personal profile visibility  
+- Block users  
+- Report users for inappropriate behavior  
 
-```bash
-npm run reset-project
-```
+### 📝 Posts & Content Creation
+- Multiple post types:
+  - Single image  
+  - Multiple images  
+  - Videos  
+  - Polls  
+- Image & video ratio and size variations  
+- Like, comment, reply, and share posts  
+- Quick action menu for core post features  
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 💬 Community Interaction
+- Follow / unfollow users  
+- Search users globally  
+- Comment replies & threaded discussions  
+- Report posts for moderation  
 
-## Learn more
+### 👥 Teams & Clubs
+- Create sports teams  
+- Join existing teams  
+- Team-based identity and collaboration  
+- Designed for clubs, local teams, and academies  
 
-To learn more about developing your project with Expo, look at the following resources:
+### 🔎 Explore & Discovery
+- Live scores for major sports (top 4 supported)  
+- Sports news articles  
+- Discover athletes, teams, and trending posts  
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 🔔 Notifications
+- Real-time notifications for:
+  - Likes  
+  - Comments  
+  - Follows  
+  - Team activity  
+- Dedicated notification page  
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 🧠 How Strength Works (High Level)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. User signs up and creates a sports profile  
+2. Favorite sports and role-based details are selected  
+3. User creates or joins teams  
+4. Posts and interactions build community engagement  
+5. Explore section provides live scores and sports news  
+6. Notifications keep users informed of all activity  
+
+---
+
+## 🏗️ Architecture Overview
+
+Strength follows a **monolithic backend architecture** using the **MVC design pattern**, optimized for early scalability and maintainability.
+
+```text
+React Native Mobile Application
+            |
+            | REST APIs
+            v
+Strength Backend (Node.js / Express)
+            |
+            | MVC Architecture
+            v
+MongoDB / Redis / Background Jobs
+🛠️ Tech Stack
+📱 Frontend
+React Native
+
+Redux Toolkit (state management)
+
+TypeScript
+
+Zod (schema validation)
+
+🌐 Backend
+Node.js
+
+Express.js
+
+REST API architecture
+
+MVC design pattern
+
+Monolithic architecture
+
+🗄️ Database & Caching
+MongoDB
+
+Redis (caching & performance optimization)
+
+⚙️ Background Processing
+BullMQ (job queues & async tasks)
+
+☁️ Infrastructure & DevOps
+Docker (backend containerization)
+
+AWS EC2 (deployment)
+
+AWS S3 (media storage)
+
+🧪 Core Language
+JavaScript (primary language across the stack)
+
+⚙️ Setup & Installation (Local)
+# Clone repository
+git clone <strength-repo>
+
+# Backend
+cd backend
+npm install
+npm run dev
+
+# Frontend
+cd ../frontend
+npm install
+npx react-native run-android
+# or
+npx react-native run-ios
+Environment variables and production configuration will be documented separately.
+
+🚀 Usage
+Create a professional sports profile
+
+Follow athletes and teams
+
+Share sports content through posts
+
+Engage via likes, comments, and replies
+
+Track live scores and sports news
+
+Manage teams and community presence
+
+🧩 Key Design Decisions
+Sports-first platform (not a generic social network)
+
+Role-based sports profiles for authenticity
+
+Monolith architecture for faster iteration
+
+REST APIs for client flexibility
+
+Dockerized backend for deployment consistency
+
+📈 Scalability & Performance
+Redis caching for frequently accessed data
+
+BullMQ for async tasks
+
+Optimized REST APIs
+
+AWS infrastructure for horizontal scaling
+
+🛣️ Roadmap / Future Improvements
+Advanced player performance analytics
+
+Tournament hosting & management
+
+Verified athlete & club profiles
+
+In-app messaging
+
+Microservices extraction if required
+
+📄 License
+MIT License (to be finalized)
+
+👤 Author
+Ravi Sharma
+Software Engineer | Full-Stack & Hybrid App Developer

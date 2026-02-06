@@ -25,6 +25,8 @@ const getCountryCode = (countryName: string) => {
     "INDIA A": "IN",
     "ENGLAND LIONS": "GB",
     "ENGLAND WOMEN": "GB",
+    "SOUTH AFRICA": "ZA",
+    "SOUTH AFRICA A": "ZA",
   };
 
   return specialCases[cleanName] || countries.getAlpha2Code(cleanName, "en");

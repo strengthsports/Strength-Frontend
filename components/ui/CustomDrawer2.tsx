@@ -230,7 +230,7 @@ const CustomDrawer2 = () => {
             </TouchableOpacity>
           ))}
 
-          {getTeams().length > 4 && (
+          {getTeams().length < 4 && (
             <TouchableOpacity
               onPress={() => {
                 router.push(
@@ -247,7 +247,7 @@ const CustomDrawer2 = () => {
             </TouchableOpacity>
           )}
 
-          {getTeams().length === 0 && (
+          {getTeams().length > 4 && (
             <View className="flex-row mb-5 mt-1 gap-3">
               <TouchableOpacity
                 onPress={() => router.push("/(app)/(team)/teams")}

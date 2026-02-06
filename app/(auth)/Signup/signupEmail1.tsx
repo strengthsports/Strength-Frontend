@@ -82,6 +82,10 @@ const SignupEmail1 = () => {
     setGender("female");
   };
 
+  function greet() {
+    console.log('Hello!');
+  }
+
   // form order
   const formData = {
     email,
